@@ -1,18 +1,26 @@
 {
-  "name": "swarmbot",
-  "private": true,
-  "workspaces": [
-    "apps/api",
-    "apps/web"
-  ],
-  "scripts": {
-    "build": "npm run build -w @swarmbot/api && npm run build -w web",
-    "dev:api": "npm run dev -w @swarmbot/api",
-    "dev:web": "npm run start -w web",
-    "test": "npm run test -w @swarmbot/api",
-    "lint": "npm run lint -w @swarmbot/api"
-  },
-  "engines": {
-    "node": ">=20"
-  }
+    "name": "swarmboty",
+    "private": true,
+    "workspaces": [
+        "apps/api",
+        "apps/web"
+    ],
+    "scripts": {
+        "build": "npm run build -w @swarmboty/api && npm run build -w web",
+        "dev:api": "npm run dev -w @swarmboty/api",
+        "dev:web": "npm run start -w web",
+        "format": "prettier --write .",
+        "format:check": "prettier --check .",
+        "test": "npm run test -w @swarmboty/api",
+        "test:e2e": "npm run test:e2e -w web",
+        "test:coverage": "npm run test:coverage -w @swarmboty/api",
+        "test:all": "npm run test && npm run test:e2e",
+        "lint": "npm run lint -w @swarmboty/api && npm run lint -w web"
+    },
+    "devDependencies": {
+        "prettier": "^3.5.3"
+    },
+    "engines": {
+        "node": ">=20"
+    }
 }

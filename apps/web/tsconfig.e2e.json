@@ -1,0 +1,10 @@
+{
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"outDir": "./out-tsc/e2e",
+		"types": ["node", "@playwright/test"],
+		"moduleResolution": "bundler"
+	},
+	"include": ["e2e/**/*.ts", "playwright.config.js"],
+	"exclude": ["dist", "out-tsc", "node_modules"]
+}

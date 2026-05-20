@@ -1,0 +1,190 @@
+# docker-compose.dev.yml — Local development stack for Swarmboty
+#
+# ── Quick start ──────────────────────────────────────────────────────────────
+#
+#   Full stack (real databases):
+#     docker compose -f docker-compose.dev.yml up
+#
+#   Mock mode (no real Docker socket or databases needed):
+#     SWARMBOTY_MOCK=true docker compose -f docker-compose.dev.yml up api web
+#
+#   Include the Rust agent (built from source):
+#     docker compose -f docker-compose.dev.yml --profile agent up
+#
+# ── Endpoints ────────────────────────────────────────────────────────────────
+#
+#   http://localhost:4200          Angular dev server  (HMR / live-reload)
+#   http://localhost:8080/graphql  GraphQL API          (tsx hot-reload)
+#   http://localhost:8080/health   API health
+#   http://localhost:5984/_utils   CouchDB Fauxton admin UI
+#   http://localhost:8086          InfluxDB HTTP API
+#
+# ── Default credentials (bootstrap / mock) ────────────────────────────────
+#
+#   user: admin   password: swarmboty
+#
+# ── Windows tip ───────────────────────────────────────────────────────────
+#
+#   Angular HMR inside Docker uses filesystem polling (--poll 500), which is
+#   slower than running the dev server on the host.  For the best experience
+#   keep only databases + API in Docker and run the Angular server locally:
+#
+#     # terminal 1 (databases + API in Docker):
+#     docker compose -f docker-compose.dev.yml up db influxdb api
+#
+#     # terminal 2 (Angular on host, proxy already points at localhost:8080):
+#     npm run dev:web
+
+services:
+    # ── CouchDB ───────────────────────────────────────────────────────────────
+
+    db:
+        image: couchdb:3
+        environment:
+            COUCHDB_USER: ${COUCHDB_USER:-admin}
+            COUCHDB_PASSWORD: ${COUCHDB_PASSWORD:-swarmboty}
+        ports:
+            - "5984:5984" # HTTP API + Fauxton at /_utils
+        volumes:
+            - db-data:/opt/couchdb/data
+        networks:
+            - net
+        restart: unless-stopped
+        healthcheck:
+            test:
+                - "CMD-SHELL"
+                - >-
+                    curl -sf http://$$COUCHDB_USER:$$COUCHDB_PASSWORD@localhost:5984/ &&
+                    curl -s -X PUT http://$$COUCHDB_USER:$$COUCHDB_PASSWORD@localhost:5984/_users 2>/dev/null ;
+                    curl -s -X PUT http://$$COUCHDB_USER:$$COUCHDB_PASSWORD@localhost:5984/_replicator 2>/dev/null ;
+                    curl -s -X PUT http://$$COUCHDB_USER:$$COUCHDB_PASSWORD@localhost:5984/_global_changes 2>/dev/null ;
+                    curl -sf http://$$COUCHDB_USER:$$COUCHDB_PASSWORD@localhost:5984/_users
+            interval: 5s
+            timeout: 5s
+            retries: 20
+            start_period: 5s
+
+    # ── InfluxDB ──────────────────────────────────────────────────────────────
+
+    influxdb:
+        image: influxdb:2.7
+        environment:
+            DOCKER_INFLUXDB_INIT_MODE: setup
+            DOCKER_INFLUXDB_INIT_USERNAME: ${INFLUXDB_USER:-admin}
+            DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUXDB_PASSWORD:-swarmboty}
+            DOCKER_INFLUXDB_INIT_ORG: swarmboty
+            DOCKER_INFLUXDB_INIT_BUCKET: swarmboty
+            DOCKER_INFLUXDB_INIT_RETENTION: 0
+            DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB_TOKEN:-swarmboty-influx-dev-token}
+        ports:
+            - "8086:8086" # HTTP API
+        volumes:
+            - influx-data:/var/lib/influxdb2
+        networks:
+            - net
+        restart: unless-stopped
+        healthcheck:
+            test: ["CMD", "wget", "-qO-", "http://localhost:8086/health"]
+            interval: 8s
+            timeout: 5s
+            retries: 15
+            start_period: 10s
+
+    # ── API — Node.js with tsx hot-reload ─────────────────────────────────────
+    #
+    # Source is mounted into the container; tsx (node --watch --import tsx)
+    # restarts the process on every .ts change.
+    #
+    # depends_on uses required: false so that running
+    #   SWARMBOTY_MOCK=true docker compose up api web
+    # skips the database health checks and starts immediately.
+
+    api:
+        image: node:24-alpine
+        working_dir: /app
+        command: >
+            sh -c "npm install --prefer-offline --no-progress --no-audit
+                   && npm run dev -w @swarmboty/api"
+        environment:
+            NODE_ENV: development
+            SWARMBOTY_DB: http://${COUCHDB_USER:-admin}:${COUCHDB_PASSWORD:-swarmboty}@db:5984
+            SWARMBOTY_INFLUXDB: http://influxdb:8086
+            SWARMBOTY_INFLUXDB_TOKEN: ${INFLUXDB_TOKEN:-swarmboty-influx-dev-token}
+            SWARMBOTY_PORT: "8080"
+            SWARMBOTY_WORK_DIR: /tmp
+            SWARMBOTY_MOCK: ${SWARMBOTY_MOCK:-false}
+            SWARMBOTY_BOOTSTRAP_ADMIN: ${SWARMBOTY_BOOTSTRAP_ADMIN:-admin}
+            SWARMBOTY_BOOTSTRAP_PASSWORD: ${SWARMBOTY_BOOTSTRAP_PASSWORD:-swarmboty}
+        volumes:
+            - .:/app # full workspace — enables hot-reload
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+            - api-nm:/app/node_modules # isolated container node_modules
+        ports:
+            - "8080:8080"
+        depends_on:
+            db:
+                condition: service_healthy
+                required: false # optional — skipped in mock mode
+            influxdb:
+                condition: service_healthy
+                required: false
+        networks:
+            - net
+        restart: unless-stopped
+
+    # ── Angular dev server ────────────────────────────────────────────────────
+    #
+    # Uses proxy.conf.docker.json (target: http://api:8080) instead of the
+    # default proxy.conf.json (target: http://localhost:8080).
+    # --poll 500 enables reliable file watching on Windows bind mounts.
+
+    web:
+        image: node:24-alpine
+        working_dir: /app
+        command: >
+            sh -c "npm install --prefer-offline --no-progress --no-audit
+                   && cd apps/web
+                   && npx ng serve --host 0.0.0.0 --port 4200 --poll 500
+                                   --proxy-config proxy.conf.docker.json"
+        environment:
+            NODE_ENV: development
+        volumes:
+            - .:/app
+            - web-nm:/app/node_modules
+        ports:
+            - "4200:4200"
+        depends_on:
+            - api
+        networks:
+            - net
+        restart: unless-stopped
+
+    # ── Swarmagent — opt-in (profile: agent) ─────────────────────────────────
+    #
+    # Build from source: docker compose -f docker-compose.dev.yml --profile agent up
+
+    agent:
+        build:
+            context: ../swarmagent
+            dockerfile: Dockerfile
+        environment:
+            SWARMBOTY_URL: http://api:8080
+            DOCKER_API_VERSION: "1.44"
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+        depends_on:
+            - api
+        networks:
+            - net
+        profiles:
+            - agent
+
+networks:
+    net:
+        driver: bridge
+
+volumes:
+    db-data:
+    influx-data:
+    api-nm: # persistent node_modules for API container (survives restarts)
+    web-nm: # persistent node_modules for Angular container

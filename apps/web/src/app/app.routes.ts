@@ -1,13 +1,84 @@
-import { Routes } from '@angular/router';
-import { LoginPageComponent } from './pages/login/login-page.component';
-import { ServicesPageComponent } from './pages/services/services-page.component';
-import { NodesPageComponent } from './pages/nodes/nodes-page.component';
-import { authGuard } from './core/auth.guard';
+﻿import { Routes } from "@angular/router";
+import { authGuard } from "./core/auth.guard";
+import { ShellComponent } from "./layout/shell.component";
 
+/**
+ * Route map for the SwarmBoty admin SPA.
+ *
+ * `/login` is public; everything under `/app/*` is wrapped in the
+ * authenticated shell (sidebar + topbar) and guarded by `authGuard`.
+ */
 export const routes: Routes = [
-  { path: 'login', component: LoginPageComponent },
-  { path: '', pathMatch: 'full', redirectTo: 'services' },
-  { path: 'services', component: ServicesPageComponent, canActivate: [authGuard] },
-  { path: 'nodes', component: NodesPageComponent, canActivate: [authGuard] },
-  { path: '**', redirectTo: 'services' }
+	{
+		path: "login",
+		loadComponent: () =>
+			import("./pages/login/login-page.component").then((m) => m.LoginPageComponent),
+	},
+	{
+		path: "app",
+		component: ShellComponent,
+		canActivate: [authGuard],
+		children: [
+			{ path: "", pathMatch: "full", redirectTo: "dashboard" },
+			{
+				path: "dashboard",
+				loadComponent: () =>
+					import("./pages/dashboard/dashboard.component").then(
+						(m) => m.DashboardComponent
+					),
+			},
+			{
+				path: "stacks",
+				loadComponent: () =>
+					import("./app-table-host.component").then((m) => m.StacksHostComponent),
+			},
+			{
+				path: "services",
+				loadComponent: () =>
+					import("./app-table-host.component").then((m) => m.ServicesHostComponent),
+			},
+			{
+				path: "tasks",
+				loadComponent: () =>
+					import("./pages/tasks/tasks.component").then((m) => m.TasksPageComponent),
+			},
+			{
+				path: "nodes",
+				loadComponent: () =>
+					import("./pages/nodes/nodes.component").then((m) => m.NodesPageComponent),
+			},
+			{
+				path: "networks",
+				loadComponent: () =>
+					import("./app-table-host.component").then((m) => m.NetworksHostComponent),
+			},
+			{
+				path: "volumes",
+				loadComponent: () =>
+					import("./app-table-host.component").then((m) => m.VolumesHostComponent),
+			},
+			{
+				path: "secrets",
+				loadComponent: () =>
+					import("./app-table-host.component").then((m) => m.SecretsHostComponent),
+			},
+			{
+				path: "configs",
+				loadComponent: () =>
+					import("./app-table-host.component").then((m) => m.ConfigsHostComponent),
+			},
+			{
+				path: "registries",
+				loadComponent: () =>
+					import("./app-table-host.component").then((m) => m.RegistriesHostComponent),
+			},
+			{
+				path: "users",
+				loadComponent: () =>
+					import("./app-table-host.component").then((m) => m.UsersHostComponent),
+			},
+		],
+	},
+	{ path: "", pathMatch: "full", redirectTo: "app/dashboard" },
+	{ path: "**", redirectTo: "app/dashboard" },
 ];

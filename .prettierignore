@@ -1,0 +1,9 @@
+node_modules
+package-lock.json
+**/dist
+**/coverage
+test-results
+playwright-report
+blob-report
+**/.angular
+apps/web/dist

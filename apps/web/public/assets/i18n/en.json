@@ -1,0 +1,257 @@
+{
+    "nav": {
+        "dashboard": "Dashboard",
+        "stacks": "Stacks",
+        "services": "Services",
+        "tasks": "Tasks",
+        "nodes": "Nodes",
+        "networks": "Networks",
+        "volumes": "Volumes",
+        "secrets": "Secrets",
+        "configs": "Configs",
+        "registries": "Registries",
+        "users": "Users",
+        "groups": {
+            "overview": "Overview",
+            "workloads": "Workloads",
+            "infra": "Infrastructure",
+            "store": "Storage & Config",
+            "admin": "Administration"
+        },
+        "clusterHealthy": "Cluster healthy",
+        "quorum": "Quorum: {{managers}} of {{total}} managers"
+    },
+    "auth": {
+        "login": {
+            "title": "Welcome back",
+            "subtitle": "Sign in to the SwarmBoty admin console.",
+            "username": "Username",
+            "password": "Password",
+            "submit": "Sign in",
+            "submitting": "Signing in…",
+            "failed": "Login failed."
+        }
+    },
+    "topbar": {
+        "notifications": "Notifications",
+        "switchToLight": "Switch to light mode",
+        "switchToDark": "Switch to dark mode",
+        "theme": "Theme",
+        "light": "Light",
+        "dark": "Dark",
+        "language": "Language",
+        "profile": "Profile",
+        "preferences": "Preferences",
+        "apiTokens": "API tokens",
+        "logout": "Log out",
+        "administrator": "Administrator"
+    },
+    "table": {
+        "search": "Search…",
+        "empty": "No records found.",
+        "count": "{{filtered}} of {{total}}"
+    },
+    "common": {
+        "cancel": "Cancel",
+        "create": "Create",
+        "save": "Save",
+        "optional": "Optional",
+        "required": "Required",
+        "back": "Back",
+        "continue": "Continue",
+        "default": "DEFAULT",
+        "type": "Type",
+        "user": "User"
+    },
+    "dashboard": {
+        "title": "Cluster Overview",
+        "subtitle": "Live status of {{cluster}} · {{nodes}} nodes · {{services}} services · {{tasks}} tasks",
+        "liveRefreshed": "Live · refreshed just now",
+        "refresh": "Refresh",
+        "thisWeek": "this week",
+        "cpu": "CPU",
+        "memory": "Memory",
+        "disk": "Disk",
+        "cores": "cores",
+        "cpuSub": "Aggregated across active nodes",
+        "memSub": "Includes cache & buffers",
+        "diskSub": "Cluster-wide attached storage",
+        "resourceUtilization": "Resource Utilization",
+        "influxHint": "Time series from InfluxDB · live aggregation",
+        "loadingMetrics": "Loading metrics…",
+        "nodesTitle": "Nodes",
+        "nodesSubtitle": "{{count}} nodes · {{managers}} managers · {{workers}} workers",
+        "managers": "Managers",
+        "workers": "Workers",
+        "tags": {
+            "leader": "LEADER",
+            "drain": "DRAIN"
+        },
+        "resolution": {
+            "low": "Low",
+            "medium": "Medium",
+            "high": "High"
+        }
+    },
+    "forms": {
+        "stack": {
+            "title": "Deploy stack",
+            "subtitle": "Paste a Compose file or stack definition.",
+            "name": "Stack name",
+            "content": "Stack file"
+        },
+        "service": {
+            "title": "Create service",
+            "name": "Service name",
+            "replicas": "Replicas",
+            "image": "Image",
+            "ports": "Published ports",
+            "env": "Environment variables",
+            "step1": {
+                "title": "New service — pick a registry",
+                "subtitle": "Choose where to pull the image from. Required to authorize the pull."
+            },
+            "step2": {
+                "title": "New service — details",
+                "subtitle": "Pulling from {{registry}}"
+            },
+            "registryMeta": "{{type}} · User: {{user}}",
+            "imageHint": "Will be pulled from {{registry}}.",
+            "portsHint": "Optional. Comma-separated host:container pairs.",
+            "createService": "Create service",
+            "errors": {
+                "selectRegistry": "Select a registry.",
+                "serviceRequired": "Service name and image are required."
+            }
+        },
+        "network": {
+            "title": "Create network",
+            "name": "Network name",
+            "driver": "Driver",
+            "subnet": "Subnet",
+            "gateway": "Gateway",
+            "labels": "Labels"
+        },
+        "volume": {
+            "title": "Create volume",
+            "name": "Volume name",
+            "driver": "Driver",
+            "labels": "Labels"
+        },
+        "secret": {
+            "title": "Create secret",
+            "name": "Secret name",
+            "content": "Secret data"
+        },
+        "config": {
+            "title": "Create config",
+            "name": "Config name",
+            "content": "Config data"
+        },
+        "registry": {
+            "title": "Add registry",
+            "name": "Name",
+            "url": "Registry URL",
+            "type": "Type",
+            "username": "Username",
+            "password": "Password"
+        },
+        "user": {
+            "title": "Add new user",
+            "subtitle": "Create an account and assign access to this workspace.",
+            "username": "Username",
+            "password": "Password",
+            "passwordHint": "At least 8 characters.",
+            "email": "Email",
+            "phone": "Phone",
+            "role": "Role",
+            "roles": {
+                "readOnly": "Read-only",
+                "readOnlyDesc": "View dashboards, services, logs.",
+                "editor": "Editor",
+                "editorDesc": "Deploy & edit stacks, services.",
+                "administrator": "Administrator",
+                "administratorDesc": "Full control, users, secrets."
+            }
+        },
+        "kv": {
+            "key": "Key",
+            "value": "Value",
+            "add": "Add row",
+            "remove": "Remove"
+        }
+    },
+    "primeng": {
+        "startsWith": "Starts with",
+        "contains": "Contains",
+        "notContains": "Not contains",
+        "endsWith": "Ends with",
+        "equals": "Equals",
+        "notEquals": "Not equals",
+        "noFilter": "No Filter",
+        "lt": "Less than",
+        "lte": "Less than or equal to",
+        "gt": "Greater than",
+        "gte": "Greater than or equal to",
+        "is": "Is",
+        "isNot": "Is not",
+        "before": "Before",
+        "after": "After",
+        "dateIs": "Date is",
+        "dateIsNot": "Date is not",
+        "dateBefore": "Date is before",
+        "dateAfter": "Date is after",
+        "clear": "Clear",
+        "apply": "Apply",
+        "matchAll": "Match All",
+        "matchAny": "Match Any",
+        "addRule": "Add Rule",
+        "removeRule": "Remove Rule",
+        "accept": "Yes",
+        "reject": "No",
+        "choose": "Choose",
+        "upload": "Upload",
+        "cancel": "Cancel",
+        "dayNames": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+        "dayNamesShort": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+        "dayNamesMin": ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
+        "monthNames": [
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December"
+        ],
+        "monthNamesShort": [
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec"
+        ],
+        "today": "Today",
+        "weekHeader": "Wk",
+        "firstDayOfWeek": 0,
+        "dateFormat": "mm/dd/yy",
+        "weak": "Weak",
+        "medium": "Medium",
+        "strong": "Strong",
+        "passwordPrompt": "Enter a password",
+        "emptyMessage": "No results found",
+        "emptyFilterMessage": "No results found"
+    }
+}

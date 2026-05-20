@@ -1,0 +1,13 @@
+{
+    "errors.unauthenticated": "Brak autoryzacji",
+    "errors.forbidden": "Brak uprawnień",
+    "errors.invalidCredentials": "Podana nazwa użytkownika lub hasło jest nieprawidłowe.",
+    "errors.userNotFound": "Nie znaleziono użytkownika",
+    "errors.serverMisconfigured": "Błąd konfiguracji serwera",
+    "errors.missingToken": "Brak tokenu",
+    "errors.invalidAuthorization": "Nieprawidłowa autoryzacja",
+    "errors.invalidSlt": "Nieprawidłowy token SLT",
+    "errors.noDataSent": "Nie przesłano danych",
+    "errors.noRunningTask": "Brak uruchomionego zadania",
+    "errors.usernameTaken": "Nazwa użytkownika jest już zajęta"
+}

@@ -1,59 +1,126 @@
-# Web
+# SwarmBoty Web UI
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.25.
+Angular **21** single-page application for the SwarmBoty Docker Swarm admin console. It talks to the API through Apollo GraphQL (`/graphql`), uses PrimeNG for data tables and widgets, and Transloco for runtime i18n (Polish / English).
+
+## Requirements
+
+- Node.js 20+
+- npm (monorepo workspace)
+- API running on port **8080** (see repository root `README.md`)
 
 ## Development server
 
-To start a local development server, run:
+From the monorepo root:
 
 ```bash
-ng serve
+npm run dev:web
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+Or from this directory:
 
 ```bash
-ng generate component component-name
+npm start
+# equivalent: ng serve
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Open [http://localhost:4200](http://localhost:4200). The dev server proxies API paths (`/graphql`, `/health`, …) to `http://localhost:8080` via `proxy.conf.json`.
+
+> **Note:** `GET /login` is handled by Angular (login screen). It is **not** proxied to the API. Authentication uses the GraphQL `login` mutation on `/graphql`.
+
+## Signing in (development)
+
+1. Start the API in **mock mode** (in-memory CouchDB + sample Swarm data):
+
+   ```powershell
+   # Windows PowerShell
+   $env:SWARMBOTY_MOCK="true"; npm run dev:api
+   ```
+
+   ```bash
+   # macOS / Linux
+   SWARMBOTY_MOCK=true npm run dev:api
+   ```
+
+2. Start the web app (`npm run dev:web` in another terminal).
+
+3. Open [http://localhost:4200/login](http://localhost:4200/login) and sign in with:
+
+   | Field    | Value       |
+   | -------- | ----------- |
+   | Username | `admin`     |
+   | Password | `swarmboty` |
+
+Mock mode creates this demo admin automatically. Without mock mode you need a real CouchDB-backed user (see root `README.md`).
+
+After login you are redirected to `/app/dashboard`. The JWT is stored in `localStorage` under `swarmboty.token`.
+
+## Testing
+
+**Karma / Jasmine were removed.** UI regression tests use **[Playwright](https://playwright.dev/)**.
+
+From the monorepo root:
 
 ```bash
-ng generate --help
+npm run test:e2e          # headless; starts mock API + ng serve when needed
+npm run test:e2e:ui       # Playwright UI mode (from apps/web)
+npm run test:all          # API Vitest + Playwright
 ```
 
-## Building
-
-To build the project run:
+From `apps/web`:
 
 ```bash
-ng build
+npm run test:e2e
+npm run test:e2e:ui
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+E2E specs live in `e2e/`. `playwright.config.js` sets `SWARMBOTY_MOCK=true` on the API and reuses an existing dev server when not in CI.
 
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+**Type-checking** (no unit test runner in this package):
 
 ```bash
-ng test
+npm run lint
 ```
 
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
+## Build
 
 ```bash
-ng e2e
+npm run build
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+Production output: `dist/web/`. Fonts are self-hosted under `public/assets/fonts/` (Plus Jakarta Sans, JetBrains Mono) — no Google Fonts CDN.
 
-## Additional Resources
+## Internationalization
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- Dictionaries: `public/assets/i18n/pl.json`, `en.json`
+- Active language: `localStorage` key `swarmboty.lang` (`pl` | `en`)
+- Switch language from the user menu in the top bar
+- `Accept-Language` is sent on HTTP and GraphQL requests (`pl-PL` / `en-US`)
+
+## API documentation (JSDoc / Compodoc)
+
+Source files use **JSDoc** comments for Compodoc. Generate HTML docs from this directory:
+
+```bash
+npm run docs        # build to documentation/
+npm run docs:serve  # build and open local doc server
+```
+
+Key modules: `src/app/core/` (auth, i18n, theme, GraphQL), `src/app/layout/`, `src/app/shared/`, `src/app/pages/`.
+
+## Project layout
+
+| Path | Purpose |
+| ---- | ------- |
+| `src/app/core/` | Auth, theme, i18n, GraphQL operations |
+| `src/app/layout/` | Shell, sidebar, topbar |
+| `src/app/pages/` | Routed feature pages |
+| `src/app/forms/` | Create-resource modals |
+| `src/app/shared/` | Reusable UI primitives |
+| `e2e/` | Playwright tests |
+| `public/assets/` | i18n JSON, fonts |
+
+## Additional resources
+
+- [Angular CLI](https://angular.dev/tools/cli)
+- [Compodoc](https://compodoc.app/)
+- Repository root `README.md` for Docker Compose, production build, and API details

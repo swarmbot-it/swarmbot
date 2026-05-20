@@ -1,0 +1,265 @@
+{
+    "nav": {
+        "dashboard": "Panel",
+        "stacks": "Stacki",
+        "services": "Usługi",
+        "tasks": "Zadania",
+        "nodes": "Węzły",
+        "networks": "Sieci",
+        "volumes": "Wolumeny",
+        "secrets": "Sekrety",
+        "configs": "Konfiguracje",
+        "registries": "Rejestry",
+        "users": "Użytkownicy",
+        "groups": {
+            "overview": "Przegląd",
+            "workloads": "Obciążenia",
+            "infra": "Infrastruktura",
+            "store": "Magazyn i konfiguracja",
+            "admin": "Administracja"
+        },
+        "clusterHealthy": "Klaster zdrowy",
+        "quorum": "Kworum: {{managers}} z {{total}} managerów"
+    },
+    "auth": {
+        "login": {
+            "title": "Witaj ponownie",
+            "subtitle": "Zaloguj się do konsoli administracyjnej SwarmBoty.",
+            "username": "Nazwa użytkownika",
+            "password": "Hasło",
+            "submit": "Zaloguj się",
+            "submitting": "Logowanie…",
+            "failed": "Logowanie nie powiodło się."
+        }
+    },
+    "topbar": {
+        "notifications": "Powiadomienia",
+        "switchToLight": "Przełącz na jasny motyw",
+        "switchToDark": "Przełącz na ciemny motyw",
+        "theme": "Motyw",
+        "light": "Jasny",
+        "dark": "Ciemny",
+        "language": "Język",
+        "profile": "Profil",
+        "preferences": "Preferencje",
+        "apiTokens": "Tokeny API",
+        "logout": "Wyloguj",
+        "administrator": "Administrator"
+    },
+    "table": {
+        "search": "Szukaj…",
+        "empty": "Brak rekordów.",
+        "count": "{{filtered}} z {{total}}"
+    },
+    "common": {
+        "cancel": "Anuluj",
+        "create": "Utwórz",
+        "save": "Zapisz",
+        "optional": "Opcjonalne",
+        "required": "Wymagane",
+        "back": "Wstecz",
+        "continue": "Dalej",
+        "default": "DOMYŚLNY",
+        "type": "Typ",
+        "user": "Użytkownik"
+    },
+    "dashboard": {
+        "title": "Przegląd klastra",
+        "subtitle": "Status na żywo: {{cluster}} · {{nodes}} węzłów · {{services}} usług · {{tasks}} zadań",
+        "liveRefreshed": "Na żywo · odświeżono przed chwilą",
+        "refresh": "Odśwież",
+        "thisWeek": "w tym tygodniu",
+        "cpu": "CPU",
+        "memory": "Pamięć",
+        "disk": "Dysk",
+        "cores": "rdzeni",
+        "cpuSub": "Zagregowane na aktywnych węzłach",
+        "memSub": "W tym cache i bufory",
+        "diskSub": "Magazyn podłączony w całym klastrze",
+        "resourceUtilization": "Wykorzystanie zasobów",
+        "influxHint": "Szereg czasowy z InfluxDB · agregacja na żywo",
+        "loadingMetrics": "Ładowanie metryk…",
+        "nodesTitle": "Węzły",
+        "nodesSubtitle": "{{count}} węzłów · {{managers}} managerów · {{workers}} workerów",
+        "managers": "Managery",
+        "workers": "Workery",
+        "tags": {
+            "leader": "LIDER",
+            "drain": "DRAIN"
+        },
+        "resolution": {
+            "low": "Niska",
+            "medium": "Średnia",
+            "high": "Wysoka"
+        }
+    },
+    "forms": {
+        "stack": {
+            "title": "Wdróż stack",
+            "subtitle": "Wklej plik Compose lub definicję stacka.",
+            "name": "Nazwa stacka",
+            "content": "Plik stacka"
+        },
+        "service": {
+            "title": "Utwórz usługę",
+            "name": "Nazwa usługi",
+            "replicas": "Repliki",
+            "image": "Obraz",
+            "ports": "Opublikowane porty",
+            "env": "Zmienne środowiskowe",
+            "step1": {
+                "title": "Nowa usługa — wybierz rejestr",
+                "subtitle": "Wybierz źródło obrazu. Wymagane do autoryzacji pobrania."
+            },
+            "step2": {
+                "title": "Nowa usługa — szczegóły",
+                "subtitle": "Pobieranie z {{registry}}"
+            },
+            "registryMeta": "{{type}} · Użytkownik: {{user}}",
+            "imageHint": "Obraz zostanie pobrany z {{registry}}.",
+            "portsHint": "Opcjonalne. Pary host:kontener oddzielone przecinkami.",
+            "createService": "Utwórz usługę",
+            "errors": {
+                "selectRegistry": "Wybierz rejestr.",
+                "serviceRequired": "Nazwa usługi i obraz są wymagane."
+            }
+        },
+        "network": {
+            "title": "Utwórz sieć",
+            "name": "Nazwa sieci",
+            "driver": "Sterownik",
+            "subnet": "Podsieć",
+            "gateway": "Brama",
+            "labels": "Etykiety"
+        },
+        "volume": {
+            "title": "Utwórz wolumen",
+            "name": "Nazwa wolumenu",
+            "driver": "Sterownik",
+            "labels": "Etykiety"
+        },
+        "secret": {
+            "title": "Utwórz sekret",
+            "name": "Nazwa sekretu",
+            "content": "Dane sekretu"
+        },
+        "config": {
+            "title": "Utwórz konfigurację",
+            "name": "Nazwa konfiguracji",
+            "content": "Dane konfiguracji"
+        },
+        "registry": {
+            "title": "Dodaj rejestr",
+            "name": "Nazwa",
+            "url": "URL rejestru",
+            "type": "Typ",
+            "username": "Nazwa użytkownika",
+            "password": "Hasło"
+        },
+        "user": {
+            "title": "Dodaj użytkownika",
+            "subtitle": "Utwórz konto i przypisz dostęp do tego obszaru roboczego.",
+            "username": "Nazwa użytkownika",
+            "password": "Hasło",
+            "passwordHint": "Co najmniej 8 znaków.",
+            "email": "E-mail",
+            "phone": "Telefon",
+            "role": "Rola",
+            "roles": {
+                "readOnly": "Tylko odczyt",
+                "readOnlyDesc": "Podgląd paneli, usług i logów.",
+                "editor": "Edytor",
+                "editorDesc": "Wdrażanie i edycja stacków i usług.",
+                "administrator": "Administrator",
+                "administratorDesc": "Pełna kontrola, użytkownicy, sekrety."
+            }
+        },
+        "kv": {
+            "key": "Klucz",
+            "value": "Wartość",
+            "add": "Dodaj wiersz",
+            "remove": "Usuń"
+        }
+    },
+    "primeng": {
+        "startsWith": "Zaczyna się od",
+        "contains": "Zawiera",
+        "notContains": "Nie zawiera",
+        "endsWith": "Kończy się na",
+        "equals": "Równa się",
+        "notEquals": "Nie równa się",
+        "noFilter": "Bez filtra",
+        "lt": "Mniejsze niż",
+        "lte": "Mniejsze lub równe",
+        "gt": "Większe niż",
+        "gte": "Większe lub równe",
+        "is": "Jest",
+        "isNot": "Nie jest",
+        "before": "Przed",
+        "after": "Po",
+        "dateIs": "Data to",
+        "dateIsNot": "Data to nie",
+        "dateBefore": "Data przed",
+        "dateAfter": "Data po",
+        "clear": "Wyczyść",
+        "apply": "Zastosuj",
+        "matchAll": "Dopasuj wszystkie",
+        "matchAny": "Dopasuj dowolne",
+        "addRule": "Dodaj regułę",
+        "removeRule": "Usuń regułę",
+        "accept": "Tak",
+        "reject": "Nie",
+        "choose": "Wybierz",
+        "upload": "Prześlij",
+        "cancel": "Anuluj",
+        "dayNames": [
+            "Niedziela",
+            "Poniedziałek",
+            "Wtorek",
+            "Środa",
+            "Czwartek",
+            "Piątek",
+            "Sobota"
+        ],
+        "dayNamesShort": ["Nd", "Pn", "Wt", "Śr", "Cz", "Pt", "So"],
+        "dayNamesMin": ["Nd", "Pn", "Wt", "Śr", "Cz", "Pt", "So"],
+        "monthNames": [
+            "Styczeń",
+            "Luty",
+            "Marzec",
+            "Kwiecień",
+            "Maj",
+            "Czerwiec",
+            "Lipiec",
+            "Sierpień",
+            "Wrzesień",
+            "Październik",
+            "Listopad",
+            "Grudzień"
+        ],
+        "monthNamesShort": [
+            "Sty",
+            "Lut",
+            "Mar",
+            "Kwi",
+            "Maj",
+            "Cze",
+            "Lip",
+            "Sie",
+            "Wrz",
+            "Paź",
+            "Lis",
+            "Gru"
+        ],
+        "today": "Dziś",
+        "weekHeader": "Tydz",
+        "firstDayOfWeek": 1,
+        "dateFormat": "dd.mm.yy",
+        "weak": "Słabe",
+        "medium": "Średnie",
+        "strong": "Silne",
+        "passwordPrompt": "Wprowadź hasło",
+        "emptyMessage": "Brak wyników",
+        "emptyFilterMessage": "Brak wyników"
+    }
+}

@@ -1,0 +1,13 @@
+{
+    "errors.unauthenticated": "Unauthorized",
+    "errors.forbidden": "Forbidden",
+    "errors.invalidCredentials": "The username or password you entered is incorrect.",
+    "errors.userNotFound": "User not found",
+    "errors.serverMisconfigured": "Server misconfigured",
+    "errors.missingToken": "Missing token",
+    "errors.invalidAuthorization": "Invalid authorization",
+    "errors.invalidSlt": "Invalid slt",
+    "errors.noDataSent": "No data sent",
+    "errors.noRunningTask": "No running task",
+    "errors.usernameTaken": "Username is already taken"
+}
