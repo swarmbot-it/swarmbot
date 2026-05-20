@@ -1,11 +1,15 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Output, inject } from "@angular/core";
 import { AsyncPipe, NgIf, NgSwitch, NgSwitchCase, NgSwitchDefault } from "@angular/common";
 import { Apollo } from "apollo-angular";
+import { TranslocoPipe } from "@jsverse/transloco";
 import { map } from "rxjs/operators";
 import { Observable } from "rxjs";
 import { DataTableComponent } from "../../shared/data-table.component";
 import { StatusBadgeComponent } from "../../shared/status-badge.component";
 import { IconComponent } from "../../shared/icon.component";
+import { I18nStateService } from "../../core/i18n/i18n-state.service";
+import { translatedColumns } from "../../core/i18n/page-columns.helper";
+import { TranslocoService } from "@jsverse/transloco";
 import { QUERY_STACKS } from "../../core/graphql.queries";
 
 type Stack = {
@@ -29,16 +33,18 @@ type Stack = {
 		<ng-container *ngIf="rows$ | async as rows">
 			<div class="page-header">
 				<div>
-					<h1 class="page-header__title">Stacks</h1>
+					<h1 class="page-header__title">{{ "nav.stacks" | transloco }}</h1>
 					<div class="page-header__count">
-						<strong>{{ rows.length }}</strong> stacks deployed
+						<strong>{{ rows.length }}</strong>
+						{{ "pages.stacks.countSuffix" | transloco }}
 					</div>
 				</div>
 				<button class="btn btn--primary" (click)="createRequested.emit()">
-					<sb-icon name="plus" [size]="16"></sb-icon> New stack
+					<sb-icon name="plus" [size]="16"></sb-icon>
+					{{ "pages.stacks.add" | transloco }}
 				</button>
 			</div>
-			<sb-data-table [columns]="cols" [rows]="rows" [searchKeys]="['name', 'status']">
+			<sb-data-table [columns]="cols()" [rows]="rows" [searchKeys]="['name', 'status']">
 				<ng-template #cell let-row let-key="key">
 					<ng-container [ngSwitch]="key">
 						<span
@@ -69,22 +75,24 @@ type Stack = {
 		DataTableComponent,
 		StatusBadgeComponent,
 		IconComponent,
+		TranslocoPipe,
 	],
 })
 export class StacksPageComponent {
-	/** Emitted when the user clicks "New stack" to open the create modal. */
 	@Output() createRequested = new EventEmitter<void>();
 	private readonly apollo = inject(Apollo);
+	private readonly transloco = inject(TranslocoService);
+	private readonly i18n = inject(I18nStateService);
 
-	readonly cols = [
-		{ key: "name", label: "Stack" },
-		{ key: "services", label: "Services", align: "right" as const },
-		{ key: "networks", label: "Networks", align: "right" as const },
-		{ key: "volumes", label: "Volumes", align: "right" as const },
-		{ key: "configs", label: "Configs", align: "right" as const },
-		{ key: "secrets", label: "Secrets", align: "right" as const },
-		{ key: "status", label: "Status" },
-	];
+	readonly cols = translatedColumns<Stack>(this.transloco, this.i18n.activeLang, [
+		{ key: "name", labelKey: "pages.stacks.columns.stack" },
+		{ key: "services", labelKey: "pages.stacks.columns.services", align: "right" },
+		{ key: "networks", labelKey: "pages.stacks.columns.networks", align: "right" },
+		{ key: "volumes", labelKey: "pages.stacks.columns.volumes", align: "right" },
+		{ key: "configs", labelKey: "pages.stacks.columns.configs", align: "right" },
+		{ key: "secrets", labelKey: "pages.stacks.columns.secrets", align: "right" },
+		{ key: "status", labelKey: "columns.status" },
+	]);
 
 	readonly rows$: Observable<Stack[]> = this.apollo
 		.watchQuery<{ stacks: Stack[] }>({ query: QUERY_STACKS, pollInterval: 30_000 })

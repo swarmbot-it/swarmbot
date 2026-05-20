@@ -1,0 +1,381 @@
+{
+    "nav": {
+        "dashboard": "Dashboard",
+        "stacks": "Umgebungen",
+        "services": "Dienste",
+        "tasks": "Aufgaben",
+        "nodes": "Knoten",
+        "networks": "Netzwerke",
+        "volumes": "Volumes",
+        "secrets": "Geheimnisse",
+        "configs": "Konfigurationen",
+        "registries": "Registries",
+        "users": "Benutzer",
+        "groups": {
+            "overview": "Übersicht",
+            "workloads": "Workloads",
+            "infra": "Infrastruktur",
+            "store": "Speicher & Konfiguration",
+            "admin": "Administration"
+        },
+        "clusterHealthy": "Cluster gesund",
+        "quorum": "Quorum: {{managers}} von {{total}} Managern"
+    },
+    "auth": {
+        "login": {
+            "title": "Willkommen zurück",
+            "subtitle": "Melden Sie sich in der SwarmBoty-Administrationskonsole an.",
+            "username": "Benutzername",
+            "password": "Passwort",
+            "submit": "Anmelden",
+            "submitting": "Anmeldung…",
+            "failed": "Anmeldung fehlgeschlagen."
+        }
+    },
+    "topbar": {
+        "notifications": "Benachrichtigungen",
+        "switchToLight": "Zum hellen Modus wechseln",
+        "switchToDark": "Zum dunklen Modus wechseln",
+        "theme": "Design",
+        "light": "Hell",
+        "dark": "Dunkel",
+        "language": "Sprache",
+        "profile": "Profil",
+        "preferences": "Einstellungen",
+        "apiTokens": "API-Token",
+        "logout": "Abmelden",
+        "administrator": "Administrator"
+    },
+    "table": {
+        "search": "Suchen…",
+        "empty": "Keine Ergebnisse",
+        "count": "{{filtered}} von {{total}}"
+    },
+    "common": {
+        "cancel": "Abbrechen",
+        "create": "Erstellen",
+        "save": "Speichern",
+        "optional": "Optional",
+        "required": "Erforderlich",
+        "back": "Zurück",
+        "continue": "Weiter",
+        "default": "STANDARD",
+        "type": "Typ",
+        "user": "Benutzer"
+    },
+    "dashboard": {
+        "title": "Cluster-Übersicht",
+        "subtitle": "Live-Status von {{cluster}} · {{nodes}} Knoten · {{services}} Dienste · {{tasks}} Aufgaben",
+        "liveRefreshed": "Live · gerade aktualisiert",
+        "refresh": "Aktualisieren",
+        "thisWeek": "diese Woche",
+        "cpu": "CPU",
+        "memory": "Arbeitsspeicher",
+        "disk": "Festplatte",
+        "cores": "Kerne",
+        "cpuSub": "Aggregiert über aktive Knoten",
+        "memSub": "Inkl. Cache & Puffer",
+        "diskSub": "Clusterweiter angeschlossener Speicher",
+        "resourceUtilization": "Ressourcenauslastung",
+        "influxHint": "Zeitreihen aus InfluxDB · Live-Aggregation",
+        "loadingMetrics": "Metriken werden geladen…",
+        "nodesTitle": "Knoten",
+        "nodesSubtitle": "{{count}} Knoten · {{managers}} Manager · {{workers}} Worker",
+        "managers": "Manager",
+        "workers": "Worker",
+        "tags": {
+            "leader": "LEADER",
+            "drain": "DRAIN"
+        },
+        "resolution": {
+            "low": "Niedrig",
+            "medium": "Mittel",
+            "high": "Hoch"
+        }
+    },
+    "columns": {
+        "name": "Name",
+        "driver": "Treiber",
+        "status": "Status",
+        "created": "Erstellt",
+        "updated": "Zuletzt aktualisiert",
+        "subnet": "Subnetz",
+        "gateway": "Gateway",
+        "scope": "Bereich",
+        "size": "Größe",
+        "type": "Typ",
+        "authUser": "Auth-Benutzer",
+        "registry": "Registry",
+        "stack": "Umgebung",
+        "service": "Dienst",
+        "task": "Aufgabe",
+        "node": "Knoten",
+        "replicas": "Replikas",
+        "ports": "Ports"
+    },
+    "status": {
+        "RUNNING": "Läuft",
+        "HEALTHY": "Gesund",
+        "READY": "Bereit",
+        "STARTING": "Startet",
+        "UPDATING": "Aktualisierung",
+        "PENDING": "Ausstehend",
+        "PAUSED": "Pausiert",
+        "FAILED": "Fehlgeschlagen",
+        "REJECTED": "Abgelehnt",
+        "COMPLETE": "Abgeschlossen",
+        "SHUTDOWN": "Heruntergefahren",
+        "UNKNOWN": "Unbekannt"
+    },
+    "pages": {
+        "stacks": {
+            "countSuffix": "Umgebungen bereitgestellt",
+            "add": "Neue Umgebung",
+            "columns": {
+                "stack": "Umgebung",
+                "services": "Dienste",
+                "networks": "Netzwerke",
+                "volumes": "Volumes",
+                "configs": "Konfigurationen",
+                "secrets": "Geheimnisse"
+            }
+        },
+        "services": {
+            "countSuffix": "Dienste laufen",
+            "add": "Neuer Dienst",
+            "columns": {
+                "service": "Dienst",
+                "replicas": "Replikas",
+                "ports": "Ports"
+            }
+        },
+        "tasks": {
+            "countSuffix": "Aufgaben geplant",
+            "columns": {
+                "task": "Aufgabe",
+                "node": "Knoten",
+                "cpu": "CPU",
+                "memory": "Arbeitsspeicher"
+            }
+        },
+        "nodes": {
+            "searchPlaceholder": "Hostname oder IP suchen…",
+            "countSummary": "{{total}} Knoten — {{managers}} Manager, {{workers}} Worker",
+            "filters": {
+                "all": "Alle",
+                "manager": "Manager",
+                "worker": "Worker"
+            },
+            "labels": {
+                "cpu": "CPU",
+                "memory": "Arbeitsspeicher",
+                "disk": "Festplatte"
+            }
+        },
+        "networks": {
+            "countSuffix": "Netzwerke verfügbar",
+            "add": "Neues Netzwerk"
+        },
+        "volumes": {
+            "countSuffix": "Volumes bereitgestellt",
+            "add": "Neues Volume"
+        },
+        "secrets": {
+            "countSuffix": "Geheimnisse gespeichert",
+            "add": "Neues Geheimnis"
+        },
+        "configs": {
+            "countSuffix": "Konfigurationen gespeichert",
+            "add": "Neue Konfiguration"
+        },
+        "registries": {
+            "countSuffix": "Registries verbunden",
+            "add": "Registry verbinden",
+            "columns": {
+                "registry": "Registry",
+                "authUser": "Auth-Benutzer"
+            }
+        }
+    },
+    "users": {
+        "title": "Benutzer",
+        "inWorkspace": "Benutzer im Arbeitsbereich",
+        "addUser": "Benutzer hinzufügen",
+        "never": "nie",
+        "columns": {
+            "user": "Benutzer",
+            "phone": "Telefon",
+            "role": "Rolle",
+            "created": "Erstellt",
+            "lastLogin": "Letzte Anmeldung"
+        },
+        "roles": {
+            "Administrator": "Administrator",
+            "admin": "Administrator",
+            "Editor": "Editor",
+            "Read-only": "Nur Lesen",
+            "user": "Benutzer"
+        }
+    },
+    "forms": {
+        "stack": {
+            "title": "Umgebung bereitstellen",
+            "subtitle": "Compose-Datei oder Umgebungsdefinition einfügen.",
+            "name": "Umgebungsname",
+            "content": "Umgebungsdatei"
+        },
+        "service": {
+            "title": "Dienst erstellen",
+            "name": "Dienstname",
+            "replicas": "Replikas",
+            "image": "Image",
+            "ports": "Veröffentlichte Ports",
+            "env": "Umgebungsvariablen",
+            "step1": {
+                "title": "Neuer Dienst — Registry wählen",
+                "subtitle": "Wählen Sie die Image-Quelle. Erforderlich zur Autorisierung des Pulls."
+            },
+            "step2": {
+                "title": "Neuer Dienst — Details",
+                "subtitle": "Pull von {{registry}}"
+            },
+            "registryMeta": "{{type}} · Benutzer: {{user}}",
+            "imageHint": "Wird von {{registry}} gezogen.",
+            "portsHint": "Optional. Kommagetrennte Host:Container-Paare.",
+            "createService": "Dienst erstellen",
+            "errors": {
+                "selectRegistry": "Registry auswählen.",
+                "serviceRequired": "Dienstname und Image sind erforderlich."
+            }
+        },
+        "network": {
+            "title": "Netzwerk erstellen",
+            "name": "Netzwerkname",
+            "driver": "Treiber",
+            "subnet": "Subnetz",
+            "gateway": "Gateway",
+            "labels": "Labels"
+        },
+        "volume": {
+            "title": "Volume erstellen",
+            "name": "Volumename",
+            "driver": "Treiber",
+            "labels": "Labels"
+        },
+        "secret": {
+            "title": "Geheimnis erstellen",
+            "name": "Geheimnisname",
+            "content": "Geheimnisdaten"
+        },
+        "config": {
+            "title": "Konfiguration erstellen",
+            "name": "Konfigurationsname",
+            "content": "Konfigurationsdaten"
+        },
+        "registry": {
+            "title": "Registry hinzufügen",
+            "name": "Name",
+            "url": "Registry-URL",
+            "type": "Typ",
+            "username": "Benutzername",
+            "password": "Passwort"
+        },
+        "user": {
+            "title": "Neuen Benutzer hinzufügen",
+            "subtitle": "Konto erstellen und Zugriff auf diesen Arbeitsbereich zuweisen.",
+            "username": "Benutzername",
+            "password": "Passwort",
+            "passwordHint": "Mindestens 8 Zeichen.",
+            "email": "E-Mail",
+            "phone": "Telefon",
+            "role": "Rolle",
+            "roles": {
+                "readOnly": "Nur Lesen",
+                "readOnlyDesc": "Dashboards, Dienste und Logs anzeigen.",
+                "editor": "Editor",
+                "editorDesc": "Umgebungen und Dienste bereitstellen und bearbeiten.",
+                "administrator": "Administrator",
+                "administratorDesc": "Volle Kontrolle, Benutzer, Geheimnisse."
+            }
+        },
+        "kv": {
+            "key": "Schlüssel",
+            "value": "Wert",
+            "add": "Zeile hinzufügen",
+            "remove": "Entfernen"
+        }
+    },
+    "primeng": {
+        "startsWith": "Beginnt mit",
+        "contains": "Enthält",
+        "notContains": "Enthält nicht",
+        "endsWith": "Endet mit",
+        "equals": "Gleich",
+        "notEquals": "Ungleich",
+        "noFilter": "Kein Filter",
+        "lt": "Kleiner als",
+        "lte": "Kleiner oder gleich",
+        "gt": "Größer als",
+        "gte": "Größer oder gleich",
+        "is": "Ist",
+        "isNot": "Ist nicht",
+        "before": "Vor",
+        "after": "Nach",
+        "dateIs": "Datum ist",
+        "dateIsNot": "Datum ist nicht",
+        "dateBefore": "Datum vor",
+        "dateAfter": "Datum nach",
+        "clear": "Löschen",
+        "apply": "Anwenden",
+        "matchAll": "Alle erfüllen",
+        "matchAny": "Beliebige erfüllen",
+        "addRule": "Regel hinzufügen",
+        "removeRule": "Regel entfernen",
+        "accept": "Ja",
+        "reject": "Nein",
+        "choose": "Auswählen",
+        "upload": "Hochladen",
+        "cancel": "Abbrechen",
+        "dayNames": ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"],
+        "dayNamesShort": ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"],
+        "dayNamesMin": ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"],
+        "monthNames": [
+            "Januar",
+            "Februar",
+            "März",
+            "April",
+            "Mai",
+            "Juni",
+            "Juli",
+            "August",
+            "September",
+            "Oktober",
+            "November",
+            "Dezember"
+        ],
+        "monthNamesShort": [
+            "Jan",
+            "Feb",
+            "Mär",
+            "Apr",
+            "Mai",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Okt",
+            "Nov",
+            "Dez"
+        ],
+        "today": "Heute",
+        "weekHeader": "KW",
+        "firstDayOfWeek": 0,
+        "dateFormat": "dd.mm.yy",
+        "weak": "Schwach",
+        "medium": "Mittel",
+        "strong": "Stark",
+        "passwordPrompt": "Passwort eingeben",
+        "emptyMessage": "Keine Ergebnisse gefunden",
+        "emptyFilterMessage": "Keine Ergebnisse gefunden"
+    }
+}

@@ -5,7 +5,10 @@ import { map } from "rxjs/operators";
 import { Observable } from "rxjs";
 import { DataTableComponent } from "../../shared/data-table.component";
 import { IconComponent } from "../../shared/icon.component";
+import { TranslocoPipe, TranslocoService } from "@jsverse/transloco";
 import { QUERY_NETWORKS } from "../../core/graphql.queries";
+import { I18nStateService } from "../../core/i18n/i18n-state.service";
+import { translatedColumns } from "../../core/i18n/page-columns.helper";
 
 type Network = {
 	id: string;
@@ -27,17 +30,19 @@ type Network = {
 		<ng-container *ngIf="rows$ | async as rows">
 			<div class="page-header">
 				<div>
-					<h1 class="page-header__title">Networks</h1>
+					<h1 class="page-header__title">{{ "nav.networks" | transloco }}</h1>
 					<div class="page-header__count">
-						<strong>{{ rows.length }}</strong> networks available
+						<strong>{{ rows.length }}</strong>
+						{{ "pages.networks.countSuffix" | transloco }}
 					</div>
 				</div>
 				<button class="btn btn--primary" (click)="createRequested.emit()">
-					<sb-icon name="plus" [size]="16"></sb-icon> New network
+					<sb-icon name="plus" [size]="16"></sb-icon>
+					{{ "pages.networks.add" | transloco }}
 				</button>
 			</div>
 			<sb-data-table
-				[columns]="cols"
+				[columns]="cols()"
 				[rows]="rows"
 				[searchKeys]="['name', 'driver', 'subnet', 'gateway']"
 			>
@@ -75,20 +80,23 @@ type Network = {
 		AsyncPipe,
 		DataTableComponent,
 		IconComponent,
+		TranslocoPipe,
 	],
 })
 export class NetworksPageComponent {
 	/** Emitted when the user clicks "New network" to open the create modal. */
 	@Output() createRequested = new EventEmitter<void>();
 	private readonly apollo = inject(Apollo);
+	private readonly transloco = inject(TranslocoService);
+	private readonly i18n = inject(I18nStateService);
 
-	readonly cols = [
-		{ key: "name", label: "Name" },
-		{ key: "driver", label: "Driver" },
-		{ key: "subnet", label: "Subnet" },
-		{ key: "gateway", label: "Gateway" },
-		{ key: "scope", label: "Scope" },
-	];
+	readonly cols = translatedColumns<Network>(this.transloco, this.i18n.activeLang, [
+		{ key: "name", labelKey: "columns.name" },
+		{ key: "driver", labelKey: "columns.driver" },
+		{ key: "subnet", labelKey: "columns.subnet" },
+		{ key: "gateway", labelKey: "columns.gateway" },
+		{ key: "scope", labelKey: "columns.scope" },
+	]);
 
 	readonly rows$: Observable<Network[]> = this.apollo
 		.watchQuery<{ networks: Network[] }>({ query: QUERY_NETWORKS, pollInterval: 30_000 })

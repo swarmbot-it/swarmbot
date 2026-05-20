@@ -6,7 +6,10 @@ import { Observable } from "rxjs";
 import { DataTableComponent } from "../../shared/data-table.component";
 import { StatusBadgeComponent } from "../../shared/status-badge.component";
 import { IconComponent } from "../../shared/icon.component";
+import { TranslocoPipe, TranslocoService } from "@jsverse/transloco";
 import { QUERY_SERVICES } from "../../core/graphql.queries";
+import { I18nStateService } from "../../core/i18n/i18n-state.service";
+import { translatedColumns } from "../../core/i18n/page-columns.helper";
 
 type ServiceRow = {
 	id: string;
@@ -30,17 +33,19 @@ type ServiceRow = {
 		<ng-container *ngIf="rows$ | async as rows">
 			<div class="page-header">
 				<div>
-					<h1 class="page-header__title">Services</h1>
+					<h1 class="page-header__title">{{ "nav.services" | transloco }}</h1>
 					<div class="page-header__count">
-						<strong>{{ rows.length }}</strong> services running
+						<strong>{{ rows.length }}</strong>
+						{{ "pages.services.countSuffix" | transloco }}
 					</div>
 				</div>
 				<button class="btn btn--primary" (click)="createRequested.emit()">
-					<sb-icon name="plus" [size]="16"></sb-icon> New service
+					<sb-icon name="plus" [size]="16"></sb-icon>
+					{{ "pages.services.add" | transloco }}
 				</button>
 			</div>
 			<sb-data-table
-				[columns]="cols"
+				[columns]="cols()"
 				[rows]="rows"
 				[searchKeys]="['name', 'image', 'stack', 'status']"
 			>
@@ -124,24 +129,31 @@ type ServiceRow = {
 		DataTableComponent,
 		StatusBadgeComponent,
 		IconComponent,
+		TranslocoPipe,
 	],
 })
 export class ServicesPageComponent {
 	/** Emitted when the user clicks "New service" to open the create modal. */
 	@Output() createRequested = new EventEmitter<void>();
 	private readonly apollo = inject(Apollo);
+	private readonly transloco = inject(TranslocoService);
+	private readonly i18n = inject(I18nStateService);
 
-	readonly cols = [
-		{ key: "name", label: "Service", sortFn: (r: ServiceRow) => r.name },
+	readonly cols = translatedColumns<ServiceRow>(this.transloco, this.i18n.activeLang, [
+		{
+			key: "name",
+			labelKey: "pages.services.columns.service",
+			sortFn: (r: ServiceRow) => r.name,
+		},
 		{
 			key: "replicas",
-			label: "Replicas",
+			labelKey: "pages.services.columns.replicas",
 			width: 200,
 			sortFn: (r: ServiceRow) => r.replicasRunning / Math.max(1, r.replicasTotal),
 		},
-		{ key: "ports", label: "Ports", sortable: false },
-		{ key: "status", label: "Status" },
-	];
+		{ key: "ports", labelKey: "pages.services.columns.ports", sortable: false },
+		{ key: "status", labelKey: "columns.status" },
+	]);
 
 	readonly rows$: Observable<ServiceRow[]> = this.apollo
 		.watchQuery<{ services: ServiceRow[] }>({ query: QUERY_SERVICES, pollInterval: 30_000 })

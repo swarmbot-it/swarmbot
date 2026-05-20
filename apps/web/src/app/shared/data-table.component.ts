@@ -184,8 +184,10 @@ export class DataTableComponent<R extends Record<string, unknown> = Record<strin
 	@Input() searchKeys?: (keyof R)[];
 	@Input() pageSize = 10;
 	@Input() searchable = true;
-	@Input() searchPlaceholder = "Search…";
-	@Input() emptyText = "No results";
+	/** Override search placeholder; defaults to `table.search` via Transloco when empty. */
+	@Input() searchPlaceholder = "";
+	/** Override empty-state text; defaults to `table.empty` via Transloco when empty. */
+	@Input() emptyText = "";
 
 	@ContentChild("cell", { static: false })
 	cellTemplate?: TemplateRef<{ $implicit: R; row: R; key: string }>;

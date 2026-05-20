@@ -8,7 +8,9 @@ import { IconComponent } from "../../shared/icon.component";
 import { SparklineComponent } from "../../shared/sparkline.component";
 import { TagComponent } from "../../shared/tag.component";
 import { SegmentedComponent } from "../../shared/segmented.component";
+import { TranslocoPipe, TranslocoService } from "@jsverse/transloco";
 import { QUERY_NODES } from "../../core/graphql.queries";
+import { I18nStateService } from "../../core/i18n/i18n-state.service";
 
 type Node = {
 	id: string;
@@ -48,10 +50,17 @@ function nodeSpark(id: string, base: number, kind: number): number[] {
 	template: `
 		<div class="page-header" *ngIf="nodes$ | async as nodes">
 			<div>
-				<h1 class="page-header__title">Nodes</h1>
+				<h1 class="page-header__title">{{ "nav.nodes" | transloco }}</h1>
 				<div class="page-header__count">
-					<strong>{{ nodes.length }}</strong> nodes —
-					{{ count(nodes, "manager") }} managers, {{ count(nodes, "worker") }} workers
+					{{
+						"pages.nodes.countSummary"
+							| transloco
+								: {
+										total: nodes.length,
+										managers: count(nodes, "manager"),
+										workers: count(nodes, "worker")
+								  }
+					}}
 				</div>
 			</div>
 		</div>
@@ -59,12 +68,12 @@ function nodeSpark(id: string, base: number, kind: number): number[] {
 		<div class="dt-toolbar">
 			<input
 				class="input input--search"
-				placeholder="Search hostname or IP…"
+				[placeholder]="'pages.nodes.searchPlaceholder' | transloco"
 				[ngModel]="query()"
 				(ngModelChange)="query.set($event)"
 			/>
 			<sb-segmented
-				[options]="filters"
+				[options]="filters()"
 				[value]="filter()"
 				(select)="filter.set($any($event))"
 			>
@@ -97,7 +106,7 @@ function nodeSpark(id: string, base: number, kind: number): number[] {
 						<div
 							style="display:flex; justify-content:space-between; align-items:baseline"
 						>
-							<span class="node-mini__label">CPU</span>
+							<span class="node-mini__label">{{ "pages.nodes.labels.cpu" | transloco }}</span>
 							<span class="node-mini__value">{{ n.cpu }}%</span>
 						</div>
 						<sb-sparkline
@@ -111,7 +120,9 @@ function nodeSpark(id: string, base: number, kind: number): number[] {
 						<div
 							style="display:flex; justify-content:space-between; align-items:baseline"
 						>
-							<span class="node-mini__label">Memory</span>
+							<span class="node-mini__label">{{
+								"pages.nodes.labels.memory" | transloco
+							}}</span>
 							<span class="node-mini__value">{{ n.mem }}%</span>
 						</div>
 						<sb-sparkline
@@ -125,7 +136,7 @@ function nodeSpark(id: string, base: number, kind: number): number[] {
 						<div
 							style="display:flex; justify-content:space-between; align-items:baseline"
 						>
-							<span class="node-mini__label">Disk</span>
+							<span class="node-mini__label">{{ "pages.nodes.labels.disk" | transloco }}</span>
 							<span class="node-mini__value">{{ n.disk }}%</span>
 						</div>
 						<sb-sparkline
@@ -219,19 +230,25 @@ function nodeSpark(id: string, base: number, kind: number): number[] {
 		SparklineComponent,
 		TagComponent,
 		SegmentedComponent,
+		TranslocoPipe,
 	],
 })
 export class NodesPageComponent {
 	private readonly apollo = inject(Apollo);
+	private readonly transloco = inject(TranslocoService);
+	private readonly i18n = inject(I18nStateService);
 
 	readonly filter = signal<"all" | "manager" | "worker">("all");
 	readonly query = signal("");
 
-	readonly filters = [
-		{ value: "all", label: "All" },
-		{ value: "manager", label: "Managers" },
-		{ value: "worker", label: "Workers" },
-	];
+	readonly filters = computed(() => {
+		this.i18n.activeLang();
+		return [
+			{ value: "all", label: this.transloco.translate("pages.nodes.filters.all") },
+			{ value: "manager", label: this.transloco.translate("pages.nodes.filters.manager") },
+			{ value: "worker", label: this.transloco.translate("pages.nodes.filters.worker") },
+		];
+	});
 
 	readonly nodes$: Observable<Node[]> = this.apollo
 		.watchQuery<{ nodes: Node[] }>({ query: QUERY_NODES, pollInterval: 30_000 })

@@ -2,15 +2,9 @@ import { inject, Injectable, signal, computed } from "@angular/core";
 import { TranslocoService } from "@jsverse/transloco";
 import { firstValueFrom } from "rxjs";
 import { PrimeNG } from "primeng/config";
-
-/** Supported UI language codes. */
-export type LangCode = "pl" | "en";
+import { httpLocaleFor, isLangCode, type LangCode } from "./i18n-languages";
 
 const STORAGE_KEY = "swarmboty.lang";
-const HTTP_LOCALE: Record<LangCode, string> = {
-	pl: "pl-PL",
-	en: "en-US",
-};
 
 /**
  * Coordinates UI language: Transloco dictionaries, PrimeNG labels,
@@ -21,11 +15,11 @@ export class I18nStateService {
 	private readonly transloco = inject(TranslocoService);
 	private readonly primeNG = inject(PrimeNG);
 
-	/** Active language code (`pl` or `en`). */
+	/** Active language code. */
 	readonly activeLang = signal<LangCode>(this.readInitialLang());
 
 	/** BCP 47 tag sent on HTTP/GraphQL requests (e.g. `pl-PL`). */
-	readonly httpLocale = computed(() => HTTP_LOCALE[this.activeLang()]);
+	readonly httpLocale = computed(() => httpLocaleFor(this.activeLang()));
 
 	/**
 	 * Loads dictionaries and applies PrimeNG + document language during bootstrap.
@@ -67,19 +61,26 @@ export class I18nStateService {
 	private readInitialLang(): LangCode {
 		try {
 			const stored = localStorage.getItem(STORAGE_KEY);
-			if (stored === "pl" || stored === "en") return stored;
+			if (isLangCode(stored)) return stored;
 		} catch {
 			/* ignore */
 		}
 		if (typeof navigator !== "undefined") {
 			const nav = navigator.language?.toLowerCase() ?? "";
 			if (nav.startsWith("pl")) return "pl";
+			if (nav.startsWith("de")) return "de";
+			if (nav.startsWith("fr")) return "fr";
+			if (nav.startsWith("es")) return "es";
+			if (nav.startsWith("it")) return "it";
+			if (nav.startsWith("zh")) return "zh";
+			if (nav.startsWith("ja")) return "ja";
+			if (nav.startsWith("ko")) return "ko";
 		}
 		return "en";
 	}
 
 	private applyDocumentLang(code: LangCode): void {
 		if (typeof document === "undefined") return;
-		document.documentElement.lang = code;
+		document.documentElement.lang = code === "zh" ? "zh-Hans" : code;
 	}
 }

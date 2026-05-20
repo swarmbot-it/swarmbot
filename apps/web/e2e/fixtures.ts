@@ -12,8 +12,18 @@ export const test = base.extend({
 
 export { expect };
 
-export async function loginAsAdmin(page: import("@playwright/test").Page): Promise<void> {
+export async function loginAsAdmin(
+	page: import("@playwright/test").Page,
+	options?: { locale?: string }
+): Promise<void> {
 	await page.goto("/login", { waitUntil: "domcontentloaded" });
+	await page.evaluate((locale) => {
+		localStorage.clear();
+		sessionStorage.clear();
+		if (locale) {
+			localStorage.setItem("swarmboty.lang", locale);
+		}
+	}, options?.locale ?? null);
 	await expect(page).toHaveURL(/\/login/);
 	await page.waitForSelector("sb-login-page, .login-card", { timeout: 90_000 });
 	const inputs = page.locator(".login-card input.input");

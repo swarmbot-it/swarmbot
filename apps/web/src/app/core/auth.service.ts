@@ -46,7 +46,8 @@ export class AuthService {
 	 * @param token - Value sent as the `Authorization` header on GraphQL requests.
 	 */
 	setToken(token: string): void {
-		localStorage.setItem(TOKEN_KEY, token);
+		const value = token.trim().startsWith("Bearer ") ? token.trim() : `Bearer ${token.trim()}`;
+		localStorage.setItem(TOKEN_KEY, value);
 		this._authed.set(true);
 	}
 

@@ -1,0 +1,381 @@
+{
+    "nav": {
+        "dashboard": "仪表板",
+        "stacks": "环境",
+        "services": "服务",
+        "tasks": "任务",
+        "nodes": "节点",
+        "networks": "网络",
+        "volumes": "卷",
+        "secrets": "凭据",
+        "configs": "配置",
+        "registries": "镜像仓库",
+        "users": "用户",
+        "groups": {
+            "overview": "概览",
+            "workloads": "工作负载",
+            "infra": "基础设施",
+            "store": "存储与配置",
+            "admin": "管理"
+        },
+        "clusterHealthy": "集群健康",
+        "quorum": "仲裁：{{managers}} / {{total}} 个管理节点"
+    },
+    "auth": {
+        "login": {
+            "title": "欢迎回来",
+            "subtitle": "登录 SwarmBoty 管理控制台。",
+            "username": "用户名",
+            "password": "密码",
+            "submit": "登录",
+            "submitting": "正在登录…",
+            "failed": "登录失败。"
+        }
+    },
+    "topbar": {
+        "notifications": "通知",
+        "switchToLight": "切换到浅色模式",
+        "switchToDark": "切换到深色模式",
+        "theme": "主题",
+        "light": "浅色",
+        "dark": "深色",
+        "language": "语言",
+        "profile": "个人资料",
+        "preferences": "偏好设置",
+        "apiTokens": "API 令牌",
+        "logout": "退出登录",
+        "administrator": "管理员"
+    },
+    "table": {
+        "search": "搜索…",
+        "empty": "无结果",
+        "count": "{{filtered}} / {{total}}"
+    },
+    "common": {
+        "cancel": "取消",
+        "create": "创建",
+        "save": "保存",
+        "optional": "可选",
+        "required": "必填",
+        "back": "返回",
+        "continue": "继续",
+        "default": "默认",
+        "type": "类型",
+        "user": "用户"
+    },
+    "dashboard": {
+        "title": "集群概览",
+        "subtitle": "{{cluster}} 实时状态 · {{nodes}} 个节点 · {{services}} 个服务 · {{tasks}} 个任务",
+        "liveRefreshed": "实时 · 刚刚刷新",
+        "refresh": "刷新",
+        "thisWeek": "本周",
+        "cpu": "CPU",
+        "memory": "内存",
+        "disk": "磁盘",
+        "cores": "核",
+        "cpuSub": "活跃节点汇总",
+        "memSub": "含缓存与缓冲区",
+        "diskSub": "集群级附加存储",
+        "resourceUtilization": "资源利用率",
+        "influxHint": "来自 InfluxDB 的时间序列 · 实时聚合",
+        "loadingMetrics": "正在加载指标…",
+        "nodesTitle": "节点",
+        "nodesSubtitle": "{{count}} 个节点 · {{managers}} 个管理节点 · {{workers}} 个工作节点",
+        "managers": "管理节点",
+        "workers": "工作节点",
+        "tags": {
+            "leader": "LEADER",
+            "drain": "DRAIN"
+        },
+        "resolution": {
+            "low": "低",
+            "medium": "中",
+            "high": "高"
+        }
+    },
+    "columns": {
+        "name": "名称",
+        "driver": "驱动",
+        "status": "状态",
+        "created": "创建时间",
+        "updated": "最后更新",
+        "subnet": "子网",
+        "gateway": "网关",
+        "scope": "范围",
+        "size": "大小",
+        "type": "类型",
+        "authUser": "认证用户",
+        "registry": "镜像仓库",
+        "stack": "环境",
+        "service": "服务",
+        "task": "任务",
+        "node": "节点",
+        "replicas": "副本",
+        "ports": "端口"
+    },
+    "status": {
+        "RUNNING": "运行中",
+        "HEALTHY": "健康",
+        "READY": "就绪",
+        "STARTING": "启动中",
+        "UPDATING": "更新中",
+        "PENDING": "等待中",
+        "PAUSED": "已暂停",
+        "FAILED": "失败",
+        "REJECTED": "已拒绝",
+        "COMPLETE": "已完成",
+        "SHUTDOWN": "已关闭",
+        "UNKNOWN": "未知"
+    },
+    "pages": {
+        "stacks": {
+            "countSuffix": "个环境已部署",
+            "add": "新建环境",
+            "columns": {
+                "stack": "环境",
+                "services": "服务",
+                "networks": "网络",
+                "volumes": "卷",
+                "configs": "配置",
+                "secrets": "凭据"
+            }
+        },
+        "services": {
+            "countSuffix": "个服务运行中",
+            "add": "新建服务",
+            "columns": {
+                "service": "服务",
+                "replicas": "副本",
+                "ports": "端口"
+            }
+        },
+        "tasks": {
+            "countSuffix": "个任务已调度",
+            "columns": {
+                "task": "任务",
+                "node": "节点",
+                "cpu": "CPU",
+                "memory": "内存"
+            }
+        },
+        "nodes": {
+            "searchPlaceholder": "搜索主机名或 IP…",
+            "countSummary": "{{total}} 个节点 — {{managers}} 个管理节点，{{workers}} 个工作节点",
+            "filters": {
+                "all": "全部",
+                "manager": "管理节点",
+                "worker": "工作节点"
+            },
+            "labels": {
+                "cpu": "CPU",
+                "memory": "内存",
+                "disk": "磁盘"
+            }
+        },
+        "networks": {
+            "countSuffix": "个网络可用",
+            "add": "新建网络"
+        },
+        "volumes": {
+            "countSuffix": "个卷已创建",
+            "add": "新建卷"
+        },
+        "secrets": {
+            "countSuffix": "个凭据已存储",
+            "add": "新建凭据"
+        },
+        "configs": {
+            "countSuffix": "个配置已存储",
+            "add": "新建配置"
+        },
+        "registries": {
+            "countSuffix": "个镜像仓库已连接",
+            "add": "连接镜像仓库",
+            "columns": {
+                "registry": "镜像仓库",
+                "authUser": "认证用户"
+            }
+        }
+    },
+    "users": {
+        "title": "用户",
+        "inWorkspace": "个工作区用户",
+        "addUser": "添加用户",
+        "never": "从未",
+        "columns": {
+            "user": "用户",
+            "phone": "电话",
+            "role": "角色",
+            "created": "创建时间",
+            "lastLogin": "上次登录"
+        },
+        "roles": {
+            "Administrator": "管理员",
+            "admin": "管理员",
+            "Editor": "编辑者",
+            "Read-only": "只读",
+            "user": "用户"
+        }
+    },
+    "forms": {
+        "stack": {
+            "title": "部署环境",
+            "subtitle": "粘贴 Compose 文件或环境定义。",
+            "name": "环境名称",
+            "content": "环境文件"
+        },
+        "service": {
+            "title": "创建服务",
+            "name": "服务名称",
+            "replicas": "副本数",
+            "image": "镜像",
+            "ports": "发布端口",
+            "env": "环境变量",
+            "step1": {
+                "title": "新建服务 — 选择镜像仓库",
+                "subtitle": "选择镜像来源。拉取镜像需要授权。"
+            },
+            "step2": {
+                "title": "新建服务 — 详情",
+                "subtitle": "从 {{registry}} 拉取"
+            },
+            "registryMeta": "{{type}} · 用户：{{user}}",
+            "imageHint": "将从 {{registry}} 拉取。",
+            "portsHint": "可选。以逗号分隔的主机:容器端口对。",
+            "createService": "创建服务",
+            "errors": {
+                "selectRegistry": "请选择镜像仓库。",
+                "serviceRequired": "服务名称和镜像为必填项。"
+            }
+        },
+        "network": {
+            "title": "创建网络",
+            "name": "网络名称",
+            "driver": "驱动",
+            "subnet": "子网",
+            "gateway": "网关",
+            "labels": "标签"
+        },
+        "volume": {
+            "title": "创建卷",
+            "name": "卷名称",
+            "driver": "驱动",
+            "labels": "标签"
+        },
+        "secret": {
+            "title": "创建凭据",
+            "name": "凭据名称",
+            "content": "凭据数据"
+        },
+        "config": {
+            "title": "创建配置",
+            "name": "配置名称",
+            "content": "配置数据"
+        },
+        "registry": {
+            "title": "添加镜像仓库",
+            "name": "名称",
+            "url": "镜像仓库 URL",
+            "type": "类型",
+            "username": "用户名",
+            "password": "密码"
+        },
+        "user": {
+            "title": "添加用户",
+            "subtitle": "创建账户并分配此工作区的访问权限。",
+            "username": "用户名",
+            "password": "密码",
+            "passwordHint": "至少 8 个字符。",
+            "email": "电子邮件",
+            "phone": "电话",
+            "role": "角色",
+            "roles": {
+                "readOnly": "只读",
+                "readOnlyDesc": "查看仪表板、服务和日志。",
+                "editor": "编辑者",
+                "editorDesc": "部署和编辑环境与服务。",
+                "administrator": "管理员",
+                "administratorDesc": "完全控制、用户与凭据。"
+            }
+        },
+        "kv": {
+            "key": "键",
+            "value": "值",
+            "add": "添加行",
+            "remove": "删除"
+        }
+    },
+    "primeng": {
+        "startsWith": "开头是",
+        "contains": "包含",
+        "notContains": "不包含",
+        "endsWith": "结尾是",
+        "equals": "等于",
+        "notEquals": "不等于",
+        "noFilter": "无筛选",
+        "lt": "小于",
+        "lte": "小于或等于",
+        "gt": "大于",
+        "gte": "大于或等于",
+        "is": "是",
+        "isNot": "不是",
+        "before": "早于",
+        "after": "晚于",
+        "dateIs": "日期是",
+        "dateIsNot": "日期不是",
+        "dateBefore": "日期早于",
+        "dateAfter": "日期晚于",
+        "clear": "清除",
+        "apply": "应用",
+        "matchAll": "全部匹配",
+        "matchAny": "任意匹配",
+        "addRule": "添加规则",
+        "removeRule": "删除规则",
+        "accept": "是",
+        "reject": "否",
+        "choose": "选择",
+        "upload": "上传",
+        "cancel": "取消",
+        "dayNames": ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"],
+        "dayNamesShort": ["周日", "周一", "周二", "周三", "周四", "周五", "周六"],
+        "dayNamesMin": ["日", "一", "二", "三", "四", "五", "六"],
+        "monthNames": [
+            "一月",
+            "二月",
+            "三月",
+            "四月",
+            "五月",
+            "六月",
+            "七月",
+            "八月",
+            "九月",
+            "十月",
+            "十一月",
+            "十二月"
+        ],
+        "monthNamesShort": [
+            "1月",
+            "2月",
+            "3月",
+            "4月",
+            "5月",
+            "6月",
+            "7月",
+            "8月",
+            "9月",
+            "10月",
+            "11月",
+            "12月"
+        ],
+        "today": "今天",
+        "weekHeader": "周",
+        "firstDayOfWeek": 1,
+        "dateFormat": "yy-mm-dd",
+        "weak": "弱",
+        "medium": "中",
+        "strong": "强",
+        "passwordPrompt": "请输入密码",
+        "emptyMessage": "未找到结果",
+        "emptyFilterMessage": "未找到结果"
+    }
+}

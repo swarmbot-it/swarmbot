@@ -5,7 +5,10 @@ import { map } from "rxjs/operators";
 import { Observable } from "rxjs";
 import { DataTableComponent } from "../../shared/data-table.component";
 import { IconComponent } from "../../shared/icon.component";
+import { TranslocoPipe, TranslocoService } from "@jsverse/transloco";
 import { QUERY_VOLUMES } from "../../core/graphql.queries";
+import { I18nStateService } from "../../core/i18n/i18n-state.service";
+import { translatedColumns } from "../../core/i18n/page-columns.helper";
 
 type Volume = { name: string; driver: string; size: string };
 
@@ -20,16 +23,18 @@ type Volume = { name: string; driver: string; size: string };
 		<ng-container *ngIf="rows$ | async as rows">
 			<div class="page-header">
 				<div>
-					<h1 class="page-header__title">Volumes</h1>
+					<h1 class="page-header__title">{{ "nav.volumes" | transloco }}</h1>
 					<div class="page-header__count">
-						<strong>{{ rows.length }}</strong> volumes provisioned
+						<strong>{{ rows.length }}</strong>
+						{{ "pages.volumes.countSuffix" | transloco }}
 					</div>
 				</div>
 				<button class="btn btn--primary" (click)="createRequested.emit()">
-					<sb-icon name="plus" [size]="16"></sb-icon> New volume
+					<sb-icon name="plus" [size]="16"></sb-icon>
+					{{ "pages.volumes.add" | transloco }}
 				</button>
 			</div>
-			<sb-data-table [columns]="cols" [rows]="rows" [searchKeys]="['name', 'driver']">
+			<sb-data-table [columns]="cols()" [rows]="rows" [searchKeys]="['name', 'driver']">
 				<ng-template #cell let-row let-key="key">
 					<ng-container [ngSwitch]="key">
 						<span
@@ -60,18 +65,21 @@ type Volume = { name: string; driver: string; size: string };
 		AsyncPipe,
 		DataTableComponent,
 		IconComponent,
+		TranslocoPipe,
 	],
 })
 export class VolumesPageComponent {
 	/** Emitted when the user clicks "New volume" to open the create modal. */
 	@Output() createRequested = new EventEmitter<void>();
 	private readonly apollo = inject(Apollo);
+	private readonly transloco = inject(TranslocoService);
+	private readonly i18n = inject(I18nStateService);
 
-	readonly cols = [
-		{ key: "name", label: "Name" },
-		{ key: "driver", label: "Driver" },
-		{ key: "size", label: "Size", align: "right" as const },
-	];
+	readonly cols = translatedColumns<Volume>(this.transloco, this.i18n.activeLang, [
+		{ key: "name", labelKey: "columns.name" },
+		{ key: "driver", labelKey: "columns.driver" },
+		{ key: "size", labelKey: "columns.size", align: "right" },
+	]);
 
 	readonly rows$: Observable<Volume[]> = this.apollo
 		.watchQuery<{ volumes: Volume[] }>({ query: QUERY_VOLUMES, pollInterval: 30_000 })

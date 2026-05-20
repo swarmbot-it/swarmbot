@@ -48,7 +48,7 @@
     },
     "table": {
         "search": "Search…",
-        "empty": "No records found.",
+        "empty": "No results",
         "count": "{{filtered}} of {{total}}"
     },
     "common": {
@@ -91,6 +91,130 @@
             "low": "Low",
             "medium": "Medium",
             "high": "High"
+        }
+    },
+    "columns": {
+        "name": "Name",
+        "driver": "Driver",
+        "status": "Status",
+        "created": "Created",
+        "updated": "Last updated",
+        "subnet": "Subnet",
+        "gateway": "Gateway",
+        "scope": "Scope",
+        "size": "Size",
+        "type": "Type",
+        "authUser": "Auth user",
+        "registry": "Registry",
+        "stack": "Stack",
+        "service": "Service",
+        "task": "Task",
+        "node": "Node",
+        "replicas": "Replicas",
+        "ports": "Ports"
+    },
+    "status": {
+        "RUNNING": "Running",
+        "HEALTHY": "Healthy",
+        "READY": "Ready",
+        "STARTING": "Starting",
+        "UPDATING": "Updating",
+        "PENDING": "Pending",
+        "PAUSED": "Paused",
+        "FAILED": "Failed",
+        "REJECTED": "Rejected",
+        "COMPLETE": "Complete",
+        "SHUTDOWN": "Shutdown",
+        "UNKNOWN": "Unknown"
+    },
+    "pages": {
+        "stacks": {
+            "countSuffix": "stacks deployed",
+            "add": "New stack",
+            "columns": {
+                "stack": "Stack",
+                "services": "Services",
+                "networks": "Networks",
+                "volumes": "Volumes",
+                "configs": "Configs",
+                "secrets": "Secrets"
+            }
+        },
+        "services": {
+            "countSuffix": "services running",
+            "add": "New service",
+            "columns": {
+                "service": "Service",
+                "replicas": "Replicas",
+                "ports": "Ports"
+            }
+        },
+        "tasks": {
+            "countSuffix": "tasks scheduled",
+            "columns": {
+                "task": "Task",
+                "node": "Node",
+                "cpu": "CPU",
+                "memory": "Memory"
+            }
+        },
+        "nodes": {
+            "searchPlaceholder": "Search hostname or IP…",
+            "countSummary": "{{total}} nodes — {{managers}} managers, {{workers}} workers",
+            "filters": {
+                "all": "All",
+                "manager": "Managers",
+                "worker": "Workers"
+            },
+            "labels": {
+                "cpu": "CPU",
+                "memory": "Memory",
+                "disk": "Disk"
+            }
+        },
+        "networks": {
+            "countSuffix": "networks available",
+            "add": "New network"
+        },
+        "volumes": {
+            "countSuffix": "volumes provisioned",
+            "add": "New volume"
+        },
+        "secrets": {
+            "countSuffix": "secrets stored",
+            "add": "New secret"
+        },
+        "configs": {
+            "countSuffix": "configs stored",
+            "add": "New config"
+        },
+        "registries": {
+            "countSuffix": "registries connected",
+            "add": "Connect registry",
+            "columns": {
+                "registry": "Registry",
+                "authUser": "Auth user"
+            }
+        }
+    },
+    "users": {
+        "title": "Users",
+        "inWorkspace": "users in workspace",
+        "addUser": "Add user",
+        "never": "never",
+        "columns": {
+            "user": "User",
+            "phone": "Phone",
+            "role": "Role",
+            "created": "Created",
+            "lastLogin": "Last login"
+        },
+        "roles": {
+            "Administrator": "Administrator",
+            "admin": "Administrator",
+            "Editor": "Editor",
+            "Read-only": "Read-only",
+            "user": "User"
         }
     },
     "forms": {

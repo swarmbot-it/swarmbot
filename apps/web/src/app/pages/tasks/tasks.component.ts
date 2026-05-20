@@ -6,7 +6,10 @@ import { Observable } from "rxjs";
 import { DataTableComponent } from "../../shared/data-table.component";
 import { StatusBadgeComponent } from "../../shared/status-badge.component";
 import { SparklineComponent } from "../../shared/sparkline.component";
+import { TranslocoPipe, TranslocoService } from "@jsverse/transloco";
 import { QUERY_TASKS } from "../../core/graphql.queries";
+import { I18nStateService } from "../../core/i18n/i18n-state.service";
+import { translatedColumns } from "../../core/i18n/page-columns.helper";
 
 type TaskRow = {
 	id: string;
@@ -32,14 +35,15 @@ type TaskRow = {
 		<ng-container *ngIf="rows$ | async as rows">
 			<div class="page-header">
 				<div>
-					<h1 class="page-header__title">Tasks</h1>
+					<h1 class="page-header__title">{{ "nav.tasks" | transloco }}</h1>
 					<div class="page-header__count">
-						<strong>{{ rows.length }}</strong> tasks scheduled
+						<strong>{{ rows.length }}</strong>
+						{{ "pages.tasks.countSuffix" | transloco }}
 					</div>
 				</div>
 			</div>
 			<sb-data-table
-				[columns]="cols"
+				[columns]="cols()"
 				[rows]="rows"
 				[searchKeys]="['name', 'image', 'node', 'status']"
 				[pageSize]="12"
@@ -108,19 +112,32 @@ type TaskRow = {
 		DataTableComponent,
 		StatusBadgeComponent,
 		SparklineComponent,
+		TranslocoPipe,
 	],
 })
 export class TasksPageComponent {
 	private readonly apollo = inject(Apollo);
+	private readonly transloco = inject(TranslocoService);
+	private readonly i18n = inject(I18nStateService);
 
-	readonly cols = [
-		{ key: "name", label: "Task" },
-		{ key: "node", label: "Node" },
-		{ key: "cpu", label: "CPU", width: 160, sortFn: (r: TaskRow) => r.cpu },
-		{ key: "mem", label: "Memory", width: 160, sortFn: (r: TaskRow) => r.mem },
-		{ key: "updated", label: "Last updated" },
-		{ key: "status", label: "Status" },
-	];
+	readonly cols = translatedColumns<TaskRow>(this.transloco, this.i18n.activeLang, [
+		{ key: "name", labelKey: "pages.tasks.columns.task" },
+		{ key: "node", labelKey: "pages.tasks.columns.node" },
+		{
+			key: "cpu",
+			labelKey: "pages.tasks.columns.cpu",
+			width: 160,
+			sortFn: (r: TaskRow) => r.cpu,
+		},
+		{
+			key: "mem",
+			labelKey: "pages.tasks.columns.memory",
+			width: 160,
+			sortFn: (r: TaskRow) => r.mem,
+		},
+		{ key: "updated", labelKey: "columns.updated" },
+		{ key: "status", labelKey: "columns.status" },
+	]);
 
 	readonly rows$: Observable<TaskRow[]> = this.apollo
 		.watchQuery<{ tasks: TaskRow[] }>({ query: QUERY_TASKS, pollInterval: 30_000 })

@@ -1,13 +1,13 @@
 {
     "nav": {
         "dashboard": "Panel",
-        "stacks": "Stacki",
+        "stacks": "Stosy",
         "services": "Usługi",
         "tasks": "Zadania",
         "nodes": "Węzły",
         "networks": "Sieci",
         "volumes": "Wolumeny",
-        "secrets": "Sekrety",
+        "secrets": "Poświadczenia",
         "configs": "Konfiguracje",
         "registries": "Rejestry",
         "users": "Użytkownicy",
@@ -48,7 +48,7 @@
     },
     "table": {
         "search": "Szukaj…",
-        "empty": "Brak rekordów.",
+        "empty": "Brak wyników",
         "count": "{{filtered}} z {{total}}"
     },
     "common": {
@@ -93,12 +93,136 @@
             "high": "Wysoka"
         }
     },
+    "columns": {
+        "name": "Nazwa",
+        "driver": "Sterownik",
+        "status": "Status",
+        "created": "Utworzono",
+        "updated": "Ostatnia aktualizacja",
+        "subnet": "Podsieć",
+        "gateway": "Brama",
+        "scope": "Zakres",
+        "size": "Rozmiar",
+        "type": "Typ",
+        "authUser": "Użytkownik auth",
+        "registry": "Rejestr",
+        "stack": "Stos",
+        "service": "Usługa",
+        "task": "Zadanie",
+        "node": "Węzeł",
+        "replicas": "Repliki",
+        "ports": "Porty"
+    },
+    "status": {
+        "RUNNING": "Uruchomione",
+        "HEALTHY": "Zdrowy",
+        "READY": "Gotowe",
+        "STARTING": "Uruchamianie",
+        "UPDATING": "Aktualizacja",
+        "PENDING": "Oczekujące",
+        "PAUSED": "Wstrzymane",
+        "FAILED": "Błąd",
+        "REJECTED": "Odrzucone",
+        "COMPLETE": "Zakończone",
+        "SHUTDOWN": "Wyłączone",
+        "UNKNOWN": "Nieznany"
+    },
+    "pages": {
+        "stacks": {
+            "countSuffix": "stosów wdrożonych",
+            "add": "Nowy stos",
+            "columns": {
+                "stack": "Stos",
+                "services": "Usługi",
+                "networks": "Sieci",
+                "volumes": "Wolumeny",
+                "configs": "Konfiguracje",
+                "secrets": "Poświadczenia"
+            }
+        },
+        "services": {
+            "countSuffix": "usług uruchomionych",
+            "add": "Nowa usługa",
+            "columns": {
+                "service": "Usługa",
+                "replicas": "Repliki",
+                "ports": "Porty"
+            }
+        },
+        "tasks": {
+            "countSuffix": "zadań zaplanowanych",
+            "columns": {
+                "task": "Zadanie",
+                "node": "Węzeł",
+                "cpu": "CPU",
+                "memory": "Pamięć"
+            }
+        },
+        "nodes": {
+            "searchPlaceholder": "Szukaj hosta lub IP…",
+            "countSummary": "{{total}} węzłów — {{managers}} managerów, {{workers}} workerów",
+            "filters": {
+                "all": "Wszystkie",
+                "manager": "Managery",
+                "worker": "Workery"
+            },
+            "labels": {
+                "cpu": "CPU",
+                "memory": "Pamięć",
+                "disk": "Dysk"
+            }
+        },
+        "networks": {
+            "countSuffix": "sieci dostępnych",
+            "add": "Nowa sieć"
+        },
+        "volumes": {
+            "countSuffix": "wolumenów utworzonych",
+            "add": "Nowy wolumen"
+        },
+        "secrets": {
+            "countSuffix": "poświadczeń zapisanych",
+            "add": "Nowe poświadczenie"
+        },
+        "configs": {
+            "countSuffix": "konfiguracji zapisanych",
+            "add": "Nowa konfiguracja"
+        },
+        "registries": {
+            "countSuffix": "rejestrów podłączonych",
+            "add": "Podłącz rejestr",
+            "columns": {
+                "registry": "Rejestr",
+                "authUser": "Użytkownik auth"
+            }
+        }
+    },
+    "users": {
+        "title": "Użytkownicy",
+        "inWorkspace": "użytkowników w obszarze roboczym",
+        "addUser": "Dodaj użytkownika",
+        "never": "nigdy",
+        "columns": {
+            "user": "Użytkownik",
+            "phone": "Telefon",
+            "role": "Rola",
+            "created": "Utworzono",
+            "lastLogin": "Ostatnie logowanie"
+        },
+        "roles": {
+            "Administrator": "Administrator",
+            "admin": "Administrator",
+            "Editor": "Edytor",
+            "Read-only": "Tylko odczyt",
+            "user": "Użytkownik"
+        }
+    },
     "forms": {
         "stack": {
-            "title": "Wdróż stack",
-            "subtitle": "Wklej plik Compose lub definicję stacka.",
-            "name": "Nazwa stacka",
-            "content": "Plik stacka"
+            "title": "Wdróż stos",
+            "subtitle": "Wklej plik Compose lub definicję stosu.",
+            "name": "Nazwa stosu",
+            "content": "Plik stosu"
         },
         "service": {
             "title": "Utwórz usługę",
@@ -139,9 +263,9 @@
             "labels": "Etykiety"
         },
         "secret": {
-            "title": "Utwórz sekret",
-            "name": "Nazwa sekretu",
-            "content": "Dane sekretu"
+            "title": "Utwórz poświadczenie",
+            "name": "Nazwa poświadczenia",
+            "content": "Dane poświadczenia"
         },
         "config": {
             "title": "Utwórz konfigurację",
@@ -169,9 +293,9 @@
                 "readOnly": "Tylko odczyt",
                 "readOnlyDesc": "Podgląd paneli, usług i logów.",
                 "editor": "Edytor",
-                "editorDesc": "Wdrażanie i edycja stacków i usług.",
+                "editorDesc": "Wdrażanie i edycja stosów i usług.",
                 "administrator": "Administrator",
-                "administratorDesc": "Pełna kontrola, użytkownicy, sekrety."
+                "administratorDesc": "Pełna kontrola, użytkownicy, poświadczenia."
             }
         },
         "kv": {

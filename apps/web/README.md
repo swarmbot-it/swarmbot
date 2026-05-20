@@ -1,6 +1,6 @@
 # SwarmBoty Web UI
 
-Angular **21** single-page application for the SwarmBoty Docker Swarm admin console. It talks to the API through Apollo GraphQL (`/graphql`), uses PrimeNG for data tables and widgets, and Transloco for runtime i18n (Polish / English).
+Angular **21** single-page application for the SwarmBoty Docker Swarm admin console. It talks to the API through Apollo GraphQL (`/graphql`), uses PrimeNG for data tables and widgets, and Transloco for runtime i18n (9 languages).
 
 ## Requirements
 
@@ -54,6 +54,8 @@ Mock mode creates this demo admin automatically. Without mock mode you need a re
 
 After login you are redirected to `/app/dashboard`. The JWT is stored in `localStorage` under `swarmboty.token`.
 
+If the API was restarted (especially in mock mode), the old token is invalid. The UI signs you out automatically when GraphQL returns `UNAUTHENTICATED`, or you can clear `swarmboty.token` in DevTools → Application → Local Storage and sign in again.
+
 ## Testing
 
 **Karma / Jasmine were removed.** UI regression tests use **[Playwright](https://playwright.dev/)**.
@@ -91,10 +93,11 @@ Production output: `dist/web/`. Fonts are self-hosted under `public/assets/fonts
 
 ## Internationalization
 
-- Dictionaries: `public/assets/i18n/pl.json`, `en.json`
-- Active language: `localStorage` key `swarmboty.lang` (`pl` | `en`)
-- Switch language from the user menu in the top bar
-- `Accept-Language` is sent on HTTP and GraphQL requests (`pl-PL` / `en-US`)
+- Dictionaries: `public/assets/i18n/{pl,en,de,fr,es,it,zh,ja,ko}.json`
+- Active language: `localStorage` key `swarmboty.lang`
+- Switch language from the user menu (dropdown in the top bar popover)
+- Theme (light/dark) is toggled only via the sun/moon control in the top bar, not in the menu
+- `Accept-Language` is sent on HTTP and GraphQL requests (e.g. `pl-PL`, `de-DE`, `zh-CN`)
 
 ## API documentation (JSDoc / Compodoc)
 

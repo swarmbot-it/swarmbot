@@ -5,13 +5,14 @@ import {
 	HostListener,
 	inject,
 } from "@angular/core";
-import { NgIf } from "@angular/common";
+import { NgFor, NgIf } from "@angular/common";
 import { Router } from "@angular/router";
 import { Apollo, gql } from "apollo-angular";
 import { TranslocoPipe } from "@jsverse/transloco";
 import { AuthService } from "../core/auth.service";
 import { ThemeService } from "../core/theme.service";
-import { I18nStateService, type LangCode } from "../core/i18n/i18n-state.service";
+import { I18nStateService } from "../core/i18n/i18n-state.service";
+import { SUPPORTED_LANGUAGES, isLangCode } from "../core/i18n/i18n-languages";
 import { LogoComponent } from "../shared/logo.component";
 import { IconComponent } from "../shared/icon.component";
 
@@ -23,7 +24,7 @@ const LOGOUT = gql`
 
 /**
  * Top navigation bar. Holds the brand mark, cluster pill, notifications,
- * and the user popover (light/dark theme picker + log out).
+ * theme toggle, and the user popover (language + account menu).
  */
 @Component({
 	selector: "sb-topbar",
@@ -87,43 +88,19 @@ const LOGOUT = gql`
 						<div class="popover__email">{{ email() }}</div>
 					</div>
 
-					<div class="popover__sub">{{ "topbar.language" | transloco }}</div>
-					<div class="popover__row">
-						<button
-							class="popover__chip"
-							[class.popover__chip--active]="i18n.activeLang() === 'pl'"
-							(click)="setLang('pl')"
-						>
-							PL
-						</button>
-						<button
-							class="popover__chip"
-							[class.popover__chip--active]="i18n.activeLang() === 'en'"
-							(click)="setLang('en')"
-						>
-							EN
-						</button>
-					</div>
-
-					<div class="popover__sub">{{ "topbar.theme" | transloco }}</div>
-					<div class="popover__row">
-						<button
-							class="popover__chip"
-							[class.popover__chip--active]="theme.theme() === 'light'"
-							(click)="theme.set('light')"
-						>
-							<sb-icon name="sun" [size]="14"></sb-icon>
-							{{ "topbar.light" | transloco }}
-						</button>
-						<button
-							class="popover__chip"
-							[class.popover__chip--active]="theme.theme() === 'dark'"
-							(click)="theme.set('dark')"
-						>
-							<sb-icon name="moon" [size]="14"></sb-icon>
-							{{ "topbar.dark" | transloco }}
-						</button>
-					</div>
+					<label class="popover__sub" for="sb-lang-select">{{
+						"topbar.language" | transloco
+					}}</label>
+					<select
+						id="sb-lang-select"
+						class="popover__select"
+						[value]="i18n.activeLang()"
+						(change)="onLanguageChange($event)"
+					>
+						<option *ngFor="let lang of languages" [value]="lang.code">
+							{{ lang.label }}
+						</option>
+					</select>
 
 					<div class="popover__divider"></div>
 					<div class="popover__item">
@@ -317,47 +294,38 @@ const LOGOUT = gql`
 				margin: 6px 4px;
 			}
 			.popover__sub {
+				display: block;
 				font-size: 11px;
 				color: var(--muted);
 				padding: 6px 10px 2px;
 				text-transform: uppercase;
 				letter-spacing: 0.06em;
 			}
-			.popover__row {
-				display: flex;
-				gap: 4px;
-				padding: 4px 6px 6px;
-			}
-			.popover__chip {
-				flex: 1;
-				padding: 7px 10px;
-				font-size: 12px;
-				font-weight: 600;
+			.popover__select {
+				display: block;
+				width: calc(100% - 12px);
+				margin: 4px 6px 8px;
+				padding: 8px 10px;
+				font-size: 13px;
+				font-weight: 500;
 				border: 1px solid var(--border);
 				border-radius: var(--r-md);
 				background: var(--surface);
-				cursor: pointer;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				gap: 6px;
 				color: var(--text);
+				cursor: pointer;
 			}
-			.popover__chip:hover {
-				background: var(--surface-hover);
-			}
-			.popover__chip--active {
-				background: var(--sidebar-item-active);
-				color: var(--sidebar-item-active-fg);
-				border-color: transparent;
+			.popover__select:focus {
+				outline: 2px solid var(--primary-500);
+				outline-offset: 1px;
 			}
 		`,
 	],
-	imports: [NgIf, LogoComponent, IconComponent, TranslocoPipe],
+	imports: [NgIf, NgFor, LogoComponent, IconComponent, TranslocoPipe],
 })
 export class TopbarComponent {
 	readonly theme = inject(ThemeService);
 	readonly i18n = inject(I18nStateService);
+	readonly languages = SUPPORTED_LANGUAGES;
 	private readonly auth = inject(AuthService);
 	private readonly apollo = inject(Apollo);
 	private readonly router = inject(Router);
@@ -369,8 +337,11 @@ export class TopbarComponent {
 		this.menuOpen = !this.menuOpen;
 	}
 
-	setLang(code: LangCode): void {
-		void this.i18n.setLanguage(code);
+	onLanguageChange(event: Event): void {
+		const value = (event.target as HTMLSelectElement).value;
+		if (isLangCode(value)) {
+			void this.i18n.setLanguage(value);
+		}
 	}
 
 	user(): string {

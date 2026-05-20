@@ -16,16 +16,16 @@ import { provideApollo } from "apollo-angular";
 import { HttpLink } from "apollo-angular/http";
 import { InMemoryCache } from "@apollo/client/core";
 import { ApolloLink } from "@apollo/client/core";
-import { setContext } from "@apollo/client/link/context";
-import { HttpHeaders, provideHttpClient, withInterceptors } from "@angular/common/http";
+import { provideHttpClient, withInterceptors } from "@angular/common/http";
 import { provideTransloco } from "@jsverse/transloco";
 import { isDevMode } from "@angular/core";
 
 import { routes } from "./app.routes";
 import { TranslocoHttpLoader } from "./core/i18n/transloco-loader";
-import { I18nStateService } from "./core/i18n/i18n-state.service";
+import { createApolloAuthLinks } from "./core/apollo-auth.link";
 import { i18nInterceptor } from "./core/i18n/i18n.interceptor";
 import { i18nInitializer } from "./core/i18n/i18n.initializer";
+import { LANG_CODES } from "./core/i18n/i18n-languages";
 
 /** Application-wide dependency injection configuration. */
 export const appConfig: ApplicationConfig = {
@@ -45,7 +45,7 @@ export const appConfig: ApplicationConfig = {
 		}),
 		provideTransloco({
 			config: {
-				availableLangs: ["pl", "en"],
+				availableLangs: [...LANG_CODES],
 				defaultLang: "pl",
 				reRenderOnLangChange: true,
 				prodMode: !isDevMode(),
@@ -53,22 +53,12 @@ export const appConfig: ApplicationConfig = {
 			loader: TranslocoHttpLoader,
 		}),
 		provideAppInitializer(i18nInitializer),
-		provideApollo(() => {
-			const i18n = inject(I18nStateService);
-			return {
-				link: ApolloLink.from([
-					setContext(() => {
-						const token = localStorage.getItem("swarmboty.token");
-						const headers: Record<string, string> = {
-							"Accept-Language": i18n.httpLocale(),
-						};
-						if (token) headers["Authorization"] = token;
-						return { headers: new HttpHeaders(headers) };
-					}),
-					inject(HttpLink).create({ uri: "/graphql" }),
-				]),
-				cache: new InMemoryCache(),
-			};
-		}),
+		provideApollo(() => ({
+			link: ApolloLink.from([
+				createApolloAuthLinks(),
+				inject(HttpLink).create({ uri: "/graphql" }),
+			]),
+			cache: new InMemoryCache(),
+		})),
 	],
 };

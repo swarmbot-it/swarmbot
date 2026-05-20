@@ -1,0 +1,381 @@
+{
+    "nav": {
+        "dashboard": "ダッシュボード",
+        "stacks": "環境",
+        "services": "サービス",
+        "tasks": "タスク",
+        "nodes": "ノード",
+        "networks": "ネットワーク",
+        "volumes": "ボリューム",
+        "secrets": "シークレット",
+        "configs": "設定",
+        "registries": "レジストリ",
+        "users": "ユーザー",
+        "groups": {
+            "overview": "概要",
+            "workloads": "ワークロード",
+            "infra": "インフラストラクチャ",
+            "store": "ストレージと設定",
+            "admin": "管理"
+        },
+        "clusterHealthy": "クラスタは正常",
+        "quorum": "クォーラム：{{managers}} / {{total}} マネージャー"
+    },
+    "auth": {
+        "login": {
+            "title": "おかえりなさい",
+            "subtitle": "SwarmBoty 管理コンソールにサインインしてください。",
+            "username": "ユーザー名",
+            "password": "パスワード",
+            "submit": "サインイン",
+            "submitting": "サインイン中…",
+            "failed": "ログインに失敗しました。"
+        }
+    },
+    "topbar": {
+        "notifications": "通知",
+        "switchToLight": "ライトモードに切り替え",
+        "switchToDark": "ダークモードに切り替え",
+        "theme": "テーマ",
+        "light": "ライト",
+        "dark": "ダーク",
+        "language": "言語",
+        "profile": "プロフィール",
+        "preferences": "設定",
+        "apiTokens": "API トークン",
+        "logout": "ログアウト",
+        "administrator": "管理者"
+    },
+    "table": {
+        "search": "検索…",
+        "empty": "結果がありません",
+        "count": "{{filtered}} / {{total}}"
+    },
+    "common": {
+        "cancel": "キャンセル",
+        "create": "作成",
+        "save": "保存",
+        "optional": "任意",
+        "required": "必須",
+        "back": "戻る",
+        "continue": "続行",
+        "default": "デフォルト",
+        "type": "タイプ",
+        "user": "ユーザー"
+    },
+    "dashboard": {
+        "title": "クラスタ概要",
+        "subtitle": "{{cluster}} のライブ状態 · ノード {{nodes}} · サービス {{services}} · タスク {{tasks}}",
+        "liveRefreshed": "ライブ · たった今更新",
+        "refresh": "更新",
+        "thisWeek": "今週",
+        "cpu": "CPU",
+        "memory": "メモリ",
+        "disk": "ディスク",
+        "cores": "コア",
+        "cpuSub": "アクティブノード全体で集計",
+        "memSub": "キャッシュとバッファを含む",
+        "diskSub": "クラスタ全体の接続ストレージ",
+        "resourceUtilization": "リソース使用率",
+        "influxHint": "InfluxDB の時系列 · ライブ集計",
+        "loadingMetrics": "メトリクスを読み込み中…",
+        "nodesTitle": "ノード",
+        "nodesSubtitle": "ノード {{count}} · マネージャー {{managers}} · ワーカー {{workers}}",
+        "managers": "マネージャー",
+        "workers": "ワーカー",
+        "tags": {
+            "leader": "LEADER",
+            "drain": "DRAIN"
+        },
+        "resolution": {
+            "low": "低",
+            "medium": "中",
+            "high": "高"
+        }
+    },
+    "columns": {
+        "name": "名前",
+        "driver": "ドライバー",
+        "status": "状態",
+        "created": "作成日時",
+        "updated": "最終更新",
+        "subnet": "サブネット",
+        "gateway": "ゲートウェイ",
+        "scope": "スコープ",
+        "size": "サイズ",
+        "type": "タイプ",
+        "authUser": "認証ユーザー",
+        "registry": "レジストリ",
+        "stack": "環境",
+        "service": "サービス",
+        "task": "タスク",
+        "node": "ノード",
+        "replicas": "レプリカ",
+        "ports": "ポート"
+    },
+    "status": {
+        "RUNNING": "実行中",
+        "HEALTHY": "正常",
+        "READY": "準備完了",
+        "STARTING": "起動中",
+        "UPDATING": "更新中",
+        "PENDING": "保留中",
+        "PAUSED": "一時停止",
+        "FAILED": "失敗",
+        "REJECTED": "拒否",
+        "COMPLETE": "完了",
+        "SHUTDOWN": "シャットダウン",
+        "UNKNOWN": "不明"
+    },
+    "pages": {
+        "stacks": {
+            "countSuffix": "環境をデプロイ済み",
+            "add": "新しい環境",
+            "columns": {
+                "stack": "環境",
+                "services": "サービス",
+                "networks": "ネットワーク",
+                "volumes": "ボリューム",
+                "configs": "設定",
+                "secrets": "シークレット"
+            }
+        },
+        "services": {
+            "countSuffix": "サービスが実行中",
+            "add": "新しいサービス",
+            "columns": {
+                "service": "サービス",
+                "replicas": "レプリカ",
+                "ports": "ポート"
+            }
+        },
+        "tasks": {
+            "countSuffix": "タスクをスケジュール済み",
+            "columns": {
+                "task": "タスク",
+                "node": "ノード",
+                "cpu": "CPU",
+                "memory": "メモリ"
+            }
+        },
+        "nodes": {
+            "searchPlaceholder": "ホスト名または IP を検索…",
+            "countSummary": "ノード {{total}} — マネージャー {{managers}}、ワーカー {{workers}}",
+            "filters": {
+                "all": "すべて",
+                "manager": "マネージャー",
+                "worker": "ワーカー"
+            },
+            "labels": {
+                "cpu": "CPU",
+                "memory": "メモリ",
+                "disk": "ディスク"
+            }
+        },
+        "networks": {
+            "countSuffix": "ネットワークが利用可能",
+            "add": "新しいネットワーク"
+        },
+        "volumes": {
+            "countSuffix": "ボリュームをプロビジョニング済み",
+            "add": "新しいボリューム"
+        },
+        "secrets": {
+            "countSuffix": "シークレットを保存済み",
+            "add": "新しいシークレット"
+        },
+        "configs": {
+            "countSuffix": "設定を保存済み",
+            "add": "新しい設定"
+        },
+        "registries": {
+            "countSuffix": "レジストリに接続済み",
+            "add": "レジストリを接続",
+            "columns": {
+                "registry": "レジストリ",
+                "authUser": "認証ユーザー"
+            }
+        }
+    },
+    "users": {
+        "title": "ユーザー",
+        "inWorkspace": "ワークスペースのユーザー",
+        "addUser": "ユーザーを追加",
+        "never": "なし",
+        "columns": {
+            "user": "ユーザー",
+            "phone": "電話",
+            "role": "ロール",
+            "created": "作成日時",
+            "lastLogin": "最終ログイン"
+        },
+        "roles": {
+            "Administrator": "管理者",
+            "admin": "管理者",
+            "Editor": "編集者",
+            "Read-only": "読み取り専用",
+            "user": "ユーザー"
+        }
+    },
+    "forms": {
+        "stack": {
+            "title": "環境をデプロイ",
+            "subtitle": "Compose ファイルまたは環境定義を貼り付けてください。",
+            "name": "環境名",
+            "content": "環境ファイル"
+        },
+        "service": {
+            "title": "サービスを作成",
+            "name": "サービス名",
+            "replicas": "レプリカ数",
+            "image": "イメージ",
+            "ports": "公開ポート",
+            "env": "環境変数",
+            "step1": {
+                "title": "新しいサービス — レジストリを選択",
+                "subtitle": "イメージの取得元を選択します。プルには認可が必要です。"
+            },
+            "step2": {
+                "title": "新しいサービス — 詳細",
+                "subtitle": "{{registry}} からプル"
+            },
+            "registryMeta": "{{type}} · ユーザー：{{user}}",
+            "imageHint": "{{registry}} からプルされます。",
+            "portsHint": "任意。カンマ区切りの host:container ペア。",
+            "createService": "サービスを作成",
+            "errors": {
+                "selectRegistry": "レジストリを選択してください。",
+                "serviceRequired": "サービス名とイメージは必須です。"
+            }
+        },
+        "network": {
+            "title": "ネットワークを作成",
+            "name": "ネットワーク名",
+            "driver": "ドライバー",
+            "subnet": "サブネット",
+            "gateway": "ゲートウェイ",
+            "labels": "ラベル"
+        },
+        "volume": {
+            "title": "ボリュームを作成",
+            "name": "ボリューム名",
+            "driver": "ドライバー",
+            "labels": "ラベル"
+        },
+        "secret": {
+            "title": "シークレットを作成",
+            "name": "シークレット名",
+            "content": "シークレットデータ"
+        },
+        "config": {
+            "title": "設定を作成",
+            "name": "設定名",
+            "content": "設定データ"
+        },
+        "registry": {
+            "title": "レジストリを追加",
+            "name": "名前",
+            "url": "レジストリ URL",
+            "type": "タイプ",
+            "username": "ユーザー名",
+            "password": "パスワード"
+        },
+        "user": {
+            "title": "ユーザーを追加",
+            "subtitle": "アカウントを作成し、このワークスペースへのアクセスを割り当てます。",
+            "username": "ユーザー名",
+            "password": "パスワード",
+            "passwordHint": "8 文字以上。",
+            "email": "メール",
+            "phone": "電話",
+            "role": "ロール",
+            "roles": {
+                "readOnly": "読み取り専用",
+                "readOnlyDesc": "ダッシュボード、サービス、ログを表示。",
+                "editor": "編集者",
+                "editorDesc": "環境とサービスのデプロイと編集。",
+                "administrator": "管理者",
+                "administratorDesc": "完全な制御、ユーザー、シークレット。"
+            }
+        },
+        "kv": {
+            "key": "キー",
+            "value": "値",
+            "add": "行を追加",
+            "remove": "削除"
+        }
+    },
+    "primeng": {
+        "startsWith": "で始まる",
+        "contains": "含む",
+        "notContains": "含まない",
+        "endsWith": "で終わる",
+        "equals": "等しい",
+        "notEquals": "等しくない",
+        "noFilter": "フィルターなし",
+        "lt": "より小さい",
+        "lte": "以下",
+        "gt": "より大きい",
+        "gte": "以上",
+        "is": "である",
+        "isNot": "でない",
+        "before": "より前",
+        "after": "より後",
+        "dateIs": "日付は",
+        "dateIsNot": "日付は次ではない",
+        "dateBefore": "日付は次より前",
+        "dateAfter": "日付は次より後",
+        "clear": "クリア",
+        "apply": "適用",
+        "matchAll": "すべて一致",
+        "matchAny": "いずれか一致",
+        "addRule": "ルールを追加",
+        "removeRule": "ルールを削除",
+        "accept": "はい",
+        "reject": "いいえ",
+        "choose": "選択",
+        "upload": "アップロード",
+        "cancel": "キャンセル",
+        "dayNames": ["日曜日", "月曜日", "火曜日", "水曜日", "木曜日", "金曜日", "土曜日"],
+        "dayNamesShort": ["日", "月", "火", "水", "木", "金", "土"],
+        "dayNamesMin": ["日", "月", "火", "水", "木", "金", "土"],
+        "monthNames": [
+            "1月",
+            "2月",
+            "3月",
+            "4月",
+            "5月",
+            "6月",
+            "7月",
+            "8月",
+            "9月",
+            "10月",
+            "11月",
+            "12月"
+        ],
+        "monthNamesShort": [
+            "1月",
+            "2月",
+            "3月",
+            "4月",
+            "5月",
+            "6月",
+            "7月",
+            "8月",
+            "9月",
+            "10月",
+            "11月",
+            "12月"
+        ],
+        "today": "今日",
+        "weekHeader": "週",
+        "firstDayOfWeek": 0,
+        "dateFormat": "yy/mm/dd",
+        "weak": "弱い",
+        "medium": "普通",
+        "strong": "強い",
+        "passwordPrompt": "パスワードを入力",
+        "emptyMessage": "結果が見つかりません",
+        "emptyFilterMessage": "結果が見つかりません"
+    }
+}
