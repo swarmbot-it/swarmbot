@@ -90,9 +90,7 @@ const CJK_LANGS: { code: LangCode; label: string }[] = [
 					<div class="avatar">{{ initials() }}</div>
 					<div class="topbar__user-meta">
 						<span class="topbar__user-name">{{ user() }}</span>
-						<span class="topbar__user-role">{{
-							"topbar.administrator" | transloco
-						}}</span>
+						<span class="topbar__user-role">{{ email() }}</span>
 					</div>
 					<sb-icon name="chevronDown" [size]="14"></sb-icon>
 				</div>
@@ -107,15 +105,6 @@ const CJK_LANGS: { code: LangCode; label: string }[] = [
 						<sb-icon name="user" [size]="15"></sb-icon
 						><span>{{ "topbar.profile" | transloco }}</span>
 					</div>
-					<div class="popover__item">
-						<sb-icon name="settings" [size]="15"></sb-icon
-						><span>{{ "topbar.preferences" | transloco }}</span>
-					</div>
-					<div class="popover__item">
-						<sb-icon name="keys" [size]="15"></sb-icon
-						><span>{{ "topbar.apiTokens" | transloco }}</span>
-					</div>
-
 					<div class="popover__divider"></div>
 
 					<div class="popover__sub">{{ "topbar.language" | transloco }}</div>

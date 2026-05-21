@@ -6,13 +6,13 @@ import {
 	inject,
 	signal,
 } from "@angular/core";
-import { NgFor, NgIf } from "@angular/common";
+import { NgClass, NgFor, NgIf } from "@angular/common";
+import { IconComponent } from "../../shared/icon.component";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { TranslocoPipe, TranslocoService } from "@jsverse/transloco";
 import { Apollo } from "apollo-angular";
 import { AuthService } from "../../core/auth.service";
 import { ToastService } from "../../core/toast.service";
-import { IconComponent } from "../../shared/icon.component";
 import { ModalComponent } from "../../shared/modal.component";
 import {
 	MUTATION_CHANGE_PASSWORD,
@@ -34,7 +34,7 @@ interface MeUser {
 	selector: "sb-profile-page",
 	standalone: true,
 	changeDetection: ChangeDetectionStrategy.OnPush,
-	imports: [NgIf, NgFor, IconComponent, ModalComponent, TranslocoPipe],
+	imports: [NgIf, NgFor, NgClass, IconComponent, ModalComponent, TranslocoPipe],
 	template: `
 		<div class="profile-page">
 			<div class="page-header">
@@ -64,7 +64,7 @@ interface MeUser {
 								"profile.accountCreated" | transloco
 							}}</span>
 							<span class="profile__stat-value">{{
-								meUser()?.created || "—"
+								formatDate(meUser()?.created)
 							}}</span>
 						</div>
 						<div class="profile__stat">
@@ -72,7 +72,7 @@ interface MeUser {
 								"profile.lastLogin" | transloco
 							}}</span>
 							<span class="profile__stat-value">{{
-								meUser()?.lastLogin || "—"
+								formatRelative(meUser()?.lastLogin)
 							}}</span>
 						</div>
 						<div class="profile__stat">
@@ -128,8 +128,8 @@ interface MeUser {
 									readonly
 									tabindex="-1"
 								/>
-								<button class="btn btn--ghost btn--sm" (click)="openPwModal()">
-									{{ "profile.changePassword" | transloco }}
+								<button class="btn btn--secondary btn--sm" (click)="openPwModal()">
+									<sb-icon name="key" [size]="13"></sb-icon>{{ "profile.changePassword" | transloco }}
 								</button>
 							</div>
 						</div>
@@ -208,7 +208,7 @@ interface MeUser {
 								}}</label>
 								<input
 									class="input"
-									[value]="meUser()?.created || '—'"
+									[value]="formatDate(meUser()?.created)"
 									readonly
 								/>
 							</div>
@@ -218,7 +218,7 @@ interface MeUser {
 								}}</label>
 								<input
 									class="input"
-									[value]="meUser()?.lastLogin || '—'"
+									[value]="formatRelative(meUser()?.lastLogin)"
 									readonly
 								/>
 							</div>
@@ -674,7 +674,7 @@ export class ProfilePageComponent {
 			.pipe(takeUntilDestroyed(this.destroyRef))
 			.subscribe({
 				next: (res) => {
-					const u = res.data.me;
+					const u = res.data!.me;
 					this.meUser.set(u);
 					const snap = {
 						name: u.name ?? "",
@@ -689,6 +689,32 @@ export class ProfilePageComponent {
 				},
 				error: () => this.loading.set(false),
 			});
+	}
+
+	formatDate(isoStr: string | null | undefined): string {
+		if (!isoStr) return "—";
+		const d = new Date(isoStr);
+		if (isNaN(d.getTime())) return "—";
+		return new Intl.DateTimeFormat(this.transloco.getActiveLang(), {
+			dateStyle: "medium",
+		}).format(d);
+	}
+
+	formatRelative(isoStr: string | null | undefined): string {
+		if (!isoStr) return "—";
+		const d = new Date(isoStr);
+		if (isNaN(d.getTime())) return "—";
+		const rtf = new Intl.RelativeTimeFormat(this.transloco.getActiveLang(), {
+			numeric: "auto",
+		});
+		const diff = (d.getTime() - Date.now()) / 1000;
+		const abs = Math.abs(diff);
+		if (abs < 60) return rtf.format(Math.round(diff), "second");
+		if (abs < 3600) return rtf.format(Math.round(diff / 60), "minute");
+		if (abs < 86400) return rtf.format(Math.round(diff / 3600), "hour");
+		if (abs < 2592000) return rtf.format(Math.round(diff / 86400), "day");
+		if (abs < 31536000) return rtf.format(Math.round(diff / 2592000), "month");
+		return rtf.format(Math.round(diff / 31536000), "year");
 	}
 
 	onName(e: Event): void {
