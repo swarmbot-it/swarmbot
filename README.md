@@ -19,11 +19,15 @@ npm install
 
 ## Development
 
-Run the API:
+Run the API (loads `apps/api/.env.development` with `SWARMBOTY_MOCK=true` — no CouchDB/Docker required):
 
 ```sh
 npm run dev:api
 ```
+
+You should see `Swarmboty listening on http://0.0.0.0:8081`. Demo login: `admin` / `swarmboty`.
+
+To use a real CouchDB instead, unset mock mode (e.g. remove `SWARMBOTY_MOCK` from `.env.development` or set `SWARMBOTY_MOCK=false` and ensure `SWARMBOTY_DB` points at CouchDB).
 
 Run the web app:
 
@@ -31,7 +35,7 @@ Run the web app:
 npm run dev:web
 ```
 
-The API listens on port `8080` by default. The Angular dev server uses the default Angular development port unless configured otherwise.
+Local `npm run dev:api` uses port **8081** (`apps/api/.env.development`). The Angular dev proxy (`apps/web/proxy.conf.json`) targets the same port. Production and Docker Compose still use **8080** unless overridden with `SWARMBOTY_PORT`.
 
 ## Build
 
@@ -138,9 +142,121 @@ File watching inside Docker on Windows uses polling, which is slower than native
 # terminal 1 — infrastructure + API
 docker compose -f docker-compose.dev.yml up db influxdb api
 
-# terminal 2 — Angular on host (proxy already points at localhost:8080)
+# terminal 2 — Angular on host (for host API use `npm run dev:api` on 8081; proxy targets localhost:8081)
 npm run dev:web
 ```
+
+## Testowy klaster Docker Swarm (DinD)
+
+Skrypty w `scripts/` uruchamiają lokalny klaster Swarm wewnątrz kontenerów Docker-in-Docker (DinD): jeden manager i dwóch workerów połączonych siecią mostkową `swarm-net`. Nie jest potrzebna maszyna wirtualna ani zewnętrzna infrastruktura.
+
+> **Wymagania:** Docker musi być uruchomiony na hoście.
+
+### Uruchomienie klastra
+
+```sh
+npm run swarm:start
+```
+
+Skrypt tworzy sieć `swarm-net`, startuje kontenery `swarm-manager`, `swarm-worker-1`, `swarm-worker-2`, inicjalizuje Swarm i dołącza workerów. Na koniec wyświetla `docker node ls`.
+
+### Sprawdzenie stanu
+
+```sh
+npm run swarm:status
+```
+
+Wyświetla stan kontenerów, listę node'ów Swarm oraz ewentualne wdrożone serwisy i stacki.
+
+### Zatrzymanie i usunięcie klastra
+
+```sh
+npm run swarm:stop
+```
+
+Usuwa wszystkie trzy kontenery i sieć `swarm-net`.
+
+---
+
+### Logowanie do managera (interaktywna powłoka)
+
+```sh
+docker exec -it swarm-manager sh
+```
+
+Wewnątrz kontenera dostępny jest pełnoprawny `docker` CLI z widokiem na cały klaster:
+
+```sh
+# lista node'ów
+docker node ls
+
+# wdrożenie testowego serwisu
+docker service create --name test --replicas 2 nginx:alpine
+
+# lista serwisów i tasków
+docker service ls
+docker service ps test
+
+# usunięcie serwisu
+docker service rm test
+
+# wyjście z kontenera
+exit
+```
+
+Polecenia można też wykonywać bezpośrednio z hosta bez wchodzenia do kontenera:
+
+```sh
+docker exec swarm-manager docker node ls
+docker exec swarm-manager docker service ls
+```
+
+---
+
+### Wdrożenie całego stacku do lokalnego Swarm
+
+`docker-compose.local.yml` definiuje kompletny stack (app, db, influxdb, agent) przeznaczony do wdrożenia do klastra DinD. Skrypt buduje obrazy na hoście, ładuje je do kontenerów DinD przez `docker cp` + `docker load`, a następnie wdraża stack przez TCP do demona managera:
+
+```sh
+npm run swarm:deploy
+```
+
+Po zakończeniu skrypt wypisze adres URL: `http://MANAGER_IP:888`.
+
+```sh
+# aktualizacja po zmianie kodu (pełny rebuild + redeploy)
+npm run swarm:deploy
+
+# usunięcie stacku (klaster pozostaje)
+npm run swarm:undeploy
+```
+
+> Obrazy DinD (`docker:27-dind`) mają własne demony Docker izolowane od hosta. Dlatego skrypt zapisuje zbudowane obrazy do pliku tymczasowego i ładuje je do każdego node'a — bez potrzeby zewnętrznego registry.
+
+---
+
+### Podłączenie SwarmBoty API do testowego klastra
+
+Manager udostępnia Docker API przez TCP na porcie `2375` (bez TLS — flaga `DOCKER_TLS_CERTDIR=""` jest ustawiona przez skrypt startowy). Aby API SwarmBoty trafiało do testowego Swarm zamiast lokalnego demona, pobierz IP managera i przekaż go przez zmienną środowiskową:
+
+**macOS / Linux:**
+```sh
+MANAGER_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' swarm-manager)
+SWARMBOTY_DOCKER_HOST=tcp://$MANAGER_IP:2375 npm run dev:api
+```
+
+**Windows PowerShell:**
+```powershell
+$MANAGER_IP = docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' swarm-manager
+$env:SWARMBOTY_DOCKER_HOST = "tcp://${MANAGER_IP}:2375"
+npm run dev:api
+```
+
+Następnie otwórz http://localhost:4200 (po uruchomieniu `npm run dev:web`) i zaloguj się jako `admin` / `swarmboty`. Panel będzie pokazywał zasoby testowego klastra.
+
+> **Uwaga:** jeśli `SWARMBOTY_DOCKER_HOST` nie jest ustawione, API używa lokalnego socketu `/var/run/docker.sock` (domyślnie).
+
+---
 
 ## Docker Compose — production
 

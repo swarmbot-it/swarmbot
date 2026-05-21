@@ -336,9 +336,33 @@
         "choose": "Elegir",
         "upload": "Subir",
         "cancel": "Cancelar",
-        "dayNames": ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
-        "dayNamesShort": ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"],
-        "dayNamesMin": ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sá"],
+        "dayNames": [
+            "Domingo",
+            "Lunes",
+            "Martes",
+            "Miércoles",
+            "Jueves",
+            "Viernes",
+            "Sábado"
+        ],
+        "dayNamesShort": [
+            "Dom",
+            "Lun",
+            "Mar",
+            "Mié",
+            "Jue",
+            "Vie",
+            "Sáb"
+        ],
+        "dayNamesMin": [
+            "Do",
+            "Lu",
+            "Ma",
+            "Mi",
+            "Ju",
+            "Vi",
+            "Sá"
+        ],
         "monthNames": [
             "Enero",
             "Febrero",
@@ -377,5 +401,61 @@
         "passwordPrompt": "Introduzca una contraseña",
         "emptyMessage": "No se encontraron resultados",
         "emptyFilterMessage": "No se encontraron resultados"
+    },
+    "boot": {
+        "steps": {
+            "connecting": "Conectando con el gestor de swarm…",
+            "nodes": "Obteniendo inventario de nodos…",
+            "stacksServices": "Cargando stacks y servicios…",
+            "timeSeries": "Cargando series temporales de carga…",
+            "almostThere": "Casi listo…"
+        }
+    },
+    "toast": {
+        "dismiss": "Cerrar"
+    },
+    "profile": {
+        "title": "Mi perfil",
+        "subtitle": "Gestiona los datos de tu cuenta y la configuración de seguridad.",
+        "accountDetails": "Detalles de la cuenta",
+        "accountDetailsHint": "Actualiza tu información personal.",
+        "username": "Nombre de usuario",
+        "usernameHint": "El nombre de usuario no se puede cambiar.",
+        "password": "Contraseña",
+        "changePassword": "Cambiar…",
+        "fullName": "Nombre completo",
+        "role": "Rol",
+        "roleHint": "El rol lo gestiona un administrador.",
+        "accountCreated": "Cuenta creada",
+        "lastLogin": "Último acceso",
+        "readOnly": "Solo lectura",
+        "reset": "Restablecer",
+        "saveChanges": "Guardar cambios",
+        "saved": "Perfil guardado correctamente.",
+        "modal": {
+            "title": "Cambiar contraseña",
+            "subtitle": "Elige una contraseña segura que no hayas usado antes.",
+            "current": "Contraseña actual",
+            "new": "Nueva contraseña",
+            "newHint": "Al menos 8 caracteres.",
+            "confirm": "Confirmar nueva contraseña",
+            "update": "Actualizar contraseña",
+            "updated": "Contraseña cambiada correctamente.",
+            "strength": {
+                "veryWeak": "Muy débil",
+                "weak": "Débil",
+                "fair": "Regular",
+                "good": "Buena",
+                "strong": "Fuerte",
+                "excellent": "Excelente"
+            },
+            "errors": {
+                "current": "La contraseña actual es incorrecta.",
+                "minLength": "Debe tener al menos 8 caracteres.",
+                "mismatch": "Las contraseñas no coinciden.",
+                "required": "Este campo es obligatorio.",
+                "invalidEmail": "Introduce una dirección de correo válida."
+            }
+        }
     }
 }

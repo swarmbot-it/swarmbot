@@ -336,9 +336,33 @@
         "choose": "Auswählen",
         "upload": "Hochladen",
         "cancel": "Abbrechen",
-        "dayNames": ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"],
-        "dayNamesShort": ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"],
-        "dayNamesMin": ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"],
+        "dayNames": [
+            "Sonntag",
+            "Montag",
+            "Dienstag",
+            "Mittwoch",
+            "Donnerstag",
+            "Freitag",
+            "Samstag"
+        ],
+        "dayNamesShort": [
+            "So",
+            "Mo",
+            "Di",
+            "Mi",
+            "Do",
+            "Fr",
+            "Sa"
+        ],
+        "dayNamesMin": [
+            "So",
+            "Mo",
+            "Di",
+            "Mi",
+            "Do",
+            "Fr",
+            "Sa"
+        ],
         "monthNames": [
             "Januar",
             "Februar",
@@ -377,5 +401,61 @@
         "passwordPrompt": "Passwort eingeben",
         "emptyMessage": "Keine Ergebnisse gefunden",
         "emptyFilterMessage": "Keine Ergebnisse gefunden"
+    },
+    "boot": {
+        "steps": {
+            "connecting": "Verbindung mit dem Swarm-Manager…",
+            "nodes": "Knotenbestand abrufen…",
+            "stacksServices": "Stacks und Dienste laden…",
+            "timeSeries": "Zeitreihe der Auslastung abrufen…",
+            "almostThere": "Fast fertig…"
+        }
+    },
+    "toast": {
+        "dismiss": "Schließen"
+    },
+    "profile": {
+        "title": "Mein Profil",
+        "subtitle": "Verwalten Sie Ihre Kontodaten und Sicherheitseinstellungen.",
+        "accountDetails": "Kontodetails",
+        "accountDetailsHint": "Aktualisieren Sie Ihre persönlichen Daten.",
+        "username": "Benutzername",
+        "usernameHint": "Der Benutzername kann nicht geändert werden.",
+        "password": "Passwort",
+        "changePassword": "Ändern…",
+        "fullName": "Vollständiger Name",
+        "role": "Rolle",
+        "roleHint": "Die Rolle wird von einem Administrator verwaltet.",
+        "accountCreated": "Konto erstellt",
+        "lastLogin": "Letzte Anmeldung",
+        "readOnly": "Nur Lesen",
+        "reset": "Zurücksetzen",
+        "saveChanges": "Änderungen speichern",
+        "saved": "Profil erfolgreich gespeichert.",
+        "modal": {
+            "title": "Passwort ändern",
+            "subtitle": "Wählen Sie ein starkes Passwort, das Sie noch nicht verwendet haben.",
+            "current": "Aktuelles Passwort",
+            "new": "Neues Passwort",
+            "newHint": "Mindestens 8 Zeichen.",
+            "confirm": "Neues Passwort bestätigen",
+            "update": "Passwort aktualisieren",
+            "updated": "Passwort erfolgreich geändert.",
+            "strength": {
+                "veryWeak": "Sehr schwach",
+                "weak": "Schwach",
+                "fair": "Ausreichend",
+                "good": "Gut",
+                "strong": "Stark",
+                "excellent": "Ausgezeichnet"
+            },
+            "errors": {
+                "current": "Das aktuelle Passwort ist falsch.",
+                "minLength": "Mindestens 8 Zeichen erforderlich.",
+                "mismatch": "Passwörter stimmen nicht überein.",
+                "required": "Dieses Feld ist erforderlich.",
+                "invalidEmail": "Geben Sie eine gültige E-Mail-Adresse ein."
+            }
+        }
     }
 }

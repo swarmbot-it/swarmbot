@@ -336,9 +336,33 @@
         "choose": "Choisir",
         "upload": "Téléverser",
         "cancel": "Annuler",
-        "dayNames": ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"],
-        "dayNamesShort": ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"],
-        "dayNamesMin": ["Di", "Lu", "Ma", "Me", "Je", "Ve", "Sa"],
+        "dayNames": [
+            "Dimanche",
+            "Lundi",
+            "Mardi",
+            "Mercredi",
+            "Jeudi",
+            "Vendredi",
+            "Samedi"
+        ],
+        "dayNamesShort": [
+            "Dim",
+            "Lun",
+            "Mar",
+            "Mer",
+            "Jeu",
+            "Ven",
+            "Sam"
+        ],
+        "dayNamesMin": [
+            "Di",
+            "Lu",
+            "Ma",
+            "Me",
+            "Je",
+            "Ve",
+            "Sa"
+        ],
         "monthNames": [
             "Janvier",
             "Février",
@@ -377,5 +401,61 @@
         "passwordPrompt": "Saisissez un mot de passe",
         "emptyMessage": "Aucun résultat trouvé",
         "emptyFilterMessage": "Aucun résultat trouvé"
+    },
+    "boot": {
+        "steps": {
+            "connecting": "Connexion au gestionnaire de swarm…",
+            "nodes": "Récupération de l'inventaire des nœuds…",
+            "stacksServices": "Chargement des stacks et services…",
+            "timeSeries": "Récupération des séries temporelles de charge…",
+            "almostThere": "Presque terminé…"
+        }
+    },
+    "toast": {
+        "dismiss": "Fermer"
+    },
+    "profile": {
+        "title": "Mon profil",
+        "subtitle": "Gérez les détails de votre compte et les paramètres de sécurité.",
+        "accountDetails": "Détails du compte",
+        "accountDetailsHint": "Mettez à jour vos informations personnelles.",
+        "username": "Nom d'utilisateur",
+        "usernameHint": "Le nom d'utilisateur ne peut pas être modifié.",
+        "password": "Mot de passe",
+        "changePassword": "Modifier…",
+        "fullName": "Nom complet",
+        "role": "Rôle",
+        "roleHint": "Le rôle est géré par un administrateur.",
+        "accountCreated": "Compte créé",
+        "lastLogin": "Dernière connexion",
+        "readOnly": "Lecture seule",
+        "reset": "Réinitialiser",
+        "saveChanges": "Enregistrer les modifications",
+        "saved": "Profil enregistré avec succès.",
+        "modal": {
+            "title": "Changer le mot de passe",
+            "subtitle": "Choisissez un mot de passe fort que vous n'avez jamais utilisé.",
+            "current": "Mot de passe actuel",
+            "new": "Nouveau mot de passe",
+            "newHint": "Au moins 8 caractères.",
+            "confirm": "Confirmer le nouveau mot de passe",
+            "update": "Mettre à jour le mot de passe",
+            "updated": "Mot de passe modifié avec succès.",
+            "strength": {
+                "veryWeak": "Très faible",
+                "weak": "Faible",
+                "fair": "Acceptable",
+                "good": "Bon",
+                "strong": "Fort",
+                "excellent": "Excellent"
+            },
+            "errors": {
+                "current": "Le mot de passe actuel est incorrect.",
+                "minLength": "Doit contenir au moins 8 caractères.",
+                "mismatch": "Les mots de passe ne correspondent pas.",
+                "required": "Ce champ est obligatoire.",
+                "invalidEmail": "Saisissez une adresse e-mail valide."
+            }
+        }
     }
 }

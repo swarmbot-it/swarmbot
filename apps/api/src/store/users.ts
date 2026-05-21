@@ -1,7 +1,7 @@
 ﻿import type nano from "nano";
 import { randomUUID } from "crypto";
-import { derivePassword } from "../auth/password.js";
-import { findDocs, findOne, insertDoc, type CouchDoc } from "../couch.js";
+import { derivePassword, verifyPassword } from "../auth/password.js";
+import { findDocs, findOne, insertDoc, updateDoc, type CouchDoc } from "../couch.js";
 
 /**
  * Application user store. Distinct from the legacy "user" CouchDB type
@@ -81,6 +81,45 @@ export async function createUser(
 	};
 	const inserted = (await insertDoc(db, doc)) as UserDoc;
 	return toView(inserted);
+}
+
+export async function getUserByUsername(
+	db: nano.DocumentScope<CouchDoc>,
+	username: string
+): Promise<StoredUser | null> {
+	const doc = (await findOne(db, "user", { username: { $eq: username } })) as UserDoc | undefined;
+	return doc ? toView(doc) : null;
+}
+
+export async function updateUserProfile(
+	db: nano.DocumentScope<CouchDoc>,
+	username: string,
+	input: { name: string; email: string; phone?: string | null }
+): Promise<StoredUser> {
+	const doc = (await findOne(db, "user", { username: { $eq: username } })) as UserDoc | undefined;
+	if (!doc) throw new Error("user_not_found");
+	await updateDoc(db, doc, {
+		name: input.name,
+		email: input.email,
+		phone: input.phone ?? "",
+	});
+	const updated = (await findOne(db, "user", { username: { $eq: username } })) as UserDoc;
+	return toView(updated);
+}
+
+export async function changeUserPassword(
+	db: nano.DocumentScope<CouchDoc>,
+	username: string,
+	current: string,
+	next: string
+): Promise<boolean> {
+	const doc = (await findOne(db, "user", { username: { $eq: username } })) as UserDoc | undefined;
+	if (!doc) throw new Error("user_not_found");
+	if (typeof doc.password !== "string" || !verifyPassword(current, doc.password)) {
+		throw new Error("invalid_credentials");
+	}
+	await updateDoc(db, doc, { password: derivePassword(next) });
+	return true;
 }
 
 export async function removeUser(db: nano.DocumentScope<CouchDoc>, id: string): Promise<boolean> {

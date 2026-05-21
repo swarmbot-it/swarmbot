@@ -4,6 +4,7 @@ import {
 	ElementRef,
 	HostListener,
 	inject,
+	computed,
 } from "@angular/core";
 import { NgFor, NgIf } from "@angular/common";
 import { Router } from "@angular/router";
@@ -12,7 +13,7 @@ import { TranslocoPipe } from "@jsverse/transloco";
 import { AuthService } from "../core/auth.service";
 import { ThemeService } from "../core/theme.service";
 import { I18nStateService } from "../core/i18n/i18n-state.service";
-import { SUPPORTED_LANGUAGES, isLangCode } from "../core/i18n/i18n-languages";
+import { type LangCode, isLangCode } from "../core/i18n/i18n-languages";
 import { LogoComponent } from "../shared/logo.component";
 import { IconComponent } from "../shared/icon.component";
 
@@ -22,9 +23,23 @@ const LOGOUT = gql`
 	}
 `;
 
+/** Language rows shown in the collapsible selector — Latin block first, CJK after divider. */
+const LATIN_LANGS: { code: LangCode; label: string }[] = [
+	{ code: "de", label: "Deutsch" },
+	{ code: "en", label: "English" },
+	{ code: "es", label: "Español" },
+	{ code: "it", label: "Italiano" },
+	{ code: "pl", label: "Polski" },
+];
+const CJK_LANGS: { code: LangCode; label: string }[] = [
+	{ code: "zh", label: "中文" },
+	{ code: "ja", label: "日本語" },
+	{ code: "ko", label: "한국어" },
+];
+
 /**
  * Top navigation bar. Holds the brand mark, cluster pill, notifications,
- * theme toggle, and the user popover (language + account menu).
+ * theme toggle, and the user popover (collapsible language + account menu).
  */
 @Component({
 	selector: "sb-topbar",
@@ -88,22 +103,7 @@ const LOGOUT = gql`
 						<div class="popover__email">{{ email() }}</div>
 					</div>
 
-					<label class="popover__sub" for="sb-lang-select">{{
-						"topbar.language" | transloco
-					}}</label>
-					<select
-						id="sb-lang-select"
-						class="popover__select"
-						[value]="i18n.activeLang()"
-						(change)="onLanguageChange($event)"
-					>
-						<option *ngFor="let lang of languages" [value]="lang.code">
-							{{ lang.label }}
-						</option>
-					</select>
-
-					<div class="popover__divider"></div>
-					<div class="popover__item">
+					<div class="popover__item" (click)="goToProfile()">
 						<sb-icon name="user" [size]="15"></sb-icon
 						><span>{{ "topbar.profile" | transloco }}</span>
 					</div>
@@ -115,6 +115,58 @@ const LOGOUT = gql`
 						<sb-icon name="keys" [size]="15"></sb-icon
 						><span>{{ "topbar.apiTokens" | transloco }}</span>
 					</div>
+
+					<div class="popover__divider"></div>
+
+					<div class="popover__sub">{{ "topbar.language" | transloco }}</div>
+					<div class="popover__item lang-trigger" (click)="toggleLang()">
+						<span class="lang-code">{{ currentLang().code.toUpperCase() }}</span>
+						<span class="lang-trigger__name">{{ currentLang().label }}</span>
+						<sb-icon
+							name="chevronDown"
+							[size]="14"
+							[style.transform]="langOpen ? 'rotate(180deg)' : 'none'"
+							[style.transition]="'transform 0.15s'"
+							[style.color]="'var(--muted)'"
+						></sb-icon>
+					</div>
+
+					<div class="lang-list" *ngIf="langOpen">
+						<div
+							*ngFor="let lang of latinLangs"
+							class="popover__item lang-item"
+							[class.lang-item--active]="lang.code === i18n.activeLang()"
+							(click)="selectLang(lang.code)"
+						>
+							<span class="lang-code">{{ lang.code.toUpperCase() }}</span>
+							<span class="lang-item__name">{{ lang.label }}</span>
+							<sb-icon
+								*ngIf="lang.code === i18n.activeLang()"
+								name="check"
+								[size]="14"
+								[strokeWidth]="3"
+								style="color: var(--primary-500)"
+							></sb-icon>
+						</div>
+						<div class="lang-divider"></div>
+						<div
+							*ngFor="let lang of cjkLangs"
+							class="popover__item lang-item"
+							[class.lang-item--active]="lang.code === i18n.activeLang()"
+							(click)="selectLang(lang.code)"
+						>
+							<span class="lang-code">{{ lang.code.toUpperCase() }}</span>
+							<span class="lang-item__name">{{ lang.label }}</span>
+							<sb-icon
+								*ngIf="lang.code === i18n.activeLang()"
+								name="check"
+								[size]="14"
+								[strokeWidth]="3"
+								style="color: var(--primary-500)"
+							></sb-icon>
+						</div>
+					</div>
+
 					<div class="popover__divider"></div>
 					<div class="popover__item popover__item--danger" (click)="onLogout()">
 						<sb-icon name="logout" [size]="15"></sb-icon
@@ -294,29 +346,76 @@ const LOGOUT = gql`
 				margin: 6px 4px;
 			}
 			.popover__sub {
-				display: block;
 				font-size: 11px;
 				color: var(--muted);
 				padding: 6px 10px 2px;
 				text-transform: uppercase;
 				letter-spacing: 0.06em;
 			}
-			.popover__select {
-				display: block;
-				width: calc(100% - 12px);
-				margin: 4px 6px 8px;
-				padding: 8px 10px;
-				font-size: 13px;
-				font-weight: 500;
+
+			/* Language selector */
+			.lang-code {
+				font-family: var(--font-mono);
+				font-size: 10.5px;
+				font-weight: 700;
+				letter-spacing: 0.04em;
+				background: var(--surface-2);
+				color: var(--muted);
+				padding: 2px 6px;
+				border-radius: 4px;
+				min-width: 28px;
+				text-align: center;
+				border: 1px solid var(--border);
+				flex-shrink: 0;
+			}
+			.lang-trigger {
+				font-size: 12.5px;
+			}
+			.lang-trigger__name {
+				flex: 1;
+			}
+			.lang-list {
+				margin: 2px 4px 4px;
+				padding: 4px;
 				border: 1px solid var(--border);
 				border-radius: var(--r-md);
-				background: var(--surface);
-				color: var(--text);
-				cursor: pointer;
+				background: var(--surface-2);
+				display: flex;
+				flex-direction: column;
+				gap: 1px;
+				max-height: 280px;
+				overflow-y: auto;
 			}
-			.popover__select:focus {
-				outline: 2px solid var(--primary-500);
-				outline-offset: 1px;
+			.lang-item {
+				font-size: 12.5px;
+				padding: 6px 8px;
+				background: transparent;
+			}
+			.lang-item:hover {
+				background: var(--surface-hover);
+			}
+			.lang-item--active {
+				color: var(--primary-600);
+				font-weight: 600;
+			}
+			.lang-item--active .lang-code {
+				background: rgba(249, 115, 22, 0.12);
+				color: var(--primary-600);
+				border-color: transparent;
+			}
+			:host-context([data-theme='dark']) .lang-item--active {
+				color: var(--primary-400);
+			}
+			:host-context([data-theme='dark']) .lang-item--active .lang-code {
+				color: var(--primary-400);
+			}
+			.lang-item__name {
+				flex: 1;
+			}
+			.lang-divider {
+				height: 1px;
+				background: var(--border);
+				margin: 4px 6px;
 			}
 		`,
 	],
@@ -325,23 +424,43 @@ const LOGOUT = gql`
 export class TopbarComponent {
 	readonly theme = inject(ThemeService);
 	readonly i18n = inject(I18nStateService);
-	readonly languages = SUPPORTED_LANGUAGES;
+	readonly latinLangs = LATIN_LANGS;
+	readonly cjkLangs = CJK_LANGS;
 	private readonly auth = inject(AuthService);
 	private readonly apollo = inject(Apollo);
 	private readonly router = inject(Router);
 	private readonly host = inject(ElementRef<HTMLElement>);
 
 	menuOpen = false;
+	langOpen = false;
+
+	readonly currentLang = computed(() => {
+		const code = this.i18n.activeLang();
+		return (
+			[...LATIN_LANGS, ...CJK_LANGS].find((l) => l.code === code) ?? LATIN_LANGS[1]
+		);
+	});
 
 	toggle(): void {
 		this.menuOpen = !this.menuOpen;
+		if (!this.menuOpen) this.langOpen = false;
 	}
 
-	onLanguageChange(event: Event): void {
-		const value = (event.target as HTMLSelectElement).value;
-		if (isLangCode(value)) {
-			void this.i18n.setLanguage(value);
+	toggleLang(): void {
+		this.langOpen = !this.langOpen;
+	}
+
+	selectLang(code: string): void {
+		if (isLangCode(code)) {
+			void this.i18n.setLanguage(code);
 		}
+		this.langOpen = false;
+	}
+
+	goToProfile(): void {
+		this.menuOpen = false;
+		this.langOpen = false;
+		void this.router.navigate(["/app/profile"]);
 	}
 
 	user(): string {
@@ -381,6 +500,7 @@ export class TopbarComponent {
 		const root = this.host.nativeElement;
 		if (!root.contains(event.target as Node)) {
 			this.menuOpen = false;
+			this.langOpen = false;
 		}
 	}
 }

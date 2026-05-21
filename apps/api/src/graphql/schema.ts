@@ -66,6 +66,9 @@ export const typeDefs = `#graphql
 
     createUser(input: UserInput!): UserAccount!
     removeUser(id: ID!): Boolean!
+
+    updateProfile(input: UpdateProfileInput!): UserAccount!
+    changePassword(input: ChangePasswordInput!): Boolean!
   }
 
   type Subscription {
@@ -88,7 +91,11 @@ export const typeDefs = `#graphql
   type User {
     username: String!
     email: String
+    name: String
+    phone: String
     role: String!
+    created: String
+    lastLogin: String
   }
 
   type ClusterOverview {
@@ -310,5 +317,16 @@ export const typeDefs = `#graphql
   input KeyValueInput {
     k: String!
     v: String!
+  }
+
+  input UpdateProfileInput {
+    name: String!
+    email: String!
+    phone: String
+  }
+
+  input ChangePasswordInput {
+    current: String!
+    next: String!
   }
 `;

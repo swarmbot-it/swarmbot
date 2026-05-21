@@ -336,9 +336,33 @@
         "choose": "Choose",
         "upload": "Upload",
         "cancel": "Cancel",
-        "dayNames": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
-        "dayNamesShort": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-        "dayNamesMin": ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
+        "dayNames": [
+            "Sunday",
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday"
+        ],
+        "dayNamesShort": [
+            "Sun",
+            "Mon",
+            "Tue",
+            "Wed",
+            "Thu",
+            "Fri",
+            "Sat"
+        ],
+        "dayNamesMin": [
+            "Su",
+            "Mo",
+            "Tu",
+            "We",
+            "Th",
+            "Fr",
+            "Sa"
+        ],
         "monthNames": [
             "January",
             "February",
@@ -377,5 +401,61 @@
         "passwordPrompt": "Enter a password",
         "emptyMessage": "No results found",
         "emptyFilterMessage": "No results found"
+    },
+    "boot": {
+        "steps": {
+            "connecting": "Connecting to swarm manager…",
+            "nodes": "Fetching node inventory…",
+            "stacksServices": "Loading stacks & services…",
+            "timeSeries": "Fetching workload time-series…",
+            "almostThere": "Almost there…"
+        }
+    },
+    "toast": {
+        "dismiss": "Dismiss"
+    },
+    "profile": {
+        "title": "My Profile",
+        "subtitle": "Manage your account details and security settings.",
+        "accountDetails": "Account Details",
+        "accountDetailsHint": "Update your personal information.",
+        "username": "Username",
+        "usernameHint": "Username cannot be changed.",
+        "password": "Password",
+        "changePassword": "Change…",
+        "fullName": "Full name",
+        "role": "Role",
+        "roleHint": "Role is managed by an administrator.",
+        "accountCreated": "Account created",
+        "lastLogin": "Last login",
+        "readOnly": "Read-only",
+        "reset": "Reset",
+        "saveChanges": "Save changes",
+        "saved": "Profile saved successfully.",
+        "modal": {
+            "title": "Change password",
+            "subtitle": "Choose a strong password you haven't used before.",
+            "current": "Current password",
+            "new": "New password",
+            "newHint": "At least 8 characters.",
+            "confirm": "Confirm new password",
+            "update": "Update password",
+            "updated": "Password changed successfully.",
+            "strength": {
+                "veryWeak": "Very weak",
+                "weak": "Weak",
+                "fair": "Fair",
+                "good": "Good",
+                "strong": "Strong",
+                "excellent": "Excellent"
+            },
+            "errors": {
+                "current": "Current password is incorrect.",
+                "minLength": "Must be at least 8 characters.",
+                "mismatch": "Passwords do not match.",
+                "required": "This field is required.",
+                "invalidEmail": "Enter a valid email address."
+            }
+        }
     }
 }

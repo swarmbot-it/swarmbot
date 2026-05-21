@@ -4,12 +4,15 @@ import { Router } from "@angular/router";
 const TOKEN_KEY = "swarmboty.token";
 const PROFILE_KEY = "swarmboty.profile";
 
-/** Cached user profile shown in the top bar. */
+/** Cached user profile shown in the top bar and profile page. */
 export type Profile = {
 	username: string;
 	name?: string;
 	email?: string;
+	phone?: string;
 	role?: string;
+	created?: string;
+	lastLogin?: string;
 };
 
 /**

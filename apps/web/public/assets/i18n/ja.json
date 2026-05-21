@@ -336,9 +336,33 @@
         "choose": "選択",
         "upload": "アップロード",
         "cancel": "キャンセル",
-        "dayNames": ["日曜日", "月曜日", "火曜日", "水曜日", "木曜日", "金曜日", "土曜日"],
-        "dayNamesShort": ["日", "月", "火", "水", "木", "金", "土"],
-        "dayNamesMin": ["日", "月", "火", "水", "木", "金", "土"],
+        "dayNames": [
+            "日曜日",
+            "月曜日",
+            "火曜日",
+            "水曜日",
+            "木曜日",
+            "金曜日",
+            "土曜日"
+        ],
+        "dayNamesShort": [
+            "日",
+            "月",
+            "火",
+            "水",
+            "木",
+            "金",
+            "土"
+        ],
+        "dayNamesMin": [
+            "日",
+            "月",
+            "火",
+            "水",
+            "木",
+            "金",
+            "土"
+        ],
         "monthNames": [
             "1月",
             "2月",
@@ -377,5 +401,61 @@
         "passwordPrompt": "パスワードを入力",
         "emptyMessage": "結果が見つかりません",
         "emptyFilterMessage": "結果が見つかりません"
+    },
+    "boot": {
+        "steps": {
+            "connecting": "Swarm マネージャーに接続中…",
+            "nodes": "ノードのインベントリを取得中…",
+            "stacksServices": "スタックとサービスを読み込み中…",
+            "timeSeries": "負荷の時系列データを取得中…",
+            "almostThere": "もうすぐ完了…"
+        }
+    },
+    "toast": {
+        "dismiss": "閉じる"
+    },
+    "profile": {
+        "title": "マイプロフィール",
+        "subtitle": "アカウント情報とセキュリティ設定を管理します。",
+        "accountDetails": "アカウント詳細",
+        "accountDetailsHint": "個人情報を更新してください。",
+        "username": "ユーザー名",
+        "usernameHint": "ユーザー名は変更できません。",
+        "password": "パスワード",
+        "changePassword": "変更…",
+        "fullName": "氏名",
+        "role": "ロール",
+        "roleHint": "ロールは管理者が管理します。",
+        "accountCreated": "アカウント作成日",
+        "lastLogin": "最終ログイン",
+        "readOnly": "読み取り専用",
+        "reset": "リセット",
+        "saveChanges": "変更を保存",
+        "saved": "プロフィールを保存しました。",
+        "modal": {
+            "title": "パスワードを変更",
+            "subtitle": "以前に使用したことのない強いパスワードを選択してください。",
+            "current": "現在のパスワード",
+            "new": "新しいパスワード",
+            "newHint": "8文字以上必要です。",
+            "confirm": "新しいパスワードを確認",
+            "update": "パスワードを更新",
+            "updated": "パスワードを変更しました。",
+            "strength": {
+                "veryWeak": "非常に弱い",
+                "weak": "弱い",
+                "fair": "普通",
+                "good": "良い",
+                "strong": "強い",
+                "excellent": "非常に強い"
+            },
+            "errors": {
+                "current": "現在のパスワードが正しくありません。",
+                "minLength": "8文字以上必要です。",
+                "mismatch": "パスワードが一致しません。",
+                "required": "このフィールドは必須です。",
+                "invalidEmail": "有効なメールアドレスを入力してください。"
+            }
+        }
     }
 }

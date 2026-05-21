@@ -336,9 +336,33 @@
         "choose": "선택",
         "upload": "업로드",
         "cancel": "취소",
-        "dayNames": ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"],
-        "dayNamesShort": ["일", "월", "화", "수", "목", "금", "토"],
-        "dayNamesMin": ["일", "월", "화", "수", "목", "금", "토"],
+        "dayNames": [
+            "일요일",
+            "월요일",
+            "화요일",
+            "수요일",
+            "목요일",
+            "금요일",
+            "토요일"
+        ],
+        "dayNamesShort": [
+            "일",
+            "월",
+            "화",
+            "수",
+            "목",
+            "금",
+            "토"
+        ],
+        "dayNamesMin": [
+            "일",
+            "월",
+            "화",
+            "수",
+            "목",
+            "금",
+            "토"
+        ],
         "monthNames": [
             "1월",
             "2월",
@@ -377,5 +401,61 @@
         "passwordPrompt": "비밀번호를 입력하세요",
         "emptyMessage": "결과를 찾을 수 없습니다",
         "emptyFilterMessage": "결과를 찾을 수 없습니다"
+    },
+    "boot": {
+        "steps": {
+            "connecting": "Swarm 관리자에 연결 중…",
+            "nodes": "노드 인벤토리 가져오는 중…",
+            "stacksServices": "스택 내 서비스 로드 중…",
+            "timeSeries": "부하 시계열 데이터 가져오는 중…",
+            "almostThere": "거의 완료…"
+        }
+    },
+    "toast": {
+        "dismiss": "닫기"
+    },
+    "profile": {
+        "title": "내 프로필",
+        "subtitle": "계정 세부 정보와 보안 설정을 관리합니다.",
+        "accountDetails": "계정 세부 정보",
+        "accountDetailsHint": "개인 정보를 업데이트합니다.",
+        "username": "사용자 이름",
+        "usernameHint": "사용자 이름은 변경할 수 없습니다.",
+        "password": "비밀번호",
+        "changePassword": "변경…",
+        "fullName": "전체 이름",
+        "role": "역할",
+        "roleHint": "역할은 관리자가 관리합니다.",
+        "accountCreated": "계정 생성일",
+        "lastLogin": "마지막 로그인",
+        "readOnly": "읽기 전용",
+        "reset": "초기화",
+        "saveChanges": "변경 사항 저장",
+        "saved": "프로필이 성공적으로 저장되었습니다.",
+        "modal": {
+            "title": "비밀번호 변경",
+            "subtitle": "이전에 사용하지 않은 강력한 비밀번호를 선택하세요.",
+            "current": "현재 비밀번호",
+            "new": "새 비밀번호",
+            "newHint": "최소 8자 이상이어야 합니다.",
+            "confirm": "새 비밀번호 확인",
+            "update": "비밀번호 업데이트",
+            "updated": "비밀번호가 성공적으로 변경되었습니다.",
+            "strength": {
+                "veryWeak": "매우 약함",
+                "weak": "약함",
+                "fair": "보통",
+                "good": "좋음",
+                "strong": "강함",
+                "excellent": "매우 강함"
+            },
+            "errors": {
+                "current": "현재 비밀번호가 올바르지 않습니다.",
+                "minLength": "최소 8자 이상이어야 합니다.",
+                "mismatch": "비밀번호가 일치하지 않습니다.",
+                "required": "이 필드는 필수입니다.",
+                "invalidEmail": "유효한 이메일 주소를 입력하세요."
+            }
+        }
     }
 }

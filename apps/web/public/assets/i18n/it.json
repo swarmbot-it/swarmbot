@@ -336,9 +336,33 @@
         "choose": "Scegli",
         "upload": "Carica",
         "cancel": "Annulla",
-        "dayNames": ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"],
-        "dayNamesShort": ["Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"],
-        "dayNamesMin": ["Do", "Lu", "Ma", "Me", "Gi", "Ve", "Sa"],
+        "dayNames": [
+            "Domenica",
+            "Lunedì",
+            "Martedì",
+            "Mercoledì",
+            "Giovedì",
+            "Venerdì",
+            "Sabato"
+        ],
+        "dayNamesShort": [
+            "Dom",
+            "Lun",
+            "Mar",
+            "Mer",
+            "Gio",
+            "Ven",
+            "Sab"
+        ],
+        "dayNamesMin": [
+            "Do",
+            "Lu",
+            "Ma",
+            "Me",
+            "Gi",
+            "Ve",
+            "Sa"
+        ],
         "monthNames": [
             "Gennaio",
             "Febbraio",
@@ -377,5 +401,61 @@
         "passwordPrompt": "Inserisci una password",
         "emptyMessage": "Nessun risultato trovato",
         "emptyFilterMessage": "Nessun risultato trovato"
+    },
+    "boot": {
+        "steps": {
+            "connecting": "Connessione al gestore dello swarm…",
+            "nodes": "Recupero inventario nodi…",
+            "stacksServices": "Caricamento stack e servizi…",
+            "timeSeries": "Recupero serie temporali del carico…",
+            "almostThere": "Quasi pronto…"
+        }
+    },
+    "toast": {
+        "dismiss": "Chiudi"
+    },
+    "profile": {
+        "title": "Il mio profilo",
+        "subtitle": "Gestisci i dettagli dell'account e le impostazioni di sicurezza.",
+        "accountDetails": "Dettagli account",
+        "accountDetailsHint": "Aggiorna le tue informazioni personali.",
+        "username": "Nome utente",
+        "usernameHint": "Il nome utente non può essere modificato.",
+        "password": "Password",
+        "changePassword": "Modifica…",
+        "fullName": "Nome completo",
+        "role": "Ruolo",
+        "roleHint": "Il ruolo è gestito da un amministratore.",
+        "accountCreated": "Account creato",
+        "lastLogin": "Ultimo accesso",
+        "readOnly": "Solo lettura",
+        "reset": "Ripristina",
+        "saveChanges": "Salva modifiche",
+        "saved": "Profilo salvato con successo.",
+        "modal": {
+            "title": "Cambia password",
+            "subtitle": "Scegli una password sicura che non hai mai usato prima.",
+            "current": "Password attuale",
+            "new": "Nuova password",
+            "newHint": "Almeno 8 caratteri.",
+            "confirm": "Conferma nuova password",
+            "update": "Aggiorna password",
+            "updated": "Password modificata con successo.",
+            "strength": {
+                "veryWeak": "Molto debole",
+                "weak": "Debole",
+                "fair": "Sufficiente",
+                "good": "Buona",
+                "strong": "Forte",
+                "excellent": "Eccellente"
+            },
+            "errors": {
+                "current": "La password attuale non è corretta.",
+                "minLength": "Deve contenere almeno 8 caratteri.",
+                "mismatch": "Le password non coincidono.",
+                "required": "Questo campo è obbligatorio.",
+                "invalidEmail": "Inserisci un indirizzo email valido."
+            }
+        }
     }
 }

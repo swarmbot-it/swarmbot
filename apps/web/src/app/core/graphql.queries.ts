@@ -304,3 +304,40 @@ export const MUTATION_CREATE_STACK = gql`
 		}
 	}
 `;
+
+/** Fetch full profile for the authenticated user. */
+export const QUERY_PROFILE_ME = gql`
+	query ProfileMe {
+		me {
+			username
+			name
+			email
+			phone
+			role
+			created
+			lastLogin
+		}
+	}
+`;
+
+/** Update the authenticated user's editable profile fields. */
+export const MUTATION_UPDATE_PROFILE = gql`
+	mutation UpdateProfile($input: UpdateProfileInput!) {
+		updateProfile(input: $input) {
+			username
+			name
+			email
+			phone
+			role
+			created
+			lastLogin
+		}
+	}
+`;
+
+/** Change the authenticated user's password. */
+export const MUTATION_CHANGE_PASSWORD = gql`
+	mutation ChangePassword($input: ChangePasswordInput!) {
+		changePassword(input: $input)
+	}
+`;

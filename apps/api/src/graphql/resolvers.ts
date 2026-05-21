@@ -26,8 +26,11 @@ import {
 } from "../store/registries.js";
 import {
 	createUser as createUserDoc,
+	getUserByUsername,
 	listUsers as listUserAccounts,
 	removeUser,
+	updateUserProfile,
+	changeUserPassword,
 } from "../store/users.js";
 import {
 	influxClusterSeries,
@@ -121,12 +124,16 @@ export const resolvers = {
 		}),
 		me: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
 			requireUser(ctx);
-			const u = await userByUsername(ctx.couchDb, ctx.user!.usr.username);
+			const u = await getUserByUsername(ctx.couchDb, ctx.user!.usr.username);
 			if (!u) return null;
 			return {
-				username: String(u.username),
-				email: u.email !== undefined ? String(u.email) : null,
-				role: String(u.role ?? "user"),
+				username: u.username,
+				email: u.email || null,
+				name: u.name || null,
+				phone: u.phone || null,
+				role: u.role,
+				created: u.created || null,
+				lastLogin: u.lastLogin || null,
 			};
 		},
 		overview: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
@@ -603,6 +610,22 @@ export const resolvers = {
 		removeUser: async (_: unknown, { id }: { id: string }, ctx: GraphQLContext) => {
 			requireUser(ctx);
 			return removeUser(ctx.couchDb, id);
+		},
+		updateProfile: async (
+			_: unknown,
+			{ input }: { input: { name: string; email: string; phone?: string | null } },
+			ctx: GraphQLContext
+		) => {
+			requireUser(ctx);
+			return updateUserProfile(ctx.couchDb, ctx.user!.usr.username, input);
+		},
+		changePassword: async (
+			_: unknown,
+			{ input }: { input: { current: string; next: string } },
+			ctx: GraphQLContext
+		) => {
+			requireUser(ctx);
+			return changeUserPassword(ctx.couchDb, ctx.user!.usr.username, input.current, input.next);
 		},
 	},
 

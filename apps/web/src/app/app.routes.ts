@@ -77,6 +77,13 @@ export const routes: Routes = [
 				loadComponent: () =>
 					import("./app-table-host.component").then((m) => m.UsersHostComponent),
 			},
+			{
+				path: "profile",
+				loadComponent: () =>
+					import("./pages/profile/profile-page.component").then(
+						(m) => m.ProfilePageComponent
+					),
+			},
 		],
 	},
 	{ path: "", pathMatch: "full", redirectTo: "app/dashboard" },

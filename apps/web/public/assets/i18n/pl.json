@@ -345,8 +345,24 @@
             "Piątek",
             "Sobota"
         ],
-        "dayNamesShort": ["Nd", "Pn", "Wt", "Śr", "Cz", "Pt", "So"],
-        "dayNamesMin": ["Nd", "Pn", "Wt", "Śr", "Cz", "Pt", "So"],
+        "dayNamesShort": [
+            "Nd",
+            "Pn",
+            "Wt",
+            "Śr",
+            "Cz",
+            "Pt",
+            "So"
+        ],
+        "dayNamesMin": [
+            "Nd",
+            "Pn",
+            "Wt",
+            "Śr",
+            "Cz",
+            "Pt",
+            "So"
+        ],
         "monthNames": [
             "Styczeń",
             "Luty",
@@ -385,5 +401,61 @@
         "passwordPrompt": "Wprowadź hasło",
         "emptyMessage": "Brak wyników",
         "emptyFilterMessage": "Brak wyników"
+    },
+    "boot": {
+        "steps": {
+            "connecting": "Łączenie z menedżerem roju…",
+            "nodes": "Pobieranie spisu węzłów…",
+            "stacksServices": "Ładowanie stosów i usług…",
+            "timeSeries": "Szereg czasowy obciążenia…",
+            "almostThere": "Już prawie gotowe…"
+        }
+    },
+    "toast": {
+        "dismiss": "Zamknij"
+    },
+    "profile": {
+        "title": "Mój profil",
+        "subtitle": "Zarządzaj danymi konta i ustawieniami bezpieczeństwa.",
+        "accountDetails": "Szczegóły konta",
+        "accountDetailsHint": "Zaktualizuj swoje dane osobowe.",
+        "username": "Nazwa użytkownika",
+        "usernameHint": "Nazwy użytkownika nie można zmienić.",
+        "password": "Hasło",
+        "changePassword": "Zmień…",
+        "fullName": "Imię i nazwisko",
+        "role": "Rola",
+        "roleHint": "Rola jest zarządzana przez administratora.",
+        "accountCreated": "Konto założone",
+        "lastLogin": "Ostatnie logowanie",
+        "readOnly": "Tylko odczyt",
+        "reset": "Przywróć",
+        "saveChanges": "Zapisz zmiany",
+        "saved": "Profil zapisany pomyślnie.",
+        "modal": {
+            "title": "Zmień hasło",
+            "subtitle": "Wybierz silne hasło, którego wcześniej nie używałeś(-aś).",
+            "current": "Aktualne hasło",
+            "new": "Nowe hasło",
+            "newHint": "Co najmniej 8 znaków.",
+            "confirm": "Potwierdź nowe hasło",
+            "update": "Zmień hasło",
+            "updated": "Hasło zmienione pomyślnie.",
+            "strength": {
+                "veryWeak": "Bardzo słabe",
+                "weak": "Słabe",
+                "fair": "Przeciętne",
+                "good": "Dobre",
+                "strong": "Silne",
+                "excellent": "Doskonałe"
+            },
+            "errors": {
+                "current": "Aktualne hasło jest nieprawidłowe.",
+                "minLength": "Musi mieć co najmniej 8 znaków.",
+                "mismatch": "Hasła nie są zgodne.",
+                "required": "To pole jest wymagane.",
+                "invalidEmail": "Podaj prawidłowy adres e-mail."
+            }
+        }
     }
 }
