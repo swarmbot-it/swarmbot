@@ -1,7 +1,6 @@
 import {
 	ChangeDetectionStrategy,
 	Component,
-	computed,
 	effect,
 	inject,
 	signal,
@@ -10,10 +9,11 @@ import { AsyncPipe, NgFor, NgIf } from "@angular/common";
 import { TranslocoPipe, TranslocoService } from "@jsverse/transloco";
 import { Apollo } from "apollo-angular";
 import { I18nStateService } from "../../core/i18n/i18n-state.service";
-import { combineLatest, Observable } from "rxjs";
+import { combineLatest, forkJoin, from, Observable, timer } from "rxjs";
 import { map, startWith } from "rxjs/operators";
 
 import { QUERY_METRICS_SERIES, QUERY_NODES, QUERY_OVERVIEW } from "../../core/graphql.queries";
+import { BootService } from "../../core/boot.service";
 import { DonutComponent } from "../../shared/donut.component";
 import { LineChartComponent, Series } from "../../shared/line-chart.component";
 import { SegmentedComponent } from "../../shared/segmented.component";
@@ -196,21 +196,12 @@ type MetricsResponse = {
 							{{ "dashboard.influxHint" | transloco }}
 						</div>
 					</div>
-					<div style="display:flex; gap:10px; align-items:center;">
-						<sb-segmented
-							[options]="ranges"
-							[value]="range()"
-							(select)="range.set($any($event))"
-						>
-						</sb-segmented>
-						<span style="width:1px; height:24px; background: var(--border);"></span>
-						<sb-segmented
-							[options]="resolutions()"
-							[value]="resolution()"
-							(select)="resolution.set($any($event))"
-						>
-						</sb-segmented>
-					</div>
+					<sb-segmented
+						[options]="ranges"
+						[value]="range()"
+						(select)="range.set($any($event))"
+					>
+					</sb-segmented>
 				</div>
 				<div class="card__body" style="padding-top: 8px;">
 					<div
@@ -502,6 +493,7 @@ export class DashboardComponent {
 	private readonly apollo = inject(Apollo);
 	private readonly transloco = inject(TranslocoService);
 	private readonly i18n = inject(I18nStateService);
+	private readonly bootService = inject(BootService);
 
 	readonly ranges = [
 		{ value: "15m", label: "15m" },
@@ -510,23 +502,7 @@ export class DashboardComponent {
 		{ value: "24h", label: "24h" },
 	];
 
-	readonly resolutions = computed(() => {
-		this.i18n.activeLang();
-		return [
-			{ value: "low" as const, label: this.transloco.translate("dashboard.resolution.low") },
-			{
-				value: "medium" as const,
-				label: this.transloco.translate("dashboard.resolution.medium"),
-			},
-			{
-				value: "high" as const,
-				label: this.transloco.translate("dashboard.resolution.high"),
-			},
-		];
-	});
-
 	readonly range = signal<"15m" | "1h" | "6h" | "24h">("1h");
-	readonly resolution = signal<"low" | "medium" | "high">("medium");
 
 	private readonly overviewRef = this.apollo.watchQuery<{ overview: Overview }>({
 		query: QUERY_OVERVIEW,
@@ -540,23 +516,29 @@ export class DashboardComponent {
 
 	private readonly metricsRef = this.apollo.watchQuery<MetricsResponse>({
 		query: QUERY_METRICS_SERIES,
-		variables: { input: { range: this.range(), resolution: this.resolution() } },
+		variables: { input: { range: this.range(), resolution: "high" } },
 		fetchPolicy: "network-only",
 	});
 
 	constructor() {
 		effect(() => {
-			const range = this.range();
-			const resolution = this.resolution();
-			void this.metricsRef.refetch({ input: { range, resolution } });
+			void this.metricsRef.refetch({ input: { range: this.range(), resolution: "high" } });
 		});
 	}
 
 	refresh(): void {
-		void this.overviewRef.refetch();
-		void this.nodesRef.refetch();
-		void this.metricsRef.refetch({
-			input: { range: this.range(), resolution: this.resolution() },
+		this.bootService.startRefresh();
+
+		forkJoin([
+			forkJoin([
+				from(this.overviewRef.refetch()),
+				from(this.nodesRef.refetch()),
+				from(this.metricsRef.refetch({ input: { range: this.range(), resolution: "high" } })),
+			]),
+			timer(500),
+		]).subscribe({
+			next: () => this.bootService.endRefresh(),
+			error: () => this.bootService.endRefresh(),
 		});
 	}
 

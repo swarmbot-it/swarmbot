@@ -8,6 +8,9 @@ import { seedDemoUsers } from "./store/users.js";
 
 async function main(): Promise<void> {
 	const cfg0 = loadConfig();
+	console.log(
+		`Starting Swarmboty (mock=${cfg0.mock}, db=${cfg0.dbUrl}, port=${cfg0.port})`
+	);
 	const couchServer = createCouch(cfg0);
 	const couchDb = await initCouch(cfg0, couchServer);
 	await initUsersFromConfig(couchDb);
@@ -19,8 +22,13 @@ async function main(): Promise<void> {
 	await initInflux(cfg0);
 	const cfg = { ...cfg0, dockerApi: resolvedDockerApi(cfg0.dockerApi) };
 	const { httpServer, cleanup } = await createHttpServer(cfg, couchDb);
-	httpServer.listen(cfg.port, () => {
-		console.log(`Swarmboty listening on http://0.0.0.0:${cfg.port}`);
+	await new Promise<void>((resolve, reject) => {
+		httpServer.once("error", reject);
+		httpServer.listen(cfg.port, () => {
+			httpServer.off("error", reject);
+			console.log(`Swarmboty listening on http://0.0.0.0:${cfg.port}`);
+			resolve();
+		});
 	});
 	const shutdown = async () => {
 		await cleanup();

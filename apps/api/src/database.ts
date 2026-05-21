@@ -8,6 +8,9 @@ import { influxPing, createDatabase } from "./influx.js";
 
 async function waitFor(name: string, maxSec: number, fn: () => Promise<boolean>): Promise<void> {
 	for (let i = 0; i < maxSec; i++) {
+		if (i === 0 || i % 10 === 0) {
+			console.log(`Waiting for ${name}… (${i}/${maxSec}s)`);
+		}
 		try {
 			if (await fn()) {
 				console.log(`${name} connected after ${i}s`);
@@ -18,7 +21,7 @@ async function waitFor(name: string, maxSec: number, fn: () => Promise<boolean>)
 		}
 		await delay(1000);
 	}
-	throw new Error(`${name} connection timeout`);
+	throw new Error(`${name} connection timeout after ${maxSec}s`);
 }
 
 async function runMigration(

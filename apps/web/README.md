@@ -6,7 +6,7 @@ Angular **21** single-page application for the SwarmBoty Docker Swarm admin cons
 
 - Node.js 20+
 - npm (monorepo workspace)
-- API running on port **8080** (see repository root `README.md`)
+- API running on port **8081** for host dev (`npm run dev:api`; see repository root `README.md`)
 
 ## Development server
 
@@ -23,7 +23,7 @@ npm start
 # equivalent: ng serve
 ```
 
-Open [http://localhost:4200](http://localhost:4200). The dev server proxies API paths (`/graphql`, `/health`, …) to `http://localhost:8080` via `proxy.conf.json`.
+Open [http://localhost:4200](http://localhost:4200). The dev server proxies API paths (`/graphql`, `/health`, …) to `http://localhost:8081` via `proxy.conf.json`.
 
 > **Note:** `GET /login` is handled by Angular (login screen). It is **not** proxied to the API. Authentication uses the GraphQL `login` mutation on `/graphql`.
 

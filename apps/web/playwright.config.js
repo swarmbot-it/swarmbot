@@ -2,7 +2,7 @@ const path = require("path");
 const { defineConfig, devices } = require("@playwright/test");
 
 const monorepoRoot = path.resolve(__dirname, "../..");
-const apiPort = process.env.SWARMBOTY_E2E_API_PORT ?? "8080";
+const apiPort = process.env.SWARMBOTY_E2E_API_PORT ?? "8081";
 const webPort = process.env.SWARMBOTY_E2E_WEB_PORT ?? "4200";
 
 module.exports = defineConfig({

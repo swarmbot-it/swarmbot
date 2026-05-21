@@ -3,7 +3,7 @@ import { Router } from "@angular/router";
 import { Apollo } from "apollo-angular";
 import { NgIf } from "@angular/common";
 import { form, FormField, required, minLength } from "@angular/forms/signals";
-import { TranslocoPipe } from "@jsverse/transloco";
+import { TranslocoPipe, TranslocoService } from "@jsverse/transloco";
 import { AuthService } from "../../core/auth.service";
 import { LogoComponent } from "../../shared/logo.component";
 import { MUTATION_LOGIN } from "../../core/graphql.queries";
@@ -100,6 +100,7 @@ export class LoginPageComponent {
 	private readonly apollo = inject(Apollo);
 	private readonly auth = inject(AuthService);
 	private readonly router = inject(Router);
+	private readonly transloco = inject(TranslocoService);
 
 	readonly loading = signal(false);
 	readonly error = signal<string | null>(null);
@@ -139,9 +140,8 @@ export class LoginPageComponent {
 					this.auth.setProfile({ username, name: username });
 					void this.router.navigateByUrl("/app/dashboard");
 				},
-				error: (err) => {
-					const msg = err?.graphQLErrors?.[0]?.message ?? err?.message ?? null;
-					this.error.set(msg);
+				error: () => {
+					this.error.set(this.transloco.translate("auth.login.failed"));
 					this.loading.set(false);
 				},
 				complete: () => {

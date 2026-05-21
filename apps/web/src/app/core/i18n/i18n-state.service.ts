@@ -39,14 +39,16 @@ export class I18nStateService {
 	 */
 	async setLanguage(code: LangCode): Promise<void> {
 		if (this.activeLang() === code) return;
-		this.activeLang.set(code);
 		try {
 			localStorage.setItem(STORAGE_KEY, code);
 		} catch {
 			/* ignore */
 		}
+		// Load the translation file first so that when the activeLang signal fires
+		// and triggers a template re-render, all keys are already available.
 		this.transloco.setActiveLang(code);
 		await firstValueFrom(this.transloco.load(code));
+		this.activeLang.set(code);
 		this.applyDocumentLang(code);
 		this.applyPrimeNgTranslations();
 	}
