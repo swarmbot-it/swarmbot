@@ -685,6 +685,15 @@ export class ProfilePageComponent {
 					this.nameVal.set(snap.name);
 					this.emailVal.set(snap.email);
 					this.phoneVal.set(snap.phone);
+					this.auth.setProfile({
+						username: u.username,
+						name: u.name ?? undefined,
+						email: u.email ?? undefined,
+						phone: u.phone ?? undefined,
+						role: u.role,
+						created: u.created ?? undefined,
+						lastLogin: u.lastLogin ?? undefined,
+					});
 					this.loading.set(false);
 				},
 				error: () => this.loading.set(false),

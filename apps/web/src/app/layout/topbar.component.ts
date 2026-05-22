@@ -90,7 +90,7 @@ const CJK_LANGS: { code: LangCode; label: string }[] = [
 					<div class="avatar">{{ initials() }}</div>
 					<div class="topbar__user-meta">
 						<span class="topbar__user-name">{{ user() }}</span>
-						<span class="topbar__user-role">{{ email() }}</span>
+						<span class="topbar__user-role" *ngIf="role()">{{ role() }}</span>
 					</div>
 					<sb-icon name="chevronDown" [size]="14"></sb-icon>
 				</div>
@@ -311,7 +311,7 @@ const CJK_LANGS: { code: LangCode; label: string }[] = [
 			}
 			.popover__email {
 				color: var(--muted);
-				font-size: 12px;
+				font-size: 13px;
 				margin-top: 2px;
 			}
 			.popover__item {
@@ -457,6 +457,9 @@ export class TopbarComponent {
 	}
 	email(): string {
 		return this.auth.profile()?.email ?? "—";
+	}
+	role(): string {
+		return this.auth.profile()?.role ?? "";
 	}
 	initials(): string {
 		const name = this.user();

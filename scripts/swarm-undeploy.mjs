@@ -5,11 +5,12 @@ const MANAGER = "swarm-manager";
 const STACK = "swarmboty";
 
 function run(cmd, opts = {}) {
-	return execSync(cmd, {
+	const out = execSync(cmd, {
 		stdio: opts.capture ? "pipe" : "inherit",
-		encoding: "utf8",
+		encoding: opts.capture ? "utf8" : undefined,
 		env: opts.env ?? process.env,
-	}).trim();
+	});
+	return opts.capture && typeof out === "string" ? out.trim() : undefined;
 }
 
 function containerRunning(name) {
@@ -25,12 +26,7 @@ if (!containerRunning(MANAGER)) {
 	process.exit(1);
 }
 
-const ip = run(
-	`docker inspect -f "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" ${MANAGER}`,
-	{ capture: true }
-);
-
 console.log(`>>> Removing stack '${STACK}' from DinD Swarm`);
-run(`docker stack rm ${STACK}`, { env: { ...process.env, DOCKER_HOST: `tcp://${ip}:2375` } });
+run(`docker exec ${MANAGER} docker stack rm ${STACK}`);
 console.log(`\nStack '${STACK}' removed.`);
 console.log(`Run 'npm run swarm:stop' to shut down the cluster entirely.`);

@@ -65,12 +65,13 @@ The web UI uses **Transloco** with runtime-loaded JSON dictionaries:
 
 - `apps/web/public/assets/i18n/pl.json`
 - `apps/web/public/assets/i18n/en.json`
+- ...
 
-The active language is stored in `localStorage` under `swarmboty.lang` (`pl` or `en`). On first visit, Polish is preferred when the browser language starts with `pl`; otherwise English is used.
+The active language is stored in `localStorage` under `swarmboty.lang`. On first visit, Polish is preferred when the browser language starts with `pl`; otherwise English is used.
 
-Switch language from the user menu in the top bar (PL / EN). PrimeNG table labels (paginator, etc.) are synchronized via `PrimeNGConfig.setTranslation`.
+Switch language from the user menu in the top bar. PrimeNG table labels (paginator, etc.) are synchronized via `PrimeNGConfig.setTranslation`.
 
-Every HTTP and GraphQL request sends `Accept-Language` (`pl-PL` or `en-US`). The API returns localized error messages from `apps/api/src/i18n/messages/`.
+Every HTTP and GraphQL request sends `Accept-Language`. The API returns localized error messages from `apps/api/src/i18n/messages/`.
 
 ## Demo / mock mode
 
@@ -146,65 +147,65 @@ docker compose -f docker-compose.dev.yml up db influxdb api
 npm run dev:web
 ```
 
-## Testowy klaster Docker Swarm (DinD)
+## Local Docker Swarm test cluster (DinD)
 
-Skrypty w `scripts/` uruchamiają lokalny klaster Swarm wewnątrz kontenerów Docker-in-Docker (DinD): jeden manager i dwóch workerów połączonych siecią mostkową `swarm-net`. Nie jest potrzebna maszyna wirtualna ani zewnętrzna infrastruktura.
+Scripts in `scripts/` run a local Swarm cluster inside Docker-in-Docker (DinD) containers: one manager and two workers on the `swarm-net` bridge network. No virtual machine or external infrastructure is required.
 
-> **Wymagania:** Docker musi być uruchomiony na hoście.
+> **Requirements:** Docker must be running on the host.
 
-### Uruchomienie klastra
+### Start the cluster
 
 ```sh
 npm run swarm:start
 ```
 
-Skrypt tworzy sieć `swarm-net`, startuje kontenery `swarm-manager`, `swarm-worker-1`, `swarm-worker-2`, inicjalizuje Swarm i dołącza workerów. Na koniec wyświetla `docker node ls`.
+The script creates `swarm-net`, starts `swarm-manager`, `swarm-worker-1`, and `swarm-worker-2`, initializes Swarm, and joins the workers. It finishes by printing `docker node ls`.
 
-### Sprawdzenie stanu
+### Check status
 
 ```sh
 npm run swarm:status
 ```
 
-Wyświetla stan kontenerów, listę node'ów Swarm oraz ewentualne wdrożone serwisy i stacki.
+Shows container status, Swarm nodes, and any deployed services and stacks.
 
-### Zatrzymanie i usunięcie klastra
+### Stop and remove the cluster
 
 ```sh
 npm run swarm:stop
 ```
 
-Usuwa wszystkie trzy kontenery i sieć `swarm-net`.
+Removes all three containers and the `swarm-net` network.
 
 ---
 
-### Logowanie do managera (interaktywna powłoka)
+### Shell into the manager (interactive)
 
 ```sh
 docker exec -it swarm-manager sh
 ```
 
-Wewnątrz kontenera dostępny jest pełnoprawny `docker` CLI z widokiem na cały klaster:
+Inside the container you have full `docker` CLI access to the whole cluster:
 
 ```sh
-# lista node'ów
+# list nodes
 docker node ls
 
-# wdrożenie testowego serwisu
+# deploy a test service
 docker service create --name test --replicas 2 nginx:alpine
 
-# lista serwisów i tasków
+# list services and tasks
 docker service ls
 docker service ps test
 
-# usunięcie serwisu
+# remove the service
 docker service rm test
 
-# wyjście z kontenera
+# leave the container
 exit
 ```
 
-Polecenia można też wykonywać bezpośrednio z hosta bez wchodzenia do kontenera:
+You can also run commands from the host without entering the container:
 
 ```sh
 docker exec swarm-manager docker node ls
@@ -213,48 +214,50 @@ docker exec swarm-manager docker service ls
 
 ---
 
-### Wdrożenie całego stacku do lokalnego Swarm
+### Deploy the full stack to local Swarm
 
-`docker-compose.local.yml` definiuje kompletny stack (app, db, influxdb, agent) przeznaczony do wdrożenia do klastra DinD. Skrypt buduje obrazy na hoście, ładuje je do kontenerów DinD przez `docker cp` + `docker load`, a następnie wdraża stack przez TCP do demona managera:
+`docker-compose.local.yml` defines the full stack (app, db, influxdb, agent) for deployment to the DinD cluster. `npm run swarm:deploy` starts the DinD cluster automatically when it is not running (`swarm:start`), then builds images on the host, loads them into DinD nodes, and deploys the stack via the manager container:
 
 ```sh
 npm run swarm:deploy
 ```
 
-Po zakończeniu skrypt wypisze adres URL: `http://MANAGER_IP:888`.
+When finished, open **http://localhost:888** (port `888` is published from the `swarm-manager` DinD container to your host). Login: **admin** / **swarmboty**.
+
+> Do not use bare `http://172.18.0.2/` — that is the manager container’s internal Docker bridge IP. On Windows it is often unreachable from the browser, and the app listens on port **888**, not 80.
 
 ```sh
-# aktualizacja po zmianie kodu (pełny rebuild + redeploy)
+# update after code changes (full rebuild + redeploy)
 npm run swarm:deploy
 
-# usunięcie stacku (klaster pozostaje)
+# remove the stack (cluster stays up)
 npm run swarm:undeploy
 ```
 
-> Obrazy DinD (`docker:27-dind`) mają własne demony Docker izolowane od hosta. Dlatego skrypt zapisuje zbudowane obrazy do pliku tymczasowego i ładuje je do każdego node'a — bez potrzeby zewnętrznego registry.
+> DinD images (`docker:27-dind`) run isolated Docker daemons separate from the host. The script therefore saves built images to a temporary file and loads them on each node — no external registry required.
 
 ---
 
-### Podłączenie SwarmBoty API do testowego klastra
+### Point Swarmboty API at the test cluster
 
-Manager udostępnia Docker API przez TCP na porcie `2375` (bez TLS — flaga `DOCKER_TLS_CERTDIR=""` jest ustawiona przez skrypt startowy). Aby API SwarmBoty trafiało do testowego Swarm zamiast lokalnego demona, pobierz IP managera i przekaż go przez zmienną środowiskową:
+The manager exposes the Docker API over TCP on port `2375` (no TLS — the start script sets `DOCKER_TLS_CERTDIR=""`). To make Swarmboty API talk to the test Swarm instead of the local daemon, resolve the manager IP and set:
 
 **macOS / Linux:**
 ```sh
 MANAGER_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' swarm-manager)
-SWARMBOTY_DOCKER_HOST=tcp://$MANAGER_IP:2375 npm run dev:api
+SWARMBOTY_DOCKER_SOCK=tcp://$MANAGER_IP:2375 npm run dev:api
 ```
 
 **Windows PowerShell:**
 ```powershell
 $MANAGER_IP = docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' swarm-manager
-$env:SWARMBOTY_DOCKER_HOST = "tcp://${MANAGER_IP}:2375"
+$env:SWARMBOTY_DOCKER_SOCK = "tcp://${MANAGER_IP}:2375"
 npm run dev:api
 ```
 
-Następnie otwórz http://localhost:4200 (po uruchomieniu `npm run dev:web`) i zaloguj się jako `admin` / `swarmboty`. Panel będzie pokazywał zasoby testowego klastra.
+Then open http://localhost:4200 (after `npm run dev:web`) and sign in as `admin` / `swarmboty`. The UI will show resources from the test cluster.
 
-> **Uwaga:** jeśli `SWARMBOTY_DOCKER_HOST` nie jest ustawione, API używa lokalnego socketu `/var/run/docker.sock` (domyślnie).
+> **Note:** if `SWARMBOTY_DOCKER_SOCK` is unset, the API uses the local socket `/var/run/docker.sock` (default).
 
 ---
 

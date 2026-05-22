@@ -2,15 +2,14 @@
 #
 # ── Wymagania ─────────────────────────────────────────────────────────────────
 #
-#   1. Uruchom klaster:          npm run swarm:start
-#   2. Zbuduj i wdróż:           npm run swarm:deploy
+#   1. Zbuduj i wdróż (opcjonalnie sam klaster: npm run swarm:start):  npm run swarm:deploy
 #   3. Sprawdź stan:             npm run swarm:status
 #   4. Usuń stack:               npm run swarm:undeploy
 #   5. Zatrzymaj klaster:        npm run swarm:stop
 #
 # ── Dostęp ───────────────────────────────────────────────────────────────────
 #
-#   http://MANAGER_IP:888   (IP managera z: npm run swarm:status)
+#   http://localhost:888   (host port forwarded into DinD manager)
 #   Login:  admin / swarmboty
 #
 # ── Uwaga ─────────────────────────────────────────────────────────────────────

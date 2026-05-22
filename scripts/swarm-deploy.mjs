@@ -7,13 +7,17 @@
  * Cross-platform: uses temp files instead of shell pipes so it works on
  * Windows PowerShell, macOS, and Linux without changes.
  */
-import { execSync } from "child_process";
-import { existsSync } from "fs";
+import { execSync, spawnSync } from "child_process";
+import { existsSync, readFileSync, unlinkSync } from "fs";
 import { tmpdir } from "os";
-import { join, resolve } from "path";
+import { dirname, join, resolve } from "path";
+import { fileURLToPath } from "url";
+
+const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
+const NETWORK = "swarm-net";
 const MANAGER = "swarm-manager";
 const WORKERS = ["swarm-worker-1", "swarm-worker-2"];
 const STACK = "swarmboty";
@@ -23,11 +27,12 @@ const AGENT_DIR = resolve("../swarmagent");
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function run(cmd, opts = {}) {
-	return execSync(cmd, {
+	const out = execSync(cmd, {
 		stdio: opts.capture ? "pipe" : "inherit",
-		encoding: "utf8",
+		encoding: opts.capture ? "utf8" : undefined,
 		env: opts.env ?? process.env,
-	}).trim();
+	});
+	return opts.capture && typeof out === "string" ? out.trim() : undefined;
 }
 
 function containerRunning(name) {
@@ -39,16 +44,35 @@ function containerRunning(name) {
 }
 
 function managerIp() {
-	return run(
-		`docker inspect -f "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" ${MANAGER}`,
+	const ip = run(
+		`docker inspect -f "{{index .NetworkSettings.Networks \\"${NETWORK}\\" \\"IPAddress\\"}}" ${MANAGER}`,
 		{ capture: true }
 	);
+	if (!ip) {
+		console.error(`Could not resolve ${MANAGER} IP on network ${NETWORK}`);
+		process.exit(1);
+	}
+	return ip;
 }
 
 /**
- * Saves an image from the host daemon to a temp tar, copies it into every
- * listed DinD container, and loads it there. Temp files are cleaned up.
+ * Saves an image from the host daemon to a temp tar, streams it into each
+ * DinD container via `docker exec -i … docker load` (works on Windows;
+ * `docker cp` into DinD /tmp is unreliable there).
  */
+function loadImageIntoNode(node, tarPath, image) {
+	console.log(`    load  ${image} → ${node}`);
+	const tar = readFileSync(tarPath);
+	const result = spawnSync("docker", ["exec", "-i", node, "docker", "load"], {
+		input: tar,
+		stdio: ["pipe", "inherit", "inherit"],
+		maxBuffer: Infinity,
+	});
+	if (result.status !== 0) {
+		throw new Error(`docker load into ${node} failed (exit ${result.status})`);
+	}
+}
+
 function loadImageIntoNodes(image, nodes) {
 	const slug = image.replace(/[/:]/g, "-");
 	const tarPath = join(tmpdir(), `${slug}.tar`);
@@ -61,23 +85,43 @@ function loadImageIntoNodes(image, nodes) {
 			console.log(`    skip  ${node} (not running)`);
 			continue;
 		}
-		console.log(`    load  ${image} → ${node}`);
-		run(`docker cp "${tarPath}" ${node}:/tmp/_swarm_load.tar`);
-		run(`docker exec ${node} docker load -i /tmp/_swarm_load.tar`);
-		run(`docker exec ${node} rm -f /tmp/_swarm_load.tar`);
+		loadImageIntoNode(node, tarPath, image);
 	}
 
-	// Remove temp file (best-effort)
-	try { run(`docker run --rm -v "${tarPath}":"${tarPath}" alpine rm -f "${tarPath}"`, { capture: true }); } catch { /* ignore */ }
+	try {
+		unlinkSync(tarPath);
+	} catch {
+		/* ignore */
+	}
 }
 
 // ── Pre-flight checks ─────────────────────────────────────────────────────────
 
-if (!containerRunning(MANAGER)) {
-	console.error(`\nError: ${MANAGER} is not running.`);
-	console.error("       Run 'npm run swarm:start' first.\n");
-	process.exit(1);
+function swarmClusterReady() {
+	if (!containerRunning(MANAGER)) {
+		return false;
+	}
+	try {
+		run(`docker exec ${MANAGER} docker node ls`, { capture: true });
+		return true;
+	} catch {
+		return false;
+	}
 }
+
+function ensureSwarmCluster() {
+	if (swarmClusterReady()) {
+		return;
+	}
+	console.log("\n>>> DinD Swarm cluster is not available — running swarm:start\n");
+	run(`node "${join(SCRIPT_DIR, "swarm-start.mjs")}"`);
+	if (!swarmClusterReady()) {
+		console.error("\nError: cluster did not become ready after swarm:start.\n");
+		process.exit(1);
+	}
+}
+
+ensureSwarmCluster();
 
 const activeWorkers = WORKERS.filter(containerRunning);
 const allNodes = [MANAGER, ...activeWorkers];
@@ -111,15 +155,25 @@ if (hasAgent) {
 // ── Deploy stack ──────────────────────────────────────────────────────────────
 
 const ip = managerIp();
-const swarmEnv = { ...process.env, DOCKER_HOST: `tcp://${ip}:2375` };
+const composeInManager = "/tmp/swarmboty-stack.yml";
+const composeBody = readFileSync(COMPOSE_FILE, "utf8");
 
 console.log(`\n>>> Deploying stack '${STACK}' to DinD Swarm (manager ${ip})`);
-run(`docker stack deploy -c ${COMPOSE_FILE} ${STACK}`, { env: swarmEnv });
+const copyCompose = spawnSync(
+	"docker",
+	["exec", "-i", MANAGER, "sh", "-c", `cat > ${composeInManager}`],
+	{ input: composeBody, stdio: ["pipe", "inherit", "inherit"], encoding: "utf8" }
+);
+if (copyCompose.status !== 0) {
+	throw new Error(`failed to copy ${COMPOSE_FILE} into ${MANAGER}`);
+}
+run(`docker exec ${MANAGER} docker stack deploy -c ${composeInManager} ${STACK}`);
 
 // ── Summary ───────────────────────────────────────────────────────────────────
 
 console.log("\n=== Stack deployed ===");
-console.log(`\n  UI:       http://${ip}:888`);
+console.log(`\n  UI:       http://localhost:888`);
+console.log(`  (inside DinD manager: http://${ip}:888 — often unreachable from Windows host)`);
 console.log(`  Login:    admin / swarmboty`);
 console.log(`\nServices may take 30–60 s to become healthy.`);
 console.log(`\n  npm run swarm:status     — node & service list`);
