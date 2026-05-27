@@ -1,8 +1,10 @@
 {
     "name": "web",
-    "version": "0.0.0",
+    "version": "0.1.1",
     "scripts": {
         "ng": "ng",
+        "prebuild": "node ../../scripts/sync-app-version.mjs",
+        "prestart": "node ../../scripts/sync-app-version.mjs",
         "start": "ng serve",
         "build": "ng build",
         "watch": "ng build --watch --configuration development",

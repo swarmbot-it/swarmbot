@@ -123,6 +123,13 @@ const GROUP_KEYS: Record<NavItem["group"], string> = {
 
 const GROUPS: NavItem["group"][] = ["overview", "workloads", "infra", "store", "admin"];
 
+export type SidebarFooter = {
+	clusterStatus: string;
+	managersReady: number;
+	managersTotal: number;
+	dockerApi: string | null;
+};
+
 /**
  * Primary app navigation. Groups routes by area and shows live resource counts from the cluster.
  */
@@ -148,22 +155,33 @@ const GROUPS: NavItem["group"][] = ["overview", "workloads", "infra", "store", "
 				</a>
 			</ng-container>
 
-			<div class="sidebar__footer">
+			<div class="sidebar__footer" *ngIf="footer">
 				<div class="sidebar__cluster-status">
-					<span class="dot dot--success"></span>
-					{{ "nav.clusterHealthy" | transloco }}
+					<span
+						class="dot"
+						[class.dot--success]="footer.clusterStatus === 'healthy'"
+						[class.dot--warning]="footer.clusterStatus === 'degraded'"
+						[class.dot--danger]="footer.clusterStatus === 'unhealthy'"
+					></span>
+					{{ clusterStatusKey(footer.clusterStatus) | transloco }}
 				</div>
-				<div>
+				<div *ngIf="footer.managersTotal > 0">
 					{{
 						"nav.quorum"
 							| transloco
 								: {
-										managers: counts?.["managers"] ?? 3,
-										total: counts?.["managers"] ?? 3,
+										managers: footer.managersReady,
+										total: footer.managersTotal,
 								  }
 					}}
 				</div>
-				<div>API: <span class="mono">v1.45</span></div>
+				<div class="sidebar__api-line mono">
+					API
+					<ng-container *ngIf="footer.dockerApi; else apiUnknown"
+						>v{{ footer.dockerApi }}</ng-container
+					>
+					<ng-template #apiUnknown>{{ "common.na" | transloco }}</ng-template>
+				</div>
 			</div>
 		</nav>
 	`,
@@ -252,6 +270,13 @@ const GROUPS: NavItem["group"][] = ["overview", "workloads", "infra", "store", "
 				color: var(--text-2);
 				font-size: 12px;
 			}
+			.sidebar__api-line {
+				font-size: 12px;
+				color: var(--muted);
+			}
+			.sidebar__api-line .mono {
+				color: var(--text-2);
+			}
 		`,
 	],
 	imports: [NgFor, NgIf, RouterLink, RouterLinkActive, IconComponent, TranslocoPipe],
@@ -259,6 +284,21 @@ const GROUPS: NavItem["group"][] = ["overview", "workloads", "infra", "store", "
 export class SidebarComponent {
 	/** Optional map of nav count keys to totals (stacks, services, nodes, etc.). */
 	@Input() counts: Record<string, number> | null = null;
+	/** Live cluster status, quorum, and API / app version line. */
+	@Input() footer: SidebarFooter | null = null;
+
+	clusterStatusKey(status: string): string {
+		switch (status) {
+			case "healthy":
+				return "nav.clusterHealthy";
+			case "degraded":
+				return "nav.clusterDegraded";
+			case "unhealthy":
+				return "nav.clusterUnhealthy";
+			default:
+				return "nav.clusterUnknown";
+		}
+	}
 
 	readonly groups = GROUPS;
 	readonly groupKeys = GROUP_KEYS;

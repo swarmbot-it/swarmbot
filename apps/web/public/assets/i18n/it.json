@@ -19,6 +19,9 @@
             "admin": "Amministrazione"
         },
         "clusterHealthy": "Cluster integro",
+        "clusterDegraded": "Cluster degradato",
+        "clusterUnhealthy": "Quorum perso",
+        "clusterUnknown": "Stato cluster sconosciuto",
         "quorum": "Quorum: {{managers}} su {{total}} manager"
     },
     "auth": {

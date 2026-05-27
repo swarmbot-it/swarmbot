@@ -13,12 +13,15 @@
         "users": "Users",
         "groups": {
             "overview": "Overview",
-            "workloads": "Workloads",
+            "workloads": "Resources",
             "infra": "Infrastructure",
             "store": "Storage & Config",
             "admin": "Administration"
         },
         "clusterHealthy": "Cluster healthy",
+        "clusterDegraded": "Cluster degraded",
+        "clusterUnhealthy": "Quorum lost",
+        "clusterUnknown": "Cluster status unknown",
         "quorum": "Quorum: {{managers}} of {{total}} managers"
     },
     "auth": {
@@ -44,7 +47,8 @@
         "preferences": "Preferences",
         "apiTokens": "API tokens",
         "logout": "Log out",
-        "administrator": "Administrator"
+        "administrator": "Administrator",
+        "clusterUnknown": "cluster"
     },
     "table": {
         "search": "Search…",
@@ -52,6 +56,7 @@
         "count": "{{filtered}} of {{total}}"
     },
     "common": {
+        "na": "N/A",
         "cancel": "Cancel",
         "create": "Create",
         "save": "Save",
@@ -79,6 +84,7 @@
         "resourceUtilization": "Resource Utilization",
         "influxHint": "Time series from InfluxDB · live aggregation",
         "loadingMetrics": "Loading metrics…",
+        "noMetrics": "No telemetry yet — start swarmagent on cluster nodes.",
         "nodesTitle": "Nodes",
         "nodesSubtitle": "{{count}} nodes · {{managers}} managers · {{workers}} workers",
         "managers": "Managers",
@@ -166,6 +172,7 @@
                 "manager": "Managers",
                 "worker": "Workers"
             },
+            "agent": "agent",
             "labels": {
                 "cpu": "CPU",
                 "memory": "Memory",
@@ -222,7 +229,16 @@
             "title": "Deploy stack",
             "subtitle": "Paste a Compose file or stack definition.",
             "name": "Stack name",
-            "content": "Stack file"
+            "content": "Stack file",
+            "deploy": "Deploy",
+            "errors": {
+                "nameRequired": "Enter a stack name.",
+                "contentRequired": "Paste a Compose definition."
+            },
+            "toast": {
+                "success": "Stack “{{name}}” deployed (status: {{status}}).",
+                "failed": "Could not deploy the stack."
+            }
         },
         "service": {
             "title": "Create service",

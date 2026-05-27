@@ -33,7 +33,7 @@ export const typeDefs = `#graphql
 
     users: [UserAccount!]!
 
-    metricsSeries(input: MetricsSeriesInput!): MetricsSeries!
+    metricsSeries(input: MetricsSeriesInput!): MetricsSeries
     statsSeries(measurement: String!, field: String!, tags: String): String
   }
 
@@ -111,15 +111,18 @@ export const typeDefs = `#graphql
     configs: Int!
     registries: Int!
     users: Int!
-    cpu: Int!
-    mem: Int!
-    disk: Int!
-    cpuCores: Int!
-    cpuUsed: Int!
-    memTotal: String!
-    memUsed: String!
-    diskTotal: String!
-    diskUsed: String!
+    cpu: Int
+    mem: Int
+    disk: Int
+    cpuCores: Int
+    cpuUsed: Int
+    memTotal: String
+    memUsed: String
+    diskTotal: String
+    diskUsed: String
+    clusterStatus: String!
+    managersReady: Int!
+    managersTotal: Int!
   }
 
   type StackSummary {
@@ -174,10 +177,14 @@ export const typeDefs = `#graphql
     availability: String
     ip: String
     dockerVersion: String
+    agentVersion: String
     tags: [String!]!
-    cpu: Int!
-    mem: Int!
-    disk: Int!
+    cpu: Int
+    mem: Int
+    disk: Int
+    cpuHistory: [Float!]
+    memHistory: [Float!]
+    diskHistory: [Float!]
   }
 
   type NetworkInfo {

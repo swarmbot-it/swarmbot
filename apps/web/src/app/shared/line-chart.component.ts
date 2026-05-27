@@ -11,20 +11,28 @@ export type Series = { name: string; data: number[]; color: string };
  * series. Hover support paints a vertical guide and a dot per series
  * at the active index.
  *
- * The chart uses a fixed virtual viewBox (1000 × 260 by default) and is
- * stretched responsively by SVG `preserveAspectRatio="none"`, so it
- * looks crisp at any container width.
+ * The chart uses a fixed virtual viewBox and a fixed pixel height on the
+ * host. Width follows the container; height does not change with viewport
+ * width (`preserveAspectRatio="none"` scales only horizontally).
  */
 @Component({
 	selector: "sb-line-chart",
 	standalone: true,
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	template: `
-		<div class="chart" (mousemove)="onMove($event)" (mouseleave)="hover.set(null)" #wrap>
+		<div
+			class="chart"
+			[style.height.px]="height"
+			(mousemove)="onMove($event)"
+			(mouseleave)="hover.set(null)"
+			#wrap
+		>
 			<svg
+				class="chart__svg"
 				[attr.viewBox]="'0 0 ' + width + ' ' + height"
 				preserveAspectRatio="none"
 				width="100%"
+				[attr.height]="height"
 			>
 				<!-- Y grid + ticks -->
 				<g>
@@ -123,6 +131,12 @@ export type Series = { name: string; data: number[]; color: string };
 				position: relative;
 				width: 100%;
 				overflow: hidden;
+				flex-shrink: 0;
+			}
+			.chart__svg {
+				display: block;
+				width: 100%;
+				height: 100%;
 			}
 			.chart__tooltip {
 				position: absolute;

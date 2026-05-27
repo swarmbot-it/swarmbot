@@ -3,13 +3,18 @@ import {
 	Component,
 	ElementRef,
 	HostListener,
+	OnInit,
 	inject,
 	computed,
+	signal,
 } from "@angular/core";
 import { NgFor, NgIf } from "@angular/common";
 import { Router } from "@angular/router";
 import { Apollo, gql } from "apollo-angular";
-import { TranslocoPipe } from "@jsverse/transloco";
+import { map } from "rxjs/operators";
+import { TranslocoPipe, TranslocoService } from "@jsverse/transloco";
+import { BUILD_APP_VERSION } from "../core/build-version";
+import { QUERY_VERSION } from "../core/graphql.queries";
 import { AuthService } from "../core/auth.service";
 import { ThemeService } from "../core/theme.service";
 import { I18nStateService } from "../core/i18n/i18n-state.service";
@@ -47,12 +52,12 @@ const CJK_LANGS: { code: LangCode; label: string }[] = [
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	template: `
 		<header class="topbar">
-			<sb-logo></sb-logo>
+			<sb-logo [subtitle]="logoSubtitle()"></sb-logo>
 
 			<span class="topbar__divider"></span>
 			<div class="topbar__cluster">
 				<span class="dot dot--success"></span>
-				<span class="topbar__cluster-name">prod-eu-1</span>
+				<span class="topbar__cluster-name">{{ clusterName() }}</span>
 				<sb-icon name="chevronDown" [size]="14"></sb-icon>
 			</div>
 
@@ -410,7 +415,7 @@ const CJK_LANGS: { code: LangCode; label: string }[] = [
 	],
 	imports: [NgIf, NgFor, LogoComponent, IconComponent, TranslocoPipe],
 })
-export class TopbarComponent {
+export class TopbarComponent implements OnInit {
 	readonly theme = inject(ThemeService);
 	readonly i18n = inject(I18nStateService);
 	readonly latinLangs = LATIN_LANGS;
@@ -419,9 +424,36 @@ export class TopbarComponent {
 	private readonly apollo = inject(Apollo);
 	private readonly router = inject(Router);
 	private readonly host = inject(ElementRef<HTMLElement>);
+	private readonly transloco = inject(TranslocoService);
 
 	menuOpen = false;
 	langOpen = false;
+	private readonly clusterInstanceName = signal<string | null>(null);
+
+	readonly logoSubtitle = computed(() => {
+		const cluster = this.clusterName();
+		return `${BUILD_APP_VERSION} · ${cluster}`;
+	});
+
+	readonly clusterName = computed(() => {
+		this.i18n.activeLang();
+		return (
+			this.clusterInstanceName()?.trim() ||
+			this.transloco.translate("topbar.clusterUnknown")
+		);
+	});
+
+	ngOnInit(): void {
+		this.apollo
+			.watchQuery<{ version: { instanceName: string | null } }>({
+				query: QUERY_VERSION,
+				pollInterval: 60_000,
+			})
+			.valueChanges.pipe(map((r) => r.data?.version?.instanceName ?? null))
+			.subscribe((name) => {
+				this.clusterInstanceName.set(name);
+			});
+	}
 
 	readonly currentLang = computed(() => {
 		const code = this.i18n.activeLang();

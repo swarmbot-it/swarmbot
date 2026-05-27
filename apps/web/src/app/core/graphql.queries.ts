@@ -31,6 +31,20 @@ export const QUERY_OVERVIEW = gql`
 			memUsed
 			diskTotal
 			diskUsed
+			clusterStatus
+			managersReady
+			managersTotal
+		}
+	}
+`;
+
+/** Runtime build identity and negotiated Docker Engine API version. */
+export const QUERY_VERSION = gql`
+	query Version {
+		version {
+			version
+			dockerApi
+			instanceName
 		}
 	}
 `;
@@ -94,10 +108,14 @@ export const QUERY_NODES = gql`
 			availability
 			ip
 			dockerVersion
+			agentVersion
 			tags
 			cpu
 			mem
 			disk
+			cpuHistory
+			memHistory
+			diskHistory
 		}
 	}
 `;

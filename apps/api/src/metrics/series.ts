@@ -18,14 +18,14 @@ import { influxQuery } from "../influx.js";
 export type Range = "15m" | "1h" | "6h" | "24h";
 export type Resolution = "low" | "medium" | "high";
 
-const RANGE_POINTS: Record<Range, number> = {
+export const RANGE_POINTS: Record<Range, number> = {
 	"15m": 30,
 	"1h": 60,
 	"6h": 72,
 	"24h": 96,
 };
 
-const RANGE_LABEL = (r: Range, n: number, i: number): string => {
+export const RANGE_LABEL = (r: Range, n: number, i: number): string => {
 	const remaining = n - i;
 	switch (r) {
 		case "15m":
@@ -39,7 +39,7 @@ const RANGE_LABEL = (r: Range, n: number, i: number): string => {
 	}
 };
 
-const RES_STRIDE: Record<Resolution, number> = { low: 4, medium: 2, high: 1 };
+export const RES_STRIDE: Record<Resolution, number> = { low: 4, medium: 2, high: 1 };
 
 export type MetricsSeries = {
 	labels: string[];

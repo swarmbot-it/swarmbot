@@ -19,6 +19,9 @@
             "admin": "管理"
         },
         "clusterHealthy": "集群健康",
+        "clusterDegraded": "集群降级",
+        "clusterUnhealthy": "失去仲裁",
+        "clusterUnknown": "集群状态未知",
         "quorum": "仲裁：{{managers}} / {{total}} 个管理节点"
     },
     "auth": {

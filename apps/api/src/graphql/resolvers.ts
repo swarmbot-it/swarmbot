@@ -1,6 +1,14 @@
-﻿import type { GraphQLContext } from "./context.js";
+﻿import { GraphQLError } from "graphql";
+import type { GraphQLContext } from "./context.js";
 import { requireUser } from "./guards.js";
 import { localizedError } from "../i18n/errors.js";
+import { t } from "../i18n/translate.js";
+import { stackDeploy, validateStackName } from "../docker/cli.js";
+import {
+	ComposeValidationError,
+	countComposeResources,
+	validateComposeYaml,
+} from "../docker/compose-validate.js";
 import { getSecret, userByUsername, updateDoc } from "../couch.js";
 import { generateJwt } from "../auth/jwt.js";
 import { verifyPassword, derivePassword, isSha256Digest } from "../auth/password.js";
@@ -10,6 +18,8 @@ import {
 	mapNetworkSummary,
 	mapNodeSummary,
 	mapServiceSummary,
+	replicaCountsByService,
+	resolveClusterDisplayName,
 	mapStamped,
 	mapTaskSummary,
 	mapVolumeSummary,
@@ -32,15 +42,18 @@ import {
 	updateUserProfile,
 	changeUserPassword,
 } from "../store/users.js";
+import { influxClusterSeries, taskMockHistory, type Range, type Resolution } from "../metrics/series.js";
 import {
-	influxClusterSeries,
-	mockSeries,
-	nodeMockHistory,
-	taskMockHistory,
-	type Range,
-	type Resolution,
-} from "../metrics/series.js";
+	getClusterMetricsSeries,
+	getClusterOverviewMetrics,
+	getNodeAgentVersion,
+	getNodeLiveMetrics,
+	getNodeMetricsSeries,
+	hasLiveStats,
+} from "../metrics/stats-store.js";
 import { influxQuery } from "../influx.js";
+import { appVersion } from "../app-version.js";
+import { evaluateClusterHealth } from "../cluster-health.js";
 
 /**
  * Stable per-resource pseudo-load so dashboards look the same between
@@ -54,17 +67,32 @@ function pseudoLoad(id: string, kind: "cpu" | "mem" | "disk"): number {
 	return 20 + ((h + offsets[kind] * 1000) % 60);
 }
 
+function nodeHistoryFields(
+	n: NodeSummary
+): Pick<NodeSummary, "cpuHistory" | "memHistory" | "diskHistory"> {
+	const hist = getNodeMetricsSeries(n.id, "1h", "high", n.hostname);
+	return {
+		cpuHistory: hist?.cpu ?? null,
+		memHistory: hist?.mem ?? null,
+		diskHistory: hist?.disk ?? null,
+	};
+}
+
+function withAgentVersion(n: NodeSummary, extra: Partial<NodeSummary> = {}): NodeSummary {
+	return { ...n, ...extra, agentVersion: getNodeAgentVersion(n.id, n.hostname) };
+}
+
 async function decorateNodes(ctx: GraphQLContext, base: NodeSummary[]): Promise<NodeSummary[]> {
-	if (!ctx.cfg.influxdbUrl) {
-		return base.map((n) => ({
-			...n,
-			cpu: pseudoLoad(n.id, "cpu"),
-			mem: pseudoLoad(n.id, "mem"),
-			disk: pseudoLoad(n.id, "disk"),
-		}));
-	}
 	return Promise.all(
 		base.map(async (n) => {
+			const history = nodeHistoryFields(n);
+			const live = getNodeLiveMetrics(n.id, n.hostname);
+			if (live) return withAgentVersion(n, { ...live, ...history });
+
+			if (!ctx.cfg.influxdbUrl) {
+				return withAgentVersion(n, { cpu: null, mem: null, disk: null, ...history });
+			}
+
 			try {
 				const cpuQuery = `SELECT mean("percent") FROM "cpu" WHERE "node" = '${n.id}' AND time > now() - 5m`;
 				const memQuery = `SELECT mean("percent") FROM "memory" WHERE "node" = '${n.id}' AND time > now() - 5m`;
@@ -74,23 +102,24 @@ async function decorateNodes(ctx: GraphQLContext, base: NodeSummary[]): Promise<
 					influxQuery(ctx.cfg, memQuery),
 					influxQuery(ctx.cfg, diskQuery),
 				]);
-				const valueOf = (rows: unknown): number => {
+				const valueOf = (rows: unknown): number | null => {
 					const r = rows as {
 						results?: Array<{
 							series?: Array<{ values?: Array<Array<number | string>> }>;
 						}>;
 					};
 					const v = r.results?.[0]?.series?.[0]?.values?.[0]?.[1];
-					return typeof v === "number" ? Math.round(v) : pseudoLoad(n.id, "cpu");
+					return typeof v === "number" ? Math.round(v) : null;
 				};
-				return { ...n, cpu: valueOf(c), mem: valueOf(m), disk: valueOf(d) };
+				const cpu = valueOf(c);
+				const mem = valueOf(m);
+				const disk = valueOf(d);
+				if (cpu == null && mem == null && disk == null) {
+					return withAgentVersion(n, { cpu: null, mem: null, disk: null, ...history });
+				}
+				return withAgentVersion(n, { cpu, mem, disk, ...history });
 			} catch {
-				return {
-					...n,
-					cpu: pseudoLoad(n.id, "cpu"),
-					mem: pseudoLoad(n.id, "mem"),
-					disk: pseudoLoad(n.id, "disk"),
-				};
+				return withAgentVersion(n, { cpu: null, mem: null, disk: null, ...history });
 			}
 		})
 	);
@@ -98,6 +127,37 @@ async function decorateNodes(ctx: GraphQLContext, base: NodeSummary[]): Promise<
 
 function classifyService(_s: ServiceSummary): string {
 	return _s.replicasRunning >= _s.replicasTotal ? "RUNNING" : "UPDATING";
+}
+
+function composeValidationMessage(
+	locale: GraphQLContext["locale"],
+	err: ComposeValidationError
+): string {
+	const base = t(locale, err.messageKey);
+	if (err.detail) {
+		return `${base} ${err.detail}`;
+	}
+	return base;
+}
+
+async function stackSummaryAfterDeploy(
+	ctx: GraphQLContext,
+	name: string,
+	fallback: ReturnType<typeof countComposeResources>
+) {
+	const [services, networks] = await Promise.all([
+		ctx.docker.listServices(),
+		ctx.docker.listNetworks(),
+	]);
+	const found = aggregateStacks(services, networks.map(mapNetworkSummary)).find(
+		(s) => s.name === name
+	);
+	if (found) return found;
+	return {
+		name,
+		...fallback,
+		status: "DEPLOYING",
+	};
 }
 
 function formatBytes(bytes: number): string {
@@ -117,9 +177,9 @@ export const resolvers = {
 		health: () => "ok",
 		version: async (_: unknown, __: unknown, ctx: GraphQLContext) => ({
 			name: "swarmboty",
-			version: process.env.SWARMBOTY_VERSION ?? "0.1.0",
+			version: appVersion(),
 			dockerApi: ctx.cfg.dockerApi,
-			instanceName: ctx.cfg.instanceName ?? null,
+			instanceName: await resolveClusterDisplayName(ctx.cfg, ctx.docker),
 			influxdb: Boolean(ctx.cfg.influxdbUrl),
 		}),
 		me: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
@@ -164,18 +224,20 @@ export const resolvers = {
 				listUserAccounts(ctx.couchDb),
 			]);
 			const nodes = await decorateNodes(ctx, nodesRaw.map(mapNodeSummary));
-			const active = nodes.filter((n) => !n.tags.includes("DRAIN"));
-			const avg = (key: "cpu" | "mem" | "disk") =>
-				active.length === 0
-					? 0
-					: Math.round(active.reduce((s, n) => s + n[key], 0) / active.length);
+			const health = evaluateClusterHealth(nodesRaw);
 			const volumes = (volRes as { Volumes?: unknown[] }).Volumes ?? [];
 			const managers = nodes.filter((n) => n.role === "manager").length;
 			const workers = nodes.filter((n) => n.role === "worker").length;
-			const cpuCores = nodes.length * 16;
-			const cpu = avg("cpu");
-			const mem = avg("mem");
-			const disk = avg("disk");
+			const live = hasLiveStats() ? getClusterOverviewMetrics() : null;
+			const cpu = live?.cpu ?? null;
+			const mem = live?.mem ?? null;
+			const disk = live?.disk ?? null;
+			const cpuCores = live?.cpuCores ?? null;
+			const cpuUsed = live?.cpuUsed ?? null;
+			const memTotal = live ? formatBytes(live.memTotalBytes) : null;
+			const memUsed = live ? formatBytes(live.memUsedBytes) : null;
+			const diskTotal = live ? formatBytes(live.diskTotalBytes) : null;
+			const diskUsed = live ? formatBytes(live.diskUsedBytes) : null;
 			return {
 				nodes: nodes.length,
 				managers,
@@ -193,11 +255,14 @@ export const resolvers = {
 				mem,
 				disk,
 				cpuCores,
-				cpuUsed: Math.round((cpuCores * cpu) / 100),
-				memTotal: `${nodes.length * 48} GB`,
-				memUsed: `${Math.round((nodes.length * 48 * mem) / 100)} GB`,
-				diskTotal: `${(nodes.length * 1.5).toFixed(1)} TB`,
-				diskUsed: `${((nodes.length * 1.5 * disk) / 100).toFixed(1)} TB`,
+				cpuUsed,
+				memTotal,
+				memUsed,
+				diskTotal,
+				diskUsed,
+				clusterStatus: health.status,
+				managersReady: health.managersReady,
+				managersTotal: health.managersTotal,
 			};
 		},
 		stacks: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
@@ -210,20 +275,28 @@ export const resolvers = {
 		},
 		services: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
 			requireUser(ctx);
-			const list = await ctx.docker.listServices();
+			const [list, tasks] = await Promise.all([
+				ctx.docker.listServices(),
+				ctx.docker.listTasks(),
+			]);
+			const replicaCounts = replicaCountsByService(tasks);
 			return list.map((s) => {
-				const summary = mapServiceSummary(s);
+				const sid = (s as unknown as { ID?: string }).ID ?? "";
+				const summary = mapServiceSummary(s, replicaCounts.get(sid));
 				return { ...summary, status: classifyService(summary) };
 			});
 		},
 		service: async (_: unknown, { id }: { id: string }, ctx: GraphQLContext) => {
 			requireUser(ctx);
-			const list = await ctx.docker.listServices();
+			const [list, tasks] = await Promise.all([
+				ctx.docker.listServices(),
+				ctx.docker.listTasks(),
+			]);
 			const s = list.find(
 				(x: Dockerode.Service) => (x as unknown as { ID?: string }).ID === id
 			);
 			if (!s) return null;
-			const summary = mapServiceSummary(s);
+			const summary = mapServiceSummary(s, replicaCountsByService(tasks).get(id));
 			return { ...summary, status: classifyService(summary) };
 		},
 		tasks: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
@@ -308,22 +381,17 @@ export const resolvers = {
 			const range = input.range;
 			const resolution = input.resolution ?? "medium";
 			if (input.nodeId) {
-				const hist = nodeMockHistory(
-					input.nodeId.charCodeAt(0) % 8,
-					pseudoLoad(input.nodeId, "cpu"),
-					pseudoLoad(input.nodeId, "mem"),
-					pseudoLoad(input.nodeId, "disk")
-				);
-				return {
-					labels: hist.cpu.map((_v, i) => `${hist.cpu.length - i}`),
-					cpu: hist.cpu,
-					mem: hist.mem,
-					disk: hist.disk,
-				};
+				const live = getNodeMetricsSeries(input.nodeId, range, resolution);
+				if (live) return live;
+			} else {
+				const live = getClusterMetricsSeries(range, resolution);
+				if (live) return live;
 			}
-			const influx = await influxClusterSeries(ctx.cfg, range, resolution);
-			if (influx) return influx;
-			return mockSeries(range, resolution);
+			if (!input.nodeId) {
+				const influx = await influxClusterSeries(ctx.cfg, range, resolution);
+				if (influx) return influx;
+			}
+			return null;
 		},
 		statsSeries: async (
 			_: unknown,
@@ -431,15 +499,42 @@ export const resolvers = {
 			ctx: GraphQLContext
 		) => {
 			requireUser(ctx);
-			return {
-				name: input.name,
-				services: 0,
-				networks: 0,
-				volumes: 0,
-				configs: 0,
-				secrets: 0,
-				status: "PENDING",
-			};
+			const name = input.name.trim();
+			try {
+				validateStackName(name);
+			} catch {
+				throw localizedError(ctx.locale, "errors.invalidStackName", "INVALID_STACK_NAME");
+			}
+
+			let doc;
+			try {
+				doc = validateComposeYaml(input.composeYaml);
+			} catch (e) {
+				if (e instanceof ComposeValidationError) {
+					throw new GraphQLError(composeValidationMessage(ctx.locale, e), {
+						extensions: { code: "INVALID_COMPOSE" },
+					});
+				}
+				throw e;
+			}
+
+			const counts = countComposeResources(doc);
+
+			if (!ctx.cfg.mock) {
+				try {
+					await stackDeploy(ctx.cfg, name, input.composeYaml);
+				} catch (e) {
+					const detail = e instanceof Error ? e.message.trim() : String(e);
+					throw new GraphQLError(
+						detail
+							? `${t(ctx.locale, "errors.stackDeployFailed")} ${detail}`
+							: t(ctx.locale, "errors.stackDeployFailed"),
+						{ extensions: { code: "STACK_DEPLOY_FAILED" } }
+					);
+				}
+			}
+
+			return stackSummaryAfterDeploy(ctx, name, counts);
 		},
 		removeStack: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
 			requireUser(ctx);

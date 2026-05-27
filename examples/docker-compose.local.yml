@@ -33,6 +33,7 @@ services:
             - SWARMBOTY_WORK_DIR=/tmp
             - SWARMBOTY_BOOTSTRAP_ADMIN=${SWARMBOTY_BOOTSTRAP_ADMIN:-admin}
             - SWARMBOTY_BOOTSTRAP_PASSWORD=${SWARMBOTY_BOOTSTRAP_PASSWORD:-swarmboty}
+            - SWARMBOTY_INSTANCE_NAME=${SWARMBOTY_INSTANCE_NAME:-local-dind}
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock:ro
         ports:
@@ -124,6 +125,7 @@ services:
 
     agent:
         image: swarmagent:local
+        user: "0:0"
         environment:
             - SWARMBOTY_URL=http://app:8080
             - DOCKER_API_VERSION=1.44

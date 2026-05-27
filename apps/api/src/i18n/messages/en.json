@@ -9,5 +9,12 @@
     "errors.invalidSlt": "Invalid slt",
     "errors.noDataSent": "No data sent",
     "errors.noRunningTask": "No running task",
-    "errors.usernameTaken": "Username is already taken"
+    "errors.usernameTaken": "Username is already taken",
+    "errors.invalidStackName": "Invalid stack name (allowed: letters, digits, _, ., -).",
+    "errors.composeEmpty": "Compose file is empty.",
+    "errors.composeYamlSyntax": "Invalid YAML:",
+    "errors.composeInvalidRoot": "Compose file must be a mapping at the top level.",
+    "errors.composeMissingServices": "Compose file must define at least one service under services.",
+    "errors.composeInvalidService": "Service has an invalid definition:",
+    "errors.stackDeployFailed": "Stack deployment failed:"
 }

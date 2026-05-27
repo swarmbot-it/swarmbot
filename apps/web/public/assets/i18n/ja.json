@@ -19,6 +19,9 @@
             "admin": "管理"
         },
         "clusterHealthy": "クラスタは正常",
+        "clusterDegraded": "クラスタ低下",
+        "clusterUnhealthy": "クォーラム喪失",
+        "clusterUnknown": "クラスタ状態不明",
         "quorum": "クォーラム：{{managers}} / {{total}} マネージャー"
     },
     "auth": {

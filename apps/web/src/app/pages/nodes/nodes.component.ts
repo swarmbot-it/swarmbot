@@ -11,34 +11,23 @@ import { SegmentedComponent } from "../../shared/segmented.component";
 import { TranslocoPipe, TranslocoService } from "@jsverse/transloco";
 import { QUERY_NODES } from "../../core/graphql.queries";
 import { I18nStateService } from "../../core/i18n/i18n-state.service";
+import { pctOrNa } from "../../core/metrics-display";
 
 type Node = {
 	id: string;
 	hostname: string;
 	ip: string;
 	dockerVersion: string;
+	agentVersion: string | null;
 	role: string;
 	tags: string[];
-	cpu: number;
-	mem: number;
-	disk: number;
+	cpu: number | null;
+	mem: number | null;
+	disk: number | null;
+	cpuHistory?: number[] | null;
+	memHistory?: number[] | null;
+	diskHistory?: number[] | null;
 };
-
-/**
- * Stable per-node history seeded by node id so charts don't reshuffle
- * between renders. Mirrors the design's mock-data approach.
- */
-function nodeSpark(id: string, base: number, kind: number): number[] {
-	let h = 0;
-	for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
-	const out: number[] = [];
-	for (let i = 0; i < 32; i++) {
-		const wave = Math.sin(((i / 32) * Math.PI * 4 + kind + (h % 7)) * 0.6) * 16;
-		const jit = Math.sin(i * 13.13 + kind * 7 + (h % 11)) * 6;
-		out.push(Math.max(2, Math.min(98, base + wave + jit)));
-	}
-	return out;
-}
 
 /**
  * Cluster nodes page. Shows node roles, resource usage, and CPU/memory sparklines per host.
@@ -92,7 +81,12 @@ function nodeSpark(id: string, base: number, kind: number): number[] {
 							></span>
 							{{ n.hostname }}
 						</div>
-						<div class="node-card__meta">{{ n.ip }} · Docker {{ n.dockerVersion }}</div>
+						<div class="node-card__meta">
+							{{ n.ip }} · Docker {{ n.dockerVersion
+							}}<ng-container *ngIf="n.agentVersion">
+								· {{ "pages.nodes.agent" | transloco }} {{ n.agentVersion }}</ng-container
+							>
+						</div>
 					</div>
 					<button class="btn btn--ghost btn--icon btn--sm" title="Actions">
 						<sb-icon name="settings" [size]="14"></sb-icon>
@@ -103,48 +97,60 @@ function nodeSpark(id: string, base: number, kind: number): number[] {
 				</div>
 				<div class="node-card__charts">
 					<div class="node-mini">
-						<div
-							style="display:flex; justify-content:space-between; align-items:baseline"
-						>
+						<div class="node-mini__head">
 							<span class="node-mini__label">{{ "pages.nodes.labels.cpu" | transloco }}</span>
-							<span class="node-mini__value">{{ n.cpu }}%</span>
+							<span class="node-mini__value"
+								>{{ pct(n.cpu) }}<span *ngIf="n.cpu != null">%</span></span
+							>
 						</div>
 						<sb-sparkline
-							[data]="series(n.id, n.cpu, 0)"
-							[width]="120"
+							*ngIf="n.cpuHistory?.length; else cpuNa"
+							[data]="n.cpuHistory!"
+							[fluid]="true"
 							[height]="32"
 							color="var(--primary-500)"
 						></sb-sparkline>
+						<ng-template #cpuNa
+							><div class="node-mini__na">{{ "common.na" | transloco }}</div></ng-template
+						>
 					</div>
 					<div class="node-mini">
-						<div
-							style="display:flex; justify-content:space-between; align-items:baseline"
-						>
+						<div class="node-mini__head">
 							<span class="node-mini__label">{{
 								"pages.nodes.labels.memory" | transloco
 							}}</span>
-							<span class="node-mini__value">{{ n.mem }}%</span>
+							<span class="node-mini__value"
+								>{{ pct(n.mem) }}<span *ngIf="n.mem != null">%</span></span
+							>
 						</div>
 						<sb-sparkline
-							[data]="series(n.id, n.mem, 1)"
-							[width]="120"
+							*ngIf="n.memHistory?.length; else memNa"
+							[data]="n.memHistory!"
+							[fluid]="true"
 							[height]="32"
 							color="#3b82f6"
 						></sb-sparkline>
+						<ng-template #memNa
+							><div class="node-mini__na">{{ "common.na" | transloco }}</div></ng-template
+						>
 					</div>
 					<div class="node-mini">
-						<div
-							style="display:flex; justify-content:space-between; align-items:baseline"
-						>
+						<div class="node-mini__head">
 							<span class="node-mini__label">{{ "pages.nodes.labels.disk" | transloco }}</span>
-							<span class="node-mini__value">{{ n.disk }}%</span>
+							<span class="node-mini__value"
+								>{{ pct(n.disk) }}<span *ngIf="n.disk != null">%</span></span
+							>
 						</div>
 						<sb-sparkline
-							[data]="series(n.id, n.disk, 2)"
-							[width]="120"
+							*ngIf="n.diskHistory?.length; else diskNa"
+							[data]="n.diskHistory!"
+							[fluid]="true"
 							[height]="32"
 							color="#10b981"
 						></sb-sparkline>
+						<ng-template #diskNa
+							><div class="node-mini__na">{{ "common.na" | transloco }}</div></ng-template
+						>
 					</div>
 				</div>
 			</div>
@@ -199,13 +205,36 @@ function nodeSpark(id: string, base: number, kind: number): number[] {
 			}
 			.node-card__charts {
 				display: grid;
-				grid-template-columns: repeat(3, 1fr);
-				gap: 10px;
+				grid-template-columns: repeat(3, minmax(0, 1fr));
+				gap: 8px;
 			}
 			.node-mini {
 				background: var(--surface-2);
 				border-radius: var(--r-md);
 				padding: 10px;
+				min-width: 0;
+				overflow: hidden;
+			}
+			.node-mini__head {
+				display: flex;
+				justify-content: space-between;
+				align-items: baseline;
+				gap: 4px;
+			}
+			.node-mini sb-sparkline {
+				display: block;
+				width: 100%;
+				margin-top: 6px;
+			}
+			.node-mini__na {
+				margin-top: 6px;
+				height: 32px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				font-size: 12px;
+				font-weight: 600;
+				color: var(--muted);
 			}
 			.node-mini__label {
 				font-size: 10.5px;
@@ -270,7 +299,7 @@ export class NodesPageComponent {
 		});
 	}
 
-	series(id: string, base: number, kind: number): number[] {
-		return nodeSpark(id, base, kind);
+	pct(value: number | null | undefined): string {
+		return pctOrNa(value, this.transloco.translate("common.na"));
 	}
 }

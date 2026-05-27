@@ -1,11 +1,13 @@
 {
     "name": "swarmboty",
+    "version": "0.1.3",
     "private": true,
     "workspaces": [
         "apps/api",
         "apps/web"
     ],
     "scripts": {
+        "prebuild": "node scripts/sync-app-version.mjs",
         "build": "npm run build -w @swarmboty/api && npm run build -w web",
         "dev:api": "npm run dev -w @swarmboty/api",
         "dev:web": "npm run start -w web",

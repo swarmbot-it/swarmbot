@@ -13,12 +13,15 @@
         "users": "Użytkownicy",
         "groups": {
             "overview": "Przegląd",
-            "workloads": "Obciążenia",
+            "workloads": "Zasoby",
             "infra": "Infrastruktura",
             "store": "Magazyn i konfiguracja",
             "admin": "Administracja"
         },
         "clusterHealthy": "Klaster zdrowy",
+        "clusterDegraded": "Klaster obniżony",
+        "clusterUnhealthy": "Utrata kworum",
+        "clusterUnknown": "Status klastra nieznany",
         "quorum": "Kworum: {{managers}} z {{total}} managerów"
     },
     "auth": {
@@ -44,7 +47,8 @@
         "preferences": "Preferencje",
         "apiTokens": "Tokeny API",
         "logout": "Wyloguj",
-        "administrator": "Administrator"
+        "administrator": "Administrator",
+        "clusterUnknown": "klaster"
     },
     "table": {
         "search": "Szukaj…",
@@ -52,6 +56,7 @@
         "count": "{{filtered}} z {{total}}"
     },
     "common": {
+        "na": "N/D",
         "cancel": "Anuluj",
         "create": "Utwórz",
         "save": "Zapisz",
@@ -79,6 +84,7 @@
         "resourceUtilization": "Wykorzystanie zasobów",
         "influxHint": "Szereg czasowy z InfluxDB · agregacja na żywo",
         "loadingMetrics": "Ładowanie metryk…",
+        "noMetrics": "Brak telemetrii — uruchom swarmagent na węzłach klastra.",
         "nodesTitle": "Węzły",
         "nodesSubtitle": "{{count}} węzłów · {{managers}} managerów · {{workers}} workerów",
         "managers": "Managery",
@@ -166,6 +172,7 @@
                 "manager": "Managery",
                 "worker": "Workery"
             },
+            "agent": "agent",
             "labels": {
                 "cpu": "CPU",
                 "memory": "Pamięć",
@@ -222,7 +229,16 @@
             "title": "Wdróż stos",
             "subtitle": "Wklej plik Compose lub definicję stosu.",
             "name": "Nazwa stosu",
-            "content": "Plik stosu"
+            "content": "Plik stosu",
+            "deploy": "Wdróż",
+            "errors": {
+                "nameRequired": "Podaj nazwę stosu.",
+                "contentRequired": "Wklej definicję Compose."
+            },
+            "toast": {
+                "success": "Stos „{{name}}” wdrożony (status: {{status}}).",
+                "failed": "Nie udało się wdrożyć stosu."
+            }
         },
         "service": {
             "title": "Utwórz usługę",

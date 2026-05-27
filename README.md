@@ -99,12 +99,12 @@ Then open http://localhost:4200 and sign in as `admin` / `swarmboty`.
 
 ## Docker Compose — development
 
-`docker-compose.dev.yml` starts the full development stack with hot-reload and live-reload already wired up.
+`examples/docker-compose.dev.yml` starts the full development stack with hot-reload and live-reload already wired up.
 
 ### Full stack (real databases)
 
 ```sh
-docker compose -f docker-compose.dev.yml up
+docker compose -f examples/docker-compose.dev.yml up
 ```
 
 | Service            | URL                           | Description      |
@@ -123,16 +123,16 @@ The API and Angular containers mount the source tree — saving a `.ts` or `.htm
 
 ```sh
 # Windows PowerShell
-$env:SWARMBOTY_MOCK="true"; docker compose -f docker-compose.dev.yml up api web
+$env:SWARMBOTY_MOCK="true"; docker compose -f examples/docker-compose.dev.yml up api web
 
 # macOS / Linux
-SWARMBOTY_MOCK=true docker compose -f docker-compose.dev.yml up api web
+SWARMBOTY_MOCK=true docker compose -f examples/docker-compose.dev.yml up api web
 ```
 
 ### With the Rust agent (optional)
 
 ```sh
-docker compose -f docker-compose.dev.yml --profile agent up
+docker compose -f examples/docker-compose.dev.yml --profile agent up
 ```
 
 ### Recommended setup on Windows (faster HMR)
@@ -141,7 +141,7 @@ File watching inside Docker on Windows uses polling, which is slower than native
 
 ```sh
 # terminal 1 — infrastructure + API
-docker compose -f docker-compose.dev.yml up db influxdb api
+docker compose -f examples/docker-compose.dev.yml up db influxdb api
 
 # terminal 2 — Angular on host (for host API use `npm run dev:api` on 8081; proxy targets localhost:8081)
 npm run dev:web
@@ -216,7 +216,7 @@ docker exec swarm-manager docker service ls
 
 ### Deploy the full stack to local Swarm
 
-`docker-compose.local.yml` defines the full stack (app, db, influxdb, agent) for deployment to the DinD cluster. `npm run swarm:deploy` starts the DinD cluster automatically when it is not running (`swarm:start`), then builds images on the host, loads them into DinD nodes, and deploys the stack via the manager container:
+`examples/docker-compose.local.yml` defines the full stack (app, db, influxdb, agent) for deployment to the DinD cluster. `npm run swarm:deploy` starts the DinD cluster automatically when it is not running (`swarm:start`), then builds images on the host, loads them into DinD nodes, and deploys the stack via the manager container:
 
 ```sh
 npm run swarm:deploy
@@ -266,7 +266,7 @@ Then open http://localhost:4200 (after `npm run dev:web`) and sign in as `admin`
 Start the full production stack with CouchDB, InfluxDB, the Swarmboty app, and the Swarm agent:
 
 ```sh
-docker compose up --build
+docker compose -f examples/docker-compose.yml up --build
 ```
 
 The compose file exposes the app on:
@@ -295,7 +295,7 @@ apps/
   api/   Node.js API and GraphQL server
   web/   Angular frontend
 Dockerfile
-docker-compose.yml
+examples/          docker-compose stacks (dev, local Swarm, production)
 package.json
 ```
 

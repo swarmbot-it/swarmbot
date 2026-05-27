@@ -124,10 +124,14 @@ export type NodeSummary = {
 	availability: string | null;
 	ip: string | null;
 	dockerVersion: string | null;
+	agentVersion: string | null;
 	tags: string[];
-	cpu: number;
-	mem: number;
-	disk: number;
+	cpu: number | null;
+	mem: number | null;
+	disk: number | null;
+	cpuHistory?: number[] | null;
+	memHistory?: number[] | null;
+	diskHistory?: number[] | null;
 };
 
 export type TaskSummary = {
@@ -176,20 +180,45 @@ export function formatPorts(spec: ServiceLike["Spec"]): string[] {
 	});
 }
 
-export function mapServiceSummary(s: Dockerode.Service): ServiceSummary {
+export type ServiceReplicaCounts = { running: number; total: number };
+
+/** Count Swarm tasks per service for running / total replica display. */
+export function replicaCountsByService(tasks: unknown[]): Map<string, ServiceReplicaCounts> {
+	const out = new Map<string, ServiceReplicaCounts>();
+	for (const raw of tasks) {
+		const tl = raw as TaskLike;
+		const serviceId = tl.ServiceID ?? "";
+		if (!serviceId) continue;
+		const prev = out.get(serviceId) ?? { running: 0, total: 0 };
+		prev.total += 1;
+		if (tl.Status?.State?.toLowerCase() === "running") prev.running += 1;
+		out.set(serviceId, prev);
+	}
+	return out;
+}
+
+export function mapServiceSummary(
+	s: Dockerode.Service,
+	taskCounts?: ServiceReplicaCounts
+): ServiceSummary {
 	const sl = s as unknown as ServiceLike;
 	const id = sl.ID ?? "";
 	const spec = sl.Spec;
 	const name = spec?.Name ?? "";
 	const image = spec?.TaskTemplate?.ContainerSpec?.Image ?? null;
 	const stack = spec?.Labels?.["com.docker.stack.namespace"] ?? null;
-	const replicas = spec?.Mode?.Replicated?.Replicas ?? (spec?.Mode?.Global ? 1 : 0);
+	const isGlobal = Boolean(spec?.Mode?.Global);
+	const desired = spec?.Mode?.Replicated?.Replicas ?? 0;
+	const running = taskCounts?.running ?? 0;
+	const replicasTotal = isGlobal
+		? Math.max(taskCounts?.total ?? 0, running)
+		: desired;
 	return {
 		id,
 		name,
 		image,
-		replicasRunning: replicas,
-		replicasTotal: replicas,
+		replicasRunning: running,
+		replicasTotal: replicasTotal,
 		ports: formatPorts(spec),
 		status: "RUNNING",
 		stack,
@@ -220,11 +249,30 @@ export function mapNodeSummary(n: Dockerode.Node): NodeSummary {
 		availability,
 		ip,
 		dockerVersion,
+		agentVersion: null,
 		tags,
-		cpu: 0,
-		mem: 0,
-		disk: 0,
+		cpu: null,
+		mem: null,
+		disk: null,
+		cpuHistory: null,
+		memHistory: null,
+		diskHistory: null,
 	};
+}
+
+/** Human-readable cluster label: configured instance name or Docker daemon hostname. */
+export async function resolveClusterDisplayName(
+	cfg: SwarmbotyConfig,
+	docker: Dockerode
+): Promise<string | null> {
+	if (cfg.instanceName) return cfg.instanceName;
+	try {
+		const info = (await docker.info()) as { Name?: string };
+		const name = info.Name?.trim();
+		return name || null;
+	} catch {
+		return null;
+	}
 }
 
 export function mapTaskSummary(t: unknown): TaskSummary {

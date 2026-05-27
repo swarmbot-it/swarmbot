@@ -69,7 +69,7 @@ import { NgIf } from "@angular/common";
 				<span class="sb-logo__title"
 					>swarm<span style="color: var(--primary-500)">boty</span></span
 				>
-				<span class="sb-logo__subtitle">v2.14.0 · prod-eu-1</span>
+				<span class="sb-logo__subtitle" *ngIf="subtitle">{{ subtitle }}</span>
 			</span>
 		</span>
 	`,
@@ -181,4 +181,6 @@ import { NgIf } from "@angular/common";
 export class LogoComponent {
 	/** When true, shows the "swarmboty" wordmark and version subtitle beside the mark. */
 	@Input() showWord = true;
+	/** e.g. `0.1.1 · local-dind` — app version and cluster name. */
+	@Input() subtitle?: string;
 }

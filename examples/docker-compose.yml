@@ -1,7 +1,7 @@
 ﻿services:
     app:
         build:
-            context: .
+            context: ..
             dockerfile: Dockerfile
         environment:
             - SWARMBOTY_DB=http://${COUCHDB_USER:-admin}:${COUCHDB_PASSWORD:-swarmboty}@db:5984
@@ -64,7 +64,7 @@
 
     agent:
         build:
-            context: ../swarmagent
+            context: ../../swarmagent
             dockerfile: Dockerfile
         image: swarmagent:latest
         environment:

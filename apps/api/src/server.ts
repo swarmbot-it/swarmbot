@@ -11,6 +11,7 @@ import { WebSocketServer } from "ws";
 import { useServer } from "graphql-ws/lib/use/ws";
 import { execute, subscribe } from "graphql";
 import type { SwarmbotyConfig } from "./config.js";
+import { appVersion } from "./app-version.js";
 import { typeDefs } from "./graphql/schema.js";
 import { resolvers } from "./graphql/resolvers.js";
 import { buildContext, localeFromHeader, type GraphQLContext } from "./graphql/context.js";
@@ -24,6 +25,8 @@ import { revokeJti } from "./auth/blacklist.js";
 import { createDocker, setupDockerApi } from "./docker/engine.js";
 import { consumeSlt, createSlt } from "./auth/slt.js";
 import { publishEvent, subscribeEvents } from "./events/hub.js";
+import { parseStatsMessage } from "./metrics/stats-ingest.js";
+import { ingestNodeStats } from "./metrics/stats-store.js";
 import type nano from "nano";
 
 export async function createHttpServer(
@@ -104,7 +107,7 @@ export async function createHttpServer(
 	app.get("/version", (_req, res) => {
 		res.json({
 			name: "swarmboty",
-			version: process.env.SWARMBOTY_VERSION ?? "0.1.0",
+			version: appVersion(),
 			docker: { api: cfg.dockerApi },
 			initialized: true,
 			instanceName: cfg.instanceName ?? null,
@@ -200,7 +203,12 @@ export async function createHttpServer(
 			res.status(400).json({ error: localizedMessage(locale, "errors.noDataSent") });
 			return;
 		}
-		publishEvent(req.body as Record<string, unknown>);
+		const body = req.body as Record<string, unknown>;
+		if (body.type === "stats") {
+			const parsed = parseStatsMessage(body.message);
+			if (parsed) ingestNodeStats(parsed);
+		}
+		publishEvent(body);
 		res.status(202).json({ accepted: true });
 	});
 

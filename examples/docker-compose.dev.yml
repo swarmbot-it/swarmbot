@@ -3,13 +3,13 @@
 # ── Quick start ──────────────────────────────────────────────────────────────
 #
 #   Full stack (real databases):
-#     docker compose -f docker-compose.dev.yml up
+#     docker compose -f examples/docker-compose.dev.yml up
 #
 #   Mock mode (no real Docker socket or databases needed):
-#     SWARMBOTY_MOCK=true docker compose -f docker-compose.dev.yml up api web
+#     SWARMBOTY_MOCK=true docker compose -f examples/docker-compose.dev.yml up api web
 #
 #   Include the Rust agent (built from source):
-#     docker compose -f docker-compose.dev.yml --profile agent up
+#     docker compose -f examples/docker-compose.dev.yml --profile agent up
 #
 # ── Endpoints ────────────────────────────────────────────────────────────────
 #
@@ -30,7 +30,7 @@
 #   keep only databases + API in Docker and run the Angular server locally:
 #
 #     # terminal 1 (databases + API in Docker):
-#     docker compose -f docker-compose.dev.yml up db influxdb api
+#     docker compose -f examples/docker-compose.dev.yml up db influxdb api
 #
 #     # terminal 2 (Angular on host, proxy already points at localhost:8080):
 #     npm run dev:web
@@ -116,7 +116,7 @@ services:
             SWARMBOTY_BOOTSTRAP_ADMIN: ${SWARMBOTY_BOOTSTRAP_ADMIN:-admin}
             SWARMBOTY_BOOTSTRAP_PASSWORD: ${SWARMBOTY_BOOTSTRAP_PASSWORD:-swarmboty}
         volumes:
-            - .:/app # full workspace — enables hot-reload
+            - ..:/app # full workspace — enables hot-reload
             - /var/run/docker.sock:/var/run/docker.sock:ro
             - api-nm:/app/node_modules # isolated container node_modules
         ports:
@@ -149,7 +149,7 @@ services:
         environment:
             NODE_ENV: development
         volumes:
-            - .:/app
+            - ..:/app
             - web-nm:/app/node_modules
         ports:
             - "4200:4200"
@@ -161,11 +161,11 @@ services:
 
     # ── Swarmagent — opt-in (profile: agent) ─────────────────────────────────
     #
-    # Build from source: docker compose -f docker-compose.dev.yml --profile agent up
+    # Build from source: docker compose -f examples/docker-compose.dev.yml --profile agent up
 
     agent:
         build:
-            context: ../swarmagent
+            context: ../../swarmagent
             dockerfile: Dockerfile
         environment:
             SWARMBOTY_URL: http://api:8080

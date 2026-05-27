@@ -5,7 +5,7 @@ const NETWORK = "swarm-net";
 const MANAGER = "swarm-manager";
 const WORKERS = ["swarm-worker-1", "swarm-worker-2"];
 const IMAGE = "docker:27-dind";
-/** Swarm stack publishes app on 888 inside DinD (see docker-compose.local.yml). */
+/** Swarm stack publishes app on 888 inside DinD (see examples/docker-compose.local.yml). */
 const APP_PUBLISHED_PORT = 888;
 
 function run(cmd, opts = {}) {

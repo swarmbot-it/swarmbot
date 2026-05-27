@@ -27,6 +27,7 @@ import { NgIf } from "@angular/common";
 						fill="none"
 					/>
 					<circle
+						*ngIf="!unavailable()"
 						[attr.cx]="size / 2"
 						[attr.cy]="size / 2"
 						[attr.r]="radius"
@@ -40,7 +41,10 @@ import { NgIf } from "@angular/common";
 				</g>
 			</svg>
 			<div class="donut__center">
-				<div class="donut__value">{{ rounded() }}<span class="donut__pct">%</span></div>
+				<div class="donut__value" [class.donut__value--na]="unavailable()">
+					<ng-container *ngIf="unavailable(); else pct">{{ naLabel }}</ng-container>
+					<ng-template #pct>{{ rounded() }}<span class="donut__pct">%</span></ng-template>
+				</div>
 				<div class="donut__label" *ngIf="label">{{ label }}</div>
 			</div>
 		</div>
@@ -64,6 +68,10 @@ import { NgIf } from "@angular/common";
 				line-height: 1;
 				font-variant-numeric: tabular-nums;
 			}
+			.donut__value--na {
+				font-size: 15px;
+				color: var(--muted);
+			}
 			.donut__pct {
 				font-size: 12px;
 				color: var(--muted);
@@ -84,10 +92,12 @@ import { NgIf } from "@angular/common";
 	host: { "[style.display]": "'inline-block'" },
 })
 export class DonutComponent {
-	/** Fill percentage (0–100) for the active arc. */
-	@Input() set value(v: number) {
-		this._value.set(v);
+	/** Fill percentage (0–100) for the active arc; null shows {@link naLabel}. */
+	@Input() set value(v: number | null | undefined) {
+		this._value.set(v == null ? null : v);
 	}
+	/** Caption when {@link value} is null (default "N/A"). */
+	@Input() naLabel = "N/A";
 	/** Outer diameter of the chart in pixels. */
 	@Input() size = 96;
 	/** Ring thickness in pixels. */
@@ -97,7 +107,9 @@ export class DonutComponent {
 	/** Optional caption shown under the percentage. */
 	@Input() label?: string;
 
-	private readonly _value = signal(0);
+	private readonly _value = signal<number | null>(null);
+
+	readonly unavailable = computed(() => this._value() == null);
 
 	get radius() {
 		return (this.size - this.stroke) / 2;
@@ -106,7 +118,8 @@ export class DonutComponent {
 		return 2 * Math.PI * this.radius;
 	}
 	get offset() {
-		return this.circumference * (1 - this._value() / 100);
+		const v = this._value() ?? 0;
+		return this.circumference * (1 - v / 100);
 	}
-	rounded = computed(() => Math.round(this._value()));
+	rounded = computed(() => Math.round(this._value() ?? 0));
 }
