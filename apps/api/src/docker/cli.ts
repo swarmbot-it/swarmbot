@@ -2,6 +2,7 @@
 import { join } from "path";
 import { spawn } from "child_process";
 import type { SwarmbotyConfig } from "../config.js";
+import { dockerCliEnv, resolveDockerCliBin } from "./docker-cli-bin.js";
 
 const STACK_NAME = /^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/;
 
@@ -29,18 +30,22 @@ export async function stackDeploy(
 	if (opts?.skipResolveImage) {
 		args.splice(2, 0, "--resolve-image", "never");
 	}
-	await dockerCli(args);
+	await dockerCli(cfg, args);
 	await rm(file, { force: true });
 }
 
-export async function stackRemove(_cfg: SwarmbotyConfig, name: string): Promise<void> {
+export async function stackRemove(cfg: SwarmbotyConfig, name: string): Promise<void> {
 	validateStackName(name);
-	await dockerCli(["stack", "rm", name]);
+	await dockerCli(cfg, ["stack", "rm", name]);
 }
 
-function dockerCli(args: string[]): Promise<void> {
+function dockerCli(cfg: SwarmbotyConfig, args: string[]): Promise<void> {
+	const bin = resolveDockerCliBin();
 	return new Promise((resolve, reject) => {
-		const child = spawn("docker", args, { stdio: ["ignore", "pipe", "pipe"] });
+		const child = spawn(bin, args, {
+			stdio: ["ignore", "pipe", "pipe"],
+			env: dockerCliEnv(cfg),
+		});
 		let err = "";
 		child.stderr?.on("data", (c) => {
 			err += String(c);

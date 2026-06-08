@@ -29,6 +29,8 @@ services:
             - SWARMBOTY_DB=http://${COUCHDB_USER:-admin}:${COUCHDB_PASSWORD:-swarmboty}@db:5984
             - SWARMBOTY_INFLUXDB=http://influxdb:8086
             - SWARMBOTY_INFLUXDB_TOKEN=${INFLUXDB_TOKEN:-swarmboty-influx-dev-token}
+            - SWARMBOTY_INFLUXDB_ORG=swarmboty
+            - SWARMBOTY_INFLUXDB_BUCKET=swarmboty
             - SWARMBOTY_PORT=8080
             - SWARMBOTY_WORK_DIR=/tmp
             - SWARMBOTY_BOOTSTRAP_ADMIN=${SWARMBOTY_BOOTSTRAP_ADMIN:-admin}
@@ -136,7 +138,7 @@ services:
         deploy:
             mode: global
             restart_policy:
-                condition: on-failure
+                condition: any
                 delay: 5s
             update_config:
                 parallelism: 1

@@ -85,15 +85,64 @@ export const QUERY_TASKS = gql`
 	query Tasks {
 		tasks {
 			id
+			serviceId
 			name
 			image
 			node
+			stack
 			cpu
 			mem
 			updated
+			updatedAt
 			status
 			cpuSeries
 			memSeries
+		}
+	}
+`;
+
+/** Full service specification for the detail page. */
+export const QUERY_SERVICE = gql`
+	query Service($id: ID!) {
+		service(id: $id) {
+			id
+			name
+			image
+			replicasRunning
+			replicasTotal
+			ports
+			status
+			stack
+			mode
+			created
+			updated
+			env {
+				key
+				value
+			}
+			labels {
+				key
+				value
+			}
+			publishedPorts {
+				containerPort
+				hostPort
+				protocol
+				mode
+			}
+			bindMounts {
+				containerPath
+				hostPath
+				readOnly
+			}
+			volumeMounts {
+				containerPath
+				volumeName
+				readOnly
+				driver
+			}
+			secretNames
+			configNames
 		}
 	}
 `;
@@ -207,6 +256,19 @@ export const QUERY_USERS = gql`
 export const QUERY_METRICS_SERIES = gql`
 	query MetricsSeries($input: MetricsSeriesInput!) {
 		metricsSeries(input: $input) {
+			labels
+			cpu
+			mem
+			disk
+		}
+	}
+`;
+
+/** Top stacks by CPU for the Load page (from InfluxDB container metrics). */
+export const QUERY_STACK_LOAD_SERIES = gql`
+	query StackLoadSeries($range: String!, $resolution: String) {
+		stackLoadSeries(range: $range, resolution: $resolution) {
+			stack
 			labels
 			cpu
 			mem

@@ -1,6 +1,7 @@
 {
     "nav": {
         "dashboard": "Panel",
+        "load": "Obciążenie",
         "stacks": "Stosy",
         "services": "Usługi",
         "tasks": "Zadania",
@@ -13,6 +14,7 @@
         "users": "Użytkownicy",
         "groups": {
             "overview": "Przegląd",
+            "resources": "Zasoby",
             "workloads": "Zasoby",
             "infra": "Infrastruktura",
             "store": "Magazyn i konfiguracja",
@@ -134,6 +136,69 @@
         "UNKNOWN": "Nieznany"
     },
     "pages": {
+        "load": {
+            "title": "Obciążenie",
+            "subtitle": "Top 7 stosów wg aktualnego CPU",
+            "peak": "Szczyt: {{peak}}% · {{count}} stosów",
+            "empty": "Brak telemetrii stosów"
+        },
+        "stackDetail": {
+            "back": "Wróć do stosów",
+            "uptime": "Czas działania",
+            "lastDeploy": "Ostatnie wdrożenie",
+            "replicas": "Repliki",
+            "servicesTile": "Usługi",
+            "configs": "Konfiguracje",
+            "secrets": "Poświadczenia",
+            "utilization": "Wykorzystanie stosu",
+            "utilizationSub": "Agregacja z {{count}} usług",
+            "noNetworks": "Brak podłączonych sieci.",
+            "noVolumes": "Brak podłączonych wolumenów.",
+            "noConfigs": "Brak zamontowanych konfiguracji.",
+            "noSecrets": "Brak przyznanych poświadczeń.",
+            "noServices": "Brak usług w tym stosie.",
+            "noMetrics": "Brak telemetrii w tym zakresie — dane pojawią się po zebraniu próbek przez swarmagenta."
+        },
+        "serviceDetail": {
+            "back": "Wróć do usług",
+            "replicas": "repliki",
+            "running": "Uruchomione",
+            "stopped": "Zatrzymane",
+            "env": "Zmienne środowiskowe",
+            "labels": "Etykiety",
+            "tasks": "Zadania",
+            "secrets": "Poświadczenia",
+            "configs": "Konfiguracje",
+            "networks": "Sieci",
+            "publishedPorts": "Opublikowane porty",
+            "bindMounts": "Montowania bind",
+            "volumes": "Wolumeny",
+            "containerPort": "Port kontenera",
+            "hostPort": "Port hosta",
+            "protocol": "Protokół",
+            "mode": "Tryb",
+            "containerPath": "Ścieżka w kontenerze",
+            "hostPath": "Ścieżka na hoście",
+            "volumeName": "Nazwa wolumenu",
+            "readOnly": "Tylko odczyt",
+            "updated": "Aktualizacja",
+            "noEntries": "Brak wpisów.",
+            "noSecrets": "Brak powiązanych poświadczeń.",
+            "noConfigs": "Brak powiązanych konfiguracji.",
+            "noPorts": "Brak opublikowanych portów.",
+            "noMounts": "Brak montowań bind.",
+            "noVolumes": "Brak zamontowanych wolumenów."
+        },
+        "taskDetail": {
+            "back": "Wróć do zadań",
+            "on": "na",
+            "taskId": "ID zadania",
+            "imageDigest": "Digest obrazu",
+            "cpuUsage": "Wykorzystanie CPU",
+            "memUsage": "Wykorzystanie pamięci",
+            "lastHour": "Ostatnia godzina · aktualnie",
+            "noMetrics": "Brak telemetrii w tym zakresie."
+        },
         "stacks": {
             "countSuffix": "stosów wdrożonych",
             "add": "Nowy stos",

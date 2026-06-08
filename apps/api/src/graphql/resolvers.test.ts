@@ -35,7 +35,7 @@ describe.sequential("resolvers.Query", () => {
 		await test.cleanup();
 	});
 
-	it("metricsSeries returns null without live stats or influx", async () => {
+	it("metricsSeries returns mock cluster series in mock mode without influx", async () => {
 		const test = await startTestHttp();
 		const secretDoc = await getSecret(test.couchDb);
 		const token = generateJwt(String(secretDoc?.secret), {
@@ -47,6 +47,29 @@ describe.sequential("resolvers.Query", () => {
 		const { verifyJwt } = await import("../auth/jwt.js");
 		const claims = verifyJwt(String(secretDoc?.secret), token);
 		const ctx = gqlContext({ headers: {}, swarmUser: claims }, test);
+		const series = await resolvers.Query.metricsSeries(
+			null,
+			{ input: { range: "1h", resolution: "medium" } },
+			ctx
+		);
+		expect(series?.labels.length).toBeGreaterThan(0);
+		expect(series?.cpu.length).toBeGreaterThan(0);
+		await test.cleanup();
+	});
+
+	it("metricsSeries returns null for cluster without data when mock is off", async () => {
+		const test = await startTestHttp();
+		const secretDoc = await getSecret(test.couchDb);
+		const token = generateJwt(String(secretDoc?.secret), {
+			type: "user",
+			username: "admin",
+			password: "x",
+			role: "admin",
+		});
+		const { verifyJwt } = await import("../auth/jwt.js");
+		const claims = verifyJwt(String(secretDoc?.secret), token);
+		const ctx = gqlContext({ headers: {}, swarmUser: claims }, test);
+		ctx.cfg = { ...ctx.cfg, mock: false };
 		const series = await resolvers.Query.metricsSeries(
 			null,
 			{ input: { range: "1h", resolution: "medium" } },

@@ -17,6 +17,7 @@ import {
 	aggregateStacks,
 	mapNetworkSummary,
 	mapNodeSummary,
+	mapServiceDetail,
 	mapServiceSummary,
 	replicaCountsByService,
 	resolveClusterDisplayName,
@@ -42,7 +43,27 @@ import {
 	updateUserProfile,
 	changeUserPassword,
 } from "../store/users.js";
-import { influxClusterSeries, taskMockHistory, type Range, type Resolution } from "../metrics/series.js";
+import {
+	mockSeries,
+	taskMockHistory,
+	type Range,
+	type Resolution,
+} from "../metrics/series.js";
+import {
+	influxClusterSeries,
+	influxNodeLivePercent,
+	influxNodeSeries,
+	influxStackLoadSeries,
+	influxStackSeries,
+	influxTaskSeries,
+} from "../metrics/influx-queries.js";
+import {
+	getTaskLiveMetrics,
+	getTaskMetricsSeries,
+	getTaskSparkline,
+	getStackMetricsSeries,
+	getStackLoadSeries,
+} from "../metrics/container-store.js";
 import {
 	getClusterMetricsSeries,
 	getClusterOverviewMetrics,
@@ -89,38 +110,22 @@ async function decorateNodes(ctx: GraphQLContext, base: NodeSummary[]): Promise<
 			const live = getNodeLiveMetrics(n.id, n.hostname);
 			if (live) return withAgentVersion(n, { ...live, ...history });
 
-			if (!ctx.cfg.influxdbUrl) {
-				return withAgentVersion(n, { cpu: null, mem: null, disk: null, ...history });
+			if (ctx.cfg.influxdbUrl) {
+				try {
+					const [cpu, mem, disk] = await Promise.all([
+						influxNodeLivePercent(ctx.cfg, n.id, "node_cpu"),
+						influxNodeLivePercent(ctx.cfg, n.id, "node_memory"),
+						influxNodeLivePercent(ctx.cfg, n.id, "node_disk"),
+					]);
+					if (cpu != null || mem != null || disk != null) {
+						return withAgentVersion(n, { cpu, mem, disk, ...history });
+					}
+				} catch {
+					/* fall through */
+				}
 			}
 
-			try {
-				const cpuQuery = `SELECT mean("percent") FROM "cpu" WHERE "node" = '${n.id}' AND time > now() - 5m`;
-				const memQuery = `SELECT mean("percent") FROM "memory" WHERE "node" = '${n.id}' AND time > now() - 5m`;
-				const diskQuery = `SELECT mean("percent") FROM "disk" WHERE "node" = '${n.id}' AND time > now() - 5m`;
-				const [c, m, d] = await Promise.all([
-					influxQuery(ctx.cfg, cpuQuery),
-					influxQuery(ctx.cfg, memQuery),
-					influxQuery(ctx.cfg, diskQuery),
-				]);
-				const valueOf = (rows: unknown): number | null => {
-					const r = rows as {
-						results?: Array<{
-							series?: Array<{ values?: Array<Array<number | string>> }>;
-						}>;
-					};
-					const v = r.results?.[0]?.series?.[0]?.values?.[0]?.[1];
-					return typeof v === "number" ? Math.round(v) : null;
-				};
-				const cpu = valueOf(c);
-				const mem = valueOf(m);
-				const disk = valueOf(d);
-				if (cpu == null && mem == null && disk == null) {
-					return withAgentVersion(n, { cpu: null, mem: null, disk: null, ...history });
-				}
-				return withAgentVersion(n, { cpu, mem, disk, ...history });
-			} catch {
-				return withAgentVersion(n, { cpu: null, mem: null, disk: null, ...history });
-			}
+			return withAgentVersion(n, { cpu: null, mem: null, disk: null, ...history });
 		})
 	);
 }
@@ -296,8 +301,8 @@ export const resolvers = {
 				(x: Dockerode.Service) => (x as unknown as { ID?: string }).ID === id
 			);
 			if (!s) return null;
-			const summary = mapServiceSummary(s, replicaCountsByService(tasks).get(id));
-			return { ...summary, status: classifyService(summary) };
+			const detail = mapServiceDetail(s, replicaCountsByService(tasks).get(id));
+			return { ...detail, status: classifyService(detail) };
 		},
 		tasks: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
 			requireUser(ctx);
@@ -316,18 +321,26 @@ export const resolvers = {
 				const ts = mapTaskSummary(t);
 				const svc = svcMap.get(ts.serviceId);
 				const node = nodeMap.get(ts.nodeId);
-				const cpuBase = pseudoLoad(ts.id, "cpu") / 1.2;
-				const memBase = pseudoLoad(ts.id, "mem") / 1.1;
-				const hist = taskMockHistory(idx, cpuBase, memBase);
+				const live = getTaskLiveMetrics(ts.id);
+				const spark = getTaskSparkline(ts.id);
+				const cpuBase = live?.cpu ?? pseudoLoad(ts.id, "cpu") / 1.2;
+				const memBase = live?.mem ?? pseudoLoad(ts.id, "mem") / 1.1;
+				const hist =
+					spark.cpu.length > 0
+						? spark
+						: taskMockHistory(idx, cpuBase, memBase);
 				const updatedAge = Date.now() - new Date(ts.timestamp).getTime();
 				return {
 					id: ts.id,
+					serviceId: ts.serviceId,
 					name: svc ? `${svc.name}.${ts.slot}` : ts.id,
 					image: svc?.image ?? "—",
 					node: node?.hostname ?? ts.nodeId,
+					stack: svc?.stack ?? null,
 					cpu: Math.round(cpuBase),
 					mem: Math.round(memBase),
 					updated: humanizeAge(updatedAge),
+					updatedAt: ts.timestamp,
 					status: ts.state.toUpperCase(),
 					cpuSeries: hist.cpu,
 					memSeries: hist.mem,
@@ -374,24 +387,71 @@ export const resolvers = {
 		},
 		metricsSeries: async (
 			_: unknown,
-			{ input }: { input: { range: Range; resolution?: Resolution; nodeId?: string } },
+			{
+				input,
+			}: {
+				input: {
+					range: Range;
+					resolution?: Resolution;
+					nodeId?: string;
+					stack?: string;
+					serviceId?: string;
+					taskId?: string;
+				};
+			},
 			ctx: GraphQLContext
 		) => {
 			requireUser(ctx);
 			const range = input.range;
 			const resolution = input.resolution ?? "medium";
+
+			if (input.taskId) {
+				const influx = await influxTaskSeries(ctx.cfg, input.taskId, range, resolution);
+				if (influx) return influx;
+				return getTaskMetricsSeries(input.taskId, range, resolution);
+			}
+
+			if (input.stack) {
+				const influx = await influxStackSeries(ctx.cfg, input.stack, range, resolution);
+				if (influx) return influx;
+				return getStackMetricsSeries(input.stack, range, resolution);
+			}
+
 			if (input.nodeId) {
 				const live = getNodeMetricsSeries(input.nodeId, range, resolution);
 				if (live) return live;
-			} else {
-				const live = getClusterMetricsSeries(range, resolution);
-				if (live) return live;
-			}
-			if (!input.nodeId) {
-				const influx = await influxClusterSeries(ctx.cfg, range, resolution);
+				const influx = await influxNodeSeries(ctx.cfg, input.nodeId, range, resolution);
 				if (influx) return influx;
+				return null;
 			}
+
+			const live = getClusterMetricsSeries(range, resolution);
+			if (live) return live;
+			const influx = await influxClusterSeries(ctx.cfg, range, resolution);
+			if (influx) return influx;
+			if (ctx.cfg.mock) return mockSeries(range, resolution);
 			return null;
+		},
+		stackLoadSeries: async (
+			_: unknown,
+			{
+				range,
+				resolution,
+			}: { range: Range; resolution?: Resolution },
+			ctx: GraphQLContext
+		) => {
+			requireUser(ctx);
+			const r = range ?? "1h";
+			const res = resolution ?? "medium";
+			const fromMemory = getStackLoadSeries(r, res);
+			if (fromMemory.length > 0) return fromMemory;
+			try {
+				const fromInflux = await influxStackLoadSeries(ctx.cfg, r, res);
+				if (fromInflux.length > 0) return fromInflux;
+			} catch (e) {
+				console.warn("stackLoadSeries Influx query failed:", e);
+			}
+			return fromMemory;
 		},
 		statsSeries: async (
 			_: unknown,
@@ -524,7 +584,18 @@ export const resolvers = {
 				try {
 					await stackDeploy(ctx.cfg, name, input.composeYaml);
 				} catch (e) {
-					const detail = e instanceof Error ? e.message.trim() : String(e);
+					let detail = e instanceof Error ? e.message.trim() : String(e);
+					if (
+						e &&
+						typeof e === "object" &&
+						"code" in e &&
+						(e as NodeJS.ErrnoException).code === "ENOENT"
+					) {
+						detail =
+							ctx.locale === "pl"
+								? "nie znaleziono programu docker (zainstaluj Docker CLI lub ustaw SWARMBOTY_DOCKER_CLI)"
+								: "docker CLI not found (install Docker CLI or set SWARMBOTY_DOCKER_CLI)";
+					}
 					throw new GraphQLError(
 						detail
 							? `${t(ctx.locale, "errors.stackDeployFailed")} ${detail}`

@@ -7,6 +7,8 @@
             - SWARMBOTY_DB=http://${COUCHDB_USER:-admin}:${COUCHDB_PASSWORD:-swarmboty}@db:5984
             - SWARMBOTY_INFLUXDB=http://influxdb:8086
             - SWARMBOTY_INFLUXDB_TOKEN=${INFLUXDB_TOKEN:-swarmboty-influx-dev-token}
+            - SWARMBOTY_INFLUXDB_ORG=swarmboty
+            - SWARMBOTY_INFLUXDB_BUCKET=swarmboty
             - SWARMBOTY_PORT=8080
             - SWARMBOTY_WORK_DIR=/tmp
         volumes:
@@ -67,7 +69,9 @@
             context: ../../swarmagent
             dockerfile: Dockerfile
         image: swarmagent:latest
+        user: "0:0"
         environment:
+            - SWARMBOTY_URL=http://app:8080
             - DOCKER_API_VERSION=1.44
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock:ro

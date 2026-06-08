@@ -5,9 +5,11 @@ import {
 	Input,
 	TemplateRef,
 	computed,
+	inject,
 	signal,
 } from "@angular/core";
 import { NgFor, NgIf, NgTemplateOutlet } from "@angular/common";
+import { Router } from "@angular/router";
 import { FormsModule } from "@angular/forms";
 import { TableModule } from "primeng/table";
 import { TranslocoPipe } from "@jsverse/transloco";
@@ -39,6 +41,9 @@ export type ColumnDef<R = Record<string, unknown>> = {
 	/** Fixed column width hint (px or %). */
 	width?: string | number;
 };
+
+/** Route command for {@link DataTableComponent.rowRoute} (same shape as `Router.navigate`). */
+export type RowRoute = string | readonly unknown[];
 
 @Component({
 	selector: "sb-data-table",
@@ -92,7 +97,13 @@ export type ColumnDef<R = Record<string, unknown>> = {
 					</tr>
 				</ng-template>
 				<ng-template pTemplate="body" let-row>
-					<tr>
+					<tr
+						[class.dt-row--clickable]="!!rowRoute"
+						[attr.tabindex]="rowRoute ? 0 : null"
+						[attr.role]="rowRoute ? 'link' : null"
+						(click)="onRowActivate(row, $event)"
+						(keydown.enter)="onRowActivate(row, $event)"
+					>
 						<td *ngFor="let c of columns" [style.text-align]="c.align ?? 'left'">
 							<ng-container
 								*ngIf="cellTemplate; else fallback"
@@ -158,6 +169,13 @@ export type ColumnDef<R = Record<string, unknown>> = {
 			:host ::ng-deep .sb-table .p-datatable-tbody > tr:hover {
 				background: var(--surface-2);
 			}
+			:host ::ng-deep .sb-table .p-datatable-tbody > tr.dt-row--clickable {
+				cursor: pointer;
+			}
+			:host ::ng-deep .sb-table .p-datatable-tbody > tr.dt-row--clickable:focus-visible {
+				outline: 2px solid var(--primary-500);
+				outline-offset: -2px;
+			}
 			:host ::ng-deep .sb-table .p-paginator {
 				background: var(--surface-2);
 				border-color: var(--border);
@@ -179,11 +197,15 @@ export type ColumnDef<R = Record<string, unknown>> = {
 	imports: [NgFor, NgIf, NgTemplateOutlet, FormsModule, TableModule, TranslocoPipe],
 })
 export class DataTableComponent<R extends Record<string, unknown> = Record<string, unknown>> {
+	private readonly router = inject(Router);
+
 	@Input() columns: ColumnDef<R>[] = [];
 	@Input() rows: R[] = [];
 	@Input() searchKeys?: (keyof R)[];
 	@Input() pageSize = 10;
 	@Input() searchable = true;
+	/** When set, clicking anywhere on the row navigates (except interactive controls). */
+	@Input() rowRoute?: (row: R) => RowRoute | null | undefined;
 	/** Override search placeholder; defaults to `table.search` via Transloco when empty. */
 	@Input() searchPlaceholder = "";
 	/** Override empty-state text; defaults to `table.empty` via Transloco when empty. */
@@ -235,5 +257,23 @@ export class DataTableComponent<R extends Record<string, unknown> = Record<strin
 	widthOf(c: ColumnDef<R>): string | undefined {
 		if (c.width === undefined) return undefined;
 		return typeof c.width === "number" ? `${c.width}px` : c.width;
+	}
+
+	onRowActivate(row: R, event: Event): void {
+		if (!this.rowRoute) return;
+		if (event.type === "keydown" && (event as KeyboardEvent).key !== "Enter") return;
+		const target = event.target as HTMLElement;
+		if (
+			target.closest(
+				"a, button, input, label, select, textarea, [role='button'], [data-no-row-nav]"
+			)
+		) {
+			return;
+		}
+		const route = this.rowRoute(row);
+		if (!route) return;
+		event.preventDefault();
+		const commands = Array.isArray(route) ? [...route] : [route];
+		void this.router.navigate(commands);
 	}
 }

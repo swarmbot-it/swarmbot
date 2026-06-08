@@ -1,0 +1,71 @@
+pipeline {
+    agent any
+
+    options {
+        timestamps()
+        disableConcurrentBuilds()
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+    }
+
+    parameters {
+        string(name: 'BRANCH', defaultValue: 'main', description: 'Branch, tag or commit SHA to deploy.')
+        string(name: 'STACK_NAME', defaultValue: '', description: 'Docker Swarm stack name to deploy to.')
+        string(name: 'IMAGE_TAG', defaultValue: '', description: 'Image tag to deploy.')
+        string(name: 'COMPOSE_FILE', defaultValue: 'deploy/swarm/dev.yml', description: 'Path to the Swarm Compose file within the repository.')
+    }
+
+    environment {
+        INTERNAL_REGISTRY = 'registry.debian.dc4.pl'
+        IMAGE_NAMESPACE = 'swarmbotty'
+        REGISTRY_CREDENTIALS_ID = 'swarm-jenkins'
+        SWARM_MANAGER = 'debian@debian.dc4.pl'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: params.BRANCH]],
+                    extensions: [],
+                    userRemoteConfigs: scm.userRemoteConfigs
+                ])
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                script {
+                    String stackName = params.STACK_NAME?.trim()
+                    if (!stackName) {
+                        error('STACK_NAME parameter is required')
+                    }
+
+                    String imageTag = params.IMAGE_TAG?.trim()
+                    if (!imageTag) {
+                        error('IMAGE_TAG parameter is required')
+                    }
+
+                    String deployFile = (params.COMPOSE_FILE ?: '').trim() ?: 'deploy/swarm/dev.yml'
+                    if (!fileExists(deployFile)) {
+                        error("Docker Swarm deployment file not found: ${deployFile}")
+                    }
+
+                    String rawManager = env.SWARM_MANAGER?.trim()
+                    if (!rawManager) {
+                        error('SWARM_MANAGER environment variable is required')
+                    }
+                    String dockerHost = rawManager.startsWith('ssh://') ? rawManager : "ssh://${rawManager}"
+
+                    String image = imageTag.contains('/')
+                        ? imageTag
+                        : "${env.INTERNAL_REGISTRY}/${env.IMAGE_NAMESPACE}/${env.JOB_BASE_NAME}:${imageTag}"
+
+                    withEnv(["IMAGE=${image}", "STACK_NAME=${stackName}"]) {
+                        sh "docker -H '${dockerHost}' stack deploy --with-registry-auth -c '${deployFile}' '${stackName}'"
+                    }
+                }
+            }
+        }
+    }
+}

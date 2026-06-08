@@ -48,16 +48,33 @@ export async function setupDockerApi(_cfg: SwarmbotyConfig, docker: Dockerode): 
 
 type ServiceLike = {
 	ID?: string;
+	CreatedAt?: string;
+	UpdatedAt?: string;
 	Spec?: {
 		Name?: string;
 		Labels?: Record<string, string>;
-		TaskTemplate?: { ContainerSpec?: { Image?: string } };
+		TaskTemplate?: {
+			ContainerSpec?: {
+				Image?: string;
+				Env?: string[];
+				Mounts?: Array<{
+					Type?: string;
+					Source?: string;
+					Target?: string;
+					ReadOnly?: boolean;
+					VolumeOptions?: { Labels?: Record<string, string> };
+				}>;
+				Secrets?: Array<{ SecretName?: string }>;
+				Configs?: Array<{ ConfigName?: string }>;
+			};
+		};
 		Mode?: { Replicated?: { Replicas?: number }; Global?: object };
 		EndpointSpec?: {
 			Ports?: Array<{
 				TargetPort?: number;
 				PublishedPort?: number;
 				Protocol?: string;
+				PublishMode?: string;
 			}>;
 		};
 	};
@@ -222,6 +239,91 @@ export function mapServiceSummary(
 		ports: formatPorts(spec),
 		status: "RUNNING",
 		stack,
+	};
+}
+
+export type ServiceDetail = ServiceSummary & {
+	mode: string;
+	created: string;
+	updated: string;
+	env: Array<{ key: string; value: string }>;
+	labels: Array<{ key: string; value: string }>;
+	publishedPorts: Array<{
+		containerPort: number;
+		hostPort: number | null;
+		protocol: string;
+		mode: string;
+	}>;
+	bindMounts: Array<{ containerPath: string; hostPath: string; readOnly: boolean }>;
+	volumeMounts: Array<{
+		containerPath: string;
+		volumeName: string;
+		readOnly: boolean;
+		driver: string;
+	}>;
+	secretNames: string[];
+	configNames: string[];
+};
+
+function parseEnv(env: string[] | undefined): Array<{ key: string; value: string }> {
+	if (!env?.length) return [];
+	return env.map((line) => {
+		const i = line.indexOf("=");
+		if (i < 0) return { key: line, value: "" };
+		return { key: line.slice(0, i), value: line.slice(i + 1) };
+	});
+}
+
+export function mapServiceDetail(
+	s: Dockerode.Service,
+	taskCounts?: ServiceReplicaCounts
+): ServiceDetail {
+	const summary = mapServiceSummary(s, taskCounts);
+	const sl = s as unknown as ServiceLike;
+	const spec = sl.Spec;
+	const container = spec?.TaskTemplate?.ContainerSpec;
+	const isGlobal = Boolean(spec?.Mode?.Global);
+	const mounts = container?.Mounts ?? [];
+	const bindMounts = mounts
+		.filter((m) => (m.Type ?? "volume") === "bind")
+		.map((m) => ({
+			containerPath: m.Target ?? "",
+			hostPath: m.Source ?? "",
+			readOnly: Boolean(m.ReadOnly),
+		}));
+	const volumeMounts = mounts
+		.filter((m) => (m.Type ?? "") === "volume")
+		.map((m) => ({
+			containerPath: m.Target ?? "",
+			volumeName: m.Source ?? "",
+			readOnly: Boolean(m.ReadOnly),
+			driver: m.VolumeOptions?.Labels?.["driver"] ?? "local",
+		}));
+	const publishedPorts = (spec?.EndpointSpec?.Ports ?? []).map((p) => ({
+		containerPort: p.TargetPort ?? 0,
+		hostPort: p.PublishedPort ?? null,
+		protocol: (p.Protocol ?? "tcp").toUpperCase(),
+		mode: p.PublishMode ?? "ingress",
+	}));
+	const labels = Object.entries(spec?.Labels ?? {})
+		.filter(([k]) => !k.startsWith("com.docker."))
+		.map(([key, value]) => ({ key, value }));
+	return {
+		...summary,
+		mode: isGlobal ? "global" : "replicated",
+		created: sl.CreatedAt ?? new Date().toISOString(),
+		updated: sl.UpdatedAt ?? sl.CreatedAt ?? new Date().toISOString(),
+		env: parseEnv(container?.Env),
+		labels,
+		publishedPorts,
+		bindMounts,
+		volumeMounts,
+		secretNames: (container?.Secrets ?? [])
+			.map((x) => x.SecretName)
+			.filter((x): x is string => Boolean(x)),
+		configNames: (container?.Configs ?? [])
+			.map((x) => x.ConfigName)
+			.filter((x): x is string => Boolean(x)),
 	};
 }
 

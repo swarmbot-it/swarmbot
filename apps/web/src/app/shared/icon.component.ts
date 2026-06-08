@@ -11,6 +11,12 @@ import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
  */
 
 const ICONS: Record<string, string> = {
+	load: '<path d="M3 3v18h18"/><path d="M7 16l4-6 4 4 5-8"/>',
+	edit: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>',
+	redeploy:
+		'<path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/>',
+	rollback: '<path d="M9 14 4 9l5-5"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/>',
+	scale: '<path d="M21 21l-4.3-4.3"/><path d="M9 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/><path d="M16 3v4M16 7h4M3 16h4v4"/>',
 	dashboard:
 		'<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>',
 	stacks: '<path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>',
@@ -34,6 +40,7 @@ const ICONS: Record<string, string> = {
 	bell: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21a2 2 0 0 0 4 0"/>',
 	chevronDown: '<path d="M6 9l6 6 6-6"/>',
 	chevronRight: '<path d="M9 18l6-6-6-6"/>',
+	chevronLeft: '<path d="M15 18l-6-6 6-6"/>',
 	close: '<path d="M18 6L6 18M6 6l12 12"/>',
 	sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>',
 	moon: '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>',
@@ -50,6 +57,9 @@ const ICONS: Record<string, string> = {
 	eye: '<path d="M2 12s4-8 10-8 10 8 10 8-4 8-10 8-10-8-10-8z"/><circle cx="12" cy="12" r="3"/>',
 	check: '<path d="M5 12l5 5L20 7"/>',
 	play: '<path d="M6 4l14 8-14 8z"/>',
+	filter: '<path d="M3 4h18l-7 9v6l-4 2v-8z"/>',
+	disk: '<rect x="2" y="14" width="20" height="6" rx="2"/><path d="M6 17h.01M10 17h.01M2 14l3-9h14l3 9"/>',
+	pause: '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>',
 };
 
 @Component({

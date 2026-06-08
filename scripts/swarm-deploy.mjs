@@ -192,7 +192,8 @@ console.log(`\nCluster nodes: ${allNodes.join(", ")}`);
 // ── Build images ──────────────────────────────────────────────────────────────
 
 console.log("\n>>> Building swarmboty:local");
-run(`docker build -t swarmboty:local .`);
+const appVersion = JSON.parse(readFileSync(join(ROOT_DIR, "package.json"), "utf8")).version;
+run(`docker build -t swarmboty:local --build-arg APP_VERSION=${appVersion} .`);
 
 const hasAgent = existsSync(join(AGENT_DIR, "Dockerfile"));
 const forceAgentBuild =
@@ -257,6 +258,13 @@ if (copyCompose.status !== 0) {
 	throw new Error(`failed to copy examples/docker-compose.local.yml into ${MANAGER}`);
 }
 run(`docker exec ${MANAGER} docker stack deploy -c ${composeInManager} ${STACK}`);
+
+// Same tag (`:local`) — force tasks to pick up freshly loaded images.
+console.log("\n>>> Rolling service updates (force)");
+run(`docker exec ${MANAGER} docker service update --force ${STACK}_app`);
+if (hasAgent) {
+	run(`docker exec ${MANAGER} docker service update --force ${STACK}_agent`);
+}
 
 // ── Summary ───────────────────────────────────────────────────────────────────
 

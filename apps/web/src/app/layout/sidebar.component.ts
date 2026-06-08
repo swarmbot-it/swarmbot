@@ -8,7 +8,7 @@ type NavItem = {
 	id: string;
 	labelKey: string;
 	icon: string;
-	group: "overview" | "workloads" | "infra" | "store" | "admin";
+	group: "overview" | "resources" | "infra" | "store" | "admin";
 	countKey?:
 		| "stacks"
 		| "services"
@@ -32,10 +32,17 @@ const NAV: NavItem[] = [
 		path: "dashboard",
 	},
 	{
+		id: "load",
+		labelKey: "nav.load",
+		icon: "load",
+		group: "resources",
+		path: "load",
+	},
+	{
 		id: "stacks",
 		labelKey: "nav.stacks",
 		icon: "stacks",
-		group: "workloads",
+		group: "resources",
 		path: "stacks",
 		countKey: "stacks",
 	},
@@ -43,7 +50,7 @@ const NAV: NavItem[] = [
 		id: "services",
 		labelKey: "nav.services",
 		icon: "services",
-		group: "workloads",
+		group: "resources",
 		path: "services",
 		countKey: "services",
 	},
@@ -51,7 +58,7 @@ const NAV: NavItem[] = [
 		id: "tasks",
 		labelKey: "nav.tasks",
 		icon: "tasks",
-		group: "workloads",
+		group: "resources",
 		path: "tasks",
 		countKey: "tasks",
 	},
@@ -115,13 +122,13 @@ const NAV: NavItem[] = [
 
 const GROUP_KEYS: Record<NavItem["group"], string> = {
 	overview: "nav.groups.overview",
-	workloads: "nav.groups.workloads",
+	resources: "nav.groups.resources",
 	infra: "nav.groups.infra",
 	store: "nav.groups.store",
 	admin: "nav.groups.admin",
 };
 
-const GROUPS: NavItem["group"][] = ["overview", "workloads", "infra", "store", "admin"];
+const GROUPS: NavItem["group"][] = ["overview", "resources", "infra", "store", "admin"];
 
 export type SidebarFooter = {
 	clusterStatus: string;
@@ -130,9 +137,6 @@ export type SidebarFooter = {
 	dockerApi: string | null;
 };
 
-/**
- * Primary app navigation. Groups routes by area and shows live resource counts from the cluster.
- */
 @Component({
 	selector: "sb-sidebar",
 	standalone: true,
@@ -140,18 +144,23 @@ export type SidebarFooter = {
 	template: `
 		<nav class="sidebar">
 			<ng-container *ngFor="let group of groups">
-				<div class="sidebar__group-label">{{ groupKeys[group] | transloco }}</div>
+				<div class="sidebar__group-label">
+					<span class="sidebar__group-text">{{ groupKeys[group] | transloco }}</span>
+				</div>
 				<a
 					*ngFor="let item of nav[group]"
 					class="sidebar__item"
 					routerLinkActive="sidebar__item--active"
 					[routerLink]="['/app', item.path]"
+					[attr.data-label]="item.labelKey | transloco"
 				>
 					<sb-icon [name]="item.icon" [size]="17"></sb-icon>
-					<span>{{ item.labelKey | transloco }}</span>
-					<span class="sidebar__count" *ngIf="item.countKey && counts">{{
-						counts[item.countKey]
-					}}</span>
+					<span class="sidebar__item-text">{{ item.labelKey | transloco }}</span>
+					<span
+						class="sidebar__count"
+						*ngIf="item.countKey && counts && counts[item.countKey] != null"
+						>{{ counts[item.countKey] }}</span
+					>
 				</a>
 			</ng-container>
 
@@ -163,9 +172,11 @@ export type SidebarFooter = {
 						[class.dot--warning]="footer.clusterStatus === 'degraded'"
 						[class.dot--danger]="footer.clusterStatus === 'unhealthy'"
 					></span>
-					{{ clusterStatusKey(footer.clusterStatus) | transloco }}
+					<span class="sidebar__footer-text">{{
+						clusterStatusKey(footer.clusterStatus) | transloco
+					}}</span>
 				</div>
-				<div *ngIf="footer.managersTotal > 0">
+				<div class="sidebar__footer-text" *ngIf="footer.managersTotal > 0">
 					{{
 						"nav.quorum"
 							| transloco
@@ -175,7 +186,7 @@ export type SidebarFooter = {
 								  }
 					}}
 				</div>
-				<div class="sidebar__api-line mono">
+				<div class="sidebar__api-line sidebar__footer-text mono">
 					API
 					<ng-container *ngIf="footer.dockerApi; else apiUnknown"
 						>v{{ footer.dockerApi }}</ng-container
@@ -270,21 +281,12 @@ export type SidebarFooter = {
 				color: var(--text-2);
 				font-size: 12px;
 			}
-			.sidebar__api-line {
-				font-size: 12px;
-				color: var(--muted);
-			}
-			.sidebar__api-line .mono {
-				color: var(--text-2);
-			}
 		`,
 	],
 	imports: [NgFor, NgIf, RouterLink, RouterLinkActive, IconComponent, TranslocoPipe],
 })
 export class SidebarComponent {
-	/** Optional map of nav count keys to totals (stacks, services, nodes, etc.). */
 	@Input() counts: Record<string, number> | null = null;
-	/** Live cluster status, quorum, and API / app version line. */
 	@Input() footer: SidebarFooter | null = null;
 
 	clusterStatusKey(status: string): string {

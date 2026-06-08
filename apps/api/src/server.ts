@@ -25,8 +25,7 @@ import { revokeJti } from "./auth/blacklist.js";
 import { createDocker, setupDockerApi } from "./docker/engine.js";
 import { consumeSlt, createSlt } from "./auth/slt.js";
 import { publishEvent, subscribeEvents } from "./events/hub.js";
-import { parseStatsMessage } from "./metrics/stats-ingest.js";
-import { ingestNodeStats } from "./metrics/stats-store.js";
+import { processStatsEvent } from "./metrics/ingest-pipeline.js";
 import type nano from "nano";
 
 export async function createHttpServer(
@@ -197,20 +196,30 @@ export async function createHttpServer(
 		});
 	});
 
-	app.post("/events", bodyParser.json({ limit: "2mb" }), (req, res) => {
-		const locale = localeFromHeader(req.headers["accept-language"]);
-		if (!req.body) {
-			res.status(400).json({ error: localizedMessage(locale, "errors.noDataSent") });
-			return;
+	app.post(
+		"/events",
+		bodyParser.json({
+			limit: "2mb",
+			verify: (req, _res, buf) => {
+				(req as { rawBody?: Buffer }).rawBody = buf;
+			},
+		}),
+		(req, res) => {
+			const locale = localeFromHeader(req.headers["accept-language"]);
+			if (!req.body) {
+				res.status(400).json({ error: localizedMessage(locale, "errors.noDataSent") });
+				return;
+			}
+			const body = req.body as Record<string, unknown>;
+			if (body.type === "stats") {
+				void processStatsEvent(cfg, docker, body.message).catch((e) =>
+					console.warn("stats ingest failed:", e)
+				);
+			}
+			publishEvent(body);
+			res.status(202).json({ accepted: true });
 		}
-		const body = req.body as Record<string, unknown>;
-		if (body.type === "stats") {
-			const parsed = parseStatsMessage(body.message);
-			if (parsed) ingestNodeStats(parsed);
-		}
-		publishEvent(body);
-		res.status(202).json({ accepted: true });
-	});
+	);
 
 	app.get("/api/services/:id/logs", async (req: AuthedRequest, res) => {
 		const locale = localeFromHeader(req.headers["accept-language"]);
@@ -266,6 +275,17 @@ export async function createHttpServer(
 				res.status(404).send("Not found");
 			}
 		});
+	});
+
+	app.use((err: unknown, req: express.Request, res: express.Response, next: express.NextFunction) => {
+		if (err instanceof SyntaxError && req.path === "/events") {
+			const raw = (req as { rawBody?: Buffer }).rawBody;
+			const preview = raw ? raw.subarray(0, 120).toString("utf8") : "(no body)";
+			console.warn("POST /events JSON parse failed:", err.message, "preview:", preview);
+			res.status(400).json({ error: "invalid json" });
+			return;
+		}
+		next(err);
 	});
 
 	return {

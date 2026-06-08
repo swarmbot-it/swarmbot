@@ -1,5 +1,12 @@
-﻿import type { SwarmbotyConfig } from "../config.js";
-import { influxQuery } from "../influx.js";
+﻿export {
+	influxClusterSeries,
+	influxNodeSeries,
+	influxStackSeries,
+	influxTaskSeries,
+	influxStackLoadSeries,
+	influxNodeLivePercent,
+	type StackMetricSeries,
+} from "./influx-queries.js";
 
 /**
  * Telemetry series generator and InfluxDB query helpers.
@@ -23,6 +30,14 @@ export const RANGE_POINTS: Record<Range, number> = {
 	"1h": 60,
 	"6h": 72,
 	"24h": 96,
+};
+
+/** Wall-clock span for each UI range preset (ms). */
+export const RANGE_MS: Record<Range, number> = {
+	"15m": 15 * 60 * 1000,
+	"1h": 60 * 60 * 1000,
+	"6h": 6 * 60 * 60 * 1000,
+	"24h": 24 * 60 * 60 * 1000,
 };
 
 export const RANGE_LABEL = (r: Range, n: number, i: number): string => {
@@ -83,56 +98,6 @@ export function mockSeries(range: Range, resolution: Resolution, seed = 0): Metr
 		mem: mem.filter((_, i) => i % stride === 0),
 		disk: disk.filter((_, i) => i % stride === 0),
 	};
-}
-
-type InfluxRows = {
-	results?: Array<{
-		series?: Array<{ values?: Array<Array<number | string | null>> }>;
-	}>;
-};
-
-function extractField(rows: InfluxRows): number[] {
-	const series = rows.results?.[0]?.series?.[0]?.values ?? [];
-	return series.map((row) => Number(row[1] ?? 0));
-}
-
-/**
- * Run a cluster-wide metrics query against InfluxDB. The schema follows
- * the agent's `stats` payload: measurements `cpu` / `memory` / `disk`
- * with a `percent` field aggregated cluster-wide.
- */
-export async function influxClusterSeries(
-	cfg: SwarmbotyConfig,
-	range: Range,
-	resolution: Resolution
-): Promise<MetricsSeries | null> {
-	if (!cfg.influxdbUrl) return null;
-	const window = { "15m": "30s", "1h": "1m", "6h": "5m", "24h": "15m" }[range];
-	const since = range;
-	try {
-		const ql = (measurement: string, field = "percent") =>
-			`SELECT mean("${field}") FROM "${measurement}" WHERE time > now() - ${since} GROUP BY time(${window}) fill(null)`;
-		const [cpuRows, memRows, diskRows] = await Promise.all([
-			influxQuery(cfg, ql("cpu")) as Promise<InfluxRows>,
-			influxQuery(cfg, ql("memory")) as Promise<InfluxRows>,
-			influxQuery(cfg, ql("disk")) as Promise<InfluxRows>,
-		]);
-		const cpu = extractField(cpuRows);
-		const mem = extractField(memRows);
-		const disk = extractField(diskRows);
-		if (cpu.length === 0) return null;
-		const n = cpu.length;
-		const stride = RES_STRIDE[resolution];
-		const labels = Array.from({ length: n }, (_, i) => RANGE_LABEL(range, n, i));
-		return {
-			labels: labels.filter((_, i) => i % stride === 0),
-			cpu: cpu.filter((_, i) => i % stride === 0),
-			mem: mem.filter((_, i) => i % stride === 0),
-			disk: disk.filter((_, i) => i % stride === 0),
-		};
-	} catch {
-		return null;
-	}
 }
 
 /** Per-node short history used by Nodes tiles & dashboard sparklines. */

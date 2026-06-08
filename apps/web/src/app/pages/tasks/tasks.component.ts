@@ -47,11 +47,12 @@ type TaskRow = {
 				[rows]="rows"
 				[searchKeys]="['name', 'image', 'node', 'status']"
 				[pageSize]="12"
+				[rowRoute]="taskRowRoute"
 			>
 				<ng-template #cell let-row let-key="key">
 					<ng-container [ngSwitch]="key">
 						<div *ngSwitchCase="'name'">
-							<div class="mono" style="font-weight: 600">{{ row.name }}</div>
+							<span class="link-name mono">{{ row.name }}</span>
 							<div class="mono" style="color: var(--muted); margin-top: 2px;">
 								{{ row.image }}
 							</div>
@@ -142,4 +143,6 @@ export class TasksPageComponent {
 	readonly rows$: Observable<TaskRow[]> = this.apollo
 		.watchQuery<{ tasks: TaskRow[] }>({ query: QUERY_TASKS, pollInterval: 30_000 })
 		.valueChanges.pipe(map((x) => (x.data?.tasks ?? []) as TaskRow[]));
+
+	readonly taskRowRoute = (row: TaskRow) => ["/app/tasks", row.id];
 }

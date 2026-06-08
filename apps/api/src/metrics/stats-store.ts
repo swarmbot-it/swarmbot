@@ -1,5 +1,5 @@
+import { historyToMetricsSeries } from "./chart-series.js";
 import type { Range, Resolution, MetricsSeries } from "./series.js";
-import { RANGE_POINTS, RES_STRIDE, RANGE_LABEL } from "./series.js";
 import type { ParsedNodeStats } from "./stats-ingest.js";
 
 /** How long a node sample stays valid (swarmagent default tick is 30s). */
@@ -157,29 +157,11 @@ export function getClusterOverviewMetrics(): ClusterOverviewMetrics | null {
 	};
 }
 
-function seriesFromHistory(
-	history: Point[],
-	range: Range,
-	resolution: Resolution
-): MetricsSeries | null {
-	if (history.length === 0) return null;
-	const stride = RES_STRIDE[resolution];
-	const n = RANGE_POINTS[range];
-	const slice = history.slice(-n);
-	const labels = slice.map((_, i) => RANGE_LABEL(range, n, i));
-	return {
-		labels: labels.filter((_, i) => i % stride === 0),
-		cpu: slice.map((p) => p.cpu).filter((_, i) => i % stride === 0),
-		mem: slice.map((p) => p.mem).filter((_, i) => i % stride === 0),
-		disk: slice.map((p) => p.disk).filter((_, i) => i % stride === 0),
-	};
-}
-
 export function getClusterMetricsSeries(
 	range: Range,
 	resolution: Resolution
 ): MetricsSeries | null {
-	return seriesFromHistory(clusterHistory, range, resolution);
+	return historyToMetricsSeries(clusterHistory, range, resolution);
 }
 
 export function getNodeMetricsSeries(
@@ -191,7 +173,7 @@ export function getNodeMetricsSeries(
 	const hist =
 		historyByNode.get(nodeId) ?? (hostname ? historyByNode.get(hostname) : undefined);
 	if (!hist) return null;
-	return seriesFromHistory(hist, range, resolution);
+	return historyToMetricsSeries(hist, range, resolution);
 }
 
 /** Test-only reset. */

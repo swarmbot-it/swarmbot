@@ -285,6 +285,7 @@ Common variables:
 - `SWARMBOTY_DB` - CouchDB URL, defaults to `http://localhost:5984`.
 - `SWARMBOTY_INFLUXDB` - optional InfluxDB URL.
 - `SWARMBOTY_DOCKER_SOCK` - Docker socket path, defaults to `/var/run/docker.sock`.
+- `SWARMBOTY_DOCKER_CLI` - path to the `docker` binary for `stack deploy` (optional; auto-detected on Windows).
 - `SWARMBOTY_DOCKER_API` - Docker API version, defaults to `1.44`.
 - `SWARMBOTY_WORK_DIR` - working directory, defaults to `/tmp`.
 

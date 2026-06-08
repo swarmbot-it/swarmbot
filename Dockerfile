@@ -19,8 +19,11 @@ RUN mkdir -p /app/apps/api/public \
 
 FROM node:24-alpine AS runtime
 
+# Required for GraphQL createStack / stack rm (docker stack deploy via CLI).
+RUN apk add --no-cache docker-cli
+
 ENV NODE_ENV=production
-ARG APP_VERSION=0.1.1
+ARG APP_VERSION=0.1.4
 ENV SWARMBOTY_VERSION=${APP_VERSION}
 WORKDIR /app
 

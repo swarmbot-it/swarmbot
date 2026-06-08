@@ -46,20 +46,11 @@ export class StacksHostComponent {
 	selector: "sb-services-host",
 	standalone: true,
 	changeDetection: ChangeDetectionStrategy.OnPush,
-	template: `
-		<sb-services-page (createRequested)="open = true"></sb-services-page>
-		<sb-service-form
-			[open]="open"
-			(close)="open = false"
-			(created)="open = false"
-		></sb-service-form>
-	`,
-	imports: [ServicesPageComponent, ServiceFormComponent],
+	template: ` <sb-services-page></sb-services-page> `,
+	imports: [ServicesPageComponent],
 })
-/** Wires the services table page to its create-service modal. */
-export class ServicesHostComponent {
-	open = false;
-}
+/** Services list (detail via row link). */
+export class ServicesHostComponent {}
 
 @Component({
 	selector: "sb-networks-host",

@@ -1,9 +1,36 @@
 import { describe, it, expect } from "vitest";
-import { parseStatsMessage } from "./stats-ingest.js";
+import { parseStatsBatch, parseStatsMessage } from "./stats-ingest.js";
 
 describe("parseStatsMessage", () => {
 	it("returns null without node id", () => {
 		expect(parseStatsMessage({ cpu: { used_percentage: 10 } })).toBeNull();
+	});
+
+	it("parses containers when sent as a JSON string", () => {
+		const batch = parseStatsBatch({
+			id: "node-abc",
+			containers: JSON.stringify([
+				{ id: "c1", name: "/stack_svc.1.x", cpuPercentage: 12, memoryPercentage: 34 },
+			]),
+		});
+		expect(batch?.containers).toHaveLength(1);
+	});
+
+	it("parses containers array from current agent", () => {
+		const batch = parseStatsBatch({
+			id: "node-abc",
+			containers: [{ id: "c1", name: "/stack_svc.1.x", cpuPercentage: 12, memoryPercentage: 34 }],
+		});
+		expect(batch?.containers).toHaveLength(1);
+	});
+
+	it("parses container tasks in batch", () => {
+		const batch = parseStatsBatch({
+			id: "node-abc",
+			tasks: [{ id: "c1", name: "/stack_svc.1.x", cpuPercentage: 12, memoryPercentage: 34 }],
+		});
+		expect(batch?.containers).toHaveLength(1);
+		expect(batch?.containers[0]?.cpu).toBe(12);
 	});
 
 	it("parses agent status payload", () => {

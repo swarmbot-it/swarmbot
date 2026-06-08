@@ -20,6 +20,8 @@ export type SwarmbotyConfig = {
 	dbUrl: string;
 	influxdbUrl: string | undefined;
 	influxdbToken: string | undefined;
+	influxOrg: string | undefined;
+	influxBucket: string | undefined;
 	agentUrl: string | undefined;
 	workDir: string;
 	instanceName: string | undefined;
@@ -36,6 +38,8 @@ const defaults: SwarmbotyConfig = {
 	dbUrl: "http://localhost:5984",
 	influxdbUrl: undefined,
 	influxdbToken: undefined,
+	influxOrg: undefined,
+	influxBucket: undefined,
 	agentUrl: undefined,
 	workDir: "/tmp",
 	instanceName: undefined,
@@ -74,6 +78,8 @@ export function loadConfig(): SwarmbotyConfig {
 		dbUrl: envStr("SWARMBOTY_DB") ?? defaults.dbUrl,
 		influxdbUrl: envStr("SWARMBOTY_INFLUXDB"),
 		influxdbToken: envStr("SWARMBOTY_INFLUXDB_TOKEN"),
+		influxOrg: envStr("SWARMBOTY_INFLUXDB_ORG"),
+		influxBucket: envStr("SWARMBOTY_INFLUXDB_BUCKET"),
 		agentUrl: envStr("SWARMBOTY_AGENT_URL"),
 		workDir: envStr("SWARMBOTY_WORK_DIR") ?? defaults.workDir,
 		instanceName: envStr("SWARMBOTY_INSTANCE_NAME"),

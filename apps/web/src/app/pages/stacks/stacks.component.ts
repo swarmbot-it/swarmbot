@@ -44,7 +44,12 @@ type Stack = {
 					{{ "pages.stacks.add" | transloco }}
 				</button>
 			</div>
-			<sb-data-table [columns]="cols()" [rows]="rows" [searchKeys]="['name', 'status']">
+			<sb-data-table
+				[columns]="cols()"
+				[rows]="rows"
+				[searchKeys]="['name', 'status']"
+				[rowRoute]="stackRowRoute"
+			>
 				<ng-template #cell let-row let-key="key">
 					<ng-container [ngSwitch]="key">
 						<span
@@ -52,7 +57,7 @@ type Stack = {
 							style="display:inline-flex; align-items:center; gap:10px;"
 						>
 							<sb-icon name="stacks" [size]="16"></sb-icon>
-							<strong>{{ row.name }}</strong>
+							<span class="link-name">{{ row.name }}</span>
 						</span>
 						<span *ngSwitchCase="'services'" class="num">{{ row.services }}</span>
 						<span *ngSwitchCase="'networks'" class="num">{{ row.networks }}</span>
@@ -97,4 +102,6 @@ export class StacksPageComponent {
 	readonly rows$: Observable<Stack[]> = this.apollo
 		.watchQuery<{ stacks: Stack[] }>({ query: QUERY_STACKS, pollInterval: 30_000 })
 		.valueChanges.pipe(map((x) => (x.data?.stacks ?? []) as Stack[]));
+
+	readonly stackRowRoute = (row: Stack) => ["/app/stacks", row.name];
 }

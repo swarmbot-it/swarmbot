@@ -41,9 +41,18 @@ import { NgIf } from "@angular/common";
 				</g>
 			</svg>
 			<div class="donut__center">
-				<div class="donut__value" [class.donut__value--na]="unavailable()">
-					<ng-container *ngIf="unavailable(); else pct">{{ naLabel }}</ng-container>
-					<ng-template #pct>{{ rounded() }}<span class="donut__pct">%</span></ng-template>
+				<div
+					class="donut__value"
+					[class.donut__value--na]="unavailable()"
+					[class.donut__value--text]="valueLabel"
+				>
+					<ng-container *ngIf="unavailable(); else valueBlock">{{ naLabel }}</ng-container>
+					<ng-template #valueBlock>
+						<ng-container *ngIf="valueLabel; else pct">{{ valueLabel }}</ng-container>
+						<ng-template #pct
+							>{{ rounded() }}<span class="donut__pct">%</span></ng-template
+						>
+					</ng-template>
 				</div>
 				<div class="donut__label" *ngIf="label">{{ label }}</div>
 			</div>
@@ -71,6 +80,9 @@ import { NgIf } from "@angular/common";
 			.donut__value--na {
 				font-size: 15px;
 				color: var(--muted);
+			}
+			.donut__value--text {
+				font-size: 16px;
 			}
 			.donut__pct {
 				font-size: 12px;
@@ -104,8 +116,10 @@ export class DonutComponent {
 	@Input() stroke = 14;
 	/** Color of the filled arc (CSS color). */
 	@Input() color = "var(--primary-500)";
-	/** Optional caption shown under the percentage. */
+	/** Optional caption shown under the value (e.g. "replicas"). */
 	@Input() label?: string;
+	/** When set, shows this text instead of a percentage (e.g. "3/5"). */
+	@Input() valueLabel?: string;
 
 	private readonly _value = signal<number | null>(null);
 

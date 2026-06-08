@@ -1,6 +1,7 @@
 {
     "nav": {
         "dashboard": "Dashboard",
+        "load": "Load",
         "stacks": "Stacks",
         "services": "Services",
         "tasks": "Tasks",
@@ -13,6 +14,7 @@
         "users": "Users",
         "groups": {
             "overview": "Overview",
+            "resources": "Resources",
             "workloads": "Resources",
             "infra": "Infrastructure",
             "store": "Storage & Config",
@@ -134,6 +136,69 @@
         "UNKNOWN": "Unknown"
     },
     "pages": {
+        "load": {
+            "title": "Load",
+            "subtitle": "Top stacks by current CPU usage",
+            "peak": "Peak: {{peak}}% · across {{count}} stacks",
+            "empty": "No stack telemetry yet"
+        },
+        "stackDetail": {
+            "back": "Back to Stacks",
+            "uptime": "Uptime",
+            "lastDeploy": "Last deploy",
+            "replicas": "Replicas",
+            "servicesTile": "Services",
+            "configs": "Configs",
+            "secrets": "Secrets",
+            "utilization": "Stack utilization",
+            "utilizationSub": "Aggregated across {{count}} services",
+            "noNetworks": "No networks attached.",
+            "noVolumes": "No volumes attached.",
+            "noConfigs": "No configs mounted.",
+            "noSecrets": "No secrets granted.",
+            "noServices": "No services in this stack.",
+            "noMetrics": "No telemetry for this range yet — metrics appear after swarmagent collects samples."
+        },
+        "serviceDetail": {
+            "back": "Back to Services",
+            "replicas": "replicas",
+            "running": "Running",
+            "stopped": "Stopped",
+            "env": "Environment variables",
+            "labels": "Labels",
+            "tasks": "Tasks",
+            "secrets": "Secrets",
+            "configs": "Configs",
+            "networks": "Networks",
+            "publishedPorts": "Published ports",
+            "bindMounts": "Bind mounts",
+            "volumes": "Volumes",
+            "containerPort": "Container port",
+            "hostPort": "Host port",
+            "protocol": "Protocol",
+            "mode": "Mode",
+            "containerPath": "Container path",
+            "hostPath": "Host path",
+            "volumeName": "Volume name",
+            "readOnly": "Read-only",
+            "updated": "Updated",
+            "noEntries": "No entries.",
+            "noSecrets": "No secrets bound.",
+            "noConfigs": "No configs bound.",
+            "noPorts": "No ports published.",
+            "noMounts": "No bind mounts.",
+            "noVolumes": "No volumes mounted."
+        },
+        "taskDetail": {
+            "back": "Back to Tasks",
+            "on": "on",
+            "taskId": "Task ID",
+            "imageDigest": "Image digest",
+            "cpuUsage": "CPU usage",
+            "memUsage": "Memory usage",
+            "lastHour": "Last hour · current",
+            "noMetrics": "No telemetry for this range yet."
+        },
         "stacks": {
             "countSuffix": "stacks deployed",
             "add": "New stack",

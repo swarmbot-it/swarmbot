@@ -34,6 +34,7 @@ export const typeDefs = `#graphql
     users: [UserAccount!]!
 
     metricsSeries(input: MetricsSeriesInput!): MetricsSeries
+    stackLoadSeries(range: String!, resolution: String): [StackMetricSeries!]!
     statsSeries(measurement: String!, field: String!, tags: String): String
   }
 
@@ -155,19 +156,57 @@ export const typeDefs = `#graphql
     ports: [String!]!
     status: String!
     stack: String
+    mode: String!
+    created: String!
+    updated: String!
+    env: [KeyValue!]!
+    labels: [KeyValue!]!
+    publishedPorts: [PublishedPort!]!
+    bindMounts: [BindMount!]!
+    volumeMounts: [ServiceVolumeMount!]!
+    secretNames: [String!]!
+    configNames: [String!]!
   }
 
   type TaskInfo {
     id: ID!
+    serviceId: String!
     name: String!
     image: String!
     node: String!
+    stack: String
     cpu: Int!
     mem: Int!
     updated: String!
+    updatedAt: String!
     status: String!
     cpuSeries: [Float!]!
     memSeries: [Float!]!
+  }
+
+  type KeyValue {
+    key: String!
+    value: String!
+  }
+
+  type PublishedPort {
+    containerPort: Int!
+    hostPort: Int
+    protocol: String!
+    mode: String!
+  }
+
+  type BindMount {
+    containerPath: String!
+    hostPath: String!
+    readOnly: Boolean!
+  }
+
+  type ServiceVolumeMount {
+    containerPath: String!
+    volumeName: String!
+    readOnly: Boolean!
+    driver: String!
   }
 
   type NodeSummary {
@@ -253,9 +292,20 @@ export const typeDefs = `#graphql
     range: String!
     resolution: String
     nodeId: ID
+    stack: String
+    serviceId: ID
+    taskId: ID
   }
 
   type MetricsSeries {
+    labels: [String!]!
+    cpu: [Float!]!
+    mem: [Float!]!
+    disk: [Float!]!
+  }
+
+  type StackMetricSeries {
+    stack: String!
     labels: [String!]!
     cpu: [Float!]!
     mem: [Float!]!

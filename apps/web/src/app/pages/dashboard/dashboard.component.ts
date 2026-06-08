@@ -133,7 +133,7 @@ type MetricsResponse = {
 						[stroke]="14"
 						color="var(--primary-500)"
 					></sb-donut>
-					<div>
+					<div class="dash-tile__body">
 						<div class="dash-tile__label">{{ "dashboard.cpu" | transloco }}</div>
 						<div class="dash-tile__value-spacer" aria-hidden="true"></div>
 						<div
@@ -157,7 +157,7 @@ type MetricsResponse = {
 						[stroke]="14"
 						color="#3b82f6"
 					></sb-donut>
-					<div>
+					<div class="dash-tile__body">
 						<div class="dash-tile__label">{{ "dashboard.memory" | transloco }}</div>
 						<div class="dash-tile__value-spacer" aria-hidden="true"></div>
 						<div
@@ -178,7 +178,7 @@ type MetricsResponse = {
 						[stroke]="14"
 						color="#10b981"
 					></sb-donut>
-					<div>
+					<div class="dash-tile__body">
 						<div class="dash-tile__label">{{ "dashboard.disk" | transloco }}</div>
 						<div class="dash-tile__value-spacer" aria-hidden="true"></div>
 						<div
@@ -548,13 +548,13 @@ export class DashboardComponent {
 
 	private readonly metricsRef = this.apollo.watchQuery<MetricsResponse>({
 		query: QUERY_METRICS_SERIES,
-		variables: { input: { range: this.range(), resolution: "high" } },
+		variables: { input: { range: this.range(), resolution: "medium" } },
 		fetchPolicy: "network-only",
 	});
 
 	constructor() {
 		effect(() => {
-			void this.metricsRef.refetch({ input: { range: this.range(), resolution: "high" } });
+			void this.metricsRef.refetch({ input: { range: this.range(), resolution: "medium" } });
 		});
 	}
 
@@ -566,7 +566,7 @@ export class DashboardComponent {
 				from(this.overviewRef.refetch()),
 				from(this.nodesRef.refetch()),
 				from(
-					this.metricsRef.refetch({ input: { range: this.range(), resolution: "high" } })
+					this.metricsRef.refetch({ input: { range: this.range(), resolution: "medium" } })
 				),
 			]),
 			timer(500),
