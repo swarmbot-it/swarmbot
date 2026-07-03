@@ -1,6 +1,7 @@
 {
     "nav": {
         "dashboard": "Dashboard",
+        "load": "Load",
         "stacks": "Stacks",
         "services": "Services",
         "tasks": "Tasks",
@@ -13,7 +14,7 @@
         "users": "Users",
         "groups": {
             "overview": "Overview",
-            "workloads": "Workloads",
+            "workloads": "Resources",
             "infra": "Infrastructure",
             "store": "Storage & Config",
             "admin": "Administration"
@@ -34,6 +35,13 @@
     },
     "topbar": {
         "notifications": "Notifications",
+        "recentActivity": "Recent activity",
+        "liveFromDocker": "live from Docker",
+        "noActivity": "No activity yet.",
+        "secondsAgo": "{{n}}s ago",
+        "minutesAgo": "{{n}}m ago",
+        "hoursAgo": "{{n}}h ago",
+        "daysAgo": "{{n}}d ago",
         "switchToLight": "Switch to light mode",
         "switchToDark": "Switch to dark mode",
         "theme": "Theme",
@@ -43,6 +51,21 @@
         "profile": "Profile",
         "preferences": "Preferences",
         "apiTokens": "API tokens",
+        "apiTokensSubtitle": "Use a token to call the GraphQL API without a browser session",
+        "apiTokensYourNew": "Your new token",
+        "apiTokensActive": "Active token",
+        "apiTokensExpires": "Expires",
+        "apiTokensNoExpiry": "Does not expire",
+        "apiTokensNone": "No active API token. Generate one to authenticate API calls with an Authorization header.",
+        "apiTokensGenerate": "Generate token",
+        "apiTokensRegenerate": "Regenerate",
+        "apiTokensRevoke": "Revoke",
+        "apiTokensCopyHint": "Copy it now — it won't be shown again.",
+        "apiTokensCopy": "Copy to clipboard",
+        "apiTokensCopied": "Token copied to clipboard",
+        "apiTokensRevoked": "API token revoked",
+        "apiTokensGenFailed": "Failed to generate token.",
+        "apiTokensRevokeFailed": "Failed to revoke token.",
         "logout": "Log out",
         "administrator": "Administrator"
     },
@@ -53,6 +76,7 @@
     },
     "common": {
         "cancel": "Cancel",
+        "close": "Close",
         "create": "Create",
         "save": "Save",
         "optional": "Optional",
@@ -61,7 +85,8 @@
         "continue": "Continue",
         "default": "DEFAULT",
         "type": "Type",
-        "user": "User"
+        "user": "User",
+        "loading": "Loading…"
     },
     "dashboard": {
         "title": "Cluster Overview",
@@ -93,6 +118,15 @@
             "high": "High"
         }
     },
+    "load": {
+        "title": "Stack load",
+        "subtitle": "CPU and memory utilization for the top {{count}} stacks by current usage",
+        "loading": "Loading stack metrics…",
+        "empty": "No stacks deployed yet. Deploy one with \"docker stack deploy\" to see load charts.",
+        "cpu": "CPU",
+        "memory": "Memory",
+        "peak": "Peak:"
+    },
     "columns": {
         "name": "Name",
         "driver": "Driver",
@@ -111,7 +145,8 @@
         "task": "Task",
         "node": "Node",
         "replicas": "Replicas",
-        "ports": "Ports"
+        "ports": "Ports",
+        "actions": "Actions"
     },
     "status": {
         "RUNNING": "Running",
@@ -125,6 +160,7 @@
         "REJECTED": "Rejected",
         "COMPLETE": "Complete",
         "SHUTDOWN": "Shutdown",
+        "STOPPED": "Stopped",
         "UNKNOWN": "Unknown"
     },
     "pages": {
@@ -138,6 +174,46 @@
                 "volumes": "Volumes",
                 "configs": "Configs",
                 "secrets": "Secrets"
+            },
+            "detail": {
+                "countsSummary": "{{services}} services · {{networks}} networks · {{volumes}} volumes · {{configs}} configs · {{secrets}} secrets",
+                "working": "Working…",
+                "edit": "Edit",
+                "editUnsupported": "Editing a stack in place isn't supported yet — use Redeploy/Rollback/Deactivate below, or delete and deploy a new Compose file.",
+                "redeploy": "Redeploy",
+                "redeployHint": "rolling",
+                "rollback": "Rollback",
+                "rollbackHint": "prev. spec",
+                "deactivate": "Deactivate",
+                "deactivateHint": "scale to 0",
+                "reactivate": "Reactivate",
+                "reactivateHint": "scale to 1",
+                "delete": "Delete",
+                "utilization": "Stack utilization",
+                "utilizationHint": "Aggregated container CPU & memory · from InfluxDB",
+                "noMetrics": "No metrics yet — the agent reports stats every 30s.",
+                "diskHint": "Per-container disk usage isn't collected by the agent (only CPU & memory are)",
+                "diskNotTracked": "Not tracked per stack",
+                "notFound": "Stack not found.",
+                "noServices": "No services in this stack.",
+                "noNetworks": "No networks attached.",
+                "noVolumes": "No volumes attached.",
+                "noConfigs": "No configs mounted.",
+                "noSecrets": "No secrets granted.",
+                "stopped": "Stopped",
+                "stopping": "Stopping…",
+                "confirmRemove": "Remove stack \"{{name}}\"? This deletes all its services, networks and other resources.",
+                "toastNothingToRedeploy": "\"{{name}}\" has 0 replicas — nothing to redeploy. Use \"Reactivate\" first.",
+                "toastRedeploying": "Redeploying \"{{name}}\"… tasks will restart in a few seconds.",
+                "toastRolledBack": "Rolled back \"{{name}}\" to its previous spec.",
+                "toastDeactivated": "Stack \"{{name}}\" deactivated.",
+                "toastReactivated": "Stack \"{{name}}\" reactivated (scaled to 1 replica).",
+                "toastRemoved": "Stack \"{{name}}\" removed.",
+                "redeployFailed": "Redeploy failed.",
+                "rollbackFailed": "Rollback failed.",
+                "deactivateFailed": "Deactivate failed.",
+                "reactivateFailed": "Reactivate failed.",
+                "removeFailed": "Remove failed."
             }
         },
         "services": {
@@ -147,6 +223,39 @@
                 "service": "Service",
                 "replicas": "Replicas",
                 "ports": "Ports"
+            },
+            "detail": {
+                "back": "Back to services",
+                "scale": "Scale",
+                "scaleSubtitle": "Set desired replica count for {{name}}",
+                "serviceId": "Service ID",
+                "mode": "Mode",
+                "env": "Environment variables",
+                "noEnv": "No environment variables set.",
+                "labels": "Labels",
+                "noLabels": "No labels set.",
+                "noSecrets": "No secrets bound.",
+                "noConfigs": "No configs bound.",
+                "noTasks": "No active tasks.",
+                "noNetworks": "No networks attached.",
+                "noPorts": "No ports published.",
+                "mounts": "Mounts",
+                "noMounts": "No mounts.",
+                "mountSource": "Source",
+                "mountTarget": "Target",
+                "mountMode": "Mode",
+                "notFound": "Service not found.",
+                "editUnsupported": "Editing a service in place isn't supported yet — use Redeploy/Rollback/Scale below, or remove it and redeploy via its stack.",
+                "confirmRemove": "Remove service \"{{name}}\"?",
+                "toastNothingToRedeploy": "\"{{name}}\" has 0 replicas — nothing to redeploy. Use \"Scale\" to bring it back up first.",
+                "toastRedeploying": "Redeploying \"{{name}}\"… tasks will restart in a few seconds.",
+                "toastRolledBack": "Rolled back \"{{name}}\" to its previous spec.",
+                "toastScaled": "Scaled \"{{name}}\" to {{replicas}} replicas.",
+                "toastRemoved": "Service \"{{name}}\" removed.",
+                "redeployFailed": "Redeploy failed.",
+                "rollbackFailed": "Rollback failed.",
+                "scaleFailed": "Scale failed.",
+                "removeFailed": "Remove failed."
             }
         },
         "tasks": {
@@ -156,6 +265,13 @@
                 "node": "Node",
                 "cpu": "CPU",
                 "memory": "Memory"
+            },
+            "detail": {
+                "back": "Back to tasks",
+                "on": "on",
+                "desiredState": "Desired state",
+                "statusMessage": "Status message",
+                "notFound": "Task not found."
             }
         },
         "nodes": {
@@ -170,6 +286,14 @@
                 "cpu": "CPU",
                 "memory": "Memory",
                 "disk": "Disk"
+            },
+            "actions": {
+                "title": "Actions",
+                "drain": "Drain",
+                "activate": "Activate",
+                "toastDrained": "\"{{name}}\" is draining — no new tasks will be scheduled there.",
+                "toastActivated": "\"{{name}}\" is active again and accepting tasks.",
+                "failed": "Couldn't update node availability."
             }
         },
         "networks": {
@@ -182,11 +306,25 @@
         },
         "secrets": {
             "countSuffix": "secrets stored",
-            "add": "New secret"
+            "add": "New secret",
+            "view": "View details",
+            "modal": {
+                "subtitle": "Secret details",
+                "id": "Secret ID",
+                "created": "Created",
+                "updated": "Last updated",
+                "writeOnlyNotice": "Docker secrets are write-only — the value can't be retrieved once created, by design. To rotate it, remove and recreate the secret."
+            }
         },
         "configs": {
             "countSuffix": "configs stored",
-            "add": "New config"
+            "add": "New config",
+            "view": "View content",
+            "modal": {
+                "subtitle": "Config file content",
+                "loading": "Loading…",
+                "empty": "(empty)"
+            }
         },
         "registries": {
             "countSuffix": "registries connected",
@@ -194,7 +332,14 @@
             "columns": {
                 "registry": "Registry",
                 "authUser": "Auth user"
-            }
+            },
+            "setDefault": "Set as default",
+            "remove": "Remove",
+            "confirmRemove": "Remove registry \"{{name}}\"?",
+            "toastSetDefault": "\"{{name}}\" is now the default registry.",
+            "toastRemoved": "Registry \"{{name}}\" removed.",
+            "setDefaultFailed": "Couldn't set default registry.",
+            "removeFailed": "Remove failed."
         }
     },
     "users": {

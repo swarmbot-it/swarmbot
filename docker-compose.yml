@@ -64,7 +64,7 @@
 
     agent:
         build:
-            context: ../swarmagent
+            context: ./swarmagent
             dockerfile: Dockerfile
         image: swarmagent:latest
         environment:

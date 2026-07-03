@@ -24,6 +24,7 @@ import { revokeJti } from "./auth/blacklist.js";
 import { createDocker, setupDockerApi } from "./docker/engine.js";
 import { consumeSlt, createSlt } from "./auth/slt.js";
 import { publishEvent, subscribeEvents } from "./events/hub.js";
+import { startStatsWriter } from "./events/stats-writer.js";
 import type nano from "nano";
 
 export async function createHttpServer(
@@ -194,13 +195,17 @@ export async function createHttpServer(
 		});
 	});
 
+	const writeStats = startStatsWriter(cfg);
+
 	app.post("/events", bodyParser.json({ limit: "2mb" }), (req, res) => {
 		const locale = localeFromHeader(req.headers["accept-language"]);
 		if (!req.body) {
 			res.status(400).json({ error: localizedMessage(locale, "errors.noDataSent") });
 			return;
 		}
-		publishEvent(req.body as Record<string, unknown>);
+		const event = req.body as Record<string, unknown>;
+		publishEvent(event);
+		writeStats(event);
 		res.status(202).json({ accepted: true });
 	});
 

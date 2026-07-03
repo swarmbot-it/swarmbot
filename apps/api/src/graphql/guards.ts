@@ -9,10 +9,30 @@ export function requireUser(ctx: GraphQLContext): JwtClaims {
 	return ctx.user;
 }
 
+/**
+ * Roles are stored inconsistently across the app: the bootstrap admin account
+ * uses lowercase "admin", while the "Add user" form writes capitalized
+ * display labels ("Administrator" / "Editor" / "Read-only"). Normalize
+ * before comparing so both sources are recognized.
+ */
+function normalizedRole(role: string | undefined): string {
+	return (role ?? "").toLowerCase();
+}
+
 export function requireAdmin(ctx: GraphQLContext): JwtClaims {
 	const user = requireUser(ctx);
-	const role = user.usr.role ?? "user";
-	if (role !== "admin") {
+	const role = normalizedRole(user.usr.role);
+	if (role !== "admin" && role !== "administrator") {
+		throw localizedError(ctx.locale, "errors.forbidden", "FORBIDDEN");
+	}
+	return user;
+}
+
+/** Editors may deploy/manage stacks & services; only admins manage users, secrets, and other infrastructure. */
+export function requireEditor(ctx: GraphQLContext): JwtClaims {
+	const user = requireUser(ctx);
+	const role = normalizedRole(user.usr.role);
+	if (role !== "admin" && role !== "administrator" && role !== "editor") {
 		throw localizedError(ctx.locale, "errors.forbidden", "FORBIDDEN");
 	}
 	return user;

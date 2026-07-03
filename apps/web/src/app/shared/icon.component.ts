@@ -34,6 +34,8 @@ const ICONS: Record<string, string> = {
 	bell: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21a2 2 0 0 0 4 0"/>',
 	chevronDown: '<path d="M6 9l6 6 6-6"/>',
 	chevronRight: '<path d="M9 18l6-6-6-6"/>',
+	chevronLeft: '<path d="M15 18l-6-6 6-6"/>',
+	pause: '<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>',
 	close: '<path d="M18 6L6 18M6 6l12 12"/>',
 	sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>',
 	moon: '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>',
@@ -50,6 +52,9 @@ const ICONS: Record<string, string> = {
 	eye: '<path d="M2 12s4-8 10-8 10 8 10 8-4 8-10 8-10-8-10-8z"/><circle cx="12" cy="12" r="3"/>',
 	check: '<path d="M5 12l5 5L20 7"/>',
 	play: '<path d="M6 4l14 8-14 8z"/>',
+	activity: '<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
+	trending: '<path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/>',
+	download: '<path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>',
 };
 
 @Component({

@@ -21,6 +21,8 @@ export type StoredUser = {
 	role: string;
 	created: string;
 	lastLogin: string | null;
+	apiTokenMask: string | null;
+	apiTokenExpiresAt: string | null;
 };
 
 type UserDoc = CouchDoc & {
@@ -33,6 +35,7 @@ type UserDoc = CouchDoc & {
 	password: string;
 	createdAt?: string;
 	lastLoginAt?: string;
+	"api-token"?: { jti: string; mask: string; expiresAt?: string } | null;
 };
 
 function toView(doc: UserDoc): StoredUser {
@@ -45,6 +48,8 @@ function toView(doc: UserDoc): StoredUser {
 		role: doc.role ?? "user",
 		created: doc.createdAt ?? new Date().toISOString(),
 		lastLogin: doc.lastLoginAt ?? null,
+		apiTokenMask: doc["api-token"]?.mask ?? null,
+		apiTokenExpiresAt: doc["api-token"]?.expiresAt ?? null,
 	};
 }
 

@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
 import { AsyncPipe, NgIf, NgSwitch, NgSwitchCase, NgSwitchDefault } from "@angular/common";
 import { Apollo } from "apollo-angular";
+import { Router } from "@angular/router";
 import { map } from "rxjs/operators";
 import { Observable } from "rxjs";
 import { DataTableComponent } from "../../shared/data-table.component";
@@ -47,6 +48,7 @@ type TaskRow = {
 				[rows]="rows"
 				[searchKeys]="['name', 'image', 'node', 'status']"
 				[pageSize]="12"
+				(rowClick)="open($event.id)"
 			>
 				<ng-template #cell let-row let-key="key">
 					<ng-container [ngSwitch]="key">
@@ -119,6 +121,11 @@ export class TasksPageComponent {
 	private readonly apollo = inject(Apollo);
 	private readonly transloco = inject(TranslocoService);
 	private readonly i18n = inject(I18nStateService);
+	private readonly router = inject(Router);
+
+	open(id: string): void {
+		this.router.navigate(["/app/tasks", id]);
+	}
 
 	readonly cols = translatedColumns<TaskRow>(this.transloco, this.i18n.activeLang, [
 		{ key: "name", labelKey: "pages.tasks.columns.task" },

@@ -28,9 +28,21 @@ export const routes: Routes = [
 					),
 			},
 			{
+				path: "load",
+				loadComponent: () =>
+					import("./pages/load/load.component").then((m) => m.LoadPageComponent),
+			},
+			{
 				path: "stacks",
 				loadComponent: () =>
 					import("./app-table-host.component").then((m) => m.StacksHostComponent),
+			},
+			{
+				path: "stacks/:name",
+				loadComponent: () =>
+					import("./pages/stacks/stack-detail.component").then(
+						(m) => m.StackDetailPageComponent
+					),
 			},
 			{
 				path: "services",
@@ -38,9 +50,23 @@ export const routes: Routes = [
 					import("./app-table-host.component").then((m) => m.ServicesHostComponent),
 			},
 			{
+				path: "services/:id",
+				loadComponent: () =>
+					import("./pages/services/service-detail.component").then(
+						(m) => m.ServiceDetailPageComponent
+					),
+			},
+			{
 				path: "tasks",
 				loadComponent: () =>
 					import("./pages/tasks/tasks.component").then((m) => m.TasksPageComponent),
+			},
+			{
+				path: "tasks/:id",
+				loadComponent: () =>
+					import("./pages/tasks/task-detail.component").then(
+						(m) => m.TaskDetailPageComponent
+					),
 			},
 			{
 				path: "nodes",

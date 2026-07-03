@@ -8,8 +8,8 @@
 #   Mock mode (no real Docker socket or databases needed):
 #     SWARMBOTY_MOCK=true docker compose -f docker-compose.dev.yml up api web
 #
-#   Include the Rust agent (built from source):
-#     docker compose -f docker-compose.dev.yml --profile agent up
+#   The Rust agent (built from source) starts automatically with the full
+#   stack and pushes host CPU/Memory/Disk telemetry to the API.
 #
 # ── Endpoints ────────────────────────────────────────────────────────────────
 #
@@ -102,11 +102,13 @@ services:
     api:
         image: node:24-alpine
         working_dir: /app
-        command: >
-            sh -c "npm install --prefer-offline --no-progress --no-audit
-                   && npm run dev -w @swarmboty/api"
+        command: ["sh", "-c", "apk add --no-cache docker-cli && npm install --prefer-offline --no-progress --no-audit && npm run dev -w @swarmboty/api"]
         environment:
             NODE_ENV: development
+            # tsx watch uses chokidar under the hood; native fs events are unreliable over
+            # Windows-hosted bind mounts, so force polling (mirrors the web service's --poll 500).
+            CHOKIDAR_USEPOLLING: "true"
+            CHOKIDAR_INTERVAL: "500"
             SWARMBOTY_DB: http://${COUCHDB_USER:-admin}:${COUCHDB_PASSWORD:-swarmboty}@db:5984
             SWARMBOTY_INFLUXDB: http://influxdb:8086
             SWARMBOTY_INFLUXDB_TOKEN: ${INFLUXDB_TOKEN:-swarmboty-influx-dev-token}
@@ -141,11 +143,7 @@ services:
     web:
         image: node:24-alpine
         working_dir: /app
-        command: >
-            sh -c "npm install --prefer-offline --no-progress --no-audit
-                   && cd apps/web
-                   && npx ng serve --host 0.0.0.0 --port 4200 --poll 500
-                                   --proxy-config proxy.conf.docker.json"
+        command: ["sh", "-c", "npm install --prefer-offline --no-progress --no-audit && npm install @rollup/rollup-linux-x64-musl --no-save --no-audit --no-fund && cd apps/web && npx ng serve --host 0.0.0.0 --port 4200 --poll 500 --proxy-config proxy.conf.docker.json"]
         environment:
             NODE_ENV: development
         volumes:
@@ -159,25 +157,27 @@ services:
             - net
         restart: unless-stopped
 
-    # ── Swarmagent — opt-in (profile: agent) ─────────────────────────────────
+    # ── Swarmagent — host CPU/Memory/Disk telemetry collector ─────────────────
     #
-    # Build from source: docker compose -f docker-compose.dev.yml --profile agent up
+    # Vendored as a git submodule (./swarmagent) so a plain
+    # `git clone --recurse-submodules` gets everything needed to build it.
+    # Starts automatically with the rest of the stack.
 
     agent:
         build:
-            context: ../swarmagent
+            context: ./swarmagent
             dockerfile: Dockerfile
+        user: "0:0"
         environment:
-            SWARMBOTY_URL: http://api:8080
-            DOCKER_API_VERSION: "1.44"
+            EVENT_ENDPOINT: http://api:8080/events
+            HEALTH_CHECK_ENDPOINT: http://api:8080/version
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock:ro
         depends_on:
             - api
         networks:
             - net
-        profiles:
-            - agent
+        restart: unless-stopped
 
 networks:
     net:

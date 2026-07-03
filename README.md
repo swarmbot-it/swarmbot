@@ -10,12 +10,35 @@ Swarmboty is a Node.js monorepo for managing Docker Swarm resources. It contains
 - Node.js 20 or newer
 - npm
 - Docker, when using Docker-related API features or `docker-compose`
+- **Docker Swarm mode active on the daemon you point Swarmboty at.** A fresh
+  Docker Desktop install does not enable this by default — run
+  `docker swarm init` once before starting the app, or Swarm API calls
+  (`docker service ls`, `docker node ls`, etc.) will fail with
+  "this node is not a swarm manager". The `npm run swarm:start` DinD cluster
+  below already does this for you if you'd rather not touch your local
+  daemon's Swarm state.
 
 ## Install
 
 ```sh
 npm install
 ```
+
+The Rust telemetry agent (`swarmagent/`, real host CPU/Memory/Disk +
+per-container stats) is vendored as a **git submodule** pointing at
+[`sw4rm.agent`](https://github.com/no-human-tech/sw4rm.agent). Clone with
+submodules so `docker compose` can build it:
+
+```sh
+git clone --recurse-submodules <this-repo-url>
+# already cloned without --recurse-submodules? run:
+git submodule update --init --recursive
+```
+
+Without this step `docker compose -f docker-compose.dev.yml up` will fail to
+build the `agent` service specifically — the rest of the stack still starts,
+but CPU/Memory/Disk numbers fall back to an honest "no data yet" (never
+fabricated) until the agent is available.
 
 ## Development
 
@@ -129,11 +152,13 @@ $env:SWARMBOTY_MOCK="true"; docker compose -f docker-compose.dev.yml up api web
 SWARMBOTY_MOCK=true docker compose -f docker-compose.dev.yml up api web
 ```
 
-### With the Rust agent (optional)
+### The Rust agent
 
-```sh
-docker compose -f docker-compose.dev.yml --profile agent up
-```
+The `agent` service (real host CPU/Memory/Disk + per-container telemetry)
+starts automatically with the rest of the stack — no extra flag needed. It
+builds from the `swarmagent/` git submodule (see [Install](#install) above);
+if that submodule isn't checked out, `docker compose up` still brings up
+everything else, but the `agent` build step fails and telemetry stays empty.
 
 ### Recommended setup on Windows (faster HMR)
 

@@ -88,6 +88,20 @@ export async function removeRegistry(
 	}
 }
 
+/** Marks the given registry as default and clears the flag on every other registry. */
+export async function setDefaultRegistry(
+	db: nano.DocumentScope<CouchDoc>,
+	id: string
+): Promise<StoredRegistry> {
+	const existing = (await findDocs(db, "registry", {})) as RegistryDoc[];
+	for (const doc of existing.filter((d) => d.default && String(d._id) !== id)) {
+		await updateDoc(db, doc, { default: false });
+	}
+	const target = (await db.get(id)) as RegistryDoc;
+	await updateDoc(db, target, { default: true });
+	return toView({ ...target, default: true });
+}
+
 /** Insert built-in registries when the database is empty. Useful for the demo. */
 export async function seedDefaultRegistries(db: nano.DocumentScope<CouchDoc>): Promise<void> {
 	const existing = await findDocs(db, "registry", {});

@@ -32,6 +32,13 @@ const NAV: NavItem[] = [
 		path: "dashboard",
 	},
 	{
+		id: "load",
+		labelKey: "nav.load",
+		icon: "trending",
+		group: "workloads",
+		path: "load",
+	},
+	{
 		id: "stacks",
 		labelKey: "nav.stacks",
 		icon: "stacks",
@@ -158,8 +165,8 @@ const GROUPS: NavItem["group"][] = ["overview", "workloads", "infra", "store", "
 						"nav.quorum"
 							| transloco
 								: {
-										managers: counts?.["managers"] ?? 3,
-										total: counts?.["managers"] ?? 3,
+										managers: counts?.["managersReachable"] ?? 0,
+										total: counts?.["managers"] ?? 0,
 								  }
 					}}
 				</div>

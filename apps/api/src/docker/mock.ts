@@ -54,6 +54,7 @@ type MockNetwork = {
 	Attachable?: boolean;
 	Internal?: boolean;
 	Ingress?: boolean;
+	Labels?: Record<string, string>;
 	IPAM?: { Config?: Array<{ Subnet?: string; Gateway?: string }> };
 };
 
@@ -61,6 +62,7 @@ type MockVolume = {
 	Name: string;
 	Driver: string;
 	Mountpoint?: string;
+	Labels?: Record<string, string>;
 	UsageData?: { Size?: number };
 };
 
@@ -68,7 +70,7 @@ type Stamped = {
 	ID: string;
 	CreatedAt: string;
 	UpdatedAt: string;
-	Spec: { Name: string };
+	Spec: { Name: string; Labels?: Record<string, string> };
 };
 
 const ISO = (s: string) => new Date(s).toISOString();
@@ -239,17 +241,29 @@ const NETWORKS: MockNetwork[] = [
 	net("net_gw", "docker_gwbridge", "bridge", "local", "172.18.0.0/16", "172.18.0.1"),
 	net("net_fe_def", "frontend_default", "overlay", "swarm", "10.0.1.0/24", "10.0.1.1", {
 		attachable: true,
+		stack: "frontend",
 	}),
-	net("net_fe_pub", "frontend_public", "overlay", "swarm", "10.0.2.0/24", "10.0.2.1"),
+	net("net_fe_pub", "frontend_public", "overlay", "swarm", "10.0.2.0/24", "10.0.2.1", {
+		stack: "frontend",
+	}),
 	net("net_api_int", "api_internal", "overlay", "swarm", "10.0.3.0/24", "10.0.3.1", {
 		internal: true,
+		stack: "api-gateway",
 	}),
-	net("net_db", "databases_data", "overlay", "swarm", "10.0.5.0/24", "10.0.5.1"),
-	net("net_mon", "monitoring_net", "overlay", "swarm", "10.0.6.0/24", "10.0.6.1"),
-	net("net_log", "logging_net", "overlay", "swarm", "10.0.7.0/24", "10.0.7.1"),
-	net("net_msg", "messaging_bus", "overlay", "swarm", "10.0.8.0/24", "10.0.8.1"),
-	net("net_auth", "auth_net", "overlay", "swarm", "10.0.9.0/24", "10.0.9.1"),
-	net("net_ana", "analytics_net", "overlay", "swarm", "10.0.10.0/24", "10.0.10.1"),
+	net("net_db", "databases_data", "overlay", "swarm", "10.0.5.0/24", "10.0.5.1", {
+		stack: "databases",
+	}),
+	net("net_mon", "monitoring_net", "overlay", "swarm", "10.0.6.0/24", "10.0.6.1", {
+		stack: "monitoring",
+	}),
+	net("net_log", "logging_net", "overlay", "swarm", "10.0.7.0/24", "10.0.7.1", { stack: "logging" }),
+	net("net_msg", "messaging_bus", "overlay", "swarm", "10.0.8.0/24", "10.0.8.1", {
+		stack: "messaging",
+	}),
+	net("net_auth", "auth_net", "overlay", "swarm", "10.0.9.0/24", "10.0.9.1", { stack: "auth" }),
+	net("net_ana", "analytics_net", "overlay", "swarm", "10.0.10.0/24", "10.0.10.1", {
+		stack: "analytics",
+	}),
 ];
 
 function net(
@@ -259,7 +273,7 @@ function net(
 	scope: string,
 	subnet: string,
 	gateway: string,
-	flags: { attachable?: boolean; internal?: boolean; ingress?: boolean } = {}
+	flags: { attachable?: boolean; internal?: boolean; ingress?: boolean; stack?: string } = {}
 ): MockNetwork {
 	return {
 		Id: id,
@@ -269,92 +283,98 @@ function net(
 		Attachable: flags.attachable ?? false,
 		Internal: flags.internal ?? false,
 		Ingress: flags.ingress ?? false,
+		Labels: flags.stack ? { "com.docker.stack.namespace": flags.stack } : undefined,
 		IPAM: { Config: [{ Subnet: subnet, Gateway: gateway }] },
 	};
 }
 
 const VOLUMES: MockVolume[] = [
-	vol("postgres-primary-data", "local", 182 * 1e9),
-	vol("postgres-replica-1-data", "local", 178 * 1e9),
-	vol("postgres-replica-2-data", "local", 178 * 1e9),
-	vol("redis-data", "local", 12 * 1e9),
-	vol("rabbitmq-data", "local", 4 * 1e9),
-	vol("rabbitmq-mnesia", "local", 1 * 1e9),
-	vol("loki-storage", "s3", 640 * 1e9),
-	vol("loki-chunks", "local", 84 * 1e9),
-	vol("prometheus-data", "local", 92 * 1e9),
-	vol("grafana-data", "local", 2 * 1e9),
-	vol("elasticsearch-1", "local", 146 * 1e9),
-	vol("elasticsearch-2", "local", 146 * 1e9),
-	vol("elasticsearch-3", "local", 146 * 1e9),
-	vol("clickhouse-shard-1", "local", 412 * 1e9),
-	vol("clickhouse-shard-2", "local", 408 * 1e9),
-	vol("media-uploads", "nfs", 1.2 * 1e12),
-	vol("media-cache", "local", 64 * 1e9),
+	vol("postgres-primary-data", "local", 182 * 1e9, "databases"),
+	vol("postgres-replica-1-data", "local", 178 * 1e9, "databases"),
+	vol("postgres-replica-2-data", "local", 178 * 1e9, "databases"),
+	vol("redis-data", "local", 12 * 1e9, "databases"),
+	vol("rabbitmq-data", "local", 4 * 1e9, "messaging"),
+	vol("rabbitmq-mnesia", "local", 1 * 1e9, "messaging"),
+	vol("loki-storage", "s3", 640 * 1e9, "logging"),
+	vol("loki-chunks", "local", 84 * 1e9, "logging"),
+	vol("prometheus-data", "local", 92 * 1e9, "monitoring"),
+	vol("grafana-data", "local", 2 * 1e9, "monitoring"),
+	vol("elasticsearch-1", "local", 146 * 1e9, "search"),
+	vol("elasticsearch-2", "local", 146 * 1e9, "search"),
+	vol("elasticsearch-3", "local", 146 * 1e9, "search"),
+	vol("clickhouse-shard-1", "local", 412 * 1e9, "analytics"),
+	vol("clickhouse-shard-2", "local", 408 * 1e9, "analytics"),
+	vol("media-uploads", "nfs", 1.2 * 1e12, "media-proc"),
+	vol("media-cache", "local", 64 * 1e9, "media-proc"),
 ];
 
-function vol(name: string, driver: string, size: number): MockVolume {
+function vol(name: string, driver: string, size: number, stack?: string): MockVolume {
 	return {
 		Name: name,
 		Driver: driver,
 		Mountpoint: `/var/lib/docker/volumes/${name}/_data`,
+		Labels: stack ? { "com.docker.stack.namespace": stack } : undefined,
 		UsageData: { Size: size },
 	};
 }
 
 const SECRETS: Stamped[] = [
-	stamped("sec_pg_pwd", "postgres_password", "2025-09-12T10:00:00Z", "2025-11-04T08:32:00Z"),
+	stamped("sec_pg_pwd", "postgres_password", "2025-09-12T10:00:00Z", "2025-11-04T08:32:00Z", "databases"),
 	stamped(
 		"sec_pg_repl",
 		"postgres_replication_token",
 		"2025-09-12T10:00:00Z",
-		"2025-09-12T10:00:00Z"
+		"2025-09-12T10:00:00Z",
+		"databases"
 	),
-	stamped("sec_jwt", "jwt_signing_key", "2025-04-22T09:12:00Z", "2026-02-18T16:04:00Z"),
-	stamped("sec_stripe", "stripe_secret_key", "2025-07-30T11:24:00Z", "2026-01-15T13:42:00Z"),
+	stamped("sec_jwt", "jwt_signing_key", "2025-04-22T09:12:00Z", "2026-02-18T16:04:00Z", "auth"),
+	stamped("sec_stripe", "stripe_secret_key", "2025-07-30T11:24:00Z", "2026-01-15T13:42:00Z", "billing"),
 	stamped("sec_smtp", "smtp_password", "2025-06-11T15:00:00Z", "2025-12-02T09:15:00Z"),
 	stamped("sec_gh", "github_deploy_token", "2025-10-08T08:08:00Z", "2026-03-22T11:11:00Z"),
 	stamped(
 		"sec_grafana",
 		"grafana_admin_password",
 		"2025-04-22T09:12:00Z",
-		"2025-04-22T09:12:00Z"
+		"2025-04-22T09:12:00Z",
+		"monitoring"
 	),
-	stamped("sec_redis_acl", "redis_acl_users", "2025-11-29T17:00:00Z", "2026-02-04T13:00:00Z"),
-	stamped("sec_rmq_def", "rabbitmq_definitions", "2025-08-15T07:30:00Z", "2026-04-10T18:00:00Z"),
-	stamped("sec_tls_crt", "tls_wildcard_cert", "2025-10-01T00:00:00Z", "2026-04-01T00:00:00Z"),
-	stamped("sec_tls_key", "tls_wildcard_key", "2025-10-01T00:00:00Z", "2026-04-01T00:00:00Z"),
+	stamped("sec_redis_acl", "redis_acl_users", "2025-11-29T17:00:00Z", "2026-02-04T13:00:00Z", "databases"),
+	stamped("sec_rmq_def", "rabbitmq_definitions", "2025-08-15T07:30:00Z", "2026-04-10T18:00:00Z", "messaging"),
+	stamped("sec_tls_crt", "tls_wildcard_cert", "2025-10-01T00:00:00Z", "2026-04-01T00:00:00Z", "api-gateway"),
+	stamped("sec_tls_key", "tls_wildcard_key", "2025-10-01T00:00:00Z", "2026-04-01T00:00:00Z", "api-gateway"),
 ];
 
 const CONFIGS: Stamped[] = [
-	stamped("cfg_nginx", "nginx_default_conf", "2025-03-04T08:00:00Z", "2026-02-12T16:30:00Z"),
-	stamped("cfg_traefik_s", "traefik_static_yaml", "2025-03-04T08:00:00Z", "2026-03-08T13:11:00Z"),
+	stamped("cfg_nginx", "nginx_default_conf", "2025-03-04T08:00:00Z", "2026-02-12T16:30:00Z", "frontend"),
+	stamped("cfg_traefik_s", "traefik_static_yaml", "2025-03-04T08:00:00Z", "2026-03-08T13:11:00Z", "api-gateway"),
 	stamped(
 		"cfg_traefik_d",
 		"traefik_dynamic_yaml",
 		"2025-03-04T08:00:00Z",
-		"2026-04-22T10:00:00Z"
+		"2026-04-22T10:00:00Z",
+		"api-gateway"
 	),
-	stamped("cfg_prom", "prometheus_yml", "2025-04-22T09:00:00Z", "2026-04-30T18:42:00Z"),
-	stamped("cfg_alert", "alertmanager_yml", "2025-04-22T09:00:00Z", "2026-03-19T11:08:00Z"),
-	stamped("cfg_loki", "loki_config_yml", "2025-05-10T11:30:00Z", "2026-02-28T14:00:00Z"),
-	stamped("cfg_promtail", "promtail_config_yml", "2025-05-10T11:30:00Z", "2025-12-14T07:00:00Z"),
+	stamped("cfg_prom", "prometheus_yml", "2025-04-22T09:00:00Z", "2026-04-30T18:42:00Z", "monitoring"),
+	stamped("cfg_alert", "alertmanager_yml", "2025-04-22T09:00:00Z", "2026-03-19T11:08:00Z", "monitoring"),
+	stamped("cfg_loki", "loki_config_yml", "2025-05-10T11:30:00Z", "2026-02-28T14:00:00Z", "logging"),
+	stamped("cfg_promtail", "promtail_config_yml", "2025-05-10T11:30:00Z", "2025-12-14T07:00:00Z", "logging"),
 	stamped(
 		"cfg_grafana_ds",
 		"grafana_datasources",
 		"2025-04-22T09:00:00Z",
-		"2026-04-30T18:42:00Z"
+		"2026-04-30T18:42:00Z",
+		"monitoring"
 	),
-	stamped("cfg_redis", "redis_conf", "2025-06-01T10:00:00Z", "2025-11-21T14:00:00Z"),
-	stamped("cfg_pg_hba", "postgres_pg_hba", "2025-09-12T10:00:00Z", "2026-01-04T08:00:00Z"),
+	stamped("cfg_redis", "redis_conf", "2025-06-01T10:00:00Z", "2025-11-21T14:00:00Z", "databases"),
+	stamped("cfg_pg_hba", "postgres_pg_hba", "2025-09-12T10:00:00Z", "2026-01-04T08:00:00Z", "databases"),
 ];
 
-function stamped(id: string, name: string, created: string, updated: string): Stamped {
+function stamped(id: string, name: string, created: string, updated: string, stack?: string): Stamped {
 	return {
 		ID: id,
 		CreatedAt: ISO(created),
 		UpdatedAt: ISO(updated),
-		Spec: { Name: name },
+		Spec: { Name: name, Labels: stack ? { "com.docker.stack.namespace": stack } : undefined },
 	};
 }
 

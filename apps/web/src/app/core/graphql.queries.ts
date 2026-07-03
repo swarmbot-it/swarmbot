@@ -12,10 +12,15 @@ export const QUERY_OVERVIEW = gql`
 		overview {
 			nodes
 			managers
+			managersReachable
 			workers
 			stacks
+			stacksDelta
 			services
+			servicesDelta
 			tasks
+			tasksRunning
+			tasksDelta
 			networks
 			volumes
 			secrets
@@ -66,6 +71,39 @@ export const QUERY_SERVICES = gql`
 	}
 `;
 
+/** Full detail for a single service, including env vars, mounts, and attached networks/secrets/configs. */
+export const QUERY_SERVICE_DETAIL = gql`
+	query ServiceDetail($id: ID!) {
+		service(id: $id) {
+			id
+			name
+			image
+			replicasRunning
+			replicasTotal
+			ports
+			status
+			stack
+			mode
+			created
+			updated
+			env
+			labels {
+				k
+				v
+			}
+			networks
+			mounts {
+				type
+				source
+				target
+				readOnly
+			}
+			secrets
+			configs
+		}
+	}
+`;
+
 /** List tasks with node placement, resource usage, and sparkline series. */
 export const QUERY_TASKS = gql`
 	query Tasks {
@@ -80,6 +118,9 @@ export const QUERY_TASKS = gql`
 			status
 			cpuSeries
 			memSeries
+			serviceName
+			nodeHostname
+			desiredState
 		}
 	}
 `;
@@ -102,6 +143,17 @@ export const QUERY_NODES = gql`
 	}
 `;
 
+/** Drain (evict) or reactivate scheduling on a node. */
+export const MUTATION_SET_NODE_AVAILABILITY = gql`
+	mutation SetNodeAvailability($id: ID!, $availability: String!) {
+		setNodeAvailability(id: $id, availability: $availability) {
+			id
+			availability
+			tags
+		}
+	}
+`;
+
 /** List overlay networks with driver, subnet, and scope flags. */
 export const QUERY_NETWORKS = gql`
 	query Networks {
@@ -115,6 +167,7 @@ export const QUERY_NETWORKS = gql`
 			attachable
 			internal
 			ingress
+			stack
 		}
 	}
 `;
@@ -127,6 +180,7 @@ export const QUERY_VOLUMES = gql`
 			driver
 			size
 			mountpoint
+			stack
 		}
 	}
 `;
@@ -139,6 +193,7 @@ export const QUERY_SECRETS = gql`
 			name
 			created
 			updated
+			stack
 		}
 	}
 `;
@@ -151,6 +206,67 @@ export const QUERY_CONFIGS = gql`
 			name
 			created
 			updated
+			stack
+		}
+	}
+`;
+
+/** Fetch decoded config file content on demand (kept out of the list query for size). */
+export const QUERY_CONFIG_CONTENT = gql`
+	query ConfigContent {
+		configs {
+			id
+			content
+		}
+	}
+`;
+
+/** Everything needed to render a single stack's detail page in one round trip. */
+export const QUERY_STACK_RESOURCES = gql`
+	query StackResources {
+		services {
+			id
+			name
+			image
+			replicasRunning
+			replicasTotal
+			ports
+			status
+			stack
+		}
+		networks {
+			id
+			name
+			driver
+			subnet
+			gateway
+			stack
+		}
+		volumes {
+			name
+			driver
+			mountpoint
+			stack
+		}
+		secrets {
+			id
+			name
+			updated
+			stack
+		}
+		configs {
+			id
+			name
+			updated
+			stack
+		}
+		tasks {
+			id
+			name
+			serviceName
+			nodeHostname
+			status
+			desiredState
 		}
 	}
 `;
@@ -197,6 +313,46 @@ export const QUERY_METRICS_SERIES = gql`
 	}
 `;
 
+/** Per-stack CPU/memory history for the Load page. */
+export const QUERY_STACK_STATS = gql`
+	query StackStats($name: String!, $range: String) {
+		stackStats(name: $name, range: $range) {
+			labels
+			cpu
+			mem
+		}
+	}
+`;
+
+/** Full detail for a single task, including its status message and node placement. */
+export const QUERY_TASK_DETAIL = gql`
+	query TaskDetail($id: ID!) {
+		task(id: $id) {
+			id
+			name
+			image
+			node
+			nodeHostname
+			serviceName
+			status
+			desiredState
+			message
+			updated
+		}
+	}
+`;
+
+/** Per-task CPU/memory history from InfluxDB. */
+export const QUERY_TASK_STATS = gql`
+	query TaskStats($id: ID!, $range: String) {
+		taskStats(id: $id, range: $range) {
+			labels
+			cpu
+			mem
+		}
+	}
+`;
+
 /** Exchange username and password for a JWT session token. */
 export const MUTATION_LOGIN = gql`
 	mutation Login($username: String!, $password: String!) {
@@ -228,6 +384,23 @@ export const MUTATION_CREATE_REGISTRY = gql`
 			url
 			type
 			user
+			default
+		}
+	}
+`;
+
+/** Remove a container image registry connection. */
+export const MUTATION_REMOVE_REGISTRY = gql`
+	mutation RemoveRegistry($id: ID!) {
+		removeRegistry(id: $id)
+	}
+`;
+
+/** Mark a registry as the default used for image pulls. */
+export const MUTATION_SET_DEFAULT_REGISTRY = gql`
+	mutation SetDefaultRegistry($id: ID!) {
+		setDefaultRegistry(id: $id) {
+			id
 			default
 		}
 	}
@@ -295,6 +468,34 @@ export const MUTATION_CREATE_SERVICE = gql`
 	}
 `;
 
+/** Remove a Swarm service. */
+export const MUTATION_REMOVE_SERVICE = gql`
+	mutation RemoveService($id: ID!) {
+		removeService(id: $id)
+	}
+`;
+
+/** Force-update a service so Swarm reschedules all its tasks. */
+export const MUTATION_REDEPLOY_SERVICE = gql`
+	mutation RedeployService($id: ID!) {
+		redeployService(id: $id)
+	}
+`;
+
+/** Revert a service to its previous spec version. */
+export const MUTATION_ROLLBACK_SERVICE = gql`
+	mutation RollbackService($id: ID!) {
+		rollbackService(id: $id)
+	}
+`;
+
+/** Scale a service to a new replica count. */
+export const MUTATION_SCALE_SERVICE = gql`
+	mutation ScaleService($id: ID!, $replicas: Int!) {
+		scaleService(id: $id, replicas: $replicas)
+	}
+`;
+
 /** Deploy a stack from a Compose specification. */
 export const MUTATION_CREATE_STACK = gql`
 	mutation CreateStack($input: StackInput!) {
@@ -302,6 +503,41 @@ export const MUTATION_CREATE_STACK = gql`
 			name
 			status
 		}
+	}
+`;
+
+/** Remove a stack: its services, networks, secrets and configs (volumes are kept). */
+export const MUTATION_REMOVE_STACK = gql`
+	mutation RemoveStack($name: String!) {
+		removeStack(name: $name)
+	}
+`;
+
+/** Force-update every service in a stack so Swarm reschedules all tasks. */
+export const MUTATION_REDEPLOY_STACK = gql`
+	mutation RedeployStack($name: String!) {
+		redeployStack(name: $name)
+	}
+`;
+
+/** Revert every service in a stack to its previous spec version. */
+export const MUTATION_ROLLBACK_STACK = gql`
+	mutation RollbackStack($name: String!) {
+		rollbackStack(name: $name)
+	}
+`;
+
+/** Scale every service in a stack to 0 replicas. */
+export const MUTATION_DEACTIVATE_STACK = gql`
+	mutation DeactivateStack($name: String!) {
+		deactivateStack(name: $name)
+	}
+`;
+
+/** Scale every service in a stack back to 1 replica. */
+export const MUTATION_REACTIVATE_STACK = gql`
+	mutation ReactivateStack($name: String!) {
+		reactivateStack(name: $name)
 	}
 `;
 

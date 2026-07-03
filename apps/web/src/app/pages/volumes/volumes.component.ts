@@ -9,6 +9,7 @@ import { TranslocoPipe, TranslocoService } from "@jsverse/transloco";
 import { QUERY_VOLUMES } from "../../core/graphql.queries";
 import { I18nStateService } from "../../core/i18n/i18n-state.service";
 import { translatedColumns } from "../../core/i18n/page-columns.helper";
+import { AuthService } from "../../core/auth.service";
 
 type Volume = { name: string; driver: string; size: string };
 
@@ -29,7 +30,7 @@ type Volume = { name: string; driver: string; size: string };
 						{{ "pages.volumes.countSuffix" | transloco }}
 					</div>
 				</div>
-				<button class="btn btn--primary" (click)="createRequested.emit()">
+				<button *ngIf="auth.isAdmin()" class="btn btn--primary" (click)="createRequested.emit()">
 					<sb-icon name="plus" [size]="16"></sb-icon>
 					{{ "pages.volumes.add" | transloco }}
 				</button>
@@ -74,6 +75,7 @@ export class VolumesPageComponent {
 	private readonly apollo = inject(Apollo);
 	private readonly transloco = inject(TranslocoService);
 	private readonly i18n = inject(I18nStateService);
+	readonly auth = inject(AuthService);
 
 	readonly cols = translatedColumns<Volume>(this.transloco, this.i18n.activeLang, [
 		{ key: "name", labelKey: "columns.name" },

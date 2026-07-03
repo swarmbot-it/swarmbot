@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, computed, signal } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, input, signal } from "@angular/core";
 import { NgFor, NgIf } from "@angular/common";
 
 /** One plotted metric line in {@link LineChartComponent} (name, samples, and stroke color). */
@@ -22,7 +22,7 @@ export type Series = { name: string; data: number[]; color: string };
 	template: `
 		<div class="chart" (mousemove)="onMove($event)" (mouseleave)="hover.set(null)" #wrap>
 			<svg
-				[attr.viewBox]="'0 0 ' + width + ' ' + height"
+				[attr.viewBox]="'0 0 ' + width() + ' ' + height()"
 				preserveAspectRatio="none"
 				width="100%"
 			>
@@ -32,7 +32,7 @@ export type Series = { name: string; data: number[]; color: string };
 						*ngFor="let y of yLines(); index as i"
 						[attr.x1]="padL"
 						[attr.y1]="y.y"
-						[attr.x2]="width - padR"
+						[attr.x2]="width() - padR"
 						[attr.y2]="y.y"
 						stroke="var(--chart-grid)"
 						stroke-width="1"
@@ -54,7 +54,7 @@ export type Series = { name: string; data: number[]; color: string };
 					<text
 						*ngFor="let x of xLabels()"
 						[attr.x]="x.x"
-						[attr.y]="height - 8"
+						[attr.y]="height() - 8"
 						text-anchor="middle"
 						font-size="10"
 						fill="var(--chart-axis)"
@@ -87,7 +87,7 @@ export type Series = { name: string; data: number[]; color: string };
 						[attr.x1]="hoverX()"
 						[attr.x2]="hoverX()"
 						[attr.y1]="padT"
-						[attr.y2]="padT + chartH"
+						[attr.y2]="padT + chartH()"
 						stroke="var(--chart-axis)"
 						stroke-dasharray="3 3"
 						stroke-width="1"
@@ -105,14 +105,15 @@ export type Series = { name: string; data: number[]; color: string };
 			</svg>
 			<div
 				class="chart__tooltip"
+				[class.chart__tooltip--flip]="tooltipFlip()"
 				*ngIf="hover() !== null && hover() !== undefined"
-				[style.left.%]="((padL + (hover() ?? 0) * stepX()) / width) * 100"
+				[style.left.%]="((padL + (hover() ?? 0) * stepX()) / width()) * 100"
 			>
-				<div class="chart__tooltip-time">{{ labels[hover()!] }}</div>
-				<div class="chart__tooltip-row" *ngFor="let s of series">
+				<div class="chart__tooltip-time">{{ labels()[hover()!] }}</div>
+				<div class="chart__tooltip-row" *ngFor="let s of series()">
 					<span class="chart__tooltip-swatch" [style.background]="s.color"></span>
 					<span class="chart__tooltip-name">{{ s.name }}</span>
-					<span class="chart__tooltip-value">{{ s.data[hover()!] }}%</span>
+					<span class="chart__tooltip-value">{{ fmt(s.data[hover()!]) }}%</span>
 				</div>
 			</div>
 		</div>
@@ -136,6 +137,9 @@ export type Series = { name: string; data: number[]; color: string };
 				pointer-events: none;
 				min-width: 130px;
 				transform: translateX(8px);
+			}
+			.chart__tooltip--flip {
+				transform: translateX(calc(-100% - 8px));
 			}
 			.chart__tooltip-time {
 				font-weight: 600;
@@ -172,13 +176,13 @@ export type Series = { name: string; data: number[]; color: string };
 })
 export class LineChartComponent {
 	/** Metrics to render as stacked area + line paths. */
-	@Input() series: Series[] = [];
+	readonly series = input<Series[]>([]);
 	/** X-axis tick labels (one per data point). */
-	@Input() labels: string[] = [];
+	readonly labels = input<string[]>([]);
 	/** Virtual SVG width for the viewBox. */
-	@Input() width = 1000;
+	readonly width = input(1000);
 	/** Virtual SVG height for the viewBox. */
-	@Input() height = 260;
+	readonly height = input(260);
 
 	readonly padL = 36;
 	readonly padR = 12;
@@ -187,66 +191,69 @@ export class LineChartComponent {
 
 	readonly hover = signal<number | null>(null);
 
-	get chartW() {
-		return this.width - this.padL - this.padR;
-	}
-	get chartH() {
-		return this.height - this.padT - this.padB;
-	}
+	readonly chartW = computed(() => this.width() - this.padL - this.padR);
+	readonly chartH = computed(() => this.height() - this.padT - this.padB);
 
 	stepX = computed(() => {
-		const n = this.labels.length || 1;
-		return this.chartW / Math.max(1, n - 1);
+		const n = this.labels().length || 1;
+		return this.chartW() / Math.max(1, n - 1);
 	});
 
 	yLines = computed(() => {
 		const ticks = 5;
 		const max = this.maxValue();
+		const chartH = this.chartH();
 		return Array.from({ length: ticks + 1 }, (_, i) => ({
-			y: this.padT + (this.chartH / ticks) * i,
+			y: this.padT + (chartH / ticks) * i,
 			label: Math.round(max - (max / ticks) * i),
 		}));
 	});
 
 	xLabels = computed(() => {
-		const n = this.labels.length;
+		const labels = this.labels();
+		const n = labels.length;
 		if (n === 0) return [] as Array<{ x: number; label: string }>;
 		const stride = Math.max(1, Math.floor(n / 8));
 		const out: Array<{ x: number; label: string }> = [];
 		for (let i = 0; i < n; i++) {
 			if (i % stride === 0 || i === n - 1) {
-				out.push({ x: this.padL + i * this.stepX(), label: this.labels[i] });
+				out.push({ x: this.padL + i * this.stepX(), label: labels[i] });
 			}
 		}
 		return out;
 	});
 
 	seriesPaths = computed(() => {
-		const n = this.labels.length;
+		const n = this.labels().length;
 		const max = this.maxValue();
-		return this.series.map((s) => {
+		const chartH = this.chartH();
+		return this.series().map((s) => {
 			const pts = s.data.map((v, i) => {
 				const x = this.padL + i * this.stepX();
-				const y = this.padT + (1 - v / Math.max(1, max)) * this.chartH;
+				const y = this.padT + (1 - v / Math.max(1, max)) * chartH;
 				return [x, y] as const;
 			});
 			const line = pts
 				.map(([x, y], i) => `${i === 0 ? "M" : "L"}${x.toFixed(1)} ${y.toFixed(1)}`)
 				.join(" ");
-			const area = `${line} L ${this.padL + (n - 1) * this.stepX()} ${this.padT + this.chartH} L ${this.padL} ${this.padT + this.chartH} Z`;
+			const area = `${line} L ${this.padL + (n - 1) * this.stepX()} ${this.padT + chartH} L ${this.padL} ${this.padT + chartH} Z`;
 			return { line, area, color: s.color };
 		});
 	});
 
 	hoverX = computed(() => this.padL + (this.hover() ?? 0) * this.stepX());
 
+	/** Flip the tooltip to the left of the cursor once it would otherwise overflow the chart's right edge. */
+	tooltipFlip = computed(() => this.hoverX() / this.width() > 0.65);
+
 	hoverPoints = computed(() => {
 		const idx = this.hover();
 		if (idx === null || idx === undefined) return [];
 		const max = this.maxValue();
-		return this.series.map((s) => ({
+		const chartH = this.chartH();
+		return this.series().map((s) => ({
 			x: this.padL + idx * this.stepX(),
-			y: this.padT + (1 - s.data[idx] / Math.max(1, max)) * this.chartH,
+			y: this.padT + (1 - s.data[idx] / Math.max(1, max)) * chartH,
 			color: s.color,
 		}));
 	});
@@ -254,18 +261,22 @@ export class LineChartComponent {
 	onMove(event: MouseEvent): void {
 		const target = event.currentTarget as HTMLElement;
 		const rect = target.getBoundingClientRect();
-		const pxRatio = rect.width / this.width;
+		const pxRatio = rect.width / this.width();
 		const x = (event.clientX - rect.left) / pxRatio - this.padL;
-		if (x < 0 || x > this.chartW) {
+		if (x < 0 || x > this.chartW()) {
 			this.hover.set(null);
 			return;
 		}
-		const idx = Math.max(0, Math.min(this.labels.length - 1, Math.round(x / this.stepX())));
+		const idx = Math.max(0, Math.min(this.labels().length - 1, Math.round(x / this.stepX())));
 		this.hover.set(idx);
 	}
 
+	fmt(v: number): string {
+		return v.toFixed(1);
+	}
+
 	private maxValue(): number {
-		const all = this.series.flatMap((s) => s.data);
+		const all = this.series().flatMap((s) => s.data);
 		if (!all.length) return 100;
 		const m = Math.max(100, Math.ceil(Math.max(...all) / 10) * 10);
 		return m;

@@ -5,7 +5,7 @@ import {
 	inject,
 	signal,
 } from "@angular/core";
-import { AsyncPipe, NgFor, NgIf } from "@angular/common";
+import { AsyncPipe, DecimalPipe, NgFor, NgIf } from "@angular/common";
 import { TranslocoPipe, TranslocoService } from "@jsverse/transloco";
 import { Apollo } from "apollo-angular";
 import { I18nStateService } from "../../core/i18n/i18n-state.service";
@@ -15,6 +15,7 @@ import { map, startWith } from "rxjs/operators";
 import { QUERY_METRICS_SERIES, QUERY_NODES, QUERY_OVERVIEW } from "../../core/graphql.queries";
 import { BootService } from "../../core/boot.service";
 import { DonutComponent } from "../../shared/donut.component";
+import { SparklineComponent } from "../../shared/sparkline.component";
 import { LineChartComponent, Series } from "../../shared/line-chart.component";
 import { SegmentedComponent } from "../../shared/segmented.component";
 import { TagComponent } from "../../shared/tag.component";
@@ -27,6 +28,7 @@ type Overview = {
 	stacks: number;
 	services: number;
 	tasks: number;
+	tasksRunning: number;
 	cpu: number;
 	mem: number;
 	disk: number;
@@ -98,25 +100,36 @@ type MetricsResponse = {
 				<div class="summary-card">
 					<div class="summary-card__label">{{ "nav.stacks" | transloco }}</div>
 					<div class="summary-card__value">{{ vm.overview.stacks }}</div>
-					<div class="summary-card__delta" *ngIf="vm.overview.stacksDelta as d">
-						▲ {{ d }} <span>{{ "dashboard.thisWeek" | transloco }}</span>
+					<div
+						class="summary-card__delta"
+						[class.summary-card__delta--down]="isNegative(d)"
+						*ngIf="vm.overview.stacksDelta as d"
+					>
+						{{ arrow(d) }} {{ d }} <span>{{ "dashboard.thisWeek" | transloco }}</span>
 					</div>
 				</div>
 				<div class="summary-card">
 					<div class="summary-card__label">{{ "nav.services" | transloco }}</div>
 					<div class="summary-card__value">{{ vm.overview.services }}</div>
-					<div class="summary-card__delta" *ngIf="vm.overview.servicesDelta as d">
-						▲ {{ d }} <span>{{ "dashboard.thisWeek" | transloco }}</span>
+					<div
+						class="summary-card__delta"
+						[class.summary-card__delta--down]="isNegative(d)"
+						*ngIf="vm.overview.servicesDelta as d"
+					>
+						{{ arrow(d) }} {{ d }} <span>{{ "dashboard.thisWeek" | transloco }}</span>
 					</div>
 				</div>
 				<div class="summary-card">
 					<div class="summary-card__label">{{ "nav.tasks" | transloco }}</div>
-					<div class="summary-card__value">{{ vm.overview.tasks }}</div>
+					<div class="summary-card__value">
+						{{ vm.overview.tasksRunning }} <small>/ {{ vm.overview.tasks }}</small>
+					</div>
 					<div
-						class="summary-card__delta summary-card__delta--down"
+						class="summary-card__delta"
+						[class.summary-card__delta--down]="isNegative(d)"
 						*ngIf="vm.overview.tasksDelta as d"
 					>
-						▼ {{ d }} <span>{{ "dashboard.thisWeek" | transloco }}</span>
+						{{ arrow(d) }} {{ d }} <span>{{ "dashboard.thisWeek" | transloco }}</span>
 					</div>
 				</div>
 				<div class="summary-card">
@@ -145,6 +158,13 @@ type MetricsResponse = {
 							<strong>{{ vm.overview.cpuUsed }}</strong> / {{ vm.overview.cpuCores }}
 							{{ "dashboard.cores" | transloco }}
 						</div>
+						<sb-sparkline
+							*ngIf="vm.metrics as m"
+							[data]="m.cpu"
+							[width]="140"
+							[height]="28"
+							color="var(--primary-500)"
+						></sb-sparkline>
 						<div class="dash-tile__sub">{{ "dashboard.cpuSub" | transloco }}</div>
 					</div>
 				</div>
@@ -162,6 +182,13 @@ type MetricsResponse = {
 						<div class="dash-tile__sub">
 							<strong>{{ vm.overview.memUsed }}</strong> / {{ vm.overview.memTotal }}
 						</div>
+						<sb-sparkline
+							*ngIf="vm.metrics as m"
+							[data]="m.mem"
+							[width]="140"
+							[height]="28"
+							color="#3b82f6"
+						></sb-sparkline>
 						<div class="dash-tile__sub">{{ "dashboard.memSub" | transloco }}</div>
 					</div>
 				</div>
@@ -180,6 +207,13 @@ type MetricsResponse = {
 							<strong>{{ vm.overview.diskUsed }}</strong> /
 							{{ vm.overview.diskTotal }}
 						</div>
+						<sb-sparkline
+							*ngIf="vm.metrics as m"
+							[data]="m.disk"
+							[width]="140"
+							[height]="28"
+							color="#10b981"
+						></sb-sparkline>
 						<div class="dash-tile__sub">{{ "dashboard.diskSub" | transloco }}</div>
 					</div>
 				</div>
@@ -211,16 +245,16 @@ type MetricsResponse = {
 						<span class="legend"
 							><i style="background: var(--primary-500)"></i
 							>{{ "dashboard.cpu" | transloco }}
-							<strong>{{ vm.metrics.cpu[vm.metrics.cpu.length - 1] }}%</strong></span
+							<strong>{{ vm.metrics.cpu[vm.metrics.cpu.length - 1] | number: "1.0-1" }}%</strong></span
 						>
 						<span class="legend"
 							><i style="background:#3b82f6"></i>{{ "dashboard.memory" | transloco }}
-							<strong>{{ vm.metrics.mem[vm.metrics.mem.length - 1] }}%</strong></span
+							<strong>{{ vm.metrics.mem[vm.metrics.mem.length - 1] | number: "1.0-1" }}%</strong></span
 						>
 						<span class="legend"
 							><i style="background:#10b981"></i>{{ "dashboard.disk" | transloco }}
 							<strong
-								>{{ vm.metrics.disk[vm.metrics.disk.length - 1] }}%</strong
+								>{{ vm.metrics.disk[vm.metrics.disk.length - 1] | number: "1.0-1" }}%</strong
 							></span
 						>
 					</div>
@@ -481,8 +515,10 @@ type MetricsResponse = {
 		NgIf,
 		NgFor,
 		AsyncPipe,
+		DecimalPipe,
 		TranslocoPipe,
 		DonutComponent,
+		SparklineComponent,
 		LineChartComponent,
 		SegmentedComponent,
 		IconComponent,
@@ -589,5 +625,13 @@ export class DashboardComponent {
 	}
 	workers(nodes: NodeSummary[]): NodeSummary[] {
 		return nodes.filter((n) => n.role === "worker");
+	}
+
+	isNegative(delta: string): boolean {
+		return delta.startsWith("-");
+	}
+
+	arrow(delta: string): string {
+		return this.isNegative(delta) ? "▼" : "▲";
 	}
 }

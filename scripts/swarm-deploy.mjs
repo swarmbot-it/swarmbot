@@ -22,7 +22,7 @@ const MANAGER = "swarm-manager";
 const WORKERS = ["swarm-worker-1", "swarm-worker-2"];
 const STACK = "swarmboty";
 const COMPOSE_FILE = "docker-compose.local.yml";
-const AGENT_DIR = resolve("../swarmagent");
+const AGENT_DIR = resolve(SCRIPT_DIR, "..", "swarmagent"); // git submodule, see .gitmodules
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

@@ -61,7 +61,8 @@
         "continue": "Continuer",
         "default": "DÉFAUT",
         "type": "Type",
-        "user": "Utilisateur"
+        "user": "Utilisateur",
+        "loading": "Chargement…"
     },
     "dashboard": {
         "title": "Vue d'ensemble du cluster",
@@ -111,7 +112,8 @@
         "task": "Tâche",
         "node": "Nœud",
         "replicas": "Réplicas",
-        "ports": "Ports"
+        "ports": "Ports",
+        "actions": "Actions"
     },
     "status": {
         "RUNNING": "En cours",
@@ -125,6 +127,7 @@
         "REJECTED": "Rejeté",
         "COMPLETE": "Terminé",
         "SHUTDOWN": "Arrêté",
+        "STOPPED": "Arrêté",
         "UNKNOWN": "Inconnu"
     },
     "pages": {
@@ -138,6 +141,46 @@
                 "volumes": "Volumes",
                 "configs": "Configurations",
                 "secrets": "Secrets"
+            },
+            "detail": {
+                "countsSummary": "{{services}} services · {{networks}} réseaux · {{volumes}} volumes · {{configs}} configurations · {{secrets}} secrets",
+                "working": "En cours…",
+                "edit": "Modifier",
+                "editUnsupported": "La modification d'un environnement sur place n'est pas encore prise en charge — utilisez Redeploy/Rollback/Deactivate ci-dessous, ou supprimez-le et déployez un nouveau fichier Compose.",
+                "redeploy": "Redeploy",
+                "redeployHint": "rolling",
+                "rollback": "Rollback",
+                "rollbackHint": "spec précédente",
+                "deactivate": "Désactiver",
+                "deactivateHint": "réduire à 0",
+                "reactivate": "Réactiver",
+                "reactivateHint": "monter à 1",
+                "delete": "Supprimer",
+                "utilization": "Utilisation de l'environnement",
+                "utilizationHint": "CPU et mémoire des conteneurs agrégées · depuis InfluxDB",
+                "noMetrics": "Pas encore de métriques — l'agent rapporte les statistiques toutes les 30s.",
+                "diskHint": "L'utilisation du disque par conteneur n'est pas collectée par l'agent (seulement CPU et mémoire)",
+                "diskNotTracked": "Non suivi par environnement",
+                "notFound": "Environnement introuvable.",
+                "noServices": "Aucun service dans cet environnement.",
+                "noNetworks": "Aucun réseau associé.",
+                "noVolumes": "Aucun volume associé.",
+                "noConfigs": "Aucune configuration montée.",
+                "noSecrets": "Aucun secret accordé.",
+                "stopped": "Arrêté",
+                "stopping": "Arrêt en cours…",
+                "confirmRemove": "Supprimer l'environnement \"{{name}}\" ? Cela supprime tous ses services, réseaux et autres ressources.",
+                "toastNothingToRedeploy": "\"{{name}}\" a 0 réplica — rien à redéployer. Utilisez d'abord \"Réactiver\".",
+                "toastRedeploying": "Redéploiement de \"{{name}}\"… les tâches redémarreront dans quelques secondes.",
+                "toastRolledBack": "\"{{name}}\" restauré à sa spec précédente.",
+                "toastDeactivated": "Environnement \"{{name}}\" désactivé.",
+                "toastReactivated": "Environnement \"{{name}}\" réactivé (mis à l'échelle à 1 réplica).",
+                "toastRemoved": "Environnement \"{{name}}\" supprimé.",
+                "redeployFailed": "Le redeploy a échoué.",
+                "rollbackFailed": "Le rollback a échoué.",
+                "deactivateFailed": "La désactivation a échoué.",
+                "reactivateFailed": "La réactivation a échoué.",
+                "removeFailed": "La suppression a échoué."
             }
         },
         "services": {
@@ -147,6 +190,39 @@
                 "service": "Service",
                 "replicas": "Réplicas",
                 "ports": "Ports"
+            },
+            "detail": {
+                "back": "Retour aux services",
+                "scale": "Mettre à l'échelle",
+                "scaleSubtitle": "Définir le nombre de réplicas souhaité pour {{name}}",
+                "serviceId": "ID du service",
+                "mode": "Mode",
+                "env": "Variables d'environnement",
+                "noEnv": "Aucune variable d'environnement définie.",
+                "labels": "Labels",
+                "noLabels": "Aucun label défini.",
+                "noSecrets": "Aucun secret lié.",
+                "noConfigs": "Aucune configuration liée.",
+                "noTasks": "Aucune tâche active.",
+                "noNetworks": "Aucun réseau associé.",
+                "noPorts": "Aucun port publié.",
+                "mounts": "Points de montage",
+                "noMounts": "Aucun point de montage.",
+                "mountSource": "Source",
+                "mountTarget": "Cible",
+                "mountMode": "Mode",
+                "notFound": "Service introuvable.",
+                "editUnsupported": "La modification d'un service sur place n'est pas encore prise en charge — utilisez Redeploy/Rollback/Scale ci-dessous, ou supprimez-le et redéployez-le via son environnement.",
+                "confirmRemove": "Supprimer le service \"{{name}}\" ?",
+                "toastNothingToRedeploy": "\"{{name}}\" a 0 réplica — rien à redéployer. Utilisez d'abord \"Mettre à l'échelle\" pour le remonter.",
+                "toastRedeploying": "Redéploiement de \"{{name}}\"… les tâches redémarreront dans quelques secondes.",
+                "toastRolledBack": "\"{{name}}\" restauré à sa spec précédente.",
+                "toastScaled": "\"{{name}}\" mis à l'échelle à {{replicas}} réplicas.",
+                "toastRemoved": "Service \"{{name}}\" supprimé.",
+                "redeployFailed": "Le redeploy a échoué.",
+                "rollbackFailed": "Le rollback a échoué.",
+                "scaleFailed": "La mise à l'échelle a échoué.",
+                "removeFailed": "La suppression a échoué."
             }
         },
         "tasks": {
@@ -156,6 +232,13 @@
                 "node": "Nœud",
                 "cpu": "CPU",
                 "memory": "Mémoire"
+            },
+            "detail": {
+                "back": "Retour aux tâches",
+                "on": "sur",
+                "desiredState": "État souhaité",
+                "statusMessage": "Message d'état",
+                "notFound": "Tâche introuvable."
             }
         },
         "nodes": {
@@ -170,6 +253,14 @@
                 "cpu": "CPU",
                 "memory": "Mémoire",
                 "disk": "Disque"
+            },
+            "actions": {
+                "title": "Actions",
+                "drain": "Vider",
+                "activate": "Activer",
+                "toastDrained": "\"{{name}}\" est en cours de vidage — aucune nouvelle tâche n'y sera planifiée.",
+                "toastActivated": "\"{{name}}\" est de nouveau actif et accepte des tâches.",
+                "failed": "Impossible de modifier la disponibilité du nœud."
             }
         },
         "networks": {
@@ -182,11 +273,25 @@
         },
         "secrets": {
             "countSuffix": "secrets stockés",
-            "add": "Nouveau secret"
+            "add": "Nouveau secret",
+            "view": "Voir les détails",
+            "modal": {
+                "subtitle": "Détails du secret",
+                "id": "ID du secret",
+                "created": "Créé",
+                "updated": "Dernière mise à jour",
+                "writeOnlyNotice": "Les secrets Docker sont en écriture seule — la valeur ne peut pas être récupérée une fois créée, c'est voulu. Pour la faire tourner, supprimez le secret et recréez-le."
+            }
         },
         "configs": {
             "countSuffix": "configurations stockées",
-            "add": "Nouvelle configuration"
+            "add": "Nouvelle configuration",
+            "view": "Voir le contenu",
+            "modal": {
+                "subtitle": "Contenu du fichier de configuration",
+                "loading": "Chargement…",
+                "empty": "(vide)"
+            }
         },
         "registries": {
             "countSuffix": "registres connectés",
@@ -194,7 +299,14 @@
             "columns": {
                 "registry": "Registre",
                 "authUser": "Utilisateur auth"
-            }
+            },
+            "setDefault": "Définir par défaut",
+            "remove": "Supprimer",
+            "confirmRemove": "Supprimer le registre \"{{name}}\" ?",
+            "toastSetDefault": "\"{{name}}\" est maintenant le registre par défaut.",
+            "toastRemoved": "Registre \"{{name}}\" supprimé.",
+            "setDefaultFailed": "Impossible de définir le registre par défaut.",
+            "removeFailed": "La suppression a échoué."
         }
     },
     "users": {

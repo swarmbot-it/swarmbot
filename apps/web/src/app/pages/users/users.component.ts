@@ -23,6 +23,7 @@ import { TagComponent } from "../../shared/tag.component";
 import { IconComponent } from "../../shared/icon.component";
 import { QUERY_USERS } from "../../core/graphql.queries";
 import { I18nStateService } from "../../core/i18n/i18n-state.service";
+import { AuthService } from "../../core/auth.service";
 
 type AppUser = {
 	id: string;
@@ -66,7 +67,7 @@ const ROLE_I18N_KEY: Record<string, string> = {
 						<strong>{{ rows.length }}</strong> {{ "users.inWorkspace" | transloco }}
 					</div>
 				</div>
-				<button class="btn btn--primary" (click)="createRequested.emit()">
+				<button *ngIf="auth.isAdmin()" class="btn btn--primary" (click)="createRequested.emit()">
 					<sb-icon name="plus" [size]="16"></sb-icon> {{ "users.addUser" | transloco }}
 				</button>
 			</div>
@@ -145,6 +146,7 @@ export class UsersPageComponent {
 	private readonly apollo = inject(Apollo);
 	private readonly transloco = inject(TranslocoService);
 	private readonly i18n = inject(I18nStateService);
+	readonly auth = inject(AuthService);
 
 	readonly cols = computed(() => {
 		this.i18n.activeLang();

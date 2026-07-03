@@ -1,5 +1,8 @@
-﻿import { Injectable, signal } from "@angular/core";
+﻿import { Injectable, computed, signal } from "@angular/core";
 import { Router } from "@angular/router";
+
+const ADMIN_ROLES = new Set(["admin", "administrator"]);
+const EDITOR_ROLES = new Set(["admin", "administrator", "editor"]);
 
 const TOKEN_KEY = "swarmboty.token";
 const PROFILE_KEY = "swarmboty.profile";
@@ -26,6 +29,12 @@ export class AuthService {
 
 	/** Read-only profile signal for templates. */
 	readonly profile = this._profile.asReadonly();
+
+	/** True for Administrator (and the legacy lowercase "admin" bootstrap account). Mirrors requireAdmin on the API. */
+	readonly isAdmin = computed(() => ADMIN_ROLES.has((this._profile()?.role ?? "").toLowerCase()));
+
+	/** True for Editor and above. Mirrors requireEditor on the API. */
+	readonly isEditor = computed(() => EDITOR_ROLES.has((this._profile()?.role ?? "").toLowerCase()));
 
 	constructor(private readonly router: Router) {}
 

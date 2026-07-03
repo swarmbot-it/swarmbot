@@ -129,7 +129,7 @@ interface MeUser {
 									tabindex="-1"
 								/>
 								<button class="btn btn--secondary btn--sm" (click)="openPwModal()">
-									<sb-icon name="key" [size]="13"></sb-icon>{{ "profile.changePassword" | transloco }}
+									<sb-icon name="keys" [size]="13"></sb-icon>{{ "profile.changePassword" | transloco }}
 								</button>
 							</div>
 						</div>

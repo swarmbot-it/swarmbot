@@ -16,6 +16,8 @@ RUN mkdir -p /app/apps/api/public \
 
 FROM node:24-alpine AS runtime
 
+RUN apk add --no-cache docker-cli
+
 ENV NODE_ENV=production
 WORKDIR /app
 

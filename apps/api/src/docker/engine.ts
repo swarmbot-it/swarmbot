@@ -46,6 +46,15 @@ export async function setupDockerApi(_cfg: SwarmbotyConfig, docker: Dockerode): 
 	}
 }
 
+/** Label Docker Compose/stack deploy stamps on every resource it creates. */
+export const STACK_LABEL = "com.docker.stack.namespace";
+
+/** Reads the stack-namespace label from either a service spec or a plain resource. */
+function labelsOf(x: unknown): Record<string, string> {
+	const anyx = x as { Spec?: { Labels?: Record<string, string> }; Labels?: Record<string, string> };
+	return anyx.Spec?.Labels ?? anyx.Labels ?? {};
+}
+
 type ServiceLike = {
 	ID?: string;
 	Spec?: {
@@ -66,7 +75,11 @@ type ServiceLike = {
 type NodeLike = {
 	ID?: string;
 	id?: string;
-	Description?: { Hostname?: string; Engine?: { EngineVersion?: string } };
+	Description?: {
+		Hostname?: string;
+		Engine?: { EngineVersion?: string };
+		Resources?: { NanoCPUs?: number; MemoryBytes?: number };
+	};
 	Status?: { Addr?: string; State?: string };
 	Spec?: { Role?: string; Availability?: string };
 	ManagerStatus?: { Leader?: boolean; Reachability?: string };
@@ -89,6 +102,7 @@ type NetworkLike = {
 	Attachable?: boolean;
 	Internal?: boolean;
 	Ingress?: boolean;
+	Labels?: Record<string, string>;
 	IPAM?: { Config?: Array<{ Subnet?: string; Gateway?: string }> };
 };
 
@@ -96,6 +110,7 @@ type VolumeLike = {
 	Name?: string;
 	Driver?: string;
 	Mountpoint?: string;
+	Labels?: Record<string, string>;
 	UsageData?: { Size?: number };
 };
 
@@ -103,7 +118,7 @@ type StampedLike = {
 	ID?: string;
 	CreatedAt?: string;
 	UpdatedAt?: string;
-	Spec?: { Name?: string };
+	Spec?: { Name?: string; Labels?: Record<string, string> };
 };
 
 export type ServiceSummary = {
@@ -150,6 +165,7 @@ export type NetworkSummary = {
 	ingress: boolean;
 	subnet: string | null;
 	gateway: string | null;
+	stack: string | null;
 };
 
 export type VolumeSummary = {
@@ -157,6 +173,7 @@ export type VolumeSummary = {
 	driver: string;
 	size: string;
 	mountpoint: string | null;
+	stack: string | null;
 };
 
 export type StampedSummary = {
@@ -164,7 +181,13 @@ export type StampedSummary = {
 	name: string;
 	created: string;
 	updated: string;
+	stack: string | null;
 };
+
+/** Strip the `@sha256:...` digest Docker appends after resolving an image, leaving the human-readable repo:tag. */
+function shortImage(image: string | null): string | null {
+	return image ? image.split("@")[0] : image;
+}
 
 /** Format published ports as "host→container" strings used by the UI. */
 export function formatPorts(spec: ServiceLike["Spec"]): string[] {
@@ -181,8 +204,8 @@ export function mapServiceSummary(s: Dockerode.Service): ServiceSummary {
 	const id = sl.ID ?? "";
 	const spec = sl.Spec;
 	const name = spec?.Name ?? "";
-	const image = spec?.TaskTemplate?.ContainerSpec?.Image ?? null;
-	const stack = spec?.Labels?.["com.docker.stack.namespace"] ?? null;
+	const image = shortImage(spec?.TaskTemplate?.ContainerSpec?.Image ?? null);
+	const stack = spec?.Labels?.[STACK_LABEL] ?? null;
 	const replicas = spec?.Mode?.Replicated?.Replicas ?? (spec?.Mode?.Global ? 1 : 0);
 	return {
 		id,
@@ -193,6 +216,76 @@ export function mapServiceSummary(s: Dockerode.Service): ServiceSummary {
 		ports: formatPorts(spec),
 		status: "RUNNING",
 		stack,
+	};
+}
+
+type ServiceInspect = {
+	ID?: string;
+	CreatedAt?: string;
+	UpdatedAt?: string;
+	Spec?: ServiceLike["Spec"] & {
+		Mode?: { Replicated?: { Replicas?: number }; Global?: object };
+		TaskTemplate?: {
+			ContainerSpec?: {
+				Image?: string;
+				Env?: string[];
+				Mounts?: Array<{ Type?: string; Source?: string; Target?: string; ReadOnly?: boolean }>;
+				Secrets?: Array<{ SecretName?: string }>;
+				Configs?: Array<{ ConfigName?: string }>;
+			};
+			Networks?: Array<{ Target?: string }>;
+		};
+		Networks?: Array<{ Target?: string }>;
+	};
+};
+
+export type ServiceDetail = ServiceSummary & {
+	mode: string | null;
+	created: string | null;
+	updated: string | null;
+	env: string[];
+	labels: Array<{ k: string; v: string }>;
+	networks: string[];
+	mounts: Array<{ type: string; source: string | null; target: string; readOnly: boolean }>;
+	secrets: string[];
+	configs: string[];
+};
+
+/** Full `docker.getService(id).inspect()` result mapped for the service detail page. */
+export function mapServiceDetail(s: unknown): ServiceDetail {
+	const sl = s as ServiceInspect;
+	const spec = sl.Spec;
+	const containerSpec = spec?.TaskTemplate?.ContainerSpec;
+	const replicas = spec?.Mode?.Replicated?.Replicas ?? (spec?.Mode?.Global ? 1 : 0);
+	const labelMap = spec?.Labels ?? {};
+	const networkTargets = spec?.TaskTemplate?.Networks ?? spec?.Networks ?? [];
+	return {
+		id: sl.ID ?? "",
+		name: spec?.Name ?? "",
+		image: shortImage(containerSpec?.Image ?? null),
+		replicasRunning: replicas,
+		replicasTotal: replicas,
+		ports: formatPorts(spec),
+		status: "RUNNING",
+		stack: labelMap[STACK_LABEL] ?? null,
+		mode: spec?.Mode?.Replicated ? "replicated" : spec?.Mode?.Global ? "global" : null,
+		created: sl.CreatedAt ?? null,
+		updated: sl.UpdatedAt ?? null,
+		env: containerSpec?.Env ?? [],
+		labels: Object.entries(labelMap).map(([k, v]) => ({ k, v: String(v) })),
+		networks: networkTargets.map((n) => n.Target).filter((x): x is string => Boolean(x)),
+		mounts: (containerSpec?.Mounts ?? []).map((m) => ({
+			type: m.Type ?? "volume",
+			source: m.Source ?? null,
+			target: m.Target ?? "",
+			readOnly: Boolean(m.ReadOnly),
+		})),
+		secrets: (containerSpec?.Secrets ?? [])
+			.map((sc) => sc.SecretName)
+			.filter((x): x is string => Boolean(x)),
+		configs: (containerSpec?.Configs ?? [])
+			.map((cf) => cf.ConfigName)
+			.filter((x): x is string => Boolean(x)),
 	};
 }
 
@@ -227,6 +320,24 @@ export function mapNodeSummary(n: Dockerode.Node): NodeSummary {
 	};
 }
 
+type NodeUpdateOpts = { _query: Record<string, unknown>; _body: unknown };
+
+/** Set a node's scheduling availability ("active" resumes scheduling, "drain" evicts and stops new tasks). */
+export async function setNodeAvailability(
+	docker: Dockerode,
+	id: string,
+	availability: "active" | "drain"
+): Promise<void> {
+	const node = docker.getNode(id);
+	const inspected = (await node.inspect()) as {
+		Version?: { Index?: number };
+		Spec?: { Role?: string; Availability?: string; Labels?: Record<string, string> };
+	};
+	const version = inspected.Version?.Index ?? 0;
+	const spec = { ...(inspected.Spec ?? {}), Availability: availability };
+	await node.update({ _query: { version }, _body: spec } as unknown as NodeUpdateOpts);
+}
+
 export function mapTaskSummary(t: unknown): TaskSummary {
 	const tl = t as TaskLike;
 	return {
@@ -253,6 +364,7 @@ export function mapNetworkSummary(n: unknown): NetworkSummary {
 		ingress: Boolean(nl.Ingress),
 		subnet: ipam?.Subnet ?? null,
 		gateway: ipam?.Gateway ?? null,
+		stack: labelsOf(n)[STACK_LABEL] ?? null,
 	};
 }
 
@@ -271,6 +383,7 @@ export function mapVolumeSummary(v: unknown): VolumeSummary {
 		driver: vl.Driver ?? "",
 		size: formatSize(vl.UsageData?.Size),
 		mountpoint: vl.Mountpoint ?? null,
+		stack: labelsOf(v)[STACK_LABEL] ?? null,
 	};
 }
 
@@ -281,7 +394,24 @@ export function mapStamped(s: unknown): StampedSummary {
 		name: sl.Spec?.Name ?? "",
 		created: sl.CreatedAt ?? new Date().toISOString(),
 		updated: sl.UpdatedAt ?? sl.CreatedAt ?? new Date().toISOString(),
+		stack: labelsOf(s)[STACK_LABEL] ?? null,
 	};
+}
+
+export type ConfigSummary = StampedSummary & { content: string | null };
+
+/** Like {@link mapStamped}, plus the config's file content — Docker returns `Spec.Data` (base64) for configs, unlike secrets. */
+export function mapConfigSummary(c: unknown): ConfigSummary {
+	const data = (c as { Spec?: { Data?: string } }).Spec?.Data;
+	let content: string | null = null;
+	if (data) {
+		try {
+			content = Buffer.from(data, "base64").toString("utf8");
+		} catch {
+			content = null;
+		}
+	}
+	return { ...mapStamped(c), content };
 }
 
 /**
@@ -300,30 +430,102 @@ export type StackAgg = {
 
 export function aggregateStacks(
 	services: Dockerode.Service[],
-	networks: NetworkSummary[]
+	networks: NetworkSummary[],
+	volumes: VolumeSummary[] = [],
+	configs: StampedSummary[] = [],
+	secrets: StampedSummary[] = []
 ): StackAgg[] {
 	const byStack = new Map<string, StackAgg>();
+	const bucket = (name: string): StackAgg => {
+		let entry = byStack.get(name);
+		if (!entry) {
+			entry = { name, services: 0, networks: 0, volumes: 0, configs: 0, secrets: 0, status: "RUNNING" };
+			byStack.set(name, entry);
+		}
+		return entry;
+	};
 	for (const s of services) {
-		const sl = s as unknown as ServiceLike;
-		const stack = sl.Spec?.Labels?.["com.docker.stack.namespace"];
+		const stack = labelsOf(s)[STACK_LABEL];
 		if (!stack) continue;
-		const entry = byStack.get(stack) ?? {
-			name: stack,
-			services: 0,
-			networks: 0,
-			volumes: 0,
-			configs: 0,
-			secrets: 0,
-			status: "RUNNING",
-		};
-		entry.services += 1;
-		byStack.set(stack, entry);
+		bucket(stack).services += 1;
 	}
 	for (const n of networks) {
-		const prefix = n.name.split("_")[0];
-		if (prefix && byStack.has(prefix)) {
-			byStack.get(prefix)!.networks += 1;
-		}
+		if (n.stack && byStack.has(n.stack)) bucket(n.stack).networks += 1;
+	}
+	for (const v of volumes) {
+		if (v.stack && byStack.has(v.stack)) bucket(v.stack).volumes += 1;
+	}
+	for (const c of configs) {
+		if (c.stack && byStack.has(c.stack)) bucket(c.stack).configs += 1;
+	}
+	for (const sec of secrets) {
+		if (sec.stack && byStack.has(sec.stack)) bucket(sec.stack).secrets += 1;
 	}
 	return [...byStack.values()].sort((a, b) => a.name.localeCompare(b.name));
+}
+
+type ServiceUpdateOpts = { _query: Record<string, unknown>; _body: unknown };
+
+/** Bump TaskTemplate.ForceUpdate so Swarm reschedules all tasks (a "redeploy" / rolling restart). */
+export async function forceUpdateService(docker: Dockerode, id: string): Promise<void> {
+	const svc = docker.getService(id);
+	const inspected = (await svc.inspect()) as {
+		Version?: { Index?: number };
+		Spec?: { TaskTemplate?: { ForceUpdate?: number } };
+	};
+	const version = inspected.Version?.Index ?? 0;
+	const spec = inspected.Spec ?? {};
+	const taskTemplate = spec.TaskTemplate ?? {};
+	const nextSpec = {
+		...spec,
+		TaskTemplate: { ...taskTemplate, ForceUpdate: (taskTemplate.ForceUpdate ?? 0) + 1 },
+	};
+	await svc.update({ _query: { version }, _body: nextSpec } as unknown as ServiceUpdateOpts);
+}
+
+/** Ask the engine to revert the service to its previous spec version. */
+export async function rollbackServiceById(docker: Dockerode, id: string): Promise<void> {
+	const svc = docker.getService(id);
+	const inspected = (await svc.inspect()) as { Version?: { Index?: number }; Spec?: unknown };
+	const version = inspected.Version?.Index ?? 0;
+	await svc.update({
+		_query: { version, rollback: "previous" },
+		_body: inspected.Spec ?? {},
+	} as unknown as ServiceUpdateOpts);
+}
+
+/** Set Mode.Replicated.Replicas to a new count (no-op for global-mode services). */
+export async function scaleServiceById(docker: Dockerode, id: string, replicas: number): Promise<void> {
+	const svc = docker.getService(id);
+	const inspected = (await svc.inspect()) as {
+		Version?: { Index?: number };
+		Spec?: { Mode?: { Replicated?: { Replicas?: number } } };
+	};
+	const version = inspected.Version?.Index ?? 0;
+	const spec = inspected.Spec ?? {};
+	if (!spec.Mode?.Replicated) return;
+	const nextSpec = { ...spec, Mode: { Replicated: { Replicas: replicas } } };
+	await svc.update({ _query: { version }, _body: nextSpec } as unknown as ServiceUpdateOpts);
+}
+
+/** Resolve every real service ID that belongs to a stack (by namespace label). */
+export async function serviceIdsForStack(docker: Dockerode, stackName: string): Promise<string[]> {
+	const services = await docker.listServices();
+	return services
+		.filter((s) => labelsOf(s)[STACK_LABEL] === stackName)
+		.map((s) => (s as unknown as ServiceLike).ID ?? "")
+		.filter(Boolean);
+}
+
+/** Count running tasks per service ID, for computing real replicasRunning. */
+export function countRunningTasksByService(tasks: unknown[]): Map<string, number> {
+	const counts = new Map<string, number>();
+	for (const t of tasks) {
+		const tl = t as { ServiceID?: string; Status?: { State?: string } };
+		if (tl.Status?.State !== "running") continue;
+		const id = tl.ServiceID ?? "";
+		if (!id) continue;
+		counts.set(id, (counts.get(id) ?? 0) + 1);
+	}
+	return counts;
 }

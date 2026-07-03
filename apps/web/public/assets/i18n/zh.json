@@ -61,7 +61,8 @@
         "continue": "继续",
         "default": "默认",
         "type": "类型",
-        "user": "用户"
+        "user": "用户",
+        "loading": "加载中…"
     },
     "dashboard": {
         "title": "集群概览",
@@ -111,7 +112,8 @@
         "task": "任务",
         "node": "节点",
         "replicas": "副本",
-        "ports": "端口"
+        "ports": "端口",
+        "actions": "操作"
     },
     "status": {
         "RUNNING": "运行中",
@@ -125,6 +127,7 @@
         "REJECTED": "已拒绝",
         "COMPLETE": "已完成",
         "SHUTDOWN": "已关闭",
+        "STOPPED": "已停止",
         "UNKNOWN": "未知"
     },
     "pages": {
@@ -138,6 +141,46 @@
                 "volumes": "卷",
                 "configs": "配置",
                 "secrets": "凭据"
+            },
+            "detail": {
+                "countsSummary": "{{services}} 个服务 · {{networks}} 个网络 · {{volumes}} 个卷 · {{configs}} 个配置 · {{secrets}} 个凭据",
+                "working": "处理中…",
+                "edit": "编辑",
+                "editUnsupported": "暂不支持就地编辑环境 — 请使用下方的 Redeploy/Rollback/Deactivate，或删除后部署新的 Compose 文件。",
+                "redeploy": "Redeploy",
+                "redeployHint": "滚动更新",
+                "rollback": "Rollback",
+                "rollbackHint": "上一版本",
+                "deactivate": "停用",
+                "deactivateHint": "缩容至 0",
+                "reactivate": "重新启用",
+                "reactivateHint": "扩容至 1",
+                "delete": "删除",
+                "utilization": "环境使用率",
+                "utilizationHint": "容器 CPU 与内存汇总 · 来自 InfluxDB",
+                "noMetrics": "暂无指标 — 代理每 30 秒上报一次统计信息。",
+                "diskHint": "代理不采集每个容器的磁盘使用情况（仅采集 CPU 与内存）",
+                "diskNotTracked": "不按环境统计",
+                "notFound": "未找到该环境。",
+                "noServices": "此环境中没有服务。",
+                "noNetworks": "未连接任何网络。",
+                "noVolumes": "未连接任何卷。",
+                "noConfigs": "未挂载任何配置。",
+                "noSecrets": "未授予任何凭据。",
+                "stopped": "已停止",
+                "stopping": "正在停止…",
+                "confirmRemove": "删除环境 \"{{name}}\"？这将删除其所有服务、网络及其他资源。",
+                "toastNothingToRedeploy": "\"{{name}}\" 的副本数为 0 — 没有可以 redeploy 的内容。请先使用\"重新启用\"。",
+                "toastRedeploying": "正在 redeploy \"{{name}}\"…任务将在几秒内重启。",
+                "toastRolledBack": "\"{{name}}\" 已回滚到上一版本。",
+                "toastDeactivated": "环境 \"{{name}}\" 已停用。",
+                "toastReactivated": "环境 \"{{name}}\" 已重新启用（副本数扩容至 1）。",
+                "toastRemoved": "环境 \"{{name}}\" 已删除。",
+                "redeployFailed": "Redeploy 失败。",
+                "rollbackFailed": "Rollback 失败。",
+                "deactivateFailed": "停用失败。",
+                "reactivateFailed": "重新启用失败。",
+                "removeFailed": "删除失败。"
             }
         },
         "services": {
@@ -147,6 +190,39 @@
                 "service": "服务",
                 "replicas": "副本",
                 "ports": "端口"
+            },
+            "detail": {
+                "back": "返回服务",
+                "scale": "扩缩容",
+                "scaleSubtitle": "为 {{name}} 设置目标副本数",
+                "serviceId": "服务 ID",
+                "mode": "模式",
+                "env": "环境变量",
+                "noEnv": "未设置环境变量。",
+                "labels": "标签",
+                "noLabels": "未设置标签。",
+                "noSecrets": "未绑定任何密钥。",
+                "noConfigs": "未绑定任何配置。",
+                "noTasks": "没有活动任务。",
+                "noNetworks": "未连接任何网络。",
+                "noPorts": "未发布任何端口。",
+                "mounts": "挂载",
+                "noMounts": "没有挂载。",
+                "mountSource": "源",
+                "mountTarget": "目标",
+                "mountMode": "模式",
+                "notFound": "未找到该服务。",
+                "editUnsupported": "暂不支持就地编辑服务 — 请使用下方的 Redeploy/Rollback/Scale，或删除后通过其所属环境重新部署。",
+                "confirmRemove": "删除服务 \"{{name}}\"？",
+                "toastNothingToRedeploy": "\"{{name}}\" 的副本数为 0 — 没有可以 redeploy 的内容。请先使用\"扩缩容\"将其启动。",
+                "toastRedeploying": "正在 redeploy \"{{name}}\"…任务将在几秒内重启。",
+                "toastRolledBack": "\"{{name}}\" 已回滚到上一版本。",
+                "toastScaled": "已将 \"{{name}}\" 扩缩容至 {{replicas}} 个副本。",
+                "toastRemoved": "服务 \"{{name}}\" 已删除。",
+                "redeployFailed": "Redeploy 失败。",
+                "rollbackFailed": "Rollback 失败。",
+                "scaleFailed": "扩缩容失败。",
+                "removeFailed": "删除失败。"
             }
         },
         "tasks": {
@@ -156,6 +232,13 @@
                 "node": "节点",
                 "cpu": "CPU",
                 "memory": "内存"
+            },
+            "detail": {
+                "back": "返回任务",
+                "on": "节点:",
+                "desiredState": "目标状态",
+                "statusMessage": "状态消息",
+                "notFound": "未找到该任务。"
             }
         },
         "nodes": {
@@ -170,6 +253,14 @@
                 "cpu": "CPU",
                 "memory": "内存",
                 "disk": "磁盘"
+            },
+            "actions": {
+                "title": "操作",
+                "drain": "腾空",
+                "activate": "激活",
+                "toastDrained": "“{{name}}” 正在腾空 — 不会再向其调度新任务。",
+                "toastActivated": "“{{name}}” 已重新激活并可接受任务。",
+                "failed": "无法更新节点可用性。"
             }
         },
         "networks": {
@@ -182,11 +273,25 @@
         },
         "secrets": {
             "countSuffix": "个凭据已存储",
-            "add": "新建凭据"
+            "add": "新建凭据",
+            "view": "查看详情",
+            "modal": {
+                "subtitle": "凭据详情",
+                "id": "凭据 ID",
+                "created": "创建时间",
+                "updated": "最后更新",
+                "writeOnlyNotice": "Docker 凭据是只写的 — 设计上创建后无法再获取其值。要轮换凭据，请删除后重新创建。"
+            }
         },
         "configs": {
             "countSuffix": "个配置已存储",
-            "add": "新建配置"
+            "add": "新建配置",
+            "view": "查看内容",
+            "modal": {
+                "subtitle": "配置文件内容",
+                "loading": "加载中…",
+                "empty": "（空）"
+            }
         },
         "registries": {
             "countSuffix": "个镜像仓库已连接",
@@ -194,7 +299,14 @@
             "columns": {
                 "registry": "镜像仓库",
                 "authUser": "认证用户"
-            }
+            },
+            "setDefault": "设为默认",
+            "remove": "删除",
+            "confirmRemove": "删除镜像仓库 \"{{name}}\"？",
+            "toastSetDefault": "\"{{name}}\" 现已设为默认镜像仓库。",
+            "toastRemoved": "镜像仓库 \"{{name}}\" 已删除。",
+            "setDefaultFailed": "无法设置默认镜像仓库。",
+            "removeFailed": "删除失败。"
         }
     },
     "users": {

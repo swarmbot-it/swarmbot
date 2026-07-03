@@ -10,6 +10,8 @@ import { TranslocoPipe, TranslocoService } from "@jsverse/transloco";
 import { QUERY_SERVICES } from "../../core/graphql.queries";
 import { I18nStateService } from "../../core/i18n/i18n-state.service";
 import { translatedColumns } from "../../core/i18n/page-columns.helper";
+import { AuthService } from "../../core/auth.service";
+import { Router } from "@angular/router";
 
 type ServiceRow = {
 	id: string;
@@ -39,7 +41,7 @@ type ServiceRow = {
 						{{ "pages.services.countSuffix" | transloco }}
 					</div>
 				</div>
-				<button class="btn btn--primary" (click)="createRequested.emit()">
+				<button *ngIf="auth.isEditor()" class="btn btn--primary" (click)="createRequested.emit()">
 					<sb-icon name="plus" [size]="16"></sb-icon>
 					{{ "pages.services.add" | transloco }}
 				</button>
@@ -48,6 +50,7 @@ type ServiceRow = {
 				[columns]="cols()"
 				[rows]="rows"
 				[searchKeys]="['name', 'image', 'stack', 'status']"
+				(rowClick)="open($event.id)"
 			>
 				<ng-template #cell let-row let-key="key">
 					<ng-container [ngSwitch]="key">
@@ -138,6 +141,12 @@ export class ServicesPageComponent {
 	private readonly apollo = inject(Apollo);
 	private readonly transloco = inject(TranslocoService);
 	private readonly i18n = inject(I18nStateService);
+	private readonly router = inject(Router);
+	readonly auth = inject(AuthService);
+
+	open(id: string): void {
+		this.router.navigate(["/app/services", id]);
+	}
 
 	readonly cols = translatedColumns<ServiceRow>(this.transloco, this.i18n.activeLang, [
 		{

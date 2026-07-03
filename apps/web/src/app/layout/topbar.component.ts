@@ -5,6 +5,7 @@ import {
 	HostListener,
 	inject,
 	computed,
+	signal,
 } from "@angular/core";
 import { NgFor, NgIf } from "@angular/common";
 import { Router } from "@angular/router";
@@ -16,6 +17,8 @@ import { I18nStateService } from "../core/i18n/i18n-state.service";
 import { type LangCode, isLangCode } from "../core/i18n/i18n-languages";
 import { LogoComponent } from "../shared/logo.component";
 import { IconComponent } from "../shared/icon.component";
+import { ApiTokenModalComponent } from "../shared/api-token-modal.component";
+import { NotificationsComponent } from "../shared/notifications.component";
 
 const LOGOUT = gql`
 	mutation Logout {
@@ -77,13 +80,7 @@ const CJK_LANGS: { code: LangCode; label: string }[] = [
 				</button>
 			</div>
 
-			<button
-				class="btn btn--ghost btn--icon topbar__bell"
-				[title]="'topbar.notifications' | transloco"
-			>
-				<sb-icon name="bell" [size]="18"></sb-icon>
-				<span class="topbar__bell-dot"></span>
-			</button>
+			<sb-notifications></sb-notifications>
 
 			<div #anchor class="topbar__user-anchor">
 				<div class="topbar__user" (click)="toggle()">
@@ -104,6 +101,10 @@ const CJK_LANGS: { code: LangCode; label: string }[] = [
 					<div class="popover__item" (click)="goToProfile()">
 						<sb-icon name="user" [size]="15"></sb-icon
 						><span>{{ "topbar.profile" | transloco }}</span>
+					</div>
+					<div class="popover__item" (click)="openApiTokens()">
+						<sb-icon name="keys" [size]="15"></sb-icon
+						><span>{{ "topbar.apiTokens" | transloco }}</span>
 					</div>
 					<div class="popover__divider"></div>
 
@@ -163,6 +164,11 @@ const CJK_LANGS: { code: LangCode; label: string }[] = [
 					</div>
 				</div>
 			</div>
+
+			<sb-api-token-modal
+				[open]="apiTokenModalOpen()"
+				(close)="closeApiTokens()"
+			></sb-api-token-modal>
 		</header>
 	`,
 	styles: [
@@ -408,7 +414,15 @@ const CJK_LANGS: { code: LangCode; label: string }[] = [
 			}
 		`,
 	],
-	imports: [NgIf, NgFor, LogoComponent, IconComponent, TranslocoPipe],
+	imports: [
+		NgIf,
+		NgFor,
+		LogoComponent,
+		IconComponent,
+		TranslocoPipe,
+		ApiTokenModalComponent,
+		NotificationsComponent,
+	],
 })
 export class TopbarComponent {
 	readonly theme = inject(ThemeService);
@@ -422,6 +436,8 @@ export class TopbarComponent {
 
 	menuOpen = false;
 	langOpen = false;
+
+	readonly apiTokenModalOpen = signal(false);
 
 	readonly currentLang = computed(() => {
 		const code = this.i18n.activeLang();
@@ -472,6 +488,15 @@ export class TopbarComponent {
 				.join("")
 				.toUpperCase() || "SB"
 		);
+	}
+
+	openApiTokens(): void {
+		this.menuOpen = false;
+		this.apiTokenModalOpen.set(true);
+	}
+
+	closeApiTokens(): void {
+		this.apiTokenModalOpen.set(false);
 	}
 
 	onLogout(): void {

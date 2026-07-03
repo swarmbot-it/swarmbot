@@ -145,6 +145,7 @@ describe("network/volume/task/stamped mappers", () => {
 			name: "n",
 			created: "2026-01-01T00:00:00Z",
 			updated: "2026-02-01T00:00:00Z",
+			stack: null,
 		});
 	});
 });

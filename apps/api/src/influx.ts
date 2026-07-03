@@ -1,6 +1,6 @@
 ﻿import type { SwarmbotyConfig } from "./config.js";
 
-function authHeaders(cfg: SwarmbotyConfig): Record<string, string> {
+export function authHeaders(cfg: SwarmbotyConfig): Record<string, string> {
 	return cfg.influxdbToken ? { Authorization: `Token ${cfg.influxdbToken}` } : {};
 }
 

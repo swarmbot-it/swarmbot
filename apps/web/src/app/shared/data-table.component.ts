@@ -2,9 +2,12 @@ import {
 	ChangeDetectionStrategy,
 	Component,
 	ContentChild,
+	EventEmitter,
 	Input,
+	Output,
 	TemplateRef,
 	computed,
+	input,
 	signal,
 } from "@angular/core";
 import { NgFor, NgIf, NgTemplateOutlet } from "@angular/common";
@@ -53,10 +56,10 @@ export type ColumnDef<R = Record<string, unknown>> = {
 				[ngModel]="query()"
 				(ngModelChange)="query.set($event)"
 			/>
-			<span *ngIf="query() && rows" class="dt-toolbar__count">
+			<span *ngIf="query() && rows()" class="dt-toolbar__count">
 				{{
 					"table.count"
-						| transloco: { filtered: filteredRows().length, total: rows.length }
+						| transloco: { filtered: filteredRows().length, total: rows().length }
 				}}
 			</span>
 			<span class="dt-toolbar__spacer"></span>
@@ -81,7 +84,7 @@ export type ColumnDef<R = Record<string, unknown>> = {
 				<ng-template pTemplate="header">
 					<tr>
 						<th
-							*ngFor="let c of columns"
+							*ngFor="let c of columns()"
 							[pSortableColumn]="c.sortable === false ? undefined : c.key"
 							[style.text-align]="c.align ?? 'left'"
 							[style.width]="widthOf(c)"
@@ -92,8 +95,8 @@ export type ColumnDef<R = Record<string, unknown>> = {
 					</tr>
 				</ng-template>
 				<ng-template pTemplate="body" let-row>
-					<tr>
-						<td *ngFor="let c of columns" [style.text-align]="c.align ?? 'left'">
+					<tr [class.dt-row--clickable]="rowClick.observed" (click)="rowClick.emit(row)">
+						<td *ngFor="let c of columns()" [style.text-align]="c.align ?? 'left'">
 							<ng-container
 								*ngIf="cellTemplate; else fallback"
 								[ngTemplateOutlet]="cellTemplate"
@@ -106,7 +109,7 @@ export type ColumnDef<R = Record<string, unknown>> = {
 				</ng-template>
 				<ng-template pTemplate="emptymessage">
 					<tr>
-						<td [attr.colspan]="columns.length" class="dt-empty">
+						<td [attr.colspan]="columns().length" class="dt-empty">
 							{{ emptyText || ("table.empty" | transloco) }}
 						</td>
 					</tr>
@@ -158,6 +161,9 @@ export type ColumnDef<R = Record<string, unknown>> = {
 			:host ::ng-deep .sb-table .p-datatable-tbody > tr:hover {
 				background: var(--surface-2);
 			}
+			:host ::ng-deep .sb-table .p-datatable-tbody > tr.dt-row--clickable {
+				cursor: pointer;
+			}
 			:host ::ng-deep .sb-table .p-paginator {
 				background: var(--surface-2);
 				border-color: var(--border);
@@ -179,8 +185,8 @@ export type ColumnDef<R = Record<string, unknown>> = {
 	imports: [NgFor, NgIf, NgTemplateOutlet, FormsModule, TableModule, TranslocoPipe],
 })
 export class DataTableComponent<R extends Record<string, unknown> = Record<string, unknown>> {
-	@Input() columns: ColumnDef<R>[] = [];
-	@Input() rows: R[] = [];
+	readonly columns = input<ColumnDef<R>[]>([]);
+	readonly rows = input<R[]>([]);
 	@Input() searchKeys?: (keyof R)[];
 	@Input() pageSize = 10;
 	@Input() searchable = true;
@@ -188,6 +194,9 @@ export class DataTableComponent<R extends Record<string, unknown> = Record<strin
 	@Input() searchPlaceholder = "";
 	/** Override empty-state text; defaults to `table.empty` via Transloco when empty. */
 	@Input() emptyText = "";
+
+	/** Emits the row data when a row is clicked anywhere (not just a specific cell). Rows get a pointer cursor once this has a subscriber. */
+	@Output() rowClick = new EventEmitter<R>();
 
 	@ContentChild("cell", { static: false })
 	cellTemplate?: TemplateRef<{ $implicit: R; row: R; key: string }>;
@@ -202,7 +211,7 @@ export class DataTableComponent<R extends Record<string, unknown> = Record<strin
 
 	filteredRows = computed(() => {
 		const q = this.query().trim().toLowerCase();
-		let rows: R[] = this.rows ?? [];
+		let rows: R[] = this.rows();
 		if (q && this.searchKeys && this.searchKeys.length) {
 			rows = rows.filter((r) =>
 				this.searchKeys!.some((k) => {
@@ -214,7 +223,7 @@ export class DataTableComponent<R extends Record<string, unknown> = Record<strin
 		const field = this.sortField();
 		const order = this.sortOrder();
 		if (!field) return rows;
-		const col = this.columns.find((c) => c.key === field);
+		const col = this.columns().find((c) => c.key === field);
 		const sortFn = col?.sortFn;
 		return [...rows].sort((a, b) => {
 			const av = sortFn ? sortFn(a) : (a as Record<string, unknown>)[field];

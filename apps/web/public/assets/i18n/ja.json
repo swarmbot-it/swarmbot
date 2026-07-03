@@ -61,7 +61,8 @@
         "continue": "続行",
         "default": "デフォルト",
         "type": "タイプ",
-        "user": "ユーザー"
+        "user": "ユーザー",
+        "loading": "読み込み中…"
     },
     "dashboard": {
         "title": "クラスタ概要",
@@ -111,7 +112,8 @@
         "task": "タスク",
         "node": "ノード",
         "replicas": "レプリカ",
-        "ports": "ポート"
+        "ports": "ポート",
+        "actions": "操作"
     },
     "status": {
         "RUNNING": "実行中",
@@ -125,6 +127,7 @@
         "REJECTED": "拒否",
         "COMPLETE": "完了",
         "SHUTDOWN": "シャットダウン",
+        "STOPPED": "停止",
         "UNKNOWN": "不明"
     },
     "pages": {
@@ -138,6 +141,46 @@
                 "volumes": "ボリューム",
                 "configs": "設定",
                 "secrets": "シークレット"
+            },
+            "detail": {
+                "countsSummary": "サービス {{services}} · ネットワーク {{networks}} · ボリューム {{volumes}} · 設定 {{configs}} · シークレット {{secrets}}",
+                "working": "処理中…",
+                "edit": "編集",
+                "editUnsupported": "環境をその場で編集することはまだサポートされていません — 下の Redeploy/Rollback/Deactivate を使うか、削除して新しい Compose ファイルをデプロイしてください。",
+                "redeploy": "Redeploy",
+                "redeployHint": "ローリング",
+                "rollback": "Rollback",
+                "rollbackHint": "前のspec",
+                "deactivate": "無効化",
+                "deactivateHint": "0にスケール",
+                "reactivate": "再有効化",
+                "reactivateHint": "1にスケール",
+                "delete": "削除",
+                "utilization": "環境の使用率",
+                "utilizationHint": "コンテナのCPUとメモリの集計 · InfluxDBより",
+                "noMetrics": "まだメトリクスがありません — エージェントは30秒ごとに統計を報告します。",
+                "diskHint": "コンテナ単位のディスク使用量はエージェントで収集されません（CPUとメモリのみ）",
+                "diskNotTracked": "環境単位では追跡されません",
+                "notFound": "環境が見つかりません。",
+                "noServices": "この環境にサービスはありません。",
+                "noNetworks": "接続されたネットワークはありません。",
+                "noVolumes": "接続されたボリュームはありません。",
+                "noConfigs": "マウントされた設定はありません。",
+                "noSecrets": "付与されたシークレットはありません。",
+                "stopped": "停止",
+                "stopping": "停止中…",
+                "confirmRemove": "環境「{{name}}」を削除しますか？すべてのサービス、ネットワーク、その他のリソースが削除されます。",
+                "toastNothingToRedeploy": "「{{name}}」はレプリカが0です — redeployするものがありません。先に「再有効化」を使用してください。",
+                "toastRedeploying": "「{{name}}」をredeployしています…タスクは数秒後に再起動します。",
+                "toastRolledBack": "「{{name}}」を前のspecにロールバックしました。",
+                "toastDeactivated": "環境「{{name}}」を無効化しました。",
+                "toastReactivated": "環境「{{name}}」を再有効化しました（レプリカ1にスケール）。",
+                "toastRemoved": "環境「{{name}}」を削除しました。",
+                "redeployFailed": "Redeployに失敗しました。",
+                "rollbackFailed": "Rollbackに失敗しました。",
+                "deactivateFailed": "無効化に失敗しました。",
+                "reactivateFailed": "再有効化に失敗しました。",
+                "removeFailed": "削除に失敗しました。"
             }
         },
         "services": {
@@ -147,6 +190,39 @@
                 "service": "サービス",
                 "replicas": "レプリカ",
                 "ports": "ポート"
+            },
+            "detail": {
+                "back": "サービスに戻る",
+                "scale": "スケール",
+                "scaleSubtitle": "{{name}} の目標レプリカ数を設定",
+                "serviceId": "サービスID",
+                "mode": "モード",
+                "env": "環境変数",
+                "noEnv": "環境変数は設定されていません。",
+                "labels": "ラベル",
+                "noLabels": "ラベルは設定されていません。",
+                "noSecrets": "バインドされたシークレットはありません。",
+                "noConfigs": "バインドされた設定はありません。",
+                "noTasks": "アクティブなタスクはありません。",
+                "noNetworks": "接続されたネットワークはありません。",
+                "noPorts": "公開されたポートはありません。",
+                "mounts": "マウント",
+                "noMounts": "マウントはありません。",
+                "mountSource": "ソース",
+                "mountTarget": "ターゲット",
+                "mountMode": "モード",
+                "notFound": "サービスが見つかりません。",
+                "editUnsupported": "サービスをその場で編集することはまだサポートされていません — 下の Redeploy/Rollback/Scale を使うか、削除してそのスタックから再デプロイしてください。",
+                "confirmRemove": "サービス「{{name}}」を削除しますか？",
+                "toastNothingToRedeploy": "「{{name}}」はレプリカが0です — redeployするものがありません。先に「スケール」で起動してください。",
+                "toastRedeploying": "「{{name}}」をredeployしています…タスクは数秒後に再起動します。",
+                "toastRolledBack": "「{{name}}」を前のspecにロールバックしました。",
+                "toastScaled": "「{{name}}」を{{replicas}}レプリカにスケールしました。",
+                "toastRemoved": "サービス「{{name}}」を削除しました。",
+                "redeployFailed": "Redeployに失敗しました。",
+                "rollbackFailed": "Rollbackに失敗しました。",
+                "scaleFailed": "スケーリングに失敗しました。",
+                "removeFailed": "削除に失敗しました。"
             }
         },
         "tasks": {
@@ -156,6 +232,13 @@
                 "node": "ノード",
                 "cpu": "CPU",
                 "memory": "メモリ"
+            },
+            "detail": {
+                "back": "タスクに戻る",
+                "on": "on",
+                "desiredState": "目標状態",
+                "statusMessage": "ステータスメッセージ",
+                "notFound": "タスクが見つかりません。"
             }
         },
         "nodes": {
@@ -170,6 +253,14 @@
                 "cpu": "CPU",
                 "memory": "メモリ",
                 "disk": "ディスク"
+            },
+            "actions": {
+                "title": "アクション",
+                "drain": "ドレイン",
+                "activate": "アクティブ化",
+                "toastDrained": "「{{name}}」はドレイン中です — 新しいタスクはそこにスケジュールされません。",
+                "toastActivated": "「{{name}}」は再びアクティブになり、タスクを受け付けています。",
+                "failed": "ノードの可用性を更新できませんでした。"
             }
         },
         "networks": {
@@ -182,11 +273,25 @@
         },
         "secrets": {
             "countSuffix": "シークレットを保存済み",
-            "add": "新しいシークレット"
+            "add": "新しいシークレット",
+            "view": "詳細を表示",
+            "modal": {
+                "subtitle": "シークレットの詳細",
+                "id": "シークレットID",
+                "created": "作成日時",
+                "updated": "最終更新",
+                "writeOnlyNotice": "Docker のシークレットは書き込み専用です — 仕様上、作成後は値を取得できません。ローテーションするには、シークレットを削除して再作成してください。"
+            }
         },
         "configs": {
             "countSuffix": "設定を保存済み",
-            "add": "新しい設定"
+            "add": "新しい設定",
+            "view": "内容を表示",
+            "modal": {
+                "subtitle": "設定ファイルの内容",
+                "loading": "読み込み中…",
+                "empty": "（空）"
+            }
         },
         "registries": {
             "countSuffix": "レジストリに接続済み",
@@ -194,7 +299,14 @@
             "columns": {
                 "registry": "レジストリ",
                 "authUser": "認証ユーザー"
-            }
+            },
+            "setDefault": "デフォルトに設定",
+            "remove": "削除",
+            "confirmRemove": "レジストリ「{{name}}」を削除しますか？",
+            "toastSetDefault": "「{{name}}」がデフォルトのレジストリになりました。",
+            "toastRemoved": "レジストリ「{{name}}」を削除しました。",
+            "setDefaultFailed": "デフォルトのレジストリを設定できませんでした。",
+            "removeFailed": "削除に失敗しました。"
         }
     },
     "users": {

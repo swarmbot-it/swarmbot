@@ -4,9 +4,9 @@ import { Apollo } from "apollo-angular";
 import { NgIf } from "@angular/common";
 import { form, FormField, required, minLength } from "@angular/forms/signals";
 import { TranslocoPipe, TranslocoService } from "@jsverse/transloco";
-import { AuthService } from "../../core/auth.service";
+import { AuthService, type Profile } from "../../core/auth.service";
 import { LogoComponent } from "../../shared/logo.component";
-import { MUTATION_LOGIN } from "../../core/graphql.queries";
+import { MUTATION_LOGIN, QUERY_PROFILE_ME } from "../../core/graphql.queries";
 
 /**
  * Standalone login screen. Authenticates via GraphQL and stores the JWT for the admin shell.
@@ -138,7 +138,17 @@ export class LoginPageComponent {
 					}
 					this.auth.setToken(token);
 					this.auth.setProfile({ username, name: username });
-					void this.router.navigateByUrl("/app/dashboard");
+					// Fetch the full profile (role included) so role-gated UI is correct from the first
+					// screen — a plain { username } profile would otherwise hide editor/admin actions.
+					this.apollo
+						.query<{ me: Profile | null }>({ query: QUERY_PROFILE_ME, fetchPolicy: "network-only" })
+						.subscribe({
+							next: (profileRes) => {
+								if (profileRes.data?.me) this.auth.setProfile(profileRes.data.me);
+								void this.router.navigateByUrl("/app/dashboard");
+							},
+							error: () => void this.router.navigateByUrl("/app/dashboard"),
+						});
 				},
 				error: () => {
 					this.error.set(this.transloco.translate("auth.login.failed"));

@@ -4,6 +4,7 @@ import { Apollo } from "apollo-angular";
 import { TranslocoPipe } from "@jsverse/transloco";
 import { map } from "rxjs/operators";
 import { Observable } from "rxjs";
+import { Router } from "@angular/router";
 import { DataTableComponent } from "../../shared/data-table.component";
 import { StatusBadgeComponent } from "../../shared/status-badge.component";
 import { IconComponent } from "../../shared/icon.component";
@@ -11,6 +12,7 @@ import { I18nStateService } from "../../core/i18n/i18n-state.service";
 import { translatedColumns } from "../../core/i18n/page-columns.helper";
 import { TranslocoService } from "@jsverse/transloco";
 import { QUERY_STACKS } from "../../core/graphql.queries";
+import { AuthService } from "../../core/auth.service";
 
 type Stack = {
 	name: string;
@@ -39,17 +41,17 @@ type Stack = {
 						{{ "pages.stacks.countSuffix" | transloco }}
 					</div>
 				</div>
-				<button class="btn btn--primary" (click)="createRequested.emit()">
+				<button *ngIf="auth.isEditor()" class="btn btn--primary" (click)="createRequested.emit()">
 					<sb-icon name="plus" [size]="16"></sb-icon>
 					{{ "pages.stacks.add" | transloco }}
 				</button>
 			</div>
-			<sb-data-table [columns]="cols()" [rows]="rows" [searchKeys]="['name', 'status']">
+			<sb-data-table [columns]="cols()" [rows]="rows" [searchKeys]="['name', 'status']" (rowClick)="open($event.name)">
 				<ng-template #cell let-row let-key="key">
 					<ng-container [ngSwitch]="key">
 						<span
 							*ngSwitchCase="'name'"
-							style="display:inline-flex; align-items:center; gap:10px;"
+							style="display:inline-flex; align-items:center; gap:10px"
 						>
 							<sb-icon name="stacks" [size]="16"></sb-icon>
 							<strong>{{ row.name }}</strong>
@@ -83,6 +85,12 @@ export class StacksPageComponent {
 	private readonly apollo = inject(Apollo);
 	private readonly transloco = inject(TranslocoService);
 	private readonly i18n = inject(I18nStateService);
+	private readonly router = inject(Router);
+	readonly auth = inject(AuthService);
+
+	open(name: string): void {
+		this.router.navigate(["/app/stacks", name]);
+	}
 
 	readonly cols = translatedColumns<Stack>(this.transloco, this.i18n.activeLang, [
 		{ key: "name", labelKey: "pages.stacks.columns.stack" },

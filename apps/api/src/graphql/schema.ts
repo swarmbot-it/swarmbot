@@ -22,6 +22,8 @@ export const typeDefs = `#graphql
     services: [ServiceSummary!]!
     service(id: ID!): ServiceDetail
     tasks: [TaskInfo!]!
+    task(id: ID!): TaskInfo
+    taskStats(id: ID!, range: String): StackMetrics!
 
     nodes: [NodeSummary!]!
     networks: [NetworkInfo!]!
@@ -35,6 +37,8 @@ export const typeDefs = `#graphql
 
     metricsSeries(input: MetricsSeriesInput!): MetricsSeries!
     statsSeries(measurement: String!, field: String!, tags: String): String
+    recentActivity(limit: Int): [ActivityItem!]!
+    stackStats(name: String!, range: String): StackMetrics!
   }
 
   type Mutation {
@@ -45,9 +49,16 @@ export const typeDefs = `#graphql
 
     createStack(input: StackInput!): StackSummary!
     removeStack(name: String!): Boolean!
+    redeployStack(name: String!): Boolean!
+    rollbackStack(name: String!): Boolean!
+    deactivateStack(name: String!): Boolean!
+    reactivateStack(name: String!): Boolean!
 
     createService(input: ServiceInput!): ServiceSummary!
     removeService(id: ID!): Boolean!
+    redeployService(id: ID!): Boolean!
+    rollbackService(id: ID!): Boolean!
+    scaleService(id: ID!, replicas: Int!): Boolean!
 
     createNetwork(input: NetworkInput!): NetworkInfo!
     removeNetwork(id: ID!): Boolean!
@@ -63,6 +74,9 @@ export const typeDefs = `#graphql
 
     createRegistry(input: RegistryInput!): Registry!
     removeRegistry(id: ID!): Boolean!
+    setDefaultRegistry(id: ID!): Registry!
+
+    setNodeAvailability(id: ID!, availability: String!): NodeSummary!
 
     createUser(input: UserInput!): UserAccount!
     removeUser(id: ID!): Boolean!
@@ -96,15 +110,22 @@ export const typeDefs = `#graphql
     role: String!
     created: String
     lastLogin: String
+    apiTokenMask: String
+    apiTokenExpiresAt: String
   }
 
   type ClusterOverview {
     nodes: Int!
     managers: Int!
+    managersReachable: Int!
     workers: Int!
     stacks: Int!
+    stacksDelta: String
     services: Int!
+    servicesDelta: String
     tasks: Int!
+    tasksRunning: Int!
+    tasksDelta: String
     networks: Int!
     volumes: Int!
     secrets: Int!
@@ -152,6 +173,27 @@ export const typeDefs = `#graphql
     ports: [String!]!
     status: String!
     stack: String
+    mode: String
+    created: String
+    updated: String
+    env: [String!]!
+    labels: [LabelPair!]!
+    networks: [String!]!
+    mounts: [MountInfo!]!
+    secrets: [String!]!
+    configs: [String!]!
+  }
+
+  type LabelPair {
+    k: String!
+    v: String!
+  }
+
+  type MountInfo {
+    type: String!
+    source: String
+    target: String!
+    readOnly: Boolean!
   }
 
   type TaskInfo {
@@ -165,6 +207,10 @@ export const typeDefs = `#graphql
     status: String!
     cpuSeries: [Float!]!
     memSeries: [Float!]!
+    serviceName: String
+    nodeHostname: String
+    desiredState: String
+    message: String
   }
 
   type NodeSummary {
@@ -190,6 +236,7 @@ export const typeDefs = `#graphql
     attachable: Boolean!
     internal: Boolean!
     ingress: Boolean!
+    stack: String
   }
 
   type VolumeInfo {
@@ -197,6 +244,7 @@ export const typeDefs = `#graphql
     driver: String!
     size: String!
     mountpoint: String
+    stack: String
   }
 
   type SecretInfo {
@@ -204,6 +252,7 @@ export const typeDefs = `#graphql
     name: String!
     created: String!
     updated: String!
+    stack: String
   }
 
   type ConfigInfo {
@@ -211,6 +260,8 @@ export const typeDefs = `#graphql
     name: String!
     created: String!
     updated: String!
+    stack: String
+    content: String
   }
 
   type Registry {
@@ -328,5 +379,16 @@ export const typeDefs = `#graphql
   input ChangePasswordInput {
     current: String!
     next: String!
+  }
+
+  type ActivityItem {
+    time: String!
+    summary: String!
+  }
+
+  type StackMetrics {
+    labels: [String!]!
+    cpu: [Float!]!
+    mem: [Float!]!
   }
 `;
