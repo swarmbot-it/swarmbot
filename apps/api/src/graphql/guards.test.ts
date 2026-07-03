@@ -16,6 +16,7 @@ function ctx(
 		docker: createDocker({ ...loadConfig(), mock: true }),
 		user,
 		locale,
+		ip: "127.0.0.1",
 	};
 }
 

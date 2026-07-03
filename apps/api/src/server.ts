@@ -57,7 +57,8 @@ export async function createHttpServer(
 				const locale = localeFromHeader(
 					typeof langHeader === "string" ? langHeader : undefined
 				);
-				const base: GraphQLContext = { cfg, couchDb, docker, user: undefined, locale };
+				const ip = ctx.extra.request.socket.remoteAddress ?? "unknown";
+				const base: GraphQLContext = { cfg, couchDb, docker, user: undefined, locale, ip };
 				if (!auth || typeof auth !== "string") {
 					return base;
 				}

@@ -3,7 +3,7 @@ import { randomUUID } from "crypto";
 import type nano from "nano";
 import type { SwarmbotyConfig } from "./config.js";
 import * as couch from "./couch.js";
-import { createSecret, db, recordMigration, migrationsDone, findDocs, updateDoc } from "./couch.js";
+import { createSecret, db, recordMigration, migrationsDone } from "./couch.js";
 import { influxPing, createDatabase } from "./influx.js";
 
 async function waitFor(name: string, maxSec: number, fn: () => Promise<boolean>): Promise<void> {
@@ -77,16 +77,14 @@ export async function initCouch(
 	});
 	done = await migrationsDone(d);
 
+	// No-op: this used to rename "dockeruser"->"dockerhub" and "registry"->"v2",
+	// but "registry" is the current live discriminator used by store/registries.ts
+	// (listRegistries/createRegistry/etc. all query type:"registry"). If this ever
+	// ran again against real data it would silently make every registry invisible.
+	// Kept as a recorded no-op so the migration-done bookkeeping stays consistent
+	// across already-migrated and fresh installs.
 	await runMigration(d, done, "change-reg-types", async () => {
-		const dockerusers = await findDocs(d, "dockeruser", {});
-		for (const doc of dockerusers) {
-			await updateDoc(d, doc, { type: "dockerhub" });
-		}
-		const registries = await findDocs(d, "registry", {});
-		for (const doc of registries) {
-			await updateDoc(d, doc, { type: "v2" });
-		}
-		console.log("Change reg types finished");
+		console.log("Change reg types finished (no-op)");
 	});
 
 	return d;
