@@ -98,6 +98,14 @@
                     "options": {
                         "lintFilePatterns": ["src/**/*.ts", "src/**/*.html"]
                     }
+                },
+                "test": {
+                    "builder": "@angular/build:unit-test",
+                    "options": {
+                        "runner": "vitest",
+                        "buildTarget": "::development",
+                        "runnerConfig": true
+                    }
                 }
             }
         }

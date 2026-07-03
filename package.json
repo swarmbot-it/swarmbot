@@ -11,7 +11,7 @@
         "dev:web": "npm run start -w web",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
-        "test": "npm run test -w @swarmboty/api",
+        "test": "npm run test -w @swarmboty/api && npm run test -w web",
         "test:e2e": "npm run test:e2e -w web",
         "test:coverage": "npm run test:coverage -w @swarmboty/api",
         "test:all": "npm run test && npm run test:e2e",
