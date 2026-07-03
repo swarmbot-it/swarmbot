@@ -225,6 +225,10 @@ export async function createHttpServer(
 
 	app.post("/events", bodyParser.json({ limit: "2mb" }), (req, res) => {
 		const locale = localeFromHeader(req.headers["accept-language"]);
+		if (cfg.agentSharedSecret && req.headers["x-agent-token"] !== cfg.agentSharedSecret) {
+			res.status(401).json({ error: localizedMessage(locale, "errors.unauthenticated") });
+			return;
+		}
 		if (!req.body) {
 			res.status(400).json({ error: localizedMessage(locale, "errors.noDataSent") });
 			return;

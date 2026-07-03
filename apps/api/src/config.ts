@@ -28,6 +28,8 @@ export type SwarmbotyConfig = {
 	mock: boolean;
 	/** Allowed CORS origins. Undefined -> the dev-safe default list in server.ts. */
 	allowedOrigins: string[] | undefined;
+	/** Shared secret required from swarmagent as X-Agent-Token on POST /events. Unset = no auth enforced (opt-in). */
+	agentSharedSecret: string | undefined;
 };
 
 const defaults: SwarmbotyConfig = {
@@ -45,6 +47,7 @@ const defaults: SwarmbotyConfig = {
 	port: 8080,
 	mock: false,
 	allowedOrigins: undefined,
+	agentSharedSecret: undefined,
 };
 
 let dynamicDockerApi: string | undefined;
@@ -87,5 +90,6 @@ export function loadConfig(): SwarmbotyConfig {
 			?.split(",")
 			.map((s) => s.trim())
 			.filter(Boolean),
+		agentSharedSecret: envStr("SWARMAGENT_SHARED_SECRET"),
 	};
 }
