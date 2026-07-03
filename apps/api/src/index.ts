@@ -5,6 +5,7 @@ import { createHttpServer } from "./server.js";
 import { bootstrapAdminIfEmpty, initUsersFromConfig } from "./users/bootstrap.js";
 import { seedDefaultRegistries } from "./store/registries.js";
 import { seedDemoUsers } from "./store/users.js";
+import { logger } from "./logger.js";
 
 /** Strips embedded userinfo (`user:pass@`) so connection strings are safe to log. */
 function redactCredentials(url: string): string {
@@ -20,8 +21,9 @@ function redactCredentials(url: string): string {
 
 async function main(): Promise<void> {
 	const cfg0 = loadConfig();
-	console.log(
-		`Starting Swarmboty (mock=${cfg0.mock}, db=${redactCredentials(cfg0.dbUrl)}, port=${cfg0.port})`
+	logger.info(
+		{ mock: cfg0.mock, db: redactCredentials(cfg0.dbUrl), port: cfg0.port },
+		"Starting Swarmboty"
 	);
 	const couchServer = createCouch(cfg0);
 	const couchDb = await initCouch(cfg0, couchServer);
@@ -38,7 +40,7 @@ async function main(): Promise<void> {
 		httpServer.once("error", reject);
 		httpServer.listen(cfg.port, () => {
 			httpServer.off("error", reject);
-			console.log(`Swarmboty listening on http://0.0.0.0:${cfg.port}`);
+			logger.info({ port: cfg.port }, "Swarmboty listening");
 			resolve();
 		});
 	});
@@ -51,6 +53,6 @@ async function main(): Promise<void> {
 }
 
 main().catch((e) => {
-	console.error(e);
+	logger.error({ err: e }, "Swarmboty failed to start");
 	process.exit(1);
 });

@@ -1,19 +1,20 @@
-﻿import { setTimeout as delay } from "timers/promises";
+import { setTimeout as delay } from "timers/promises";
 import { randomUUID } from "crypto";
 import type nano from "nano";
 import type { SwarmbotyConfig } from "./config.js";
 import * as couch from "./couch.js";
 import { createSecret, db, recordMigration, migrationsDone } from "./couch.js";
 import { influxPing, createDatabase } from "./influx.js";
+import { logger } from "./logger.js";
 
 async function waitFor(name: string, maxSec: number, fn: () => Promise<boolean>): Promise<void> {
 	for (let i = 0; i < maxSec; i++) {
 		if (i === 0 || i % 10 === 0) {
-			console.log(`Waiting for ${name}… (${i}/${maxSec}s)`);
+			logger.info({ service: name, attempt: i, maxSec }, `Waiting for ${name}…`);
 		}
 		try {
 			if (await fn()) {
-				console.log(`${name} connected after ${i}s`);
+				logger.info({ service: name, afterSec: i }, `${name} connected`);
 				return;
 			}
 		} catch {
@@ -55,9 +56,9 @@ export async function initCouch(
 
 	if (!(await couch.databaseExists(server))) {
 		await couch.createDatabase(server);
-		console.log("Swarmboty DB created");
+		logger.info("Swarmboty DB created");
 	} else {
-		console.log("Swarmboty DB already exists");
+		logger.info("Swarmboty DB already exists");
 	}
 
 	const d = db(server);
@@ -67,13 +68,13 @@ export async function initCouch(
 		const sec = await couch.getSecret(d);
 		if (!sec?.secret) {
 			await createSecret(d, randomUUID());
-			console.log("Default token secret created");
+			logger.info("Default token secret created");
 		}
 	});
 	done = await migrationsDone(d);
 
 	await runMigration(d, done, "single-node-setup", async () => {
-		console.log("Single node setup finished");
+		logger.info("Single node setup finished");
 	});
 	done = await migrationsDone(d);
 
@@ -84,7 +85,7 @@ export async function initCouch(
 	// Kept as a recorded no-op so the migration-done bookkeeping stays consistent
 	// across already-migrated and fresh installs.
 	await runMigration(d, done, "change-reg-types", async () => {
-		console.log("Change reg types finished (no-op)");
+		logger.info("Change reg types finished (no-op)");
 	});
 
 	return d;
@@ -92,14 +93,14 @@ export async function initCouch(
 
 export async function initInflux(cfg: SwarmbotyConfig): Promise<void> {
 	if (!cfg.influxdbUrl) {
-		console.log("InfluxDB not configured, stats disabled");
+		logger.info("InfluxDB not configured, stats disabled");
 		return;
 	}
 	try {
 		await waitFor("InfluxDB", 100, () => influxPing(cfg.influxdbUrl!));
 		await createDatabase(cfg);
-		console.log("InfluxDB database ready (minimal init)");
+		logger.info("InfluxDB database ready (minimal init)");
 	} catch (e) {
-		console.warn("InfluxDB init failed, stats disabled:", e);
+		logger.warn({ err: e }, "InfluxDB init failed, stats disabled");
 	}
 }

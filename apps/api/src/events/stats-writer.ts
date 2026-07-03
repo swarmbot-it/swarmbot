@@ -1,5 +1,6 @@
 import type { SwarmbotyConfig } from "../config.js";
 import { authHeaders } from "../influx.js";
+import { logger } from "../logger.js";
 
 /**
  * Shape of the periodic "stats" event posted by swarmagent to `/events`
@@ -69,6 +70,17 @@ export function startStatsWriter(cfg: SwarmbotyConfig): (event: Record<string, u
 
 		if (lines.length === 0) return;
 		const body = lines.join("\n");
-		fetch(writeUrl, { method: "POST", body, headers: authHeaders(cfg) }).catch(() => {});
+		fetch(writeUrl, { method: "POST", body, headers: authHeaders(cfg) })
+			.then(async (res) => {
+				if (!res.ok) {
+					logger.warn(
+						{ status: res.status, body: await res.text().catch(() => "") },
+						"InfluxDB stats write rejected"
+					);
+				}
+			})
+			.catch((err) => {
+				logger.warn({ err }, "InfluxDB stats write failed");
+			});
 	};
 }

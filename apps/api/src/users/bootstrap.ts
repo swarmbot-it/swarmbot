@@ -3,6 +3,7 @@ import { insertDoc, users as listUsers, type CouchDoc } from "../couch.js";
 import type nano from "nano";
 import { derivePassword } from "../auth/password.js";
 import yaml from "js-yaml";
+import { logger } from "../logger.js";
 
 export async function initUsersFromConfig(couchDb: nano.DocumentScope<CouchDoc>): Promise<void> {
 	const path = process.env.SWARMBOTY_USERS_CONFIG ?? "/run/configs/users.yaml";
@@ -32,7 +33,7 @@ export async function initUsersFromConfig(couchDb: nano.DocumentScope<CouchDoc>)
 				email: (u.email as string) ?? "",
 				role: (u.role as string) ?? "user",
 			});
-			console.log("Created user from config:", username);
+			logger.info({ username }, "Created user from config");
 		}
 	} catch {
 		/* file missing is OK */
@@ -49,7 +50,7 @@ export async function bootstrapAdminIfEmpty(
 	const u = process.env.SWARMBOTY_BOOTSTRAP_ADMIN ?? (mock ? "admin" : undefined);
 	const p = process.env.SWARMBOTY_BOOTSTRAP_PASSWORD ?? (mock ? "swarmboty" : undefined);
 	if (!u || !p) {
-		console.warn(
+		logger.warn(
 			"No users in database. Set SWARMBOTY_BOOTSTRAP_ADMIN and SWARMBOTY_BOOTSTRAP_PASSWORD or mount users.yaml."
 		);
 		return;
@@ -61,5 +62,5 @@ export async function bootstrapAdminIfEmpty(
 		email: mock ? "admin@swarmboty.local" : "",
 		role: "admin",
 	});
-	console.log("Bootstrap admin user created:", u);
+	logger.info({ username: u }, "Bootstrap admin user created");
 }
