@@ -2,6 +2,7 @@
     "errors.unauthenticated": "Unauthorized",
     "errors.forbidden": "Forbidden",
     "errors.invalidCredentials": "The username or password you entered is incorrect.",
+    "errors.tooManyAttempts": "Too many login attempts. Please wait a minute and try again.",
     "errors.userNotFound": "User not found",
     "errors.serverMisconfigured": "Server misconfigured",
     "errors.missingToken": "Missing token",

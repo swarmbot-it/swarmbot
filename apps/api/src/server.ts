@@ -19,6 +19,7 @@ import type { AuthedRequest } from "./http/optional-jwt.js";
 import { optionalJwtMiddleware } from "./http/optional-jwt.js";
 import { userByUsername, updateDoc, getSecret, type CouchDoc } from "./couch.js";
 import { decodeBasic, generateJwt, verifyJwt } from "./auth/jwt.js";
+import { allowAttempt } from "./auth/rate-limit.js";
 import { verifyPassword, derivePassword, isSha256Digest } from "./auth/password.js";
 import { revokeJti } from "./auth/blacklist.js";
 import { createDocker, setupDockerApi } from "./docker/engine.js";
@@ -142,6 +143,10 @@ export async function createHttpServer(
 				return;
 			}
 			const { username, password } = decodeBasic(auth);
+			if (!allowAttempt(`${req.ip}:${username.toLowerCase()}`)) {
+				res.status(429).json({ error: localizedMessage(locale, "errors.tooManyAttempts") });
+				return;
+			}
 			const u = await userByUsername(couchDb, username);
 			if (!u || typeof u.password !== "string") {
 				res.status(401).json({

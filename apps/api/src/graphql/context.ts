@@ -12,6 +12,7 @@ export type GraphQLContext = {
 	docker: Dockerode;
 	user: JwtClaims | undefined;
 	locale: SupportedLocale;
+	ip: string;
 };
 
 export function buildContext(
@@ -26,6 +27,7 @@ export function buildContext(
 		docker,
 		user: req.swarmUser,
 		locale: parseAcceptLanguage(req.headers["accept-language"]),
+		ip: req.ip ?? "unknown",
 	};
 }
 

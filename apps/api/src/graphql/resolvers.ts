@@ -3,6 +3,7 @@ import { requireUser, requireAdmin, requireEditor } from "./guards.js";
 import { localizedError } from "../i18n/errors.js";
 import { getSecret, userByUsername, updateDoc, findOne, type CouchDoc } from "../couch.js";
 import { decryptAtRest } from "../crypto/secret-box.js";
+import { allowAttempt } from "../auth/rate-limit.js";
 import { generateJwt } from "../auth/jwt.js";
 import { verifyPassword, derivePassword, isSha256Digest } from "../auth/password.js";
 import { revokeJti } from "../auth/blacklist.js";
@@ -688,6 +689,9 @@ export const resolvers = {
 			{ username, password }: { username: string; password: string },
 			ctx: GraphQLContext
 		) => {
+			if (!allowAttempt(`${ctx.ip}:${username.toLowerCase()}`)) {
+				throw localizedError(ctx.locale, "errors.tooManyAttempts", "TOO_MANY_ATTEMPTS");
+			}
 			const u = await userByUsername(ctx.couchDb, username);
 			if (!u || typeof u.password !== "string") {
 				throw localizedError(
