@@ -1,6 +1,7 @@
 ﻿import type nano from "nano";
 import { randomUUID } from "crypto";
 import { findDocs, insertDoc, updateDoc, type CouchDoc } from "../couch.js";
+import { encryptAtRest } from "../crypto/secret-box.js";
 
 /**
  * CouchDB-backed store for SwarmBoty registry credentials.
@@ -68,7 +69,7 @@ export async function createRegistry(
 		url: input.url,
 		registryType: input.type,
 		user: input.user ?? "",
-		password: input.password ?? "",
+		password: await encryptAtRest(db, input.password ?? ""),
 		default: Boolean(input.default),
 	};
 	const inserted = (await insertDoc(db, doc)) as RegistryDoc;

@@ -2,6 +2,7 @@
 import { requireUser, requireAdmin, requireEditor } from "./guards.js";
 import { localizedError } from "../i18n/errors.js";
 import { getSecret, userByUsername, updateDoc, findOne, type CouchDoc } from "../couch.js";
+import { decryptAtRest } from "../crypto/secret-box.js";
 import { generateJwt } from "../auth/jwt.js";
 import { verifyPassword, derivePassword, isSha256Digest } from "../auth/password.js";
 import { revokeJti } from "../auth/blacklist.js";
@@ -879,7 +880,11 @@ export const resolvers = {
 				| (CouchDoc & { url?: string; user?: string; password?: string })
 				| undefined;
 			const authconfig = registryDoc?.user
-				? { username: registryDoc.user, password: registryDoc.password ?? "", serveraddress: registryDoc.url ?? "" }
+				? {
+						username: registryDoc.user,
+						password: await decryptAtRest(ctx.couchDb, registryDoc.password),
+						serveraddress: registryDoc.url ?? "",
+					}
 				: undefined;
 			const ports = (input.ports ?? []).map((p) => {
 				const [hostRaw, containerRaw] = p.split(":");
