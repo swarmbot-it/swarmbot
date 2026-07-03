@@ -95,7 +95,28 @@ export async function createHttpServer(
 	});
 	await apollo.start();
 
-	app.use(cors({ origin: true, credentials: true }));
+	// Reflecting any Origin with credentials:true (the old behavior) lets any
+	// third-party page call this API using a victim's browser session. Restrict
+	// to an explicit allowlist; SWARMBOTY_ALLOWED_ORIGINS overrides the dev defaults.
+	const DEV_DEFAULT_ORIGINS = [
+		"http://localhost:4200",
+		"http://localhost:8080",
+		"http://localhost:8081",
+	];
+	const allowedOrigins = cfg.allowedOrigins ?? DEV_DEFAULT_ORIGINS;
+	app.use(
+		cors({
+			origin(origin, callback) {
+				// No Origin header (curl, server-to-server, same-origin in some browsers) — allow.
+				if (!origin || allowedOrigins.includes(origin)) {
+					callback(null, true);
+					return;
+				}
+				callback(new Error("Not allowed by CORS"));
+			},
+			credentials: true,
+		})
+	);
 	app.use(optionalJwtMiddleware(couchDb));
 
 	app.get("/health", (_req, res) => {

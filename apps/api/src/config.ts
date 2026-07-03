@@ -26,6 +26,8 @@ export type SwarmbotyConfig = {
 	apiTokenExpiryDays: number | undefined;
 	port: number;
 	mock: boolean;
+	/** Allowed CORS origins. Undefined -> the dev-safe default list in server.ts. */
+	allowedOrigins: string[] | undefined;
 };
 
 const defaults: SwarmbotyConfig = {
@@ -42,6 +44,7 @@ const defaults: SwarmbotyConfig = {
 	apiTokenExpiryDays: undefined,
 	port: 8080,
 	mock: false,
+	allowedOrigins: undefined,
 };
 
 let dynamicDockerApi: string | undefined;
@@ -80,5 +83,9 @@ export function loadConfig(): SwarmbotyConfig {
 		apiTokenExpiryDays: envInt("SWARMBOTY_API_TOKEN_EXPIRY_DAYS"),
 		port,
 		mock: envBool("SWARMBOTY_MOCK") ?? defaults.mock,
+		allowedOrigins: envStr("SWARMBOTY_ALLOWED_ORIGINS")
+			?.split(",")
+			.map((s) => s.trim())
+			.filter(Boolean),
 	};
 }
