@@ -22,6 +22,5 @@ import { ToastComponent } from "./shared/toast/toast.component";
 })
 export class AppComponent {
 	private readonly _theme = inject(ThemeService);
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	private readonly _toast = inject(ToastService);
 }

@@ -22,9 +22,9 @@ import { NgFor } from "@angular/common";
 })
 export class SegmentedComponent {
 	/** Selectable segments shown as pill buttons. */
-	@Input() options: Array<{ value: string; label: string }> = [];
+	@Input() options: { value: string; label: string }[] = [];
 	/** Currently selected segment value. */
-	@Input() value: string = "";
+	@Input() value = "";
 	/** Emitted when the user picks a different segment. */
 	@Output() select = new EventEmitter<string>();
 }

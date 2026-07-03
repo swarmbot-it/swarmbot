@@ -36,9 +36,9 @@ type ServiceDetail = {
 	created: string | null;
 	updated: string | null;
 	env: string[];
-	labels: Array<{ k: string; v: string }>;
+	labels: { k: string; v: string }[];
 	networks: string[];
-	mounts: Array<{ type: string; source: string | null; target: string; readOnly: boolean }>;
+	mounts: { type: string; source: string | null; target: string; readOnly: boolean }[];
 	secrets: string[];
 	configs: string[];
 };
@@ -579,7 +579,7 @@ export class ServiceDetailPageComponent implements OnInit {
 		this.loadDetail();
 		this.loadTasks();
 		this.apollo
-			.query<{ networks: Array<{ id: string; name: string }> }>({ query: QUERY_NETWORKS, fetchPolicy: "network-only" })
+			.query<{ networks: { id: string; name: string }[] }>({ query: QUERY_NETWORKS, fetchPolicy: "network-only" })
 			.pipe(takeUntilDestroyed(this.destroyRef))
 			.subscribe((r) => {
 				const map = new Map<string, string>();

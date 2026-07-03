@@ -79,7 +79,7 @@ const ICONS: Record<string, string> = {
 })
 export class IconComponent {
 	/** Icon glyph key from the built-in set (e.g. `dashboard`, `stacks`). */
-	@Input() name: string = "";
+	@Input() name = "";
 	/** Width and height of the SVG in pixels. */
 	@Input() size = 18;
 	/** Stroke width for outline icons. */

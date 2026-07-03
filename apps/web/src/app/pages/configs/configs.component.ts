@@ -141,7 +141,7 @@ export class ConfigsPageComponent {
 		this.content.set(null);
 		this.loadingContent.set(true);
 		this.apollo
-			.query<{ configs: Array<{ id: string; content: string | null }> }>({
+			.query<{ configs: { id: string; content: string | null }[] }>({
 				query: QUERY_CONFIG_CONTENT,
 				fetchPolicy: "network-only",
 			})

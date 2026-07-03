@@ -212,9 +212,9 @@ export class LineChartComponent {
 	xLabels = computed(() => {
 		const labels = this.labels();
 		const n = labels.length;
-		if (n === 0) return [] as Array<{ x: number; label: string }>;
+		if (n === 0) return [] as { x: number; label: string }[];
 		const stride = Math.max(1, Math.floor(n / 8));
-		const out: Array<{ x: number; label: string }> = [];
+		const out: { x: number; label: string }[] = [];
 		for (let i = 0; i < n; i++) {
 			if (i % stride === 0 || i === n - 1) {
 				out.push({ x: this.padL + i * this.stepX(), label: labels[i] });
