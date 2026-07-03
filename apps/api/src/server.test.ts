@@ -57,7 +57,7 @@ describe.sequential("HTTP server", () => {
 
 	it("GET /events streams with valid slt", async () => {
 		test = await startTestHttp();
-		const slt = createSlt("admin");
+		const slt = await createSlt(test.couchDb, "admin");
 		const res = await fetch(`${test.baseUrl}/events?slt=${encodeURIComponent(slt)}`);
 		expect(res.status).toBe(200);
 		expect(res.headers.get("content-type")).toContain("text/event-stream");

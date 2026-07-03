@@ -31,7 +31,7 @@ export function optionalJwtMiddleware(couchDb: nano.DocumentScope<couch.CouchDoc
 					return next();
 				}
 			} else if (claims.iss === "swarmboty") {
-				if (isRevoked(claims.jti)) {
+				if (await isRevoked(couchDb, claims.jti)) {
 					return next();
 				}
 			}

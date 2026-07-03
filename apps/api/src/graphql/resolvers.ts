@@ -727,7 +727,7 @@ export const resolvers = {
 		logout: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
 			if (!ctx.user) return true;
 			if (ctx.user.iss === "swarmboty") {
-				revokeJti(ctx.user.jti);
+				await revokeJti(ctx.couchDb, ctx.user.jti);
 			}
 			return true;
 		},

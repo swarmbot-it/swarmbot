@@ -57,7 +57,7 @@ describe("optionalJwtMiddleware", () => {
 		const token = generateJwt("sec", user);
 		const { revokeJti } = await import("../auth/blacklist.js");
 		const { verifyJwt } = await import("../auth/jwt.js");
-		revokeJti(verifyJwt("sec", token).jti);
+		await revokeJti(db, verifyJwt("sec", token).jti);
 		const req = { headers: { authorization: token } } as AuthedRequest;
 		await runMiddleware(req, db);
 		expect(req.swarmUser).toBeUndefined();

@@ -183,7 +183,7 @@ export async function createHttpServer(
 				const secret = String(secretDoc?.secret ?? "");
 				const claims = verifyJwt(secret, auth);
 				if (claims.iss === "swarmboty") {
-					revokeJti(claims.jti);
+					await revokeJti(couchDb, claims.jti);
 				}
 			} catch {
 				/* ignore */
@@ -198,14 +198,14 @@ export async function createHttpServer(
 			res.status(401).json({ error: localizedMessage(locale, "errors.unauthenticated") });
 			return;
 		}
-		const slt = createSlt(req.swarmUser.usr.username);
+		const slt = await createSlt(couchDb, req.swarmUser.usr.username);
 		res.json({ slt });
 	});
 
-	app.get("/events", (req, res) => {
+	app.get("/events", async (req, res) => {
 		const locale = localeFromHeader(req.headers["accept-language"]);
 		const slt = typeof req.query.slt === "string" ? req.query.slt : undefined;
-		const user = consumeSlt(slt);
+		const user = await consumeSlt(couchDb, slt);
 		if (!user) {
 			res.status(401).json({ error: localizedMessage(locale, "errors.invalidSlt") });
 			return;
