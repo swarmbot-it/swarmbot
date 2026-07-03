@@ -6,10 +6,22 @@ import { bootstrapAdminIfEmpty, initUsersFromConfig } from "./users/bootstrap.js
 import { seedDefaultRegistries } from "./store/registries.js";
 import { seedDemoUsers } from "./store/users.js";
 
+/** Strips embedded userinfo (`user:pass@`) so connection strings are safe to log. */
+function redactCredentials(url: string): string {
+	try {
+		const u = new URL(url);
+		u.username = "";
+		u.password = "";
+		return u.toString();
+	} catch {
+		return url;
+	}
+}
+
 async function main(): Promise<void> {
 	const cfg0 = loadConfig();
 	console.log(
-		`Starting Swarmboty (mock=${cfg0.mock}, db=${cfg0.dbUrl}, port=${cfg0.port})`
+		`Starting Swarmboty (mock=${cfg0.mock}, db=${redactCredentials(cfg0.dbUrl)}, port=${cfg0.port})`
 	);
 	const couchServer = createCouch(cfg0);
 	const couchDb = await initCouch(cfg0, couchServer);

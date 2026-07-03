@@ -4,7 +4,7 @@ services:
     app:
         image: swarmboty/swarmboty:${SWARMBOTY_TAG:-latest}
         environment:
-            - SWARMBOTY_DB=http://${COUCHDB_USER:-admin}:${COUCHDB_PASSWORD:-swarmboty}@db:5984
+            - SWARMBOTY_DB=http://${COUCHDB_USER:?COUCHDB_USER must be set for production deploys}:${COUCHDB_PASSWORD:?COUCHDB_PASSWORD must be set for production deploys}@db:5984
             - SWARMBOTY_INFLUXDB=http://influxdb:8086
             - SWARMBOTY_INFLUXDB_TOKEN=${INFLUXDB_TOKEN}
             - SWARMBOTY_PORT=8080
@@ -41,8 +41,8 @@ services:
     db:
         image: couchdb:3
         environment:
-            COUCHDB_USER: ${COUCHDB_USER:-admin}
-            COUCHDB_PASSWORD: ${COUCHDB_PASSWORD:-swarmboty}
+            COUCHDB_USER: ${COUCHDB_USER:?COUCHDB_USER must be set for production deploys}
+            COUCHDB_PASSWORD: ${COUCHDB_PASSWORD:?COUCHDB_PASSWORD must be set for production deploys}
         volumes:
             - db-data:/opt/couchdb/data
         networks:
@@ -76,8 +76,8 @@ services:
         image: influxdb:2.7
         environment:
             DOCKER_INFLUXDB_INIT_MODE: setup
-            DOCKER_INFLUXDB_INIT_USERNAME: ${INFLUXDB_USER:-admin}
-            DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUXDB_PASSWORD:-swarmboty}
+            DOCKER_INFLUXDB_INIT_USERNAME: ${INFLUXDB_USER:?INFLUXDB_USER must be set for production deploys}
+            DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUXDB_PASSWORD:?INFLUXDB_PASSWORD must be set for production deploys}
             DOCKER_INFLUXDB_INIT_ORG: swarmboty
             DOCKER_INFLUXDB_INIT_BUCKET: swarmboty
             DOCKER_INFLUXDB_INIT_RETENTION: 0

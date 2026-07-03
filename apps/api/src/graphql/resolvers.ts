@@ -80,6 +80,11 @@ function summarizeDockerEvent(raw: string): string {
  * polls when InfluxDB is not configured. The hash mixes the node id
  * into a 0–100 range with mild offsets per metric.
  */
+
+/** Measurements/fields this app ever writes (see events/stats-writer.ts) — the only ones `Query.statsSeries` may read. */
+const STATS_MEASUREMENTS = new Set(["cpu", "memory", "disk", "container_stats"]);
+const STATS_FIELDS = new Set(["percent", "total_bytes", "used_bytes", "cpu_percent", "mem_percent"]);
+
 function pseudoLoad(id: string, kind: "cpu" | "mem" | "disk"): number {
 	let h = 0;
 	for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
@@ -479,7 +484,7 @@ export const resolvers = {
 					);
 					const ts = raw ? mapTaskSummary(raw) : null;
 					const svc = ts ? svcMap.get(ts.serviceId) : null;
-					if (ts && svc) {
+					if (ts && svc && /^[a-z0-9]+$/i.test(args.id)) {
 						const escapedName = svc.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 						const pattern = `^\\/?${escapedName}\\.${ts.slot}\\.${args.id}`;
 						const RANGES: Record<string, { window: string; bucket: string }> = {
@@ -592,6 +597,12 @@ export const resolvers = {
 		) => {
 			requireUser(ctx);
 			if (!ctx.cfg.influxdbUrl) return null;
+			// Whitelist against the fixed set of measurements/fields this app ever writes
+			// (see events/stats-writer.ts) — args are otherwise spliced directly into InfluxQL.
+			if (!STATS_MEASUREMENTS.has(args.measurement)) return null;
+			if (!STATS_FIELDS.has(args.field)) return null;
+			// Only a single `tag = 'value'` equality clause is allowed, never a raw WHERE fragment.
+			if (args.tags && !/^[a-zA-Z_][a-zA-Z0-9_]*\s*=\s*'[^'\\]*'$/.test(args.tags)) return null;
 			const tagClause = args.tags ? ` WHERE ${args.tags}` : "";
 			const q = `SELECT mean("${args.field}") FROM "${args.measurement}"${tagClause} GROUP BY time(1m) fill(null) ORDER BY time DESC LIMIT 120`;
 			try {
