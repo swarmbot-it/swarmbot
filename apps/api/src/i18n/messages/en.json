@@ -10,5 +10,6 @@
     "errors.invalidSlt": "Invalid slt",
     "errors.noDataSent": "No data sent",
     "errors.noRunningTask": "No running task",
-    "errors.usernameTaken": "Username is already taken"
+    "errors.usernameTaken": "Username is already taken",
+    "errors.validationFailed": "Invalid input"
 }

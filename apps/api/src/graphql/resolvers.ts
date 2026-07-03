@@ -8,6 +8,12 @@ import { generateJwt } from "../auth/jwt.js";
 import { verifyPassword, derivePassword, isSha256Digest } from "../auth/password.js";
 import { revokeJti } from "../auth/blacklist.js";
 import {
+	validateInput,
+	createUserInputSchema,
+	createRegistryInputSchema,
+	createNetworkInputSchema,
+} from "../validation/schemas.js";
+import {
 	aggregateStacks,
 	countRunningTasksByService,
 	forceUpdateService,
@@ -957,6 +963,7 @@ export const resolvers = {
 			ctx: GraphQLContext
 		) => {
 			requireAdmin(ctx);
+			input = validateInput(createNetworkInputSchema, input, ctx.locale);
 			if (ctx.cfg.mock) {
 				return {
 					id: `net_${randomUUID().slice(0, 8)}`,
@@ -1094,6 +1101,7 @@ export const resolvers = {
 			ctx: GraphQLContext
 		) => {
 			requireAdmin(ctx);
+			input = validateInput(createRegistryInputSchema, input, ctx.locale);
 			return createRegistryDoc(ctx.couchDb, input);
 		},
 		removeRegistry: async (_: unknown, { id }: { id: string }, ctx: GraphQLContext) => {
@@ -1140,6 +1148,7 @@ export const resolvers = {
 			ctx: GraphQLContext
 		) => {
 			requireAdmin(ctx);
+			input = validateInput(createUserInputSchema, input, ctx.locale);
 			return createUserDoc(ctx.couchDb, input);
 		},
 		removeUser: async (_: unknown, { id }: { id: string }, ctx: GraphQLContext) => {
