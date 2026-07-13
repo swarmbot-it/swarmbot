@@ -1,11 +1,11 @@
 # swarmagent in push-only mode: one pod per node, no ports exposed.
-# It auto-detects Kubernetes and POSTs stats/events to the sw4rm.bot /events
+# It auto-detects Kubernetes and POSTs stats/events to the swarmbot /events
 # endpoint with container ids in the "{namespace}/{pod}/{container}" format.
 apiVersion: v1
 kind: ServiceAccount
 metadata:
     name: swarmagent
-    namespace: sw4rmbot
+    namespace: swarmbot
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -30,13 +30,13 @@ roleRef:
 subjects:
     - kind: ServiceAccount
       name: swarmagent
-      namespace: sw4rmbot
+      namespace: swarmbot
 ---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
     name: swarmagent
-    namespace: sw4rmbot
+    namespace: swarmbot
     labels:
         app: swarmagent
 spec:
@@ -59,12 +59,12 @@ spec:
                   effect: NoSchedule
             containers:
                 - name: swarmagent
-                  image: sw4rmbot/swarmagent:latest
+                  image: swarmbot/swarmagent:latest
                   imagePullPolicy: IfNotPresent
                   env:
                       # Push-only contract: where to POST {"type":"stats"|"event"} envelopes.
-                      - name: SW4RM_BOT_PUSH_URL
-                        value: http://sw4rmbot.sw4rmbot.svc:8080/events
+                      - name: SWARMBOT_PUSH_URL
+                        value: http://swarmbot.swarmbot.svc:8080/events
                       # Reported as message.id (the k8s node name).
                       - name: NODE_NAME
                         valueFrom:

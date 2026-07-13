@@ -41,7 +41,7 @@ test.describe("theme slider", () => {
 	test("persists selection in localStorage", async ({ page }) => {
 		await page.locator('.theme-slider__btn:has(sb-icon[name="moon"])').click();
 
-		const stored = await page.evaluate(() => localStorage.getItem("sw4rm.bot.theme"));
+		const stored = await page.evaluate(() => localStorage.getItem("swarmbot.theme"));
 		expect(stored).toBe("dark");
 	});
 });

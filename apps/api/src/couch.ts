@@ -1,5 +1,5 @@
 ﻿import nano from "nano";
-import type { Sw4rmBotConfig } from "./config.js";
+import type { SwarmBotConfig } from "./config.js";
 import { createMockCouch } from "./couch.mock.js";
 
 export type CouchDoc = {
@@ -9,9 +9,9 @@ export type CouchDoc = {
 	[k: string]: unknown;
 };
 
-const DB = "sw4rmbot";
+const DB = "swarmbot";
 
-export function createCouch(cfg: Sw4rmBotConfig): nano.ServerScope {
+export function createCouch(cfg: SwarmBotConfig): nano.ServerScope {
 	if (cfg.mock) {
 		return createMockCouch().server;
 	}

@@ -21,7 +21,7 @@ export async function loginAsAdmin(
 		localStorage.clear();
 		sessionStorage.clear();
 		if (locale) {
-			localStorage.setItem("sw4rm.bot.lang", locale);
+			localStorage.setItem("swarmbot.lang", locale);
 		}
 	}, options?.locale ?? null);
 	await expect(page).toHaveURL(/\/login/);

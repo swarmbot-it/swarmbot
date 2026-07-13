@@ -4,7 +4,7 @@ import { firstValueFrom } from "rxjs";
 import { PrimeNG } from "primeng/config";
 import { httpLocaleFor, isLangCode, type LangCode } from "./i18n-languages";
 
-const STORAGE_KEY = "sw4rm.bot.lang";
+const STORAGE_KEY = "swarmbot.lang";
 
 /**
  * Coordinates UI language: Transloco dictionaries, PrimeNG labels,

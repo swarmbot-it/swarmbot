@@ -1,7 +1,7 @@
 import { test, expect, loginAsAdmin } from "./fixtures";
 
 /**
- * Runs against the API mock started with SW4RM_BOT_MOCK_ORCHESTRATOR=kubernetes
+ * Runs against the API mock started with SWARMBOT_MOCK_ORCHESTRATOR=kubernetes
  * (see playwright.k8s.config.js).
  *
  * Navigation goes through sidebar links (SPA routing) — the storage-clearing

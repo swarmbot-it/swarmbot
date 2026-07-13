@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Secret
 metadata:
     name: couchdb-credentials
-    namespace: sw4rmbot
+    namespace: swarmbot
 type: Opaque
 stringData:
     COUCHDB_USER: admin
@@ -12,7 +12,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
     name: couchdb-data
-    namespace: sw4rmbot
+    namespace: swarmbot
 spec:
     accessModes: ["ReadWriteOnce"]
     resources:
@@ -23,7 +23,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
     name: couchdb
-    namespace: sw4rmbot
+    namespace: swarmbot
     labels:
         app: couchdb
 spec:
@@ -63,7 +63,7 @@ apiVersion: v1
 kind: Service
 metadata:
     name: db
-    namespace: sw4rmbot
+    namespace: swarmbot
 spec:
     selector:
         app: couchdb

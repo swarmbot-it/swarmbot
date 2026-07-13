@@ -2,7 +2,7 @@
 import { execSync } from "child_process";
 
 const MANAGER = "swarm-manager";
-const STACK = "sw4rmbot";
+const STACK = "swarmbot";
 
 function run(cmd, opts = {}) {
 	const out = execSync(cmd, {

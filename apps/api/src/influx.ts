@@ -1,15 +1,15 @@
-﻿import type { Sw4rmBotConfig } from "./config.js";
+﻿import type { SwarmBotConfig } from "./config.js";
 
-function authHeaders(cfg: Sw4rmBotConfig): Record<string, string> {
+function authHeaders(cfg: SwarmBotConfig): Record<string, string> {
 	return cfg.influxdbToken ? { Authorization: `Token ${cfg.influxdbToken}` } : {};
 }
 
-export function influxOrg(cfg: Sw4rmBotConfig): string {
-	return cfg.influxOrg ?? "sw4rmbot";
+export function influxOrg(cfg: SwarmBotConfig): string {
+	return cfg.influxOrg ?? "swarmbot";
 }
 
-export function influxBucket(cfg: Sw4rmBotConfig): string {
-	return cfg.influxBucket ?? "sw4rmbot";
+export function influxBucket(cfg: SwarmBotConfig): string {
+	return cfg.influxBucket ?? "swarmbot";
 }
 
 export async function influxPing(url: string): Promise<boolean> {
@@ -22,7 +22,7 @@ export async function influxPing(url: string): Promise<boolean> {
 }
 
 /** InfluxDB 2.x — execute Flux and return annotated CSV text. */
-export async function influxQueryFlux(cfg: Sw4rmBotConfig, flux: string): Promise<string> {
+export async function influxQueryFlux(cfg: SwarmBotConfig, flux: string): Promise<string> {
 	const base = cfg.influxdbUrl?.replace(/\/$/, "");
 	if (!base) throw new Error("influx_not_configured");
 	const org = encodeURIComponent(influxOrg(cfg));
@@ -43,7 +43,7 @@ export async function influxQueryFlux(cfg: Sw4rmBotConfig, flux: string): Promis
 }
 
 /** InfluxDB 2.x — write line protocol (nanosecond precision). */
-export async function influxWrite(cfg: Sw4rmBotConfig, lines: string[]): Promise<void> {
+export async function influxWrite(cfg: SwarmBotConfig, lines: string[]): Promise<void> {
 	if (lines.length === 0) return;
 	const base = cfg.influxdbUrl?.replace(/\/$/, "");
 	if (!base) throw new Error("influx_not_configured");
@@ -66,9 +66,9 @@ export async function influxWrite(cfg: Sw4rmBotConfig, lines: string[]): Promise
 
 /** Legacy InfluxQL (InfluxDB 1.x compatibility) — kept for tests only. */
 export async function influxQuery(
-	cfg: Sw4rmBotConfig,
+	cfg: SwarmBotConfig,
 	influxql: string,
-	db = "sw4rmbot"
+	db = "swarmbot"
 ): Promise<unknown> {
 	const base = cfg.influxdbUrl?.replace(/\/$/, "");
 	if (!base) throw new Error("influx_not_configured");
@@ -80,7 +80,7 @@ export async function influxQuery(
 	return r.json();
 }
 
-export async function createDatabase(cfg: Sw4rmBotConfig, _name = "sw4rmbot"): Promise<void> {
+export async function createDatabase(cfg: SwarmBotConfig, _name = "swarmbot"): Promise<void> {
 	if (!cfg.influxdbUrl) return;
 	await influxPing(cfg.influxdbUrl);
 }

@@ -4,13 +4,13 @@
             context: ..
             dockerfile: Dockerfile
         environment:
-            - SW4RM_BOT_DB=http://${COUCHDB_USER:-admin}:${COUCHDB_PASSWORD:-swarmboty}@db:5984
-            - SW4RM_BOT_INFLUXDB=http://influxdb:8086
-            - SW4RM_BOT_INFLUXDB_TOKEN=${INFLUXDB_TOKEN:-sw4rmbot-influx-dev-token}
-            - SW4RM_BOT_INFLUXDB_ORG=sw4rmbot
-            - SW4RM_BOT_INFLUXDB_BUCKET=sw4rmbot
-            - SW4RM_BOT_PORT=8080
-            - SW4RM_BOT_WORK_DIR=/tmp
+            - SWARMBOT_DB=http://${COUCHDB_USER:-admin}:${COUCHDB_PASSWORD:-swarmboty}@db:5984
+            - SWARMBOT_INFLUXDB=http://influxdb:8086
+            - SWARMBOT_INFLUXDB_TOKEN=${INFLUXDB_TOKEN:-swarmbot-influx-dev-token}
+            - SWARMBOT_INFLUXDB_ORG=swarmbot
+            - SWARMBOT_INFLUXDB_BUCKET=swarmbot
+            - SWARMBOT_PORT=8080
+            - SWARMBOT_WORK_DIR=/tmp
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock:ro
         ports:
@@ -55,10 +55,10 @@
             DOCKER_INFLUXDB_INIT_MODE: setup
             DOCKER_INFLUXDB_INIT_USERNAME: ${INFLUXDB_USER:-admin}
             DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUXDB_PASSWORD:-swarmboty}
-            DOCKER_INFLUXDB_INIT_ORG: sw4rmbot
-            DOCKER_INFLUXDB_INIT_BUCKET: sw4rmbot
+            DOCKER_INFLUXDB_INIT_ORG: swarmbot
+            DOCKER_INFLUXDB_INIT_BUCKET: swarmbot
             DOCKER_INFLUXDB_INIT_RETENTION: 0
-            DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB_TOKEN:-sw4rmbot-influx-dev-token}
+            DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB_TOKEN:-swarmbot-influx-dev-token}
         volumes:
             - influx-data:/var/lib/influxdb2
         networks:
@@ -71,7 +71,7 @@
         image: swarmagent:latest
         user: "0:0"
         environment:
-            - SW4RM_BOT_URL=http://app:8080
+            - SWARMBOT_URL=http://app:8080
             - DOCKER_API_VERSION=1.44
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock:ro

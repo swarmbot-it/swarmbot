@@ -3,7 +3,7 @@ import type { AddressInfo } from "net";
 import { once } from "node:events";
 import { createMockCouch } from "../couch.mock.js";
 import { createSecret, insertDoc } from "../couch.js";
-import { loadConfig, type Sw4rmBotConfig } from "../config.js";
+import { loadConfig, type SwarmBotConfig } from "../config.js";
 import { derivePassword } from "../auth/password.js";
 import { createHttpServer } from "../server.js";
 import type { GraphQLContext } from "../graphql/context.js";
@@ -15,13 +15,13 @@ import type { CouchDoc } from "../couch.js";
 export type TestHttp = {
 	httpServer: Server;
 	baseUrl: string;
-	cfg: Sw4rmBotConfig;
+	cfg: SwarmBotConfig;
 	couchDb: nano.DocumentScope<CouchDoc>;
 	orchestrator: Orchestrator;
 	cleanup: () => Promise<void>;
 };
 
-export async function startTestHttp(opts?: Partial<Sw4rmBotConfig>): Promise<TestHttp> {
+export async function startTestHttp(opts?: Partial<SwarmBotConfig>): Promise<TestHttp> {
 	const { db } = createMockCouch();
 	await createSecret(db, "test-secret");
 	await insertDoc(db, {
@@ -32,7 +32,7 @@ export async function startTestHttp(opts?: Partial<Sw4rmBotConfig>): Promise<Tes
 		email: "admin@test.local",
 	});
 
-	const cfg: Sw4rmBotConfig = {
+	const cfg: SwarmBotConfig = {
 		...loadConfig(),
 		mock: true,
 		port: 0,

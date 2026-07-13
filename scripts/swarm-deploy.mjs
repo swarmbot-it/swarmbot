@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Builds sw4rmbot:local and swarmagent:local on the host Docker daemon,
+ * Builds swarmbot:local and swarmagent:local on the host Docker daemon,
  * loads them into every DinD cluster node, then deploys the Swarm stack
  * defined in examples/docker-compose.local.yml via TCP to the DinD manager.
  *
@@ -23,7 +23,7 @@ const AGENT_HASH_FILE = join(CACHE_DIR, "swarmagent-source.hash");
 const NETWORK = "swarm-net";
 const MANAGER = "swarm-manager";
 const WORKERS = ["swarm-worker-1", "swarm-worker-2"];
-const STACK = "sw4rmbot";
+const STACK = "swarmbot";
 const ROOT_DIR = join(SCRIPT_DIR, "..");
 const COMPOSE_FILE = join(ROOT_DIR, "examples", "docker-compose.local.yml");
 const AGENT_DIR = resolve("../swarmagent");
@@ -191,9 +191,9 @@ console.log(`\nCluster nodes: ${allNodes.join(", ")}`);
 
 // ── Build images ──────────────────────────────────────────────────────────────
 
-console.log("\n>>> Building sw4rmbot:local");
+console.log("\n>>> Building swarmbot:local");
 const appVersion = JSON.parse(readFileSync(join(ROOT_DIR, "package.json"), "utf8")).version;
-run(`docker build -t sw4rmbot:local --build-arg APP_VERSION=${appVersion} .`);
+run(`docker build -t swarmbot:local --build-arg APP_VERSION=${appVersion} .`);
 
 const hasAgent = existsSync(join(AGENT_DIR, "Dockerfile"));
 const forceAgentBuild =
@@ -230,8 +230,8 @@ if (hasAgent) {
 
 console.log("\n>>> Loading images into DinD nodes");
 
-// app/db/influxdb are pinned to manager — only manager needs sw4rmbot:local
-loadImageIntoNodes("sw4rmbot:local", [MANAGER]);
+// app/db/influxdb are pinned to manager — only manager needs swarmbot:local
+loadImageIntoNodes("swarmbot:local", [MANAGER]);
 
 // agent runs in global mode — all active nodes need swarmagent:local
 if (hasAgent) {
@@ -245,7 +245,7 @@ if (hasAgent) {
 // ── Deploy stack ──────────────────────────────────────────────────────────────
 
 const ip = managerIp();
-const composeInManager = "/tmp/sw4rmbot-stack.yml";
+const composeInManager = "/tmp/swarmbot-stack.yml";
 const composeBody = readFileSync(COMPOSE_FILE, "utf8");
 
 console.log(`\n>>> Deploying stack '${STACK}' to DinD Swarm (manager ${ip})`);

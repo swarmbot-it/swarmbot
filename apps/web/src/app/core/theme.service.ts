@@ -3,7 +3,7 @@
 /** Color scheme applied via `data-theme` on `<html>`. */
 export type Theme = "light" | "dark";
 
-const KEY = "sw4rm.bot.theme";
+const KEY = "swarmbot.theme";
 
 /**
  * Persists the light/dark theme choice in localStorage and reflects it
@@ -19,7 +19,7 @@ export class ThemeService {
 		this.apply(this._theme());
 	}
 
-	/** Sets theme, updates DOM, and persists to `sw4rm.bot.theme`. */
+	/** Sets theme, updates DOM, and persists to `swarmbot.theme`. */
 	set(theme: Theme): void {
 		this._theme.set(theme);
 		this.apply(theme);

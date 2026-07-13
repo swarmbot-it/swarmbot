@@ -23,7 +23,7 @@ function ctx(
 describe("requireUser", () => {
 	it("returns claims when authenticated", () => {
 		const claims = {
-			iss: "sw4rm.bot",
+			iss: "swarmbot",
 			iat: 1,
 			jti: "j",
 			usr: { username: "admin", role: "admin" },
@@ -39,7 +39,7 @@ describe("requireUser", () => {
 describe("requireAdmin", () => {
 	it("allows admin role", () => {
 		const claims = {
-			iss: "sw4rm.bot",
+			iss: "swarmbot",
 			iat: 1,
 			jti: "j",
 			usr: { username: "admin", role: "admin" },
@@ -49,7 +49,7 @@ describe("requireAdmin", () => {
 
 	it("rejects non-admin", () => {
 		const claims = {
-			iss: "sw4rm.bot",
+			iss: "swarmbot",
 			iat: 1,
 			jti: "j",
 			usr: { username: "bob", role: "editor" },

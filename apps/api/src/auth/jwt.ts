@@ -32,7 +32,7 @@ export function generateJwt(
 	};
 	const now = Math.floor(Date.now() / 1000);
 	const payload: JwtClaims = {
-		iss: opts?.iss ?? "sw4rm.bot",
+		iss: opts?.iss ?? "swarmbot",
 		iat: now,
 		usr,
 		jti: opts?.jti ?? randomUUID(),

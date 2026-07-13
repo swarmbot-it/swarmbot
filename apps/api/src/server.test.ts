@@ -23,7 +23,7 @@ describe.sequential("HTTP server", () => {
 		test = await startTestHttp();
 		const res = await fetch(`${test.baseUrl}/version`);
 		const body = (await res.json()) as { name: string; initialized: boolean };
-		expect(body.name).toBe("sw4rm.bot");
+		expect(body.name).toBe("swarmbot");
 		expect(body.initialized).toBe(true);
 	});
 

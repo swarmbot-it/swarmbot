@@ -10,7 +10,7 @@ import { makeExecutableSchema } from "@graphql-tools/schema";
 import { WebSocketServer } from "ws";
 import { useServer } from "graphql-ws/lib/use/ws";
 import { execute, subscribe } from "graphql";
-import type { Sw4rmBotConfig } from "./config.js";
+import type { SwarmBotConfig } from "./config.js";
 import { appVersion } from "./app-version.js";
 import { typeDefs } from "./graphql/schema.js";
 import { resolvers } from "./graphql/resolvers.js";
@@ -31,7 +31,7 @@ import { processStatsEvent } from "./metrics/ingest-pipeline.js";
 import type nano from "nano";
 
 export async function createHttpServer(
-	cfg: Sw4rmBotConfig,
+	cfg: SwarmBotConfig,
 	couchDb: nano.DocumentScope<CouchDoc>
 ): Promise<{
 	httpServer: http.Server;
@@ -114,7 +114,7 @@ export async function createHttpServer(
 
 	app.get("/version", (_req, res) => {
 		res.json({
-			name: "sw4rm.bot",
+			name: "swarmbot",
 			version: appVersion(),
 			docker: { api: cfg.dockerApi },
 			orchestrator: orchestrator.kind,
@@ -166,7 +166,7 @@ export async function createHttpServer(
 				const secretDoc = await getSecret(couchDb);
 				const secret = String(secretDoc?.secret ?? "");
 				const claims = verifyJwt(secret, auth);
-				if (claims.iss === "sw4rm.bot") {
+				if (claims.iss === "swarmbot") {
 					revokeJti(claims.jti);
 				}
 			} catch {

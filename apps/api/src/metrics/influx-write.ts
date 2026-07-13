@@ -1,4 +1,4 @@
-import type { Sw4rmBotConfig } from "../config.js";
+import type { SwarmBotConfig } from "../config.js";
 import { influxWrite } from "../influx.js";
 import type { ContainerMapping } from "./swarm-mapper.js";
 import type { ParsedContainerStats, ParsedNodeStats } from "./stats-ingest.js";
@@ -83,7 +83,7 @@ export function buildInfluxLines(
 }
 
 export async function writeStatsToInflux(
-	cfg: Sw4rmBotConfig,
+	cfg: SwarmBotConfig,
 	node: ParsedNodeStats,
 	containers: ParsedContainerStats[],
 	mappings: Map<string, ContainerMapping | null>,

@@ -2,22 +2,22 @@ apiVersion: v1
 kind: Secret
 metadata:
     name: influxdb-credentials
-    namespace: sw4rmbot
+    namespace: swarmbot
 type: Opaque
 stringData:
     DOCKER_INFLUXDB_INIT_MODE: setup
     DOCKER_INFLUXDB_INIT_USERNAME: admin
     DOCKER_INFLUXDB_INIT_PASSWORD: swarmboty
-    DOCKER_INFLUXDB_INIT_ORG: sw4rmbot
-    DOCKER_INFLUXDB_INIT_BUCKET: sw4rmbot
+    DOCKER_INFLUXDB_INIT_ORG: swarmbot
+    DOCKER_INFLUXDB_INIT_BUCKET: swarmbot
     DOCKER_INFLUXDB_INIT_RETENTION: "0"
-    DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: sw4rmbot-dev-token
+    DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: swarmbot-dev-token
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
     name: influxdb-data
-    namespace: sw4rmbot
+    namespace: swarmbot
 spec:
     accessModes: ["ReadWriteOnce"]
     resources:
@@ -28,7 +28,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
     name: influxdb
-    namespace: sw4rmbot
+    namespace: swarmbot
     labels:
         app: influxdb
 spec:
@@ -61,7 +61,7 @@ apiVersion: v1
 kind: Service
 metadata:
     name: influxdb
-    namespace: sw4rmbot
+    namespace: swarmbot
 spec:
     selector:
         app: influxdb

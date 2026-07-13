@@ -28,7 +28,7 @@
     "auth": {
         "login": {
             "title": "Bentornato",
-            "subtitle": "Accedi alla console di amministrazione sw4rm.bot.",
+            "subtitle": "Accedi alla console di amministrazione swarmbot.",
             "username": "Nome utente",
             "password": "Password",
             "submit": "Accedi",

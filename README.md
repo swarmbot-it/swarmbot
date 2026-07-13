@@ -1,6 +1,6 @@
-﻿# sw4rm.bot
+﻿# swarmbot
 
-sw4rm.bot is a Node.js monorepo for managing Docker Swarm resources. It contains:
+swarmbot is a Node.js monorepo for managing Docker Swarm resources. It contains:
 
 - `apps/api` - Express and Apollo GraphQL API for authentication, Docker access, events, and persistence.
 - `apps/web` - Angular web UI built with Apollo Angular and PrimeNG.
@@ -19,15 +19,15 @@ npm install
 
 ## Development
 
-Run the API (loads `apps/api/.env.development` with `SW4RM_BOT_MOCK=true` — no CouchDB/Docker required):
+Run the API (loads `apps/api/.env.development` with `SWARMBOT_MOCK=true` — no CouchDB/Docker required):
 
 ```sh
 npm run dev:api
 ```
 
-You should see `sw4rm.bot listening on http://0.0.0.0:8081`. Demo login: `admin` / `swarmboty`.
+You should see `swarmbot listening on http://0.0.0.0:8081`. Demo login: `admin` / `swarmboty`.
 
-To use a real CouchDB instead, unset mock mode (e.g. remove `SW4RM_BOT_MOCK` from `.env.development` or set `SW4RM_BOT_MOCK=false` and ensure `SW4RM_BOT_DB` points at CouchDB).
+To use a real CouchDB instead, unset mock mode (e.g. remove `SWARMBOT_MOCK` from `.env.development` or set `SWARMBOT_MOCK=false` and ensure `SWARMBOT_DB` points at CouchDB).
 
 Run the web app:
 
@@ -35,7 +35,7 @@ Run the web app:
 npm run dev:web
 ```
 
-Local `npm run dev:api` uses port **8081** (`apps/api/.env.development`). The Angular dev proxy (`apps/web/proxy.conf.json`) targets the same port. Production and Docker Compose still use **8080** unless overridden with `SW4RM_BOT_PORT`.
+Local `npm run dev:api` uses port **8081** (`apps/api/.env.development`). The Angular dev proxy (`apps/web/proxy.conf.json`) targets the same port. Production and Docker Compose still use **8080** unless overridden with `SWARMBOT_PORT`.
 
 ## Build
 
@@ -55,7 +55,7 @@ npm run test:all         # Vitest + Playwright
 npm run lint
 ```
 
-API tests use **Vitest** with an in-memory CouchDB/Docker mock. Web UI tests use **Playwright** against `ng serve` with `SW4RM_BOT_MOCK=true` on the API. Karma was removed.
+API tests use **Vitest** with an in-memory CouchDB/Docker mock. Web UI tests use **Playwright** against `ng serve` with `SWARMBOT_MOCK=true` on the API. Karma was removed.
 
 The dev proxy does not forward `GET /login` to the API (that path is the Angular login screen). GraphQL login uses `/graphql`.
 
@@ -67,7 +67,7 @@ The web UI uses **Transloco** with runtime-loaded JSON dictionaries:
 - `apps/web/public/assets/i18n/en.json`
 - ...
 
-The active language is stored in `localStorage` under `sw4rm.bot.lang`. On first visit, Polish is preferred when the browser language starts with `pl`; otherwise English is used.
+The active language is stored in `localStorage` under `swarmbot.lang`. On first visit, Polish is preferred when the browser language starts with `pl`; otherwise English is used.
 
 Switch language from the user menu in the top bar. PrimeNG table labels (paginator, etc.) are synchronized via `PrimeNGConfig.setTranslation`.
 
@@ -75,16 +75,16 @@ Every HTTP and GraphQL request sends `Accept-Language`. The API returns localize
 
 ## Demo / mock mode
 
-For a quick demo without Docker, CouchDB, or InfluxDB, set `SW4RM_BOT_MOCK=true`:
+For a quick demo without Docker, CouchDB, or InfluxDB, set `SWARMBOT_MOCK=true`:
 
 ```sh
 # Windows PowerShell
-$env:SW4RM_BOT_MOCK="true"; npm run dev:api
+$env:SWARMBOT_MOCK="true"; npm run dev:api
 ```
 
 ```sh
 # macOS / Linux
-SW4RM_BOT_MOCK=true npm run dev:api
+SWARMBOT_MOCK=true npm run dev:api
 ```
 
 In mock mode the API uses an in-memory CouchDB shim and a mocked Docker engine with sample services and nodes. A demo admin user `admin / swarmboty` is created automatically.
@@ -123,10 +123,10 @@ The API and Angular containers mount the source tree — saving a `.ts` or `.htm
 
 ```sh
 # Windows PowerShell
-$env:SW4RM_BOT_MOCK="true"; docker compose -f examples/docker-compose.dev.yml up api web
+$env:SWARMBOT_MOCK="true"; docker compose -f examples/docker-compose.dev.yml up api web
 
 # macOS / Linux
-SW4RM_BOT_MOCK=true docker compose -f examples/docker-compose.dev.yml up api web
+SWARMBOT_MOCK=true docker compose -f examples/docker-compose.dev.yml up api web
 ```
 
 ### With the Rust agent (optional)
@@ -238,34 +238,34 @@ npm run swarm:undeploy
 
 ---
 
-### Point sw4rm.bot API at the test cluster
+### Point swarmbot API at the test cluster
 
-The manager exposes the Docker API over TCP on port `2375` (no TLS — the start script sets `DOCKER_TLS_CERTDIR=""`). To make sw4rm.bot API talk to the test Swarm instead of the local daemon, resolve the manager IP and set:
+The manager exposes the Docker API over TCP on port `2375` (no TLS — the start script sets `DOCKER_TLS_CERTDIR=""`). To make swarmbot API talk to the test Swarm instead of the local daemon, resolve the manager IP and set:
 
 **macOS / Linux:**
 
 ```sh
 MANAGER_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' swarm-manager)
-SW4RM_BOT_DOCKER_SOCK=tcp://$MANAGER_IP:2375 npm run dev:api
+SWARMBOT_DOCKER_SOCK=tcp://$MANAGER_IP:2375 npm run dev:api
 ```
 
 **Windows PowerShell:**
 
 ```powershell
 $MANAGER_IP = docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' swarm-manager
-$env:SW4RM_BOT_DOCKER_SOCK = "tcp://${MANAGER_IP}:2375"
+$env:SWARMBOT_DOCKER_SOCK = "tcp://${MANAGER_IP}:2375"
 npm run dev:api
 ```
 
 Then open http://localhost:4200 (after `npm run dev:web`) and sign in as `admin` / `swarmboty`. The UI will show resources from the test cluster.
 
-> **Note:** if `SW4RM_BOT_DOCKER_SOCK` is unset, the API uses the local socket `/var/run/docker.sock` (default).
+> **Note:** if `SWARMBOT_DOCKER_SOCK` is unset, the API uses the local socket `/var/run/docker.sock` (default).
 
 ---
 
 ## Docker Compose — production
 
-Start the full production stack with CouchDB, InfluxDB, the sw4rm.bot app, and the Swarm agent:
+Start the full production stack with CouchDB, InfluxDB, the swarmbot app, and the Swarm agent:
 
 ```sh
 docker compose -f examples/docker-compose.yml up --build
@@ -279,21 +279,21 @@ http://localhost:888
 
 ## Kubernetes / k3s
 
-sw4rm.bot runs on **Docker Swarm and Kubernetes (k3s) with the same image** — the
+swarmbot runs on **Docker Swarm and Kubernetes (k3s) with the same image** — the
 backend is auto-detected at startup:
 
 1. in-cluster ServiceAccount (`KUBERNETES_SERVICE_HOST` + token file) → **kubernetes**;
-2. a kubeconfig (`SW4RM_BOT_KUBECONFIG`, then `KUBECONFIG`) → **kubernetes**;
-3. a reachable Docker socket (`SW4RM_BOT_DOCKER_SOCK`) → **swarm**;
+2. a kubeconfig (`SWARMBOT_KUBECONFIG`, then `KUBECONFIG`) → **kubernetes**;
+3. a reachable Docker socket (`SWARMBOT_DOCKER_SOCK`) → **swarm**;
 4. none → startup error with configuration hints.
 
-Override with `SW4RM_BOT_ORCHESTRATOR=swarm|kubernetes|auto` (default `auto`).
+Override with `SWARMBOT_ORCHESTRATOR=swarm|kubernetes|auto` (default `auto`).
 The active mode is exposed in `GET /version`, the GraphQL `version.orchestrator`
 field, and as a badge in the UI top bar.
 
 ### Concept mapping (feature matrix)
 
-| sw4rm.bot         | Docker Swarm                    | Kubernetes/k3s                                                                                        |
+| swarmbot         | Docker Swarm                    | Kubernetes/k3s                                                                                        |
 | ----------------- | ------------------------------- | ----------------------------------------------------------------------------------------------------- |
 | Node              | swarm node                      | `v1.Node` (role from `node-role.kubernetes.io/*` labels)                                              |
 | Service           | swarm service                   | Deployment / StatefulSet / DaemonSet                                                                  |
@@ -315,7 +315,7 @@ fills the `stack` tag so existing dashboards keep working).
 Requires the [k3d](https://k3d.io) CLI:
 
 ```bash
-npm run k3d:start    # create/start the 'sw4rmbot' cluster (1 server + 2 agents)
+npm run k3d:start    # create/start the 'swarmbot' cluster (1 server + 2 agents)
 npm run k3d:deploy   # kubectl apply -f examples/k8s (app, CouchDB, InfluxDB, agent DaemonSet)
 npm run k3d:stop     # delete the cluster
 ```
@@ -329,27 +329,27 @@ kubernetes mode up from your `KUBECONFIG`.
 For UI demos/tests without any cluster:
 
 ```bash
-SW4RM_BOT_MOCK=true SW4RM_BOT_MOCK_ORCHESTRATOR=kubernetes npm run dev:api
+SWARMBOT_MOCK=true SWARMBOT_MOCK_ORCHESTRATOR=kubernetes npm run dev:api
 npm run test:e2e:k8s   # Playwright e2e against the mock-kubernetes API
 ```
 
 ## Configuration
 
-The API supports `SW4RM_BOT_*` environment variables.
+The API supports `SWARMBOT_*` environment variables.
 
 Common variables:
 
-- `SW4RM_BOT_PORT` - API port, defaults to `8080`.
-- `SW4RM_BOT_DB` - CouchDB URL, defaults to `http://localhost:5984`.
-- `SW4RM_BOT_INFLUXDB` - optional InfluxDB URL.
-- `SW4RM_BOT_DOCKER_SOCK` - Docker socket path, defaults to `/var/run/docker.sock`.
-- `SW4RM_BOT_DOCKER_CLI` - path to the `docker` binary for `stack deploy` (optional; auto-detected on Windows).
-- `SW4RM_BOT_DOCKER_API` - Docker API version, defaults to `1.44`.
-- `SW4RM_BOT_WORK_DIR` - working directory, defaults to `/tmp`.
-- `SW4RM_BOT_ORCHESTRATOR` - backend selection: `swarm`, `kubernetes` or `auto` (default).
-- `SW4RM_BOT_KUBECONFIG` - explicit kubeconfig path for kubernetes mode (`KUBECONFIG` works too).
-- `SW4RM_BOT_K8S_NAMESPACE` - restrict kubernetes views to a single namespace (default: all).
-- `SW4RM_BOT_MOCK_ORCHESTRATOR` - which backend the mock mode imitates: `swarm` (default) or `kubernetes`.
+- `SWARMBOT_PORT` - API port, defaults to `8080`.
+- `SWARMBOT_DB` - CouchDB URL, defaults to `http://localhost:5984`.
+- `SWARMBOT_INFLUXDB` - optional InfluxDB URL.
+- `SWARMBOT_DOCKER_SOCK` - Docker socket path, defaults to `/var/run/docker.sock`.
+- `SWARMBOT_DOCKER_CLI` - path to the `docker` binary for `stack deploy` (optional; auto-detected on Windows).
+- `SWARMBOT_DOCKER_API` - Docker API version, defaults to `1.44`.
+- `SWARMBOT_WORK_DIR` - working directory, defaults to `/tmp`.
+- `SWARMBOT_ORCHESTRATOR` - backend selection: `swarm`, `kubernetes` or `auto` (default).
+- `SWARMBOT_KUBECONFIG` - explicit kubeconfig path for kubernetes mode (`KUBECONFIG` works too).
+- `SWARMBOT_K8S_NAMESPACE` - restrict kubernetes views to a single namespace (default: all).
+- `SWARMBOT_MOCK_ORCHESTRATOR` - which backend the mock mode imitates: `swarm` (default) or `kubernetes`.
 
 ## Project Layout
 

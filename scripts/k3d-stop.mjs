@@ -2,7 +2,7 @@
 /** Tear down the local k3d dev cluster created by k3d-start. */
 import { execSync } from "child_process";
 
-const CLUSTER = "sw4rmbot";
+const CLUSTER = "swarmbot";
 
 try {
 	execSync(`k3d cluster delete ${CLUSTER}`, { stdio: "inherit" });

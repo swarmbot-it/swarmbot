@@ -4,7 +4,7 @@
  * previous direct Dockerode usage in the resolvers 1:1.
  */
 import type Dockerode from "dockerode";
-import type { Sw4rmBotConfig } from "../../config.js";
+import type { SwarmBotConfig } from "../../config.js";
 import {
 	aggregateStacks,
 	createDocker,
@@ -51,7 +51,7 @@ export class SwarmOrchestrator implements Orchestrator {
 	readonly docker: Dockerode;
 
 	constructor(
-		private readonly cfg: Sw4rmBotConfig,
+		private readonly cfg: SwarmBotConfig,
 		docker?: Dockerode
 	) {
 		this.docker = docker ?? createDocker(cfg);

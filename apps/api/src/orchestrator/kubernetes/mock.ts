@@ -1,7 +1,7 @@
 /**
  * Mock Kubernetes apiserver (KubeApi implementation).
  *
- * Enabled with SW4RM_BOT_MOCK=true + SW4RM_BOT_MOCK_ORCHESTRATOR=kubernetes.
+ * Enabled with SWARMBOT_MOCK=true + SWARMBOT_MOCK_ORCHESTRATOR=kubernetes.
  * Rich enough for the Angular UI to be demoed and e2e-tested end-to-end
  * without a real k3s cluster.
  */
@@ -69,7 +69,7 @@ const WORKLOADS: WorkloadSeed[] = [
 		kind: "Deployment",
 		namespace: "frontend",
 		name: "web",
-		image: "ghcr.io/sw4rmbot/web:2.14.0",
+		image: "ghcr.io/swarmbot/web:2.14.0",
 		replicas: 4,
 		labels: { app: "web" },
 		ports: [{ port: 3000, targetPort: 3000 }],
@@ -90,7 +90,7 @@ const WORKLOADS: WorkloadSeed[] = [
 		kind: "Deployment",
 		namespace: "api",
 		name: "auth",
-		image: "ghcr.io/sw4rmbot/auth:1.8.3",
+		image: "ghcr.io/swarmbot/auth:1.8.3",
 		replicas: 2,
 		labels: { app: "auth" },
 		ports: [{ port: 8000, targetPort: 8000 }],
@@ -141,19 +141,19 @@ const WORKLOADS: WorkloadSeed[] = [
 	},
 	{
 		kind: "DaemonSet",
-		namespace: "sw4rmbot",
+		namespace: "swarmbot",
 		name: "swarmagent",
-		image: "ghcr.io/sw4rmbot/swarmagent:0.4.0",
+		image: "ghcr.io/swarmbot/swarmagent:0.4.0",
 		replicas: NODES.length,
 		labels: { app: "swarmagent" },
 	},
 	{
 		kind: "Deployment",
-		namespace: "sw4rmbot",
-		name: "sw4rmbot",
-		image: "ghcr.io/sw4rmbot/sw4rmbot:0.1.4",
+		namespace: "swarmbot",
+		name: "swarmbot",
+		image: "ghcr.io/swarmbot/swarmbot:0.1.4",
 		replicas: 1,
-		labels: { app: "sw4rmbot" },
+		labels: { app: "swarmbot" },
 		ports: [{ port: 8080, targetPort: 8080, nodePort: 30880, type: "NodePort" }],
 	},
 ];
@@ -253,7 +253,7 @@ const NAMESPACES: KubeNamespace[] = [
 	"api",
 	"databases",
 	"monitoring",
-	"sw4rmbot",
+	"swarmbot",
 	"kube-system",
 ].map((name) => ({
 	metadata: { name, creationTimestamp: CREATED },
@@ -269,8 +269,8 @@ const PVCS: KubePvc[] = [
 	pvc("databases", "data-redis-2", "local-path", "12Gi"),
 	pvc("monitoring", "prometheus-data", "local-path", "90Gi"),
 	pvc("monitoring", "grafana-data", "local-path", "2Gi"),
-	pvc("sw4rmbot", "couchdb-data", "local-path", "8Gi"),
-	pvc("sw4rmbot", "influxdb-data", "local-path", "32Gi"),
+	pvc("swarmbot", "couchdb-data", "local-path", "8Gi"),
+	pvc("swarmbot", "influxdb-data", "local-path", "32Gi"),
 ];
 
 function pvc(namespace: string, name: string, sc: string, storage: string): KubePvc {
@@ -305,14 +305,14 @@ const CONFIGMAPS: KubeStamped[] = [
 	stamped("monitoring", "prometheus-config"),
 	stamped("monitoring", "grafana-datasources"),
 	stamped("databases", "postgres-init"),
-	stamped("sw4rmbot", "sw4rmbot-env"),
+	stamped("swarmbot", "swarmbot-env"),
 ];
 
 const SECRETS: KubeStamped[] = [
 	stamped("databases", "postgres-password", "Opaque"),
 	stamped("api", "jwt-signing-key", "Opaque"),
 	stamped("api", "tls-wildcard", "kubernetes.io/tls"),
-	stamped("sw4rmbot", "couchdb-credentials", "Opaque"),
+	stamped("swarmbot", "couchdb-credentials", "Opaque"),
 	stamped("kube-system", "default-token-x1y2z", "kubernetes.io/service-account-token"),
 ];
 
@@ -338,7 +338,7 @@ export function createMockKube(): KubeApi {
 			ns
 		);
 	return {
-		contextName: () => "k3d-sw4rmbot-mock",
+		contextName: () => "k3d-swarmbot-mock",
 		listNodes: async () => NODES,
 		listNamespaces: async () => NAMESPACES,
 		listPods: async (ns?: string) => inNs(PODS, ns),

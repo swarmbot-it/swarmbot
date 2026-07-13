@@ -30,7 +30,7 @@
     "auth": {
         "login": {
             "title": "Welcome back",
-            "subtitle": "Sign in to the sw4rm.bot admin console.",
+            "subtitle": "Sign in to the swarmbot admin console.",
             "username": "Username",
             "password": "Password",
             "submit": "Sign in",

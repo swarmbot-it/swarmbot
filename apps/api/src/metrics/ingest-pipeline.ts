@@ -1,4 +1,4 @@
-import type { Sw4rmBotConfig } from "../config.js";
+import type { SwarmBotConfig } from "../config.js";
 import type { Orchestrator } from "../orchestrator/types.js";
 import { SwarmOrchestrator } from "../orchestrator/swarm/adapter.js";
 import { KubernetesOrchestrator } from "../orchestrator/kubernetes/adapter.js";
@@ -18,7 +18,7 @@ import { resolveKubeContainerMapping } from "./kube-mapper.js";
  * a server that was started in Swarm mode is still ingested sensibly.
  */
 export async function processStatsEvent(
-	cfg: Sw4rmBotConfig,
+	cfg: SwarmBotConfig,
 	orchestrator: Orchestrator,
 	message: unknown
 ): Promise<void> {

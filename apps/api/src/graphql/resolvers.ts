@@ -205,7 +205,7 @@ export const resolvers = {
 	Query: {
 		health: () => "ok",
 		version: async (_: unknown, __: unknown, ctx: GraphQLContext) => ({
-			name: "sw4rm.bot",
+			name: "swarmbot",
 			version: appVersion(),
 			dockerApi: ctx.cfg.dockerApi,
 			instanceName: await ctx.orchestrator.clusterDisplayName(),
@@ -496,7 +496,7 @@ export const resolvers = {
 		},
 		logout: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
 			if (!ctx.user) return true;
-			if (ctx.user.iss === "sw4rm.bot") {
+			if (ctx.user.iss === "swarmbot") {
 				revokeJti(ctx.user.jti);
 			}
 			return true;
@@ -522,7 +522,7 @@ export const resolvers = {
 					"SERVER_MISCONFIGURED"
 				);
 			}
-			const token = generateJwt(secret, u, { iss: "sw4rm.bot-api", jti, exp });
+			const token = generateJwt(secret, u, { iss: "swarmbot-api", jti, exp });
 			const expiresAt = exp ? new Date(exp * 1000).toISOString() : null;
 			await updateDoc(ctx.couchDb, u, {
 				"api-token": { jti, mask: token.slice(-5), ...(expiresAt ? { expiresAt } : {}) },
@@ -607,8 +607,8 @@ export const resolvers = {
 					) {
 						detail =
 							ctx.locale === "pl"
-								? "nie znaleziono programu docker (zainstaluj Docker CLI lub ustaw SW4RM_BOT_DOCKER_CLI)"
-								: "docker CLI not found (install Docker CLI or set SW4RM_BOT_DOCKER_CLI)";
+								? "nie znaleziono programu docker (zainstaluj Docker CLI lub ustaw SWARMBOT_DOCKER_CLI)"
+								: "docker CLI not found (install Docker CLI or set SWARMBOT_DOCKER_CLI)";
 					}
 					throw new GraphQLError(
 						detail

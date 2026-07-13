@@ -3,13 +3,13 @@ const { defineConfig, devices } = require("@playwright/test");
 
 /**
  * Same stack as playwright.config.js, but the API mock imitates Kubernetes
- * (SW4RM_BOT_MOCK_ORCHESTRATOR=kubernetes) and only *.k8s.spec.ts files run.
+ * (SWARMBOT_MOCK_ORCHESTRATOR=kubernetes) and only *.k8s.spec.ts files run.
  * The API port stays 8081 because proxy.conf.json targets it — stop any
  * previously running swarm-mode dev API before running this config.
  */
 const monorepoRoot = path.resolve(__dirname, "../..");
-const apiPort = process.env.SW4RM_BOT_E2E_API_PORT ?? "8081";
-const webPort = process.env.SW4RM_BOT_E2E_WEB_PORT ?? "4200";
+const apiPort = process.env.SWARMBOT_E2E_API_PORT ?? "8081";
+const webPort = process.env.SWARMBOT_E2E_WEB_PORT ?? "4200";
 
 module.exports = defineConfig({
 	testDir: "./e2e",
@@ -27,17 +27,17 @@ module.exports = defineConfig({
 	projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
 	webServer: [
 		{
-			command: "npm run dev -w @sw4rmbot/api",
+			command: "npm run dev -w @swarmbot/api",
 			cwd: monorepoRoot,
 			url: `http://127.0.0.1:${apiPort}/health`,
 			reuseExistingServer: false,
 			timeout: 120_000,
 			env: {
 				...process.env,
-				SW4RM_BOT_MOCK: "true",
-				SW4RM_BOT_MOCK_ORCHESTRATOR: "kubernetes",
+				SWARMBOT_MOCK: "true",
+				SWARMBOT_MOCK_ORCHESTRATOR: "kubernetes",
 				PORT: apiPort,
-				SW4RM_BOT_PORT: apiPort,
+				SWARMBOT_PORT: apiPort,
 			},
 		},
 		{

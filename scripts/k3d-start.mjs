@@ -3,12 +3,12 @@
  * Local k3s (k3d) dev cluster — the Kubernetes counterpart of swarm-start.
  * Requires the k3d CLI (https://k3d.io) and Docker.
  *
- * App NodePort 30880 (see examples/k8s/30-sw4rmbot.yaml) is mapped to
+ * App NodePort 30880 (see examples/k8s/30-swarmbot.yaml) is mapped to
  * host port 8888.
  */
 import { execSync } from "child_process";
 
-const CLUSTER = "sw4rmbot";
+const CLUSTER = "swarmbot";
 const AGENTS = 2;
 const APP_HOST_PORT = 8888;
 const APP_NODE_PORT = 30880;
@@ -66,6 +66,6 @@ console.log(
 	`\nDeploy the stack with 'npm run k3d:deploy', then open http://localhost:${APP_HOST_PORT} (login: admin / swarmboty).`
 );
 console.log(
-	"To run the API locally against this cluster instead: set SW4RM_BOT_ORCHESTRATOR=kubernetes (or rely on auto-detection via KUBECONFIG)."
+	"To run the API locally against this cluster instead: set SWARMBOT_ORCHESTRATOR=kubernetes (or rely on auto-detection via KUBECONFIG)."
 );
 console.log("Run 'npm run k3d:stop' to tear down.");

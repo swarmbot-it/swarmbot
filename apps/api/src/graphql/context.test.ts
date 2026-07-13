@@ -19,7 +19,7 @@ describe("buildContext", () => {
 		const cfg = { ...loadConfig(), mock: true };
 		const orchestrator = new SwarmOrchestrator(cfg);
 		const claims = {
-			iss: "sw4rm.bot",
+			iss: "swarmbot",
 			iat: 1,
 			jti: "x",
 			usr: { username: "admin" },

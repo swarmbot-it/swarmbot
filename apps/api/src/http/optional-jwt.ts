@@ -20,7 +20,7 @@ export function optionalJwtMiddleware(couchDb: nano.DocumentScope<couch.CouchDoc
 				return next();
 			}
 			const claims = verifyJwt(secret, auth);
-			if (claims.iss === "sw4rm.bot-api") {
+			if (claims.iss === "swarmbot-api") {
 				const u = await couch.userByUsername(couchDb, claims.usr.username);
 				const apiToken = u?.["api-token"];
 				const apiJti =
@@ -30,7 +30,7 @@ export function optionalJwtMiddleware(couchDb: nano.DocumentScope<couch.CouchDoc
 				if (apiJti !== claims.jti) {
 					return next();
 				}
-			} else if (claims.iss === "sw4rm.bot") {
+			} else if (claims.iss === "swarmbot") {
 				if (isRevoked(claims.jti)) {
 					return next();
 				}

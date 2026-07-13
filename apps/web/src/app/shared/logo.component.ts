@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, Input } from "@angular/core";
 import { NgIf } from "@angular/common";
 
 /**
- * sw4rm.bot logo: four nodes and hub links with gentle out-of-sync opacity fade.
+ * swarmbot logo: four nodes and hub links with gentle out-of-sync opacity fade.
  * Animations are disabled when the user prefers reduced motion.
  */
 @Component({
@@ -10,7 +10,7 @@ import { NgIf } from "@angular/common";
 	standalone: true,
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	template: `
-		<span class="sb-logo-wrap" aria-label="sw4rm.bot">
+		<span class="sb-logo-wrap" aria-label="swarmbot">
 			<svg
 				width="28"
 				height="28"
@@ -74,7 +74,7 @@ import { NgIf } from "@angular/common";
 			</svg>
 			<span class="sb-logo__word" *ngIf="showWord">
 				<span class="sb-logo__title" aria-hidden="true"
-					>sw4rm<span style="color: var(--primary-500)">.bot</span></span
+					>swarm<span style="color: var(--primary-500)">bot</span></span
 				>
 				<span class="sb-logo__subtitle" *ngIf="subtitle">{{ subtitle }}</span>
 			</span>
@@ -186,7 +186,7 @@ import { NgIf } from "@angular/common";
 	imports: [NgIf],
 })
 export class LogoComponent {
-	/** When true, shows the "sw4rm.bot" wordmark and version subtitle beside the mark. */
+	/** When true, shows the "swarmbot" wordmark and version subtitle beside the mark. */
 	@Input() showWord = true;
 	/** e.g. `0.1.1 · local-dind` — app version and cluster name. */
 	@Input() subtitle?: string;

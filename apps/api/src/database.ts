@@ -1,7 +1,7 @@
 ﻿import { setTimeout as delay } from "timers/promises";
 import { randomUUID } from "crypto";
 import type nano from "nano";
-import type { Sw4rmBotConfig } from "./config.js";
+import type { SwarmBotConfig } from "./config.js";
 import * as couch from "./couch.js";
 import { createSecret, db, recordMigration, migrationsDone, findDocs, updateDoc } from "./couch.js";
 import { influxPing, createDatabase } from "./influx.js";
@@ -37,7 +37,7 @@ async function runMigration(
 }
 
 export async function initCouch(
-	_cfg: Sw4rmBotConfig,
+	_cfg: SwarmBotConfig,
 	server: nano.ServerScope
 ): Promise<nano.DocumentScope<couch.CouchDoc>> {
 	await waitFor("CouchDB", 100, async () => {
@@ -55,9 +55,9 @@ export async function initCouch(
 
 	if (!(await couch.databaseExists(server))) {
 		await couch.createDatabase(server);
-		console.log("sw4rm.bot DB created");
+		console.log("swarmbot DB created");
 	} else {
-		console.log("sw4rm.bot DB already exists");
+		console.log("swarmbot DB already exists");
 	}
 
 	const d = db(server);
@@ -92,7 +92,7 @@ export async function initCouch(
 	return d;
 }
 
-export async function initInflux(cfg: Sw4rmBotConfig): Promise<void> {
+export async function initInflux(cfg: SwarmBotConfig): Promise<void> {
 	if (!cfg.influxdbUrl) {
 		console.log("InfluxDB not configured, stats disabled");
 		return;

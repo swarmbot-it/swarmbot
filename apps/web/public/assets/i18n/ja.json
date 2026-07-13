@@ -28,7 +28,7 @@
     "auth": {
         "login": {
             "title": "おかえりなさい",
-            "subtitle": "sw4rm.bot 管理コンソールにサインインしてください。",
+            "subtitle": "swarmbot 管理コンソールにサインインしてください。",
             "username": "ユーザー名",
             "password": "パスワード",
             "submit": "サインイン",

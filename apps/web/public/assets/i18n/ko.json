@@ -28,7 +28,7 @@
     "auth": {
         "login": {
             "title": "다시 오신 것을 환영합니다",
-            "subtitle": "sw4rm.bot 관리 콘솔에 로그인하세요.",
+            "subtitle": "swarmbot 관리 콘솔에 로그인하세요.",
             "username": "사용자 이름",
             "password": "비밀번호",
             "submit": "로그인",

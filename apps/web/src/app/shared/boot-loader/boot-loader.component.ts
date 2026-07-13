@@ -47,7 +47,7 @@ import { BootService } from "../../core/boot.service";
 					<circle class="sb-bdot sb-bdot--right"  cx="25" cy="16" r="2.8" fill="#EA580C"/>
 				</svg>
 
-				<div class="sb-boot__title" aria-label="sw4rm.bot">sw4rm<span>.bot</span></div>
+				<div class="sb-boot__title" aria-label="swarmbot">swarm<span>bot</span></div>
 
 				<div class="sb-boot__progress">
 					<div class="sb-boot__progress-bar" [style.width.%]="progressPct$ | async"></div>

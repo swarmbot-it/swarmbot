@@ -1,5 +1,5 @@
 ﻿import Dockerode from "dockerode";
-import type { Sw4rmBotConfig } from "../config.js";
+import type { SwarmBotConfig } from "../config.js";
 import { setNegotiatedDockerApi } from "../config.js";
 import { createMockDocker } from "./mock.js";
 import type {
@@ -15,10 +15,10 @@ import type {
 
 export type DockerCtx = {
 	docker: Dockerode;
-	cfg: Sw4rmBotConfig;
+	cfg: SwarmBotConfig;
 };
 
-export function createDocker(cfg: Sw4rmBotConfig): Dockerode {
+export function createDocker(cfg: SwarmBotConfig): Dockerode {
 	if (cfg.mock) {
 		return createMockDocker();
 	}
@@ -40,8 +40,8 @@ export function negotiateApiVersion(daemonMax: string | undefined, ourMax = "1.4
 	return chosen.toFixed(2);
 }
 
-export async function setupDockerApi(_cfg: Sw4rmBotConfig, docker: Dockerode): Promise<void> {
-	const envOverride = process.env.SW4RM_BOT_DOCKER_API;
+export async function setupDockerApi(_cfg: SwarmBotConfig, docker: Dockerode): Promise<void> {
+	const envOverride = process.env.SWARMBOT_DOCKER_API;
 	if (envOverride) {
 		setNegotiatedDockerApi(envOverride);
 		return;
@@ -296,7 +296,7 @@ export function mapNodeSummary(n: Dockerode.Node): NodeSummary {
 
 /** Human-readable cluster label: configured instance name or Docker daemon hostname. */
 export async function resolveClusterDisplayName(
-	cfg: Sw4rmBotConfig,
+	cfg: SwarmBotConfig,
 	docker: Dockerode
 ): Promise<string | null> {
 	if (cfg.instanceName) return cfg.instanceName;

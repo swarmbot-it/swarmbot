@@ -12,8 +12,8 @@ import { readFile } from "fs/promises";
 
 describe("bootstrapAdminIfEmpty", () => {
 	beforeEach(() => {
-		delete process.env.SW4RM_BOT_BOOTSTRAP_ADMIN;
-		delete process.env.SW4RM_BOT_BOOTSTRAP_PASSWORD;
+		delete process.env.SWARMBOT_BOOTSTRAP_ADMIN;
+		delete process.env.SWARMBOT_BOOTSTRAP_PASSWORD;
 	});
 
 	it("creates mock admin when database is empty", async () => {

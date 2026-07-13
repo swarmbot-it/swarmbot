@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { loadConfig, type Sw4rmBotConfig } from "../../config.js";
+import { loadConfig, type SwarmBotConfig } from "../../config.js";
 import {
 	evaluateKubeClusterHealth,
 	KubernetesOrchestrator,
@@ -17,11 +17,11 @@ import {
 import { createMockKube } from "./mock.js";
 import type { KubeNode, KubePod } from "./kube-api.js";
 
-function cfg(overrides: Partial<Sw4rmBotConfig> = {}): Sw4rmBotConfig {
+function cfg(overrides: Partial<SwarmBotConfig> = {}): SwarmBotConfig {
 	return { ...loadConfig(), mock: true, mockOrchestrator: "kubernetes", ...overrides };
 }
 
-function orch(overrides: Partial<Sw4rmBotConfig> = {}): KubernetesOrchestrator {
+function orch(overrides: Partial<SwarmBotConfig> = {}): KubernetesOrchestrator {
 	return new KubernetesOrchestrator(cfg(overrides), createMockKube());
 }
 
@@ -285,7 +285,7 @@ describe("KubernetesOrchestrator over the mock apiserver", () => {
 	it("reports healthy cluster and a display name", async () => {
 		const o = orch();
 		expect((await o.clusterHealth()).status).toBe("healthy");
-		expect(await o.clusterDisplayName()).toBe("k3d-sw4rmbot-mock");
+		expect(await o.clusterDisplayName()).toBe("k3d-swarmbot-mock");
 	});
 
 	it("fetches pod logs for a workload", async () => {

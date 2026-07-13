@@ -5,7 +5,7 @@ import { derivePassword } from "../auth/password.js";
 import yaml from "js-yaml";
 
 export async function initUsersFromConfig(couchDb: nano.DocumentScope<CouchDoc>): Promise<void> {
-	const path = process.env.SW4RM_BOT_USERS_CONFIG ?? "/run/configs/users.yaml";
+	const path = process.env.SWARMBOT_USERS_CONFIG ?? "/run/configs/users.yaml";
 	try {
 		const raw = await readFile(path, "utf8");
 		const doc = yaml.load(raw) as { users?: Array<Record<string, unknown>> };
@@ -46,11 +46,11 @@ export async function bootstrapAdminIfEmpty(
 	const existing = await listUsers(couchDb);
 	if (existing.length > 0) return;
 	const mock = Boolean(opts?.mock);
-	const u = process.env.SW4RM_BOT_BOOTSTRAP_ADMIN ?? (mock ? "admin" : undefined);
-	const p = process.env.SW4RM_BOT_BOOTSTRAP_PASSWORD ?? (mock ? "swarmboty" : undefined);
+	const u = process.env.SWARMBOT_BOOTSTRAP_ADMIN ?? (mock ? "admin" : undefined);
+	const p = process.env.SWARMBOT_BOOTSTRAP_PASSWORD ?? (mock ? "swarmboty" : undefined);
 	if (!u || !p) {
 		console.warn(
-			"No users in database. Set SW4RM_BOT_BOOTSTRAP_ADMIN and SW4RM_BOT_BOOTSTRAP_PASSWORD or mount users.yaml."
+			"No users in database. Set SWARMBOT_BOOTSTRAP_ADMIN and SWARMBOT_BOOTSTRAP_PASSWORD or mount users.yaml."
 		);
 		return;
 	}
@@ -58,7 +58,7 @@ export async function bootstrapAdminIfEmpty(
 		type: "user",
 		username: u,
 		password: derivePassword(p),
-		email: mock ? "admin@sw4rmbot.local" : "",
+		email: mock ? "admin@swarmbot.local" : "",
 		role: "admin",
 	});
 	console.log("Bootstrap admin user created:", u);

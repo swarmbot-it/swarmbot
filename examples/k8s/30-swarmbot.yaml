@@ -1,15 +1,15 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-    name: sw4rmbot
-    namespace: sw4rmbot
+    name: swarmbot
+    namespace: swarmbot
 ---
 # Read access to everything the dashboard shows, plus apply rights for the
 # "deploy stack" (manifest apply) mutation. Tighten for production.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-    name: sw4rmbot
+    name: swarmbot
 rules:
     - apiGroups: [""]
       resources:
@@ -35,50 +35,50 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-    name: sw4rmbot
+    name: swarmbot
 roleRef:
     apiGroup: rbac.authorization.k8s.io
     kind: ClusterRole
-    name: sw4rmbot
+    name: swarmbot
 subjects:
     - kind: ServiceAccount
-      name: sw4rmbot
-      namespace: sw4rmbot
+      name: swarmbot
+      namespace: swarmbot
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-    name: sw4rmbot
-    namespace: sw4rmbot
+    name: swarmbot
+    namespace: swarmbot
     labels:
-        app: sw4rmbot
+        app: swarmbot
 spec:
     replicas: 1
     selector:
         matchLabels:
-            app: sw4rmbot
+            app: swarmbot
     template:
         metadata:
             labels:
-                app: sw4rmbot
+                app: swarmbot
         spec:
-            serviceAccountName: sw4rmbot
+            serviceAccountName: swarmbot
             containers:
-                - name: sw4rmbot
-                  image: sw4rmbot/sw4rmbot:latest
+                - name: swarmbot
+                  image: swarmbot/swarmbot:latest
                   imagePullPolicy: IfNotPresent
                   env:
                       # In-cluster ServiceAccount is auto-detected → kubernetes mode.
-                      - name: SW4RM_BOT_DB
+                      - name: SWARMBOT_DB
                         value: http://admin:swarmboty@db:5984
-                      - name: SW4RM_BOT_INFLUXDB
+                      - name: SWARMBOT_INFLUXDB
                         value: http://influxdb:8086
-                      - name: SW4RM_BOT_INFLUXDB_TOKEN
+                      - name: SWARMBOT_INFLUXDB_TOKEN
                         valueFrom:
                             secretKeyRef:
                                 name: influxdb-credentials
                                 key: DOCKER_INFLUXDB_INIT_ADMIN_TOKEN
-                      - name: SW4RM_BOT_PORT
+                      - name: SWARMBOT_PORT
                         value: "8080"
                   ports:
                       - containerPort: 8080
@@ -92,12 +92,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-    name: sw4rmbot
-    namespace: sw4rmbot
+    name: swarmbot
+    namespace: swarmbot
 spec:
     type: NodePort
     selector:
-        app: sw4rmbot
+        app: swarmbot
     ports:
         - port: 8080
           targetPort: 8080
