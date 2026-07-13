@@ -13,7 +13,7 @@ pipeline {
     }
 
     stages {
-        stage('CI') {
+        stage('Test') {
             when { changeRequest() }
             steps {
                 script {
@@ -27,27 +27,33 @@ pipeline {
             }
         }
 
-        stage('Image') {
+        stage('Build image') {
             steps {
                 script {
                     String shortSha = (env.GIT_COMMIT ?: 'dev').take(7)
-                    String tag = "${env.BUILD_NUMBER}-${shortSha}"
-                    def image = docker.build(
-                        "${env.IMAGE}:${tag}",
+                    env.IMAGE_TAG = "${env.BUILD_NUMBER}-${shortSha}"
+                    docker.build(
+                        "${env.IMAGE}:${env.IMAGE_TAG}",
                         "--label org.opencontainers.image.source=https://github.com/swarmbot-it/swarmbot" +
                         " --label org.opencontainers.image.revision=${env.GIT_COMMIT ?: ''} ."
                     )
-                    if (env.BRANCH_NAME == 'main') {
-                        docker.withRegistry('https://ghcr.io', env.REGISTRY_CREDENTIALS_ID) {
-                            image.push()
-                            image.push('latest')
-                        }
-                        writeFile file: 'image.txt', text: "${env.IMAGE}:${tag}\n"
-                        archiveArtifacts artifacts: 'image.txt'
-                        echo "Pushed ${env.IMAGE}:${tag} and ${env.IMAGE}:latest"
-                    } else {
-                        echo 'Image built for validation only; pushed to GHCR from main.'
+                }
+            }
+        }
+
+        // Publishing happens only from main - PR builds stop at test + image build.
+        stage('Push to GHCR') {
+            when { branch 'main' }
+            steps {
+                script {
+                    docker.withRegistry('https://ghcr.io', env.REGISTRY_CREDENTIALS_ID) {
+                        def image = docker.image("${env.IMAGE}:${env.IMAGE_TAG}")
+                        image.push()
+                        image.push('latest')
                     }
+                    writeFile file: 'image.txt', text: "${env.IMAGE}:${env.IMAGE_TAG}\n"
+                    archiveArtifacts artifacts: 'image.txt'
+                    echo "Pushed ${env.IMAGE}:${env.IMAGE_TAG} and ${env.IMAGE}:latest"
                 }
             }
         }
