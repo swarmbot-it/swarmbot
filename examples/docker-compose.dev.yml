@@ -1,4 +1,4 @@
-# docker-compose.dev.yml — Local development stack for Swarmboty
+# docker-compose.dev.yml — Local development stack for sw4rm.bot
 #
 # ── Quick start ──────────────────────────────────────────────────────────────
 #
@@ -6,7 +6,7 @@
 #     docker compose -f examples/docker-compose.dev.yml up
 #
 #   Mock mode (no real Docker socket or databases needed):
-#     SWARMBOTY_MOCK=true docker compose -f examples/docker-compose.dev.yml up api web
+#     SW4RM_BOT_MOCK=true docker compose -f examples/docker-compose.dev.yml up api web
 #
 #   Include the Rust agent (built from source):
 #     docker compose -f examples/docker-compose.dev.yml --profile agent up
@@ -72,10 +72,10 @@ services:
             DOCKER_INFLUXDB_INIT_MODE: setup
             DOCKER_INFLUXDB_INIT_USERNAME: ${INFLUXDB_USER:-admin}
             DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUXDB_PASSWORD:-swarmboty}
-            DOCKER_INFLUXDB_INIT_ORG: swarmboty
-            DOCKER_INFLUXDB_INIT_BUCKET: swarmboty
+            DOCKER_INFLUXDB_INIT_ORG: sw4rmbot
+            DOCKER_INFLUXDB_INIT_BUCKET: sw4rmbot
             DOCKER_INFLUXDB_INIT_RETENTION: 0
-            DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB_TOKEN:-swarmboty-influx-dev-token}
+            DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB_TOKEN:-sw4rmbot-influx-dev-token}
         ports:
             - "8086:8086" # HTTP API
         volumes:
@@ -96,7 +96,7 @@ services:
     # restarts the process on every .ts change.
     #
     # depends_on uses required: false so that running
-    #   SWARMBOTY_MOCK=true docker compose up api web
+    #   SW4RM_BOT_MOCK=true docker compose up api web
     # skips the database health checks and starts immediately.
 
     api:
@@ -104,17 +104,17 @@ services:
         working_dir: /app
         command: >
             sh -c "npm install --prefer-offline --no-progress --no-audit
-                   && npm run dev -w @swarmboty/api"
+                   && npm run dev -w @sw4rmbot/api"
         environment:
             NODE_ENV: development
-            SWARMBOTY_DB: http://${COUCHDB_USER:-admin}:${COUCHDB_PASSWORD:-swarmboty}@db:5984
-            SWARMBOTY_INFLUXDB: http://influxdb:8086
-            SWARMBOTY_INFLUXDB_TOKEN: ${INFLUXDB_TOKEN:-swarmboty-influx-dev-token}
-            SWARMBOTY_PORT: "8080"
-            SWARMBOTY_WORK_DIR: /tmp
-            SWARMBOTY_MOCK: ${SWARMBOTY_MOCK:-false}
-            SWARMBOTY_BOOTSTRAP_ADMIN: ${SWARMBOTY_BOOTSTRAP_ADMIN:-admin}
-            SWARMBOTY_BOOTSTRAP_PASSWORD: ${SWARMBOTY_BOOTSTRAP_PASSWORD:-swarmboty}
+            SW4RM_BOT_DB: http://${COUCHDB_USER:-admin}:${COUCHDB_PASSWORD:-swarmboty}@db:5984
+            SW4RM_BOT_INFLUXDB: http://influxdb:8086
+            SW4RM_BOT_INFLUXDB_TOKEN: ${INFLUXDB_TOKEN:-sw4rmbot-influx-dev-token}
+            SW4RM_BOT_PORT: "8080"
+            SW4RM_BOT_WORK_DIR: /tmp
+            SW4RM_BOT_MOCK: ${SW4RM_BOT_MOCK:-false}
+            SW4RM_BOT_BOOTSTRAP_ADMIN: ${SW4RM_BOT_BOOTSTRAP_ADMIN:-admin}
+            SW4RM_BOT_BOOTSTRAP_PASSWORD: ${SW4RM_BOT_BOOTSTRAP_PASSWORD:-swarmboty}
         volumes:
             - ..:/app # full workspace — enables hot-reload
             - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -168,7 +168,7 @@ services:
             context: ../../swarmagent
             dockerfile: Dockerfile
         environment:
-            SWARMBOTY_URL: http://api:8080
+            SW4RM_BOT_URL: http://api:8080
             DOCKER_API_VERSION: "1.44"
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock:ro

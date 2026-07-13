@@ -3,17 +3,18 @@ import { requireUser, requireAdmin } from "./guards.js";
 import type { GraphQLContext } from "./context.js";
 import { loadConfig } from "../config.js";
 import { createMockCouch } from "../couch.mock.js";
-import { createDocker } from "../docker/engine.js";
+import { SwarmOrchestrator } from "../orchestrator/swarm/adapter.js";
 
 function ctx(
 	user?: GraphQLContext["user"],
 	locale: GraphQLContext["locale"] = "en"
 ): GraphQLContext {
 	const { db } = createMockCouch();
+	const cfg = { ...loadConfig(), mock: true };
 	return {
-		cfg: { ...loadConfig(), mock: true },
+		cfg,
 		couchDb: db,
-		docker: createDocker({ ...loadConfig(), mock: true }),
+		orchestrator: new SwarmOrchestrator(cfg),
 		user,
 		locale,
 	};
@@ -22,7 +23,7 @@ function ctx(
 describe("requireUser", () => {
 	it("returns claims when authenticated", () => {
 		const claims = {
-			iss: "swarmboty",
+			iss: "sw4rm.bot",
 			iat: 1,
 			jti: "j",
 			usr: { username: "admin", role: "admin" },
@@ -38,7 +39,7 @@ describe("requireUser", () => {
 describe("requireAdmin", () => {
 	it("allows admin role", () => {
 		const claims = {
-			iss: "swarmboty",
+			iss: "sw4rm.bot",
 			iat: 1,
 			jti: "j",
 			usr: { username: "admin", role: "admin" },
@@ -48,7 +49,7 @@ describe("requireAdmin", () => {
 
 	it("rejects non-admin", () => {
 		const claims = {
-			iss: "swarmboty",
+			iss: "sw4rm.bot",
 			iat: 1,
 			jti: "j",
 			usr: { username: "bob", role: "editor" },

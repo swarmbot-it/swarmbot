@@ -9,7 +9,7 @@ import { seedDemoUsers } from "./store/users.js";
 async function main(): Promise<void> {
 	const cfg0 = loadConfig();
 	console.log(
-		`Starting Swarmboty (mock=${cfg0.mock}, db=${cfg0.dbUrl}, port=${cfg0.port})`
+		`Starting sw4rm.bot (mock=${cfg0.mock}, db=${cfg0.dbUrl}, port=${cfg0.port})`
 	);
 	const couchServer = createCouch(cfg0);
 	const couchDb = await initCouch(cfg0, couchServer);
@@ -26,7 +26,7 @@ async function main(): Promise<void> {
 		httpServer.once("error", reject);
 		httpServer.listen(cfg.port, () => {
 			httpServer.off("error", reject);
-			console.log(`Swarmboty listening on http://0.0.0.0:${cfg.port}`);
+			console.log(`sw4rm.bot listening on http://0.0.0.0:${cfg.port}`);
 			resolve();
 		});
 	});

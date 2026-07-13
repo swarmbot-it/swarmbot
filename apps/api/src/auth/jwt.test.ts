@@ -29,7 +29,7 @@ describe("generateJwt / verifyJwt", () => {
 		const token = generateJwt(SECRET, user);
 		expect(token.startsWith("Bearer ")).toBe(true);
 		const claims = verifyJwt(SECRET, token);
-		expect(claims.iss).toBe("swarmboty");
+		expect(claims.iss).toBe("sw4rm.bot");
 		expect(claims.usr.username).toBe("alice");
 		expect(claims.usr.role).toBe("admin");
 		expect(claims.jti).toBeTruthy();
@@ -42,12 +42,12 @@ describe("generateJwt / verifyJwt", () => {
 
 	it("respects custom iss/jti/exp", () => {
 		const token = generateJwt(SECRET, user, {
-			iss: "swarmboty-api",
+			iss: "sw4rm.bot-api",
 			jti: "fixed-jti",
 			exp: null,
 		});
 		const claims = verifyJwt(SECRET, token);
-		expect(claims.iss).toBe("swarmboty-api");
+		expect(claims.iss).toBe("sw4rm.bot-api");
 		expect(claims.jti).toBe("fixed-jti");
 		expect(claims.exp).toBeUndefined();
 	});

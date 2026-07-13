@@ -10,7 +10,7 @@ import { makeExecutableSchema } from "@graphql-tools/schema";
 import { WebSocketServer } from "ws";
 import { useServer } from "graphql-ws/lib/use/ws";
 import { execute, subscribe } from "graphql";
-import type { SwarmbotyConfig } from "./config.js";
+import type { Sw4rmBotConfig } from "./config.js";
 import { appVersion } from "./app-version.js";
 import { typeDefs } from "./graphql/schema.js";
 import { resolvers } from "./graphql/resolvers.js";
@@ -22,22 +22,25 @@ import { userByUsername, updateDoc, getSecret, type CouchDoc } from "./couch.js"
 import { decodeBasic, generateJwt, verifyJwt } from "./auth/jwt.js";
 import { verifyPassword, derivePassword, isSha256Digest } from "./auth/password.js";
 import { revokeJti } from "./auth/blacklist.js";
-import { createDocker, setupDockerApi } from "./docker/engine.js";
+import { createOrchestrator } from "./orchestrator/factory.js";
+import type { Orchestrator } from "./orchestrator/types.js";
+import { NoRunningTaskError } from "./orchestrator/swarm/adapter.js";
 import { consumeSlt, createSlt } from "./auth/slt.js";
 import { publishEvent, subscribeEvents } from "./events/hub.js";
 import { processStatsEvent } from "./metrics/ingest-pipeline.js";
 import type nano from "nano";
 
 export async function createHttpServer(
-	cfg: SwarmbotyConfig,
+	cfg: Sw4rmBotConfig,
 	couchDb: nano.DocumentScope<CouchDoc>
 ): Promise<{
 	httpServer: http.Server;
 	apollo: ApolloServer<GraphQLContext>;
+	orchestrator: Orchestrator;
 	cleanup: () => Promise<void>;
 }> {
-	const docker = createDocker(cfg);
-	await setupDockerApi(cfg, docker);
+	const { orchestrator, detection } = await createOrchestrator(cfg);
+	console.log(`orchestrator: ${detection.kind} (${detection.reason})`);
 
 	const app = express();
 	const httpServer = http.createServer(app);
@@ -57,7 +60,13 @@ export async function createHttpServer(
 				const locale = localeFromHeader(
 					typeof langHeader === "string" ? langHeader : undefined
 				);
-				const base: GraphQLContext = { cfg, couchDb, docker, user: undefined, locale };
+				const base: GraphQLContext = {
+					cfg,
+					couchDb,
+					orchestrator,
+					user: undefined,
+					locale,
+				};
 				if (!auth || typeof auth !== "string") {
 					return base;
 				}
@@ -105,9 +114,10 @@ export async function createHttpServer(
 
 	app.get("/version", (_req, res) => {
 		res.json({
-			name: "swarmboty",
+			name: "sw4rm.bot",
 			version: appVersion(),
 			docker: { api: cfg.dockerApi },
+			orchestrator: orchestrator.kind,
 			initialized: true,
 			instanceName: cfg.instanceName ?? null,
 		});
@@ -156,7 +166,7 @@ export async function createHttpServer(
 				const secretDoc = await getSecret(couchDb);
 				const secret = String(secretDoc?.secret ?? "");
 				const claims = verifyJwt(secret, auth);
-				if (claims.iss === "swarmboty") {
+				if (claims.iss === "sw4rm.bot") {
 					revokeJti(claims.jti);
 				}
 			} catch {
@@ -212,7 +222,7 @@ export async function createHttpServer(
 			}
 			const body = req.body as Record<string, unknown>;
 			if (body.type === "stats") {
-				void processStatsEvent(cfg, docker, body.message).catch((e) =>
+				void processStatsEvent(cfg, orchestrator, body.message).catch((e) =>
 					console.warn("stats ingest failed:", e)
 				);
 			}
@@ -229,26 +239,14 @@ export async function createHttpServer(
 		}
 		const serviceId = req.params.id;
 		try {
-			const tasks = await docker.listTasks({
-				filters: { service: [serviceId], "desired-state": ["running"] },
-			});
-			const task = tasks[0];
-			const containerId = task?.Status?.ContainerStatus?.ContainerID;
-			if (!containerId) {
+			const logs = await orchestrator.serviceLogs(serviceId, { tail: 500 });
+			res.setHeader("Content-Type", "text/plain; charset=utf-8");
+			res.send(logs);
+		} catch (e) {
+			if (e instanceof NoRunningTaskError || /no running pod/i.test(String(e))) {
 				res.status(404).json({ error: localizedMessage(locale, "errors.noRunningTask") });
 				return;
 			}
-			const c = docker.getContainer(containerId);
-			const logStream = await c.logs({
-				stdout: true,
-				stderr: true,
-				tail: 500,
-				timestamps: true,
-				follow: false,
-			});
-			res.setHeader("Content-Type", "text/plain; charset=utf-8");
-			res.send(Buffer.from(logStream).toString("utf8"));
-		} catch (e) {
 			res.status(500).json({ error: String(e) });
 		}
 	});
@@ -261,7 +259,7 @@ export async function createHttpServer(
 		bodyParser.json(),
 		expressMiddleware(apollo, {
 			context: async ({ req }: { req: AuthedRequest }): Promise<GraphQLContext> =>
-				buildContext(req, cfg, couchDb, docker),
+				buildContext(req, cfg, couchDb, orchestrator),
 		})
 	);
 
@@ -291,6 +289,7 @@ export async function createHttpServer(
 	return {
 		httpServer,
 		apollo,
+		orchestrator,
 		cleanup: async () => {
 			await apollo.stop();
 		},

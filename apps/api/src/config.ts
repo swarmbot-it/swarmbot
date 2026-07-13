@@ -1,4 +1,4 @@
-﻿/** Swarmboty environment-driven configuration. */
+﻿/** sw4rm.bot environment-driven configuration. */
 
 function envStr(key: string): string | undefined {
 	const v = process.env[key];
@@ -12,7 +12,10 @@ function envInt(key: string): number | undefined {
 	return Number.isFinite(n) ? n : undefined;
 }
 
-export type SwarmbotyConfig = {
+/** Backend selection: explicit, or `auto` (in-cluster/kubeconfig → k8s, else Docker socket). */
+export type OrchestratorMode = "auto" | "swarm" | "kubernetes";
+
+export type Sw4rmBotConfig = {
 	dockerSock: string;
 	dockerApi: string;
 	dockerHttpTimeoutMs: number;
@@ -22,15 +25,21 @@ export type SwarmbotyConfig = {
 	influxdbToken: string | undefined;
 	influxOrg: string | undefined;
 	influxBucket: string | undefined;
-	agentUrl: string | undefined;
 	workDir: string;
 	instanceName: string | undefined;
 	apiTokenExpiryDays: number | undefined;
 	port: number;
 	mock: boolean;
+	orchestrator: OrchestratorMode;
+	/** Explicit kubeconfig path (SW4RM_BOT_KUBECONFIG); KUBECONFIG is honoured too. */
+	kubeconfig: string | undefined;
+	/** Restrict Kubernetes views to one namespace; default: all namespaces. */
+	k8sNamespace: string | undefined;
+	/** Which orchestrator the mock mode should imitate. */
+	mockOrchestrator: "swarm" | "kubernetes";
 };
 
-const defaults: SwarmbotyConfig = {
+const defaults: Sw4rmBotConfig = {
 	dockerSock: "/var/run/docker.sock",
 	dockerApi: "1.44",
 	dockerHttpTimeoutMs: 5000,
@@ -40,13 +49,25 @@ const defaults: SwarmbotyConfig = {
 	influxdbToken: undefined,
 	influxOrg: undefined,
 	influxBucket: undefined,
-	agentUrl: undefined,
 	workDir: "/tmp",
 	instanceName: undefined,
 	apiTokenExpiryDays: undefined,
 	port: 8080,
 	mock: false,
+	orchestrator: "auto",
+	kubeconfig: undefined,
+	k8sNamespace: undefined,
+	mockOrchestrator: "swarm",
 };
+
+function envOrchestratorMode(key: string): OrchestratorMode | undefined {
+	const v = envStr(key)?.toLowerCase();
+	if (v === "swarm" || v === "kubernetes" || v === "auto") return v;
+	if (v !== undefined) {
+		console.warn(`${key}=${v} is not one of swarm|kubernetes|auto; falling back to auto`);
+	}
+	return undefined;
+}
 
 let dynamicDockerApi: string | undefined;
 
@@ -55,7 +76,7 @@ export function setNegotiatedDockerApi(version: string): void {
 }
 
 export function resolvedDockerApi(fallback: string): string {
-	return dynamicDockerApi ?? envStr("SWARMBOTY_DOCKER_API") ?? fallback;
+	return dynamicDockerApi ?? envStr("SW4RM_BOT_DOCKER_API") ?? fallback;
 }
 
 function envBool(key: string): boolean | undefined {
@@ -67,24 +88,30 @@ function envBool(key: string): boolean | undefined {
 	return undefined;
 }
 
-export function loadConfig(): SwarmbotyConfig {
-	const port = envInt("SWARMBOTY_PORT") ?? envInt("PORT") ?? defaults.port;
+export function loadConfig(): Sw4rmBotConfig {
+	const port = envInt("SW4RM_BOT_PORT") ?? envInt("PORT") ?? defaults.port;
 	return {
-		dockerSock: envStr("SWARMBOTY_DOCKER_SOCK") ?? defaults.dockerSock,
+		dockerSock: envStr("SW4RM_BOT_DOCKER_SOCK") ?? defaults.dockerSock,
 		dockerApi: resolvedDockerApi(defaults.dockerApi),
 		dockerHttpTimeoutMs:
-			envInt("SWARMBOTY_DOCKER_HTTP_TIMEOUT") ?? defaults.dockerHttpTimeoutMs,
-		logLevel: envStr("SWARMBOTY_LOG_LEVEL") ?? defaults.logLevel,
-		dbUrl: envStr("SWARMBOTY_DB") ?? defaults.dbUrl,
-		influxdbUrl: envStr("SWARMBOTY_INFLUXDB"),
-		influxdbToken: envStr("SWARMBOTY_INFLUXDB_TOKEN"),
-		influxOrg: envStr("SWARMBOTY_INFLUXDB_ORG"),
-		influxBucket: envStr("SWARMBOTY_INFLUXDB_BUCKET"),
-		agentUrl: envStr("SWARMBOTY_AGENT_URL"),
-		workDir: envStr("SWARMBOTY_WORK_DIR") ?? defaults.workDir,
-		instanceName: envStr("SWARMBOTY_INSTANCE_NAME"),
-		apiTokenExpiryDays: envInt("SWARMBOTY_API_TOKEN_EXPIRY_DAYS"),
+			envInt("SW4RM_BOT_DOCKER_HTTP_TIMEOUT") ?? defaults.dockerHttpTimeoutMs,
+		logLevel: envStr("SW4RM_BOT_LOG_LEVEL") ?? defaults.logLevel,
+		dbUrl: envStr("SW4RM_BOT_DB") ?? defaults.dbUrl,
+		influxdbUrl: envStr("SW4RM_BOT_INFLUXDB"),
+		influxdbToken: envStr("SW4RM_BOT_INFLUXDB_TOKEN"),
+		influxOrg: envStr("SW4RM_BOT_INFLUXDB_ORG"),
+		influxBucket: envStr("SW4RM_BOT_INFLUXDB_BUCKET"),
+		workDir: envStr("SW4RM_BOT_WORK_DIR") ?? defaults.workDir,
+		instanceName: envStr("SW4RM_BOT_INSTANCE_NAME"),
+		apiTokenExpiryDays: envInt("SW4RM_BOT_API_TOKEN_EXPIRY_DAYS"),
 		port,
-		mock: envBool("SWARMBOTY_MOCK") ?? defaults.mock,
+		mock: envBool("SW4RM_BOT_MOCK") ?? defaults.mock,
+		orchestrator: envOrchestratorMode("SW4RM_BOT_ORCHESTRATOR") ?? defaults.orchestrator,
+		kubeconfig: envStr("SW4RM_BOT_KUBECONFIG"),
+		k8sNamespace: envStr("SW4RM_BOT_K8S_NAMESPACE"),
+		mockOrchestrator:
+			envStr("SW4RM_BOT_MOCK_ORCHESTRATOR")?.toLowerCase() === "kubernetes"
+				? "kubernetes"
+				: defaults.mockOrchestrator,
 	};
 }

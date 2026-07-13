@@ -1,7 +1,7 @@
 ﻿import { mkdir, rm, writeFile } from "fs/promises";
 import { join } from "path";
 import { spawn } from "child_process";
-import type { SwarmbotyConfig } from "../config.js";
+import type { Sw4rmBotConfig } from "../config.js";
 import { dockerCliEnv, resolveDockerCliBin } from "./docker-cli-bin.js";
 
 const STACK_NAME = /^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/;
@@ -17,7 +17,7 @@ function stackFilePath(workDir: string, name: string): string {
 }
 
 export async function stackDeploy(
-	cfg: SwarmbotyConfig,
+	cfg: Sw4rmBotConfig,
 	name: string,
 	composeYaml: string,
 	opts?: { skipResolveImage?: boolean }
@@ -34,12 +34,12 @@ export async function stackDeploy(
 	await rm(file, { force: true });
 }
 
-export async function stackRemove(cfg: SwarmbotyConfig, name: string): Promise<void> {
+export async function stackRemove(cfg: Sw4rmBotConfig, name: string): Promise<void> {
 	validateStackName(name);
 	await dockerCli(cfg, ["stack", "rm", name]);
 }
 
-function dockerCli(cfg: SwarmbotyConfig, args: string[]): Promise<void> {
+function dockerCli(cfg: Sw4rmBotConfig, args: string[]): Promise<void> {
 	const bin = resolveDockerCliBin();
 	return new Promise((resolve, reject) => {
 		const child = spawn(bin, args, {

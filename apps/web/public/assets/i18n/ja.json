@@ -2,6 +2,7 @@
     "nav": {
         "dashboard": "ダッシュボード",
         "stacks": "環境",
+        "namespaces": "ネームスペース",
         "services": "サービス",
         "tasks": "タスク",
         "nodes": "ノード",
@@ -27,7 +28,7 @@
     "auth": {
         "login": {
             "title": "おかえりなさい",
-            "subtitle": "SwarmBoty 管理コンソールにサインインしてください。",
+            "subtitle": "sw4rm.bot 管理コンソールにサインインしてください。",
             "username": "ユーザー名",
             "password": "パスワード",
             "submit": "サインイン",
@@ -47,7 +48,12 @@
         "preferences": "設定",
         "apiTokens": "API トークン",
         "logout": "ログアウト",
-        "administrator": "管理者"
+        "administrator": "管理者",
+        "orchestratorTitle": "オーケストレーター",
+        "orchestrator": {
+            "swarm": "Swarm",
+            "kubernetes": "Kubernetes"
+        }
     },
     "table": {
         "search": "検索…",
@@ -136,6 +142,7 @@
             "add": "新しい環境",
             "columns": {
                 "stack": "環境",
+                "namespace": "ネームスペース",
                 "services": "サービス",
                 "networks": "ネットワーク",
                 "volumes": "ボリューム",
@@ -339,33 +346,9 @@
         "choose": "選択",
         "upload": "アップロード",
         "cancel": "キャンセル",
-        "dayNames": [
-            "日曜日",
-            "月曜日",
-            "火曜日",
-            "水曜日",
-            "木曜日",
-            "金曜日",
-            "土曜日"
-        ],
-        "dayNamesShort": [
-            "日",
-            "月",
-            "火",
-            "水",
-            "木",
-            "金",
-            "土"
-        ],
-        "dayNamesMin": [
-            "日",
-            "月",
-            "火",
-            "水",
-            "木",
-            "金",
-            "土"
-        ],
+        "dayNames": ["日曜日", "月曜日", "火曜日", "水曜日", "木曜日", "金曜日", "土曜日"],
+        "dayNamesShort": ["日", "月", "火", "水", "木", "金", "土"],
+        "dayNamesMin": ["日", "月", "火", "水", "木", "金", "土"],
         "monthNames": [
             "1月",
             "2月",

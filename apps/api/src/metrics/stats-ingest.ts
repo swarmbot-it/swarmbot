@@ -5,12 +5,20 @@ export type AgentContainerPayload = {
 	name?: string;
 	cpuPercentage?: number;
 	memoryPercentage?: number;
+	/** Kubernetes mode only (id is then `{namespace}/{pod}/{container}`). */
+	namespace?: string;
+	pod?: string;
+	workload?: string;
+	workloadKind?: string;
 };
 
 export type AgentStatsPayload = {
+	/** Swarm: node id; Kubernetes: node name. */
 	id?: string;
 	hostname?: string;
 	agentVersion?: string;
+	/** Which backend the agent detected ("swarm" | "kubernetes"). */
+	orchestrator?: string;
 	cpu?: { used_percentage?: number; cores?: number };
 	memory?: { total?: number; used?: number; used_percentage?: number; free?: number };
 	disk?: { total?: number; used?: number; used_percentage?: number; free?: number };
@@ -38,11 +46,16 @@ export type ParsedContainerStats = {
 	containerName: string;
 	cpu: number;
 	mem: number;
+	namespace: string | null;
+	pod: string | null;
+	workload: string | null;
+	workloadKind: string | null;
 };
 
 export type ParsedStatsBatch = {
 	node: ParsedNodeStats;
 	containers: ParsedContainerStats[];
+	orchestrator: "swarm" | "kubernetes" | null;
 };
 
 function num(v: unknown, fallback = 0): number {
@@ -132,8 +145,20 @@ export function parseStatsBatch(message: unknown): ParsedStatsBatch | null {
 			containerName: String(t.name ?? "").trim(),
 			cpu: pct(t.cpuPercentage),
 			mem: pct(t.memoryPercentage),
+			namespace: str(t.namespace),
+			pod: str(t.pod),
+			workload: str(t.workload),
+			workloadKind: str(t.workloadKind),
 		});
 	}
 
-	return { node, containers };
+	const orchRaw = String(m.orchestrator ?? "").toLowerCase();
+	const orchestrator =
+		orchRaw === "swarm" || orchRaw === "kubernetes" ? orchRaw : null;
+
+	return { node, containers, orchestrator };
+}
+
+function str(v: unknown): string | null {
+	return typeof v === "string" && v.trim().length > 0 ? v.trim() : null;
 }

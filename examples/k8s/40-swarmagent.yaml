@@ -1,0 +1,81 @@
+# swarmagent in push-only mode: one pod per node, no ports exposed.
+# It auto-detects Kubernetes and POSTs stats/events to the sw4rm.bot /events
+# endpoint with container ids in the "{namespace}/{pod}/{container}" format.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+    name: swarmagent
+    namespace: sw4rmbot
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+    name: swarmagent
+rules:
+    - apiGroups: [""]
+      resources: ["pods", "nodes"]
+      verbs: ["get", "list", "watch"]
+    - apiGroups: ["apps"]
+      resources: ["deployments", "statefulsets", "daemonsets", "replicasets"]
+      verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+    name: swarmagent
+roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: swarmagent
+subjects:
+    - kind: ServiceAccount
+      name: swarmagent
+      namespace: sw4rmbot
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+    name: swarmagent
+    namespace: sw4rmbot
+    labels:
+        app: swarmagent
+spec:
+    selector:
+        matchLabels:
+            app: swarmagent
+    template:
+        metadata:
+            labels:
+                app: swarmagent
+        spec:
+            serviceAccountName: swarmagent
+            tolerations:
+                # Also run on control-plane nodes so their metrics show up.
+                - key: node-role.kubernetes.io/control-plane
+                  operator: Exists
+                  effect: NoSchedule
+                - key: node-role.kubernetes.io/master
+                  operator: Exists
+                  effect: NoSchedule
+            containers:
+                - name: swarmagent
+                  image: sw4rmbot/swarmagent:latest
+                  imagePullPolicy: IfNotPresent
+                  env:
+                      # Push-only contract: where to POST {"type":"stats"|"event"} envelopes.
+                      - name: SW4RM_BOT_PUSH_URL
+                        value: http://sw4rmbot.sw4rmbot.svc:8080/events
+                      # Reported as message.id (the k8s node name).
+                      - name: NODE_NAME
+                        valueFrom:
+                            fieldRef:
+                                fieldPath: spec.nodeName
+                  volumeMounts:
+                      - name: rootfs
+                        mountPath: /host
+                        readOnly: true
+            volumes:
+                # Host filesystem for CPU/memory/disk stats.
+                - name: rootfs
+                  hostPath:
+                      path: /

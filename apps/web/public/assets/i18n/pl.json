@@ -3,6 +3,7 @@
         "dashboard": "Panel",
         "load": "Obciążenie",
         "stacks": "Stosy",
+        "namespaces": "Przestrzenie nazw",
         "services": "Usługi",
         "tasks": "Zadania",
         "nodes": "Węzły",
@@ -29,7 +30,7 @@
     "auth": {
         "login": {
             "title": "Witaj ponownie",
-            "subtitle": "Zaloguj się do konsoli administracyjnej SwarmBoty.",
+            "subtitle": "Zaloguj się do konsoli administracyjnej sw4rm.bot.",
             "username": "Nazwa użytkownika",
             "password": "Hasło",
             "submit": "Zaloguj się",
@@ -50,7 +51,12 @@
         "apiTokens": "Tokeny API",
         "logout": "Wyloguj",
         "administrator": "Administrator",
-        "clusterUnknown": "klaster"
+        "clusterUnknown": "klaster",
+        "orchestratorTitle": "Orkiestrator",
+        "orchestrator": {
+            "swarm": "Swarm",
+            "kubernetes": "Kubernetes"
+        }
     },
     "table": {
         "search": "Szukaj…",
@@ -204,6 +210,7 @@
             "add": "Nowy stos",
             "columns": {
                 "stack": "Stos",
+                "namespace": "Przestrzeń nazw",
                 "services": "Usługi",
                 "networks": "Sieci",
                 "volumes": "Wolumeny",
@@ -426,24 +433,8 @@
             "Piątek",
             "Sobota"
         ],
-        "dayNamesShort": [
-            "Nd",
-            "Pn",
-            "Wt",
-            "Śr",
-            "Cz",
-            "Pt",
-            "So"
-        ],
-        "dayNamesMin": [
-            "Nd",
-            "Pn",
-            "Wt",
-            "Śr",
-            "Cz",
-            "Pt",
-            "So"
-        ],
+        "dayNamesShort": ["Nd", "Pn", "Wt", "Śr", "Cz", "Pt", "So"],
+        "dayNamesMin": ["Nd", "Pn", "Wt", "Śr", "Cz", "Pt", "So"],
         "monthNames": [
             "Styczeń",
             "Luty",

@@ -3,7 +3,7 @@
  * Reads the monorepo version from package.json and propagates it to:
  * - workspace package.json files (api, web)
  * - Angular build-time constant (build-version.ts)
- * Set SWARMBOTY_VERSION in Docker/runtime to override the API runtime version.
+ * Set SW4RM_BOT_VERSION in Docker/runtime to override the API runtime version.
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";

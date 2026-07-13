@@ -23,6 +23,10 @@ describe("buildInfluxLines", () => {
 					containerName: "/frontend_web.1.abc",
 					cpu: 5,
 					mem: 15,
+					namespace: null,
+					pod: null,
+					workload: null,
+					workloadKind: null,
 				},
 			],
 			new Map([

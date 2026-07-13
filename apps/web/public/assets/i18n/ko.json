@@ -2,6 +2,7 @@
     "nav": {
         "dashboard": "대시보드",
         "stacks": "환경",
+        "namespaces": "네임스페이스",
         "services": "서비스",
         "tasks": "작업",
         "nodes": "노드",
@@ -27,7 +28,7 @@
     "auth": {
         "login": {
             "title": "다시 오신 것을 환영합니다",
-            "subtitle": "SwarmBoty 관리 콘솔에 로그인하세요.",
+            "subtitle": "sw4rm.bot 관리 콘솔에 로그인하세요.",
             "username": "사용자 이름",
             "password": "비밀번호",
             "submit": "로그인",
@@ -47,7 +48,12 @@
         "preferences": "환경 설정",
         "apiTokens": "API 토큰",
         "logout": "로그아웃",
-        "administrator": "관리자"
+        "administrator": "관리자",
+        "orchestratorTitle": "오케스트레이터",
+        "orchestrator": {
+            "swarm": "Swarm",
+            "kubernetes": "Kubernetes"
+        }
     },
     "table": {
         "search": "검색…",
@@ -136,6 +142,7 @@
             "add": "새 환경",
             "columns": {
                 "stack": "환경",
+                "namespace": "네임스페이스",
                 "services": "서비스",
                 "networks": "네트워크",
                 "volumes": "볼륨",
@@ -339,33 +346,9 @@
         "choose": "선택",
         "upload": "업로드",
         "cancel": "취소",
-        "dayNames": [
-            "일요일",
-            "월요일",
-            "화요일",
-            "수요일",
-            "목요일",
-            "금요일",
-            "토요일"
-        ],
-        "dayNamesShort": [
-            "일",
-            "월",
-            "화",
-            "수",
-            "목",
-            "금",
-            "토"
-        ],
-        "dayNamesMin": [
-            "일",
-            "월",
-            "화",
-            "수",
-            "목",
-            "금",
-            "토"
-        ],
+        "dayNames": ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"],
+        "dayNamesShort": ["일", "월", "화", "수", "목", "금", "토"],
+        "dayNamesMin": ["일", "월", "화", "수", "목", "금", "토"],
         "monthNames": [
             "1월",
             "2월",

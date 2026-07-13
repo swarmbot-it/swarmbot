@@ -1,4 +1,4 @@
-import type { SwarmbotyConfig } from "../config.js";
+import type { Sw4rmBotConfig } from "../config.js";
 import { influxWrite } from "../influx.js";
 import type { ContainerMapping } from "./swarm-mapper.js";
 import type { ParsedContainerStats, ParsedNodeStats } from "./stats-ingest.js";
@@ -36,13 +36,15 @@ export function buildInfluxLines(
 	node: ParsedNodeStats,
 	containers: ParsedContainerStats[],
 	mappings: Map<string, ContainerMapping | null>,
-	stacksByContainer: Map<string, string | null> = new Map()
+	stacksByContainer: Map<string, string | null> = new Map(),
+	orchestrator: "swarm" | "kubernetes" = "swarm"
 ): string[] {
 	const ts = BigInt(Date.now()) * 1_000_000n;
 	const lines: string[] = [];
 
 	const nodeTags: Record<string, string> = {
 		node_id: node.nodeId,
+		orchestrator,
 	};
 	if (node.hostname) nodeTags["hostname"] = node.hostname;
 
@@ -57,12 +59,20 @@ export function buildInfluxLines(
 		const tags: Record<string, string> = {
 			node_id: node.nodeId,
 			container_id: c.containerId,
+			orchestrator,
 		};
 		if (map?.taskId) tags["task_id"] = map.taskId;
 		if (map?.serviceId) tags["service_id"] = map.serviceId;
 		if (map?.serviceName) tags["service_name"] = map.serviceName;
-		const stackTag = stacksByContainer.get(c.containerId) ?? map?.stack ?? null;
+		// Kubernetes: the namespace plays the role of the stack, and is also
+		// tagged explicitly so k8s-native queries can filter on `namespace`.
+		const namespace = c.namespace ?? null;
+		const stackTag =
+			stacksByContainer.get(c.containerId) ?? map?.stack ?? namespace ?? null;
 		if (stackTag) tags["stack"] = stackTag;
+		if (orchestrator === "kubernetes" && (namespace ?? stackTag)) {
+			tags["namespace"] = (namespace ?? stackTag)!;
+		}
 
 		lines.push(
 			line("container_cpu", tags, { percent: c.cpu }, ts),
@@ -74,13 +84,14 @@ export function buildInfluxLines(
 }
 
 export async function writeStatsToInflux(
-	cfg: SwarmbotyConfig,
+	cfg: Sw4rmBotConfig,
 	node: ParsedNodeStats,
 	containers: ParsedContainerStats[],
 	mappings: Map<string, ContainerMapping | null>,
-	stacksByContainer: Map<string, string | null> = new Map()
+	stacksByContainer: Map<string, string | null> = new Map(),
+	orchestrator: "swarm" | "kubernetes" = "swarm"
 ): Promise<void> {
 	if (!cfg.influxdbUrl) return;
-	const lines = buildInfluxLines(node, containers, mappings, stacksByContainer);
+	const lines = buildInfluxLines(node, containers, mappings, stacksByContainer, orchestrator);
 	await influxWrite(cfg, lines);
 }

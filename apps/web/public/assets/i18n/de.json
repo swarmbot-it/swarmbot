@@ -2,6 +2,7 @@
     "nav": {
         "dashboard": "Dashboard",
         "stacks": "Umgebungen",
+        "namespaces": "Namespaces",
         "services": "Dienste",
         "tasks": "Aufgaben",
         "nodes": "Knoten",
@@ -27,7 +28,7 @@
     "auth": {
         "login": {
             "title": "Willkommen zurück",
-            "subtitle": "Melden Sie sich in der SwarmBoty-Administrationskonsole an.",
+            "subtitle": "Melden Sie sich in der sw4rm.bot-Administrationskonsole an.",
             "username": "Benutzername",
             "password": "Passwort",
             "submit": "Anmelden",
@@ -47,7 +48,12 @@
         "preferences": "Einstellungen",
         "apiTokens": "API-Token",
         "logout": "Abmelden",
-        "administrator": "Administrator"
+        "administrator": "Administrator",
+        "orchestratorTitle": "Orchestrator",
+        "orchestrator": {
+            "swarm": "Swarm",
+            "kubernetes": "Kubernetes"
+        }
     },
     "table": {
         "search": "Suchen…",
@@ -136,6 +142,7 @@
             "add": "Neue Umgebung",
             "columns": {
                 "stack": "Umgebung",
+                "namespace": "Namespace",
                 "services": "Dienste",
                 "networks": "Netzwerke",
                 "volumes": "Volumes",
@@ -348,24 +355,8 @@
             "Freitag",
             "Samstag"
         ],
-        "dayNamesShort": [
-            "So",
-            "Mo",
-            "Di",
-            "Mi",
-            "Do",
-            "Fr",
-            "Sa"
-        ],
-        "dayNamesMin": [
-            "So",
-            "Mo",
-            "Di",
-            "Mi",
-            "Do",
-            "Fr",
-            "Sa"
-        ],
+        "dayNamesShort": ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"],
+        "dayNamesMin": ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"],
         "monthNames": [
             "Januar",
             "Februar",

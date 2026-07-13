@@ -102,7 +102,7 @@ export async function seedDefaultRegistries(db: nano.DocumentScope<CouchDoc>): P
 	}> = [
 		{
 			name: "GitHub Container Registry",
-			url: "ghcr.io/swarmboty",
+			url: "ghcr.io/sw4rmbot",
 			type: "GHCR",
 			user: "deploy-bot",
 			default: true,
@@ -111,7 +111,7 @@ export async function seedDefaultRegistries(db: nano.DocumentScope<CouchDoc>): P
 			name: "Docker Hub",
 			url: "registry-1.docker.io",
 			type: "Docker Hub",
-			user: "swarmboty-ci",
+			user: "sw4rmbot-ci",
 			default: false,
 		},
 		{
@@ -123,14 +123,14 @@ export async function seedDefaultRegistries(db: nano.DocumentScope<CouchDoc>): P
 		},
 		{
 			name: "Internal Harbor",
-			url: "harbor.internal.swarmboty.io",
+			url: "harbor.internal.sw4rmbot.io",
 			type: "Harbor",
 			user: "harbor-svc",
 			default: false,
 		},
 		{
 			name: "Quay.io",
-			url: "quay.io/swarmboty",
+			url: "quay.io/sw4rmbot",
 			type: "Quay",
 			user: "quay-robot",
 			default: false,

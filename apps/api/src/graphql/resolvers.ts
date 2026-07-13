@@ -3,32 +3,22 @@ import type { GraphQLContext } from "./context.js";
 import { requireUser } from "./guards.js";
 import { localizedError } from "../i18n/errors.js";
 import { t } from "../i18n/translate.js";
-import { stackDeploy, validateStackName } from "../docker/cli.js";
+import { validateStackName } from "../docker/cli.js";
 import {
 	ComposeValidationError,
 	countComposeResources,
 	validateComposeYaml,
 } from "../docker/compose-validate.js";
+import {
+	ManifestValidationError,
+	validateManifestYaml,
+} from "../orchestrator/kubernetes/adapter.js";
 import { getSecret, userByUsername, updateDoc } from "../couch.js";
 import { generateJwt } from "../auth/jwt.js";
 import { verifyPassword, derivePassword, isSha256Digest } from "../auth/password.js";
 import { revokeJti } from "../auth/blacklist.js";
-import {
-	aggregateStacks,
-	mapNetworkSummary,
-	mapNodeSummary,
-	mapServiceDetail,
-	mapServiceSummary,
-	replicaCountsByService,
-	resolveClusterDisplayName,
-	mapStamped,
-	mapTaskSummary,
-	mapVolumeSummary,
-	type NodeSummary,
-	type ServiceSummary,
-} from "../docker/engine.js";
+import type { NodeSummary, ServiceSummary } from "../orchestrator/types.js";
 import { pubsub, SWARM_TOPIC } from "./pubsub.js";
-import type Dockerode from "dockerode";
 import { randomUUID } from "crypto";
 import {
 	createRegistry as createRegistryDoc,
@@ -74,7 +64,6 @@ import {
 } from "../metrics/stats-store.js";
 import { influxQuery } from "../influx.js";
 import { appVersion } from "../app-version.js";
-import { evaluateClusterHealth } from "../cluster-health.js";
 
 /**
  * Stable per-resource pseudo-load so dashboards look the same between
@@ -134,6 +123,53 @@ function classifyService(_s: ServiceSummary): string {
 	return _s.replicasRunning >= _s.replicasTotal ? "RUNNING" : "UPDATING";
 }
 
+function looksLikeComposeYaml(yamlText: string): boolean {
+	try {
+		validateComposeYaml(yamlText);
+		return true;
+	} catch {
+		return false;
+	}
+}
+
+function validateManifestYamlOrThrow(
+	ctx: GraphQLContext,
+	yamlText: string
+): Array<Record<string, unknown>> {
+	try {
+		return validateManifestYaml(yamlText);
+	} catch (e) {
+		if (e instanceof ManifestValidationError) {
+			// A compose file submitted against Kubernetes is a mode mismatch,
+			// not a syntax error — surface it as NOT_SUPPORTED_IN_ORCHESTRATOR.
+			if (looksLikeComposeYaml(yamlText)) {
+				throw localizedError(
+					ctx.locale,
+					"errors.notSupportedInOrchestrator",
+					"NOT_SUPPORTED_IN_ORCHESTRATOR"
+				);
+			}
+			throw new GraphQLError(
+				`${t(ctx.locale, "errors.invalidManifest")} ${e.detail}`,
+				{ extensions: { code: "INVALID_MANIFEST" } }
+			);
+		}
+		throw e;
+	}
+}
+
+function countManifestResources(docs: Array<Record<string, unknown>>) {
+	const kinds = docs.map((d) => String(d.kind ?? ""));
+	const count = (...wanted: string[]) => kinds.filter((k) => wanted.includes(k)).length;
+	return {
+		services: count("Deployment", "StatefulSet", "DaemonSet"),
+		networks: 0,
+		volumes: count("PersistentVolumeClaim"),
+		configs: count("ConfigMap"),
+		secrets: count("Secret"),
+	};
+}
+
 function composeValidationMessage(
 	locale: GraphQLContext["locale"],
 	err: ComposeValidationError
@@ -150,13 +186,7 @@ async function stackSummaryAfterDeploy(
 	name: string,
 	fallback: ReturnType<typeof countComposeResources>
 ) {
-	const [services, networks] = await Promise.all([
-		ctx.docker.listServices(),
-		ctx.docker.listNetworks(),
-	]);
-	const found = aggregateStacks(services, networks.map(mapNetworkSummary)).find(
-		(s) => s.name === name
-	);
+	const found = (await ctx.orchestrator.listStacks()).find((s) => s.name === name);
 	if (found) return found;
 	return {
 		name,
@@ -181,11 +211,12 @@ export const resolvers = {
 	Query: {
 		health: () => "ok",
 		version: async (_: unknown, __: unknown, ctx: GraphQLContext) => ({
-			name: "swarmboty",
+			name: "sw4rm.bot",
 			version: appVersion(),
 			dockerApi: ctx.cfg.dockerApi,
-			instanceName: await resolveClusterDisplayName(ctx.cfg, ctx.docker),
+			instanceName: await ctx.orchestrator.clusterDisplayName(),
 			influxdb: Boolean(ctx.cfg.influxdbUrl),
+			orchestrator: ctx.orchestrator.kind,
 		}),
 		me: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
 			requireUser(ctx);
@@ -203,34 +234,33 @@ export const resolvers = {
 		},
 		overview: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
 			requireUser(ctx);
-			const docker = ctx.docker as Dockerode & {
-				listSecrets(): Promise<unknown[]>;
-				listConfigs(): Promise<unknown[]>;
-			};
+			const orch = ctx.orchestrator;
 			const [
 				services,
-				nodesRaw,
+				nodesBase,
 				tasks,
 				networks,
-				volRes,
+				volumes,
 				secrets,
 				configs,
+				stacks,
+				health,
 				registries,
 				users,
 			] = await Promise.all([
-				docker.listServices(),
-				docker.listNodes(),
-				docker.listTasks(),
-				docker.listNetworks(),
-				docker.listVolumes(),
-				docker.listSecrets(),
-				docker.listConfigs(),
+				orch.listServices(),
+				orch.listNodes(),
+				orch.listTasks(),
+				orch.listNetworks(),
+				orch.listVolumes(),
+				orch.listSecrets(),
+				orch.listConfigs(),
+				orch.listStacks(),
+				orch.clusterHealth(),
 				listRegistries(ctx.couchDb),
 				listUserAccounts(ctx.couchDb),
 			]);
-			const nodes = await decorateNodes(ctx, nodesRaw.map(mapNodeSummary));
-			const health = evaluateClusterHealth(nodesRaw);
-			const volumes = (volRes as { Volumes?: unknown[] }).Volumes ?? [];
+			const nodes = await decorateNodes(ctx, nodesBase);
 			const managers = nodes.filter((n) => n.role === "manager").length;
 			const workers = nodes.filter((n) => n.role === "worker").length;
 			const live = hasLiveStats() ? getClusterOverviewMetrics() : null;
@@ -247,7 +277,7 @@ export const resolvers = {
 				nodes: nodes.length,
 				managers,
 				workers,
-				stacks: aggregateStacks(services, networks.map(mapNetworkSummary)).length,
+				stacks: stacks.length,
 				services: services.length,
 				tasks: tasks.length,
 				networks: networks.length,
@@ -272,53 +302,29 @@ export const resolvers = {
 		},
 		stacks: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
 			requireUser(ctx);
-			const [services, networks] = await Promise.all([
-				ctx.docker.listServices(),
-				ctx.docker.listNetworks(),
-			]);
-			return aggregateStacks(services, networks.map(mapNetworkSummary));
+			return ctx.orchestrator.listStacks();
 		},
 		services: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
 			requireUser(ctx);
-			const [list, tasks] = await Promise.all([
-				ctx.docker.listServices(),
-				ctx.docker.listTasks(),
-			]);
-			const replicaCounts = replicaCountsByService(tasks);
-			return list.map((s) => {
-				const sid = (s as unknown as { ID?: string }).ID ?? "";
-				const summary = mapServiceSummary(s, replicaCounts.get(sid));
-				return { ...summary, status: classifyService(summary) };
-			});
+			const list = await ctx.orchestrator.listServices();
+			return list.map((summary) => ({ ...summary, status: classifyService(summary) }));
 		},
 		service: async (_: unknown, { id }: { id: string }, ctx: GraphQLContext) => {
 			requireUser(ctx);
-			const [list, tasks] = await Promise.all([
-				ctx.docker.listServices(),
-				ctx.docker.listTasks(),
-			]);
-			const s = list.find(
-				(x: Dockerode.Service) => (x as unknown as { ID?: string }).ID === id
-			);
-			if (!s) return null;
-			const detail = mapServiceDetail(s, replicaCountsByService(tasks).get(id));
+			const detail = await ctx.orchestrator.getService(id);
+			if (!detail) return null;
 			return { ...detail, status: classifyService(detail) };
 		},
 		tasks: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
 			requireUser(ctx);
-			const [tasksRaw, services, nodes] = await Promise.all([
-				ctx.docker.listTasks(),
-				ctx.docker.listServices(),
-				ctx.docker.listNodes(),
+			const [tasks, services, nodes] = await Promise.all([
+				ctx.orchestrator.listTasks(),
+				ctx.orchestrator.listServices(),
+				ctx.orchestrator.listNodes(),
 			]);
-			const nodeMap = new Map(
-				nodes.map((n) => [(n as unknown as { ID?: string }).ID, mapNodeSummary(n)])
-			);
-			const svcMap = new Map(
-				services.map((s) => [(s as unknown as { ID?: string }).ID, mapServiceSummary(s)])
-			);
-			return tasksRaw.map((t, idx) => {
-				const ts = mapTaskSummary(t);
+			const nodeMap = new Map(nodes.map((n) => [n.id, n]));
+			const svcMap = new Map(services.map((s) => [s.id, s]));
+			return tasks.map((ts, idx) => {
 				const svc = svcMap.get(ts.serviceId);
 				const node = nodeMap.get(ts.nodeId);
 				const live = getTaskLiveMetrics(ts.id);
@@ -333,7 +339,7 @@ export const resolvers = {
 				return {
 					id: ts.id,
 					serviceId: ts.serviceId,
-					name: svc ? `${svc.name}.${ts.slot}` : ts.id,
+					name: ts.name ?? (svc ? `${svc.name}.${ts.slot}` : ts.id),
 					image: svc?.image ?? "—",
 					node: node?.hostname ?? ts.nodeId,
 					stack: svc?.stack ?? null,
@@ -349,33 +355,24 @@ export const resolvers = {
 		},
 		nodes: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
 			requireUser(ctx);
-			const list = await ctx.docker.listNodes();
-			return decorateNodes(
-				ctx,
-				list.map((n) => mapNodeSummary(n))
-			);
+			const list = await ctx.orchestrator.listNodes();
+			return decorateNodes(ctx, list);
 		},
 		networks: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
 			requireUser(ctx);
-			const list = await ctx.docker.listNetworks();
-			return list.map(mapNetworkSummary);
+			return ctx.orchestrator.listNetworks();
 		},
 		volumes: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
 			requireUser(ctx);
-			const res = (await ctx.docker.listVolumes()) as unknown as { Volumes?: unknown[] };
-			return (res.Volumes ?? []).map(mapVolumeSummary);
+			return ctx.orchestrator.listVolumes();
 		},
 		secrets: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
 			requireUser(ctx);
-			const docker = ctx.docker as Dockerode & { listSecrets(): Promise<unknown[]> };
-			const list = await docker.listSecrets();
-			return list.map(mapStamped);
+			return ctx.orchestrator.listSecrets();
 		},
 		configs: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
 			requireUser(ctx);
-			const docker = ctx.docker as Dockerode & { listConfigs(): Promise<unknown[]> };
-			const list = await docker.listConfigs();
-			return list.map(mapStamped);
+			return ctx.orchestrator.listConfigs();
 		},
 		registries: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
 			requireUser(ctx);
@@ -511,7 +508,7 @@ export const resolvers = {
 		},
 		logout: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
 			if (!ctx.user) return true;
-			if (ctx.user.iss === "swarmboty") {
+			if (ctx.user.iss === "sw4rm.bot") {
 				revokeJti(ctx.user.jti);
 			}
 			return true;
@@ -537,7 +534,7 @@ export const resolvers = {
 					"SERVER_MISCONFIGURED"
 				);
 			}
-			const token = generateJwt(secret, u, { iss: "swarmboty-api", jti, exp });
+			const token = generateJwt(secret, u, { iss: "sw4rm.bot-api", jti, exp });
 			const expiresAt = exp ? new Date(exp * 1000).toISOString() : null;
 			await updateDoc(ctx.couchDb, u, {
 				"api-token": { jti, mask: token.slice(-5), ...(expiresAt ? { expiresAt } : {}) },
@@ -566,6 +563,35 @@ export const resolvers = {
 				throw localizedError(ctx.locale, "errors.invalidStackName", "INVALID_STACK_NAME");
 			}
 
+			const orch = ctx.orchestrator;
+
+			if (orch.kind === "kubernetes") {
+				// Kubernetes deploys raw manifests (server-side apply into the
+				// namespace named after the stack) — compose is not supported.
+				const docs = validateManifestYamlOrThrow(ctx, input.composeYaml);
+				const counts = countManifestResources(docs);
+				if (!ctx.cfg.mock) {
+					try {
+						await orch.deployStack(name, input.composeYaml);
+					} catch (e) {
+						const detail = e instanceof Error ? e.message.trim() : String(e);
+						throw new GraphQLError(
+							`${t(ctx.locale, "errors.stackDeployFailed")} ${detail}`,
+							{ extensions: { code: "STACK_DEPLOY_FAILED" } }
+						);
+					}
+				}
+				return stackSummaryAfterDeploy(ctx, name, counts);
+			}
+
+			if (!orch.capabilities.composeDeploy) {
+				throw localizedError(
+					ctx.locale,
+					"errors.notSupportedInOrchestrator",
+					"NOT_SUPPORTED_IN_ORCHESTRATOR"
+				);
+			}
+
 			let doc;
 			try {
 				doc = validateComposeYaml(input.composeYaml);
@@ -582,7 +608,7 @@ export const resolvers = {
 
 			if (!ctx.cfg.mock) {
 				try {
-					await stackDeploy(ctx.cfg, name, input.composeYaml);
+					await orch.deployStack(name, input.composeYaml);
 				} catch (e) {
 					let detail = e instanceof Error ? e.message.trim() : String(e);
 					if (
@@ -593,8 +619,8 @@ export const resolvers = {
 					) {
 						detail =
 							ctx.locale === "pl"
-								? "nie znaleziono programu docker (zainstaluj Docker CLI lub ustaw SWARMBOTY_DOCKER_CLI)"
-								: "docker CLI not found (install Docker CLI or set SWARMBOTY_DOCKER_CLI)";
+								? "nie znaleziono programu docker (zainstaluj Docker CLI lub ustaw SW4RM_BOT_DOCKER_CLI)"
+								: "docker CLI not found (install Docker CLI or set SW4RM_BOT_DOCKER_CLI)";
 					}
 					throw new GraphQLError(
 						detail

@@ -18,6 +18,7 @@ import { QUERY_VERSION } from "../core/graphql.queries";
 import { AuthService } from "../core/auth.service";
 import { ThemeService } from "../core/theme.service";
 import { I18nStateService } from "../core/i18n/i18n-state.service";
+import { OrchestratorStateService } from "../core/orchestrator-state.service";
 import { type LangCode, isLangCode } from "../core/i18n/i18n-languages";
 import { LogoComponent } from "../shared/logo.component";
 import { IconComponent } from "../shared/icon.component";
@@ -60,6 +61,14 @@ const CJK_LANGS: { code: LangCode; label: string }[] = [
 				<span class="topbar__cluster-name">{{ clusterName() }}</span>
 				<sb-icon name="chevronDown" [size]="14"></sb-icon>
 			</div>
+			<span
+				class="topbar__orch"
+				data-testid="orchestrator-badge"
+				[attr.data-orchestrator]="orch.orchestrator()"
+				[title]="'topbar.orchestratorTitle' | transloco"
+			>
+				{{ "topbar.orchestrator." + orch.orchestrator() | transloco }}
+			</span>
 
 			<span class="topbar__spacer"></span>
 
@@ -197,6 +206,19 @@ const CJK_LANGS: { code: LangCode; label: string }[] = [
 			.topbar__cluster-name {
 				font-size: 13px;
 				font-weight: 600;
+			}
+			.topbar__orch {
+				font-family: var(--font-mono);
+				font-size: 10.5px;
+				font-weight: 700;
+				letter-spacing: 0.04em;
+				text-transform: uppercase;
+				background: var(--surface-2);
+				color: var(--muted);
+				padding: 2px 8px;
+				border-radius: 999px;
+				border: 1px solid var(--border);
+				flex-shrink: 0;
 			}
 			.topbar__spacer {
 				flex: 1;
@@ -418,6 +440,7 @@ const CJK_LANGS: { code: LangCode; label: string }[] = [
 export class TopbarComponent implements OnInit {
 	readonly theme = inject(ThemeService);
 	readonly i18n = inject(I18nStateService);
+	readonly orch = inject(OrchestratorStateService);
 	readonly latinLangs = LATIN_LANGS;
 	readonly cjkLangs = CJK_LANGS;
 	private readonly auth = inject(AuthService);
@@ -445,13 +468,16 @@ export class TopbarComponent implements OnInit {
 
 	ngOnInit(): void {
 		this.apollo
-			.watchQuery<{ version: { instanceName: string | null } }>({
+			.watchQuery<{
+				version: { instanceName: string | null; orchestrator: string | null };
+			}>({
 				query: QUERY_VERSION,
 				pollInterval: 60_000,
 			})
-			.valueChanges.pipe(map((r) => r.data?.version?.instanceName ?? null))
-			.subscribe((name) => {
-				this.clusterInstanceName.set(name);
+			.valueChanges.pipe(map((r) => r.data?.version ?? null))
+			.subscribe((version) => {
+				this.clusterInstanceName.set(version?.instanceName ?? null);
+				this.orch.set(version?.orchestrator);
 			});
 	}
 

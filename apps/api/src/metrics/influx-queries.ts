@@ -1,4 +1,4 @@
-import type { SwarmbotyConfig } from "../config.js";
+import type { Sw4rmBotConfig } from "../config.js";
 import { influxBucket, influxQueryFlux } from "../influx.js";
 import { buildMetricsFromFluxPoints } from "./chart-series.js";
 import { pointsByStackTag, pointsFromFluxCsv, valuesFromFluxCsv } from "./flux-csv.js";
@@ -19,12 +19,12 @@ const RANGE_WINDOW: Record<Range, string> = {
 	"24h": "15m",
 };
 
-function bucket(cfg: SwarmbotyConfig): string {
+function bucket(cfg: Sw4rmBotConfig): string {
 	return influxBucket(cfg);
 }
 
 function fluxNodeMetric(
-	cfg: SwarmbotyConfig,
+	cfg: Sw4rmBotConfig,
 	measurement: string,
 	range: Range,
 	nodeId?: string
@@ -45,7 +45,7 @@ from(bucket: "${b}")
 }
 
 function fluxContainerMetric(
-	cfg: SwarmbotyConfig,
+	cfg: Sw4rmBotConfig,
 	measurement: string,
 	range: Range,
 	filterClause: string
@@ -64,7 +64,7 @@ from(bucket: "${bucket(cfg)}")
 }
 
 async function queryMetricPoints(
-	cfg: SwarmbotyConfig,
+	cfg: Sw4rmBotConfig,
 	measurement: string,
 	range: Range,
 	nodeId?: string
@@ -74,7 +74,7 @@ async function queryMetricPoints(
 }
 
 async function queryContainerPoints(
-	cfg: SwarmbotyConfig,
+	cfg: Sw4rmBotConfig,
 	measurement: string,
 	range: Range,
 	filterClause: string
@@ -84,7 +84,7 @@ async function queryContainerPoints(
 }
 
 export async function influxClusterSeries(
-	cfg: SwarmbotyConfig,
+	cfg: Sw4rmBotConfig,
 	range: Range,
 	resolution: Resolution
 ): Promise<MetricsSeries | null> {
@@ -102,7 +102,7 @@ export async function influxClusterSeries(
 }
 
 export async function influxNodeSeries(
-	cfg: SwarmbotyConfig,
+	cfg: Sw4rmBotConfig,
 	nodeId: string,
 	range: Range,
 	resolution: Resolution
@@ -121,7 +121,7 @@ export async function influxNodeSeries(
 }
 
 export async function influxStackSeries(
-	cfg: SwarmbotyConfig,
+	cfg: Sw4rmBotConfig,
 	stack: string,
 	range: Range,
 	resolution: Resolution
@@ -141,7 +141,7 @@ export async function influxStackSeries(
 }
 
 export async function influxTaskSeries(
-	cfg: SwarmbotyConfig,
+	cfg: Sw4rmBotConfig,
 	taskId: string,
 	range: Range,
 	resolution: Resolution
@@ -169,7 +169,7 @@ export type StackMetricSeries = {
 };
 
 export async function influxStackLoadSeries(
-	cfg: SwarmbotyConfig,
+	cfg: Sw4rmBotConfig,
 	range: Range,
 	resolution: Resolution,
 	limit = 7
@@ -229,7 +229,7 @@ from(bucket: "${b}")
 
 /** Latest node CPU% from Influx (last 5m), for node list tiles. */
 export async function influxNodeLivePercent(
-	cfg: SwarmbotyConfig,
+	cfg: Sw4rmBotConfig,
 	nodeId: string,
 	measurement: "node_cpu" | "node_memory" | "node_disk"
 ): Promise<number | null> {

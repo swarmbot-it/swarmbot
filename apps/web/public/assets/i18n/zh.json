@@ -2,6 +2,7 @@
     "nav": {
         "dashboard": "仪表板",
         "stacks": "环境",
+        "namespaces": "命名空间",
         "services": "服务",
         "tasks": "任务",
         "nodes": "节点",
@@ -27,7 +28,7 @@
     "auth": {
         "login": {
             "title": "欢迎回来",
-            "subtitle": "登录 SwarmBoty 管理控制台。",
+            "subtitle": "登录 sw4rm.bot 管理控制台。",
             "username": "用户名",
             "password": "密码",
             "submit": "登录",
@@ -47,7 +48,12 @@
         "preferences": "偏好设置",
         "apiTokens": "API 令牌",
         "logout": "退出登录",
-        "administrator": "管理员"
+        "administrator": "管理员",
+        "orchestratorTitle": "编排器",
+        "orchestrator": {
+            "swarm": "Swarm",
+            "kubernetes": "Kubernetes"
+        }
     },
     "table": {
         "search": "搜索…",
@@ -136,6 +142,7 @@
             "add": "新建环境",
             "columns": {
                 "stack": "环境",
+                "namespace": "命名空间",
                 "services": "服务",
                 "networks": "网络",
                 "volumes": "卷",
@@ -339,33 +346,9 @@
         "choose": "选择",
         "upload": "上传",
         "cancel": "取消",
-        "dayNames": [
-            "星期日",
-            "星期一",
-            "星期二",
-            "星期三",
-            "星期四",
-            "星期五",
-            "星期六"
-        ],
-        "dayNamesShort": [
-            "周日",
-            "周一",
-            "周二",
-            "周三",
-            "周四",
-            "周五",
-            "周六"
-        ],
-        "dayNamesMin": [
-            "日",
-            "一",
-            "二",
-            "三",
-            "四",
-            "五",
-            "六"
-        ],
+        "dayNames": ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"],
+        "dayNamesShort": ["周日", "周一", "周二", "周三", "周四", "周五", "周六"],
+        "dayNamesMin": ["日", "一", "二", "三", "四", "五", "六"],
         "monthNames": [
             "一月",
             "二月",

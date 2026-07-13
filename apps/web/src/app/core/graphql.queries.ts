@@ -38,13 +38,14 @@ export const QUERY_OVERVIEW = gql`
 	}
 `;
 
-/** Runtime build identity and negotiated Docker Engine API version. */
+/** Runtime build identity, negotiated Docker Engine API version and orchestrator. */
 export const QUERY_VERSION = gql`
 	query Version {
 		version {
 			version
 			dockerApi
 			instanceName
+			orchestrator
 		}
 	}
 `;

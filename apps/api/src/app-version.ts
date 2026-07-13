@@ -4,9 +4,9 @@ import { fileURLToPath } from "node:url";
 
 const moduleDir = dirname(fileURLToPath(import.meta.url));
 
-/** Deployed Swarmboty release (env override, then apps/api package.json). */
+/** Deployed sw4rm.bot release (env override, then apps/api package.json). */
 export function appVersion(): string {
-	if (process.env.SWARMBOTY_VERSION) return process.env.SWARMBOTY_VERSION;
+	if (process.env.SW4RM_BOT_VERSION) return process.env.SW4RM_BOT_VERSION;
 	for (const rel of ["../package.json", "../../package.json"]) {
 		try {
 			const raw = readFileSync(join(moduleDir, rel), "utf8");

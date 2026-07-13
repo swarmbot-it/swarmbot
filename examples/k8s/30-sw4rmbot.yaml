@@ -1,0 +1,104 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+    name: sw4rmbot
+    namespace: sw4rmbot
+---
+# Read access to everything the dashboard shows, plus apply rights for the
+# "deploy stack" (manifest apply) mutation. Tighten for production.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+    name: sw4rmbot
+rules:
+    - apiGroups: [""]
+      resources:
+          - nodes
+          - namespaces
+          - pods
+          - pods/log
+          - services
+          - persistentvolumeclaims
+          - configmaps
+          - secrets
+      verbs: ["get", "list", "watch"]
+    - apiGroups: ["apps"]
+      resources: ["deployments", "statefulsets", "daemonsets", "replicasets"]
+      verbs: ["get", "list", "watch"]
+    - apiGroups: [""]
+      resources: ["namespaces", "services", "configmaps", "secrets", "persistentvolumeclaims"]
+      verbs: ["create", "patch", "update"]
+    - apiGroups: ["apps"]
+      resources: ["deployments", "statefulsets", "daemonsets"]
+      verbs: ["create", "patch", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+    name: sw4rmbot
+roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: sw4rmbot
+subjects:
+    - kind: ServiceAccount
+      name: sw4rmbot
+      namespace: sw4rmbot
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: sw4rmbot
+    namespace: sw4rmbot
+    labels:
+        app: sw4rmbot
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: sw4rmbot
+    template:
+        metadata:
+            labels:
+                app: sw4rmbot
+        spec:
+            serviceAccountName: sw4rmbot
+            containers:
+                - name: sw4rmbot
+                  image: sw4rmbot/sw4rmbot:latest
+                  imagePullPolicy: IfNotPresent
+                  env:
+                      # In-cluster ServiceAccount is auto-detected → kubernetes mode.
+                      - name: SW4RM_BOT_DB
+                        value: http://admin:swarmboty@db:5984
+                      - name: SW4RM_BOT_INFLUXDB
+                        value: http://influxdb:8086
+                      - name: SW4RM_BOT_INFLUXDB_TOKEN
+                        valueFrom:
+                            secretKeyRef:
+                                name: influxdb-credentials
+                                key: DOCKER_INFLUXDB_INIT_ADMIN_TOKEN
+                      - name: SW4RM_BOT_PORT
+                        value: "8080"
+                  ports:
+                      - containerPort: 8080
+                  readinessProbe:
+                      httpGet:
+                          path: /health
+                          port: 8080
+                      initialDelaySeconds: 5
+                      periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: sw4rmbot
+    namespace: sw4rmbot
+spec:
+    type: NodePort
+    selector:
+        app: sw4rmbot
+    ports:
+        - port: 8080
+          targetPort: 8080
+          nodePort: 30880

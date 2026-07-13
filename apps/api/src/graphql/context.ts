@@ -1,29 +1,29 @@
-﻿import type { AuthedRequest } from "../http/optional-jwt.js";
+import type { AuthedRequest } from "../http/optional-jwt.js";
 import type { JwtClaims } from "../auth/jwt.js";
-import type { SwarmbotyConfig } from "../config.js";
-import type Dockerode from "dockerode";
+import type { Sw4rmBotConfig } from "../config.js";
 import type nano from "nano";
 import type { CouchDoc } from "../couch.js";
+import type { Orchestrator } from "../orchestrator/types.js";
 import { parseAcceptLanguage, type SupportedLocale } from "../i18n/locale.js";
 
 export type GraphQLContext = {
-	cfg: SwarmbotyConfig;
+	cfg: Sw4rmBotConfig;
 	couchDb: nano.DocumentScope<CouchDoc>;
-	docker: Dockerode;
+	orchestrator: Orchestrator;
 	user: JwtClaims | undefined;
 	locale: SupportedLocale;
 };
 
 export function buildContext(
 	req: AuthedRequest,
-	cfg: SwarmbotyConfig,
+	cfg: Sw4rmBotConfig,
 	couchDb: nano.DocumentScope<CouchDoc>,
-	docker: Dockerode
+	orchestrator: Orchestrator
 ): GraphQLContext {
 	return {
 		cfg,
 		couchDb,
-		docker,
+		orchestrator,
 		user: req.swarmUser,
 		locale: parseAcceptLanguage(req.headers["accept-language"]),
 	};

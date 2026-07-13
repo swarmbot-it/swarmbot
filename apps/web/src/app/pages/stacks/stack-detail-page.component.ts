@@ -27,6 +27,7 @@ import { resourceBelongsToStack } from "../../core/stack-scope";
 import { toObservable } from "@angular/core/rxjs-interop";
 import { translatedColumns } from "../../core/i18n/page-columns.helper";
 import { I18nStateService } from "../../core/i18n/i18n-state.service";
+import { OrchestratorStateService } from "../../core/orchestrator-state.service";
 
 type StackRow = {
 	name: string;
@@ -62,7 +63,7 @@ type NamedRow = { name: string; updated: string };
 					<div class="stack-detail__crumb">
 						<a class="stack-detail__crumb-link" routerLink="/app/stacks">
 							<sb-icon name="stacks" [size]="14"></sb-icon>
-							{{ "nav.stacks" | transloco }}
+							{{ orch.stacksNavKey() | transloco }}
 						</a>
 						<sb-icon name="chevronRight" [size]="12" style="color:var(--muted-2)"></sb-icon>
 						<span>{{ vm.stack?.name }}</span>
@@ -369,6 +370,7 @@ type NamedRow = { name: string; updated: string };
 })
 export class StackDetailPageComponent {
 	private readonly route = inject(ActivatedRoute);
+	readonly orch = inject(OrchestratorStateService);
 	private readonly apollo = inject(Apollo);
 	private readonly transloco = inject(TranslocoService);
 	private readonly i18n = inject(I18nStateService);

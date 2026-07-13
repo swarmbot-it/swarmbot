@@ -1,14 +1,24 @@
 ﻿import Dockerode from "dockerode";
-import type { SwarmbotyConfig } from "../config.js";
+import type { Sw4rmBotConfig } from "../config.js";
 import { setNegotiatedDockerApi } from "../config.js";
 import { createMockDocker } from "./mock.js";
+import type {
+	ServiceSummary,
+	ServiceDetail,
+	NodeSummary,
+	TaskSummary,
+	NetworkSummary,
+	VolumeSummary,
+	StampedSummary,
+	StackAgg,
+} from "../orchestrator/types.js";
 
 export type DockerCtx = {
 	docker: Dockerode;
-	cfg: SwarmbotyConfig;
+	cfg: Sw4rmBotConfig;
 };
 
-export function createDocker(cfg: SwarmbotyConfig): Dockerode {
+export function createDocker(cfg: Sw4rmBotConfig): Dockerode {
 	if (cfg.mock) {
 		return createMockDocker();
 	}
@@ -30,8 +40,8 @@ export function negotiateApiVersion(daemonMax: string | undefined, ourMax = "1.4
 	return chosen.toFixed(2);
 }
 
-export async function setupDockerApi(_cfg: SwarmbotyConfig, docker: Dockerode): Promise<void> {
-	const envOverride = process.env.SWARMBOTY_DOCKER_API;
+export async function setupDockerApi(_cfg: Sw4rmBotConfig, docker: Dockerode): Promise<void> {
+	const envOverride = process.env.SW4RM_BOT_DOCKER_API;
 	if (envOverride) {
 		setNegotiatedDockerApi(envOverride);
 		return;
@@ -123,69 +133,16 @@ type StampedLike = {
 	Spec?: { Name?: string };
 };
 
-export type ServiceSummary = {
-	id: string;
-	name: string;
-	image: string | null;
-	replicasRunning: number;
-	replicasTotal: number;
-	ports: string[];
-	status: string;
-	stack: string | null;
-};
-
-export type NodeSummary = {
-	id: string;
-	hostname: string;
-	role: string;
-	availability: string | null;
-	ip: string | null;
-	dockerVersion: string | null;
-	agentVersion: string | null;
-	tags: string[];
-	cpu: number | null;
-	mem: number | null;
-	disk: number | null;
-	cpuHistory?: number[] | null;
-	memHistory?: number[] | null;
-	diskHistory?: number[] | null;
-};
-
-export type TaskSummary = {
-	id: string;
-	serviceId: string;
-	nodeId: string;
-	state: string;
-	desiredState: string;
-	slot: number;
-	timestamp: string;
-};
-
-export type NetworkSummary = {
-	id: string;
-	name: string;
-	driver: string;
-	scope: string;
-	attachable: boolean;
-	internal: boolean;
-	ingress: boolean;
-	subnet: string | null;
-	gateway: string | null;
-};
-
-export type VolumeSummary = {
-	name: string;
-	driver: string;
-	size: string;
-	mountpoint: string | null;
-};
-
-export type StampedSummary = {
-	id: string;
-	name: string;
-	created: string;
-	updated: string;
-};
+export type {
+	ServiceSummary,
+	ServiceDetail,
+	NodeSummary,
+	TaskSummary,
+	NetworkSummary,
+	VolumeSummary,
+	StampedSummary,
+	StackAgg,
+} from "../orchestrator/types.js";
 
 /** Format published ports as "host→container" strings used by the UI. */
 export function formatPorts(spec: ServiceLike["Spec"]): string[] {
@@ -241,29 +198,6 @@ export function mapServiceSummary(
 		stack,
 	};
 }
-
-export type ServiceDetail = ServiceSummary & {
-	mode: string;
-	created: string;
-	updated: string;
-	env: Array<{ key: string; value: string }>;
-	labels: Array<{ key: string; value: string }>;
-	publishedPorts: Array<{
-		containerPort: number;
-		hostPort: number | null;
-		protocol: string;
-		mode: string;
-	}>;
-	bindMounts: Array<{ containerPath: string; hostPath: string; readOnly: boolean }>;
-	volumeMounts: Array<{
-		containerPath: string;
-		volumeName: string;
-		readOnly: boolean;
-		driver: string;
-	}>;
-	secretNames: string[];
-	configNames: string[];
-};
 
 function parseEnv(env: string[] | undefined): Array<{ key: string; value: string }> {
 	if (!env?.length) return [];
@@ -364,7 +298,7 @@ export function mapNodeSummary(n: Dockerode.Node): NodeSummary {
 
 /** Human-readable cluster label: configured instance name or Docker daemon hostname. */
 export async function resolveClusterDisplayName(
-	cfg: SwarmbotyConfig,
+	cfg: Sw4rmBotConfig,
 	docker: Dockerode
 ): Promise<string | null> {
 	if (cfg.instanceName) return cfg.instanceName;
@@ -438,16 +372,6 @@ export function mapStamped(s: unknown): StampedSummary {
  * Aggregate task counts per stack and decide the overall status label.
  * Looks at the namespace label on services to bucket them.
  */
-export type StackAgg = {
-	name: string;
-	services: number;
-	networks: number;
-	volumes: number;
-	configs: number;
-	secrets: number;
-	status: string;
-};
-
 export function aggregateStacks(
 	services: Dockerode.Service[],
 	networks: NetworkSummary[]

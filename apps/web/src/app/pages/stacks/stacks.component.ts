@@ -11,6 +11,7 @@ import { I18nStateService } from "../../core/i18n/i18n-state.service";
 import { translatedColumns } from "../../core/i18n/page-columns.helper";
 import { TranslocoService } from "@jsverse/transloco";
 import { QUERY_STACKS } from "../../core/graphql.queries";
+import { OrchestratorStateService } from "../../core/orchestrator-state.service";
 
 type Stack = {
 	name: string;
@@ -33,7 +34,7 @@ type Stack = {
 		<ng-container *ngIf="rows$ | async as rows">
 			<div class="page-header">
 				<div>
-					<h1 class="page-header__title">{{ "nav.stacks" | transloco }}</h1>
+					<h1 class="page-header__title">{{ orch.stacksNavKey() | transloco }}</h1>
 					<div class="page-header__count">
 						<strong>{{ rows.length }}</strong>
 						{{ "pages.stacks.countSuffix" | transloco }}
@@ -88,9 +89,10 @@ export class StacksPageComponent {
 	private readonly apollo = inject(Apollo);
 	private readonly transloco = inject(TranslocoService);
 	private readonly i18n = inject(I18nStateService);
+	readonly orch = inject(OrchestratorStateService);
 
 	readonly cols = translatedColumns<Stack>(this.transloco, this.i18n.activeLang, [
-		{ key: "name", labelKey: "pages.stacks.columns.stack" },
+		{ key: "name", labelKey: () => this.orch.stackColumnKey() },
 		{ key: "services", labelKey: "pages.stacks.columns.services", align: "right" },
 		{ key: "networks", labelKey: "pages.stacks.columns.networks", align: "right" },
 		{ key: "volumes", labelKey: "pages.stacks.columns.volumes", align: "right" },

@@ -16,5 +16,7 @@
     "errors.composeInvalidRoot": "Plik Compose musi być obiektem (mapą) na najwyższym poziomie.",
     "errors.composeMissingServices": "Plik Compose musi zawierać co najmniej jedną usługę w sekcji services.",
     "errors.composeInvalidService": "Usługa ma nieprawidową definicję:",
-    "errors.stackDeployFailed": "Wdrożenie stosu nie powiodło się:"
+    "errors.stackDeployFailed": "Wdrożenie stosu nie powiodło się:",
+    "errors.invalidManifest": "Nieprawidłowy manifest Kubernetes:",
+    "errors.notSupportedInOrchestrator": "Ta operacja nie jest obsługiwana przez bieżący orkiestrator."
 }

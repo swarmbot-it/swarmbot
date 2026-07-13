@@ -1,10 +1,10 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import type { SwarmbotyConfig } from "../config.js";
+import type { Sw4rmBotConfig } from "../config.js";
 
 /** Resolve the Docker CLI executable (PATH, env, or common install locations). */
 export function resolveDockerCliBin(): string {
-	const fromEnv = process.env.SWARMBOTY_DOCKER_CLI?.trim();
+	const fromEnv = process.env.SW4RM_BOT_DOCKER_CLI?.trim();
 	if (fromEnv) return fromEnv;
 
 	if (process.platform === "win32") {
@@ -23,7 +23,7 @@ export function resolveDockerCliBin(): string {
 }
 
 /** Environment so the CLI uses the same daemon as dockerode. */
-export function dockerCliEnv(cfg: SwarmbotyConfig): NodeJS.ProcessEnv {
+export function dockerCliEnv(cfg: Sw4rmBotConfig): NodeJS.ProcessEnv {
 	const env = { ...process.env };
 	const sock = cfg.dockerSock;
 

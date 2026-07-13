@@ -16,5 +16,7 @@
     "errors.composeInvalidRoot": "Compose file must be a mapping at the top level.",
     "errors.composeMissingServices": "Compose file must define at least one service under services.",
     "errors.composeInvalidService": "Service has an invalid definition:",
-    "errors.stackDeployFailed": "Stack deployment failed:"
+    "errors.stackDeployFailed": "Stack deployment failed:",
+    "errors.invalidManifest": "Invalid Kubernetes manifest:",
+    "errors.notSupportedInOrchestrator": "This operation is not supported on the current orchestrator."
 }

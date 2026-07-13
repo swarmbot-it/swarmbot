@@ -31,7 +31,7 @@ describe("influx helpers", () => {
 		const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 200 });
 		vi.stubGlobal("fetch", fetchMock);
 		const cfg = { ...loadConfig(), influxdbUrl: "http://influx:8086/" };
-		await createDatabase(cfg, "swarmboty");
+		await createDatabase(cfg, "sw4rmbot");
 		expect(fetchMock).toHaveBeenCalled();
 		const [url] = fetchMock.mock.calls[0] as [string];
 		expect(url).toContain("/health");

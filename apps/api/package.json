@@ -1,5 +1,5 @@
 {
-    "name": "@swarmboty/api",
+    "name": "@sw4rmbot/api",
     "version": "0.1.4",
     "private": true,
     "type": "module",
@@ -16,6 +16,7 @@
         "@apollo/server": "^5.5.1",
         "@as-integrations/express4": "^1.1.2",
         "@graphql-tools/schema": "^10.0.16",
+        "@kubernetes/client-node": "^1.4.0",
         "body-parser": "^1.20.3",
         "cors": "^2.8.5",
         "dockerode": "^4.0.4",
@@ -37,9 +38,9 @@
         "@types/jsonwebtoken": "^9.0.7",
         "@types/node": "^24.0.0",
         "@types/ws": "^8.5.13",
+        "@vitest/coverage-v8": "^4.1.6",
         "tsx": "^4.19.2",
         "typescript": "^5.7.2",
-        "@vitest/coverage-v8": "^4.1.6",
         "vitest": "^4.1.6"
     }
 }

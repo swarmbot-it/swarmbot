@@ -87,6 +87,7 @@ export const typeDefs = `#graphql
     dockerApi: String!
     instanceName: String
     influxdb: Boolean!
+    orchestrator: String!
   }
 
   type User {

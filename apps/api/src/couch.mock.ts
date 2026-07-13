@@ -68,7 +68,7 @@ export function createMockCouch(): {
 		},
 		db: {
 			async get(_name: string) {
-				return { db_name: "swarmboty" };
+				return { db_name: "sw4rm.bot" };
 			},
 			async create(_name: string) {
 				return { ok: true };

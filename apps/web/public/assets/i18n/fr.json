@@ -2,6 +2,7 @@
     "nav": {
         "dashboard": "Tableau de bord",
         "stacks": "Environnements",
+        "namespaces": "Espaces de noms",
         "services": "Services",
         "tasks": "Tâches",
         "nodes": "Nœuds",
@@ -27,7 +28,7 @@
     "auth": {
         "login": {
             "title": "Bon retour",
-            "subtitle": "Connectez-vous à la console d'administration SwarmBoty.",
+            "subtitle": "Connectez-vous à la console d'administration sw4rm.bot.",
             "username": "Nom d'utilisateur",
             "password": "Mot de passe",
             "submit": "Se connecter",
@@ -47,7 +48,12 @@
         "preferences": "Préférences",
         "apiTokens": "Jetons API",
         "logout": "Se déconnecter",
-        "administrator": "Administrateur"
+        "administrator": "Administrateur",
+        "orchestratorTitle": "Orchestrateur",
+        "orchestrator": {
+            "swarm": "Swarm",
+            "kubernetes": "Kubernetes"
+        }
     },
     "table": {
         "search": "Rechercher…",
@@ -136,6 +142,7 @@
             "add": "Nouvel environnement",
             "columns": {
                 "stack": "Environnement",
+                "namespace": "Espace de noms",
                 "services": "Services",
                 "networks": "Réseaux",
                 "volumes": "Volumes",
@@ -339,33 +346,9 @@
         "choose": "Choisir",
         "upload": "Téléverser",
         "cancel": "Annuler",
-        "dayNames": [
-            "Dimanche",
-            "Lundi",
-            "Mardi",
-            "Mercredi",
-            "Jeudi",
-            "Vendredi",
-            "Samedi"
-        ],
-        "dayNamesShort": [
-            "Dim",
-            "Lun",
-            "Mar",
-            "Mer",
-            "Jeu",
-            "Ven",
-            "Sam"
-        ],
-        "dayNamesMin": [
-            "Di",
-            "Lu",
-            "Ma",
-            "Me",
-            "Je",
-            "Ve",
-            "Sa"
-        ],
+        "dayNames": ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"],
+        "dayNamesShort": ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"],
+        "dayNamesMin": ["Di", "Lu", "Ma", "Me", "Je", "Ve", "Sa"],
         "monthNames": [
             "Janvier",
             "Février",

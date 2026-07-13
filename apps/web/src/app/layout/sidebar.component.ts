@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, Input } from "@angular/core";
+import { ChangeDetectionStrategy, Component, Input, inject } from "@angular/core";
 import { NgFor, NgIf } from "@angular/common";
 import { RouterLink, RouterLinkActive } from "@angular/router";
 import { TranslocoPipe } from "@jsverse/transloco";
 import { IconComponent } from "../shared/icon.component";
+import { OrchestratorStateService } from "../core/orchestrator-state.service";
 
 type NavItem = {
 	id: string;
@@ -152,10 +153,10 @@ export type SidebarFooter = {
 					class="sidebar__item"
 					routerLinkActive="sidebar__item--active"
 					[routerLink]="['/app', item.path]"
-					[attr.data-label]="item.labelKey | transloco"
+					[attr.data-label]="navLabelKey(item) | transloco"
 				>
 					<sb-icon [name]="item.icon" [size]="17"></sb-icon>
-					<span class="sidebar__item-text">{{ item.labelKey | transloco }}</span>
+					<span class="sidebar__item-text">{{ navLabelKey(item) | transloco }}</span>
 					<span
 						class="sidebar__count"
 						*ngIf="item.countKey && counts && counts[item.countKey] != null"
@@ -288,6 +289,14 @@ export type SidebarFooter = {
 export class SidebarComponent {
 	@Input() counts: Record<string, number> | null = null;
 	@Input() footer: SidebarFooter | null = null;
+
+	readonly orch = inject(OrchestratorStateService);
+
+	/** Mode-dependent nav labels: "Stacks" becomes "Namespaces" on Kubernetes. */
+	navLabelKey(item: NavItem): string {
+		if (item.id === "stacks") return this.orch.stacksNavKey();
+		return item.labelKey;
+	}
 
 	clusterStatusKey(status: string): string {
 		switch (status) {

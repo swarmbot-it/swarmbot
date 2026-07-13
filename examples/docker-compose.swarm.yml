@@ -2,18 +2,18 @@ version: "3.9"
 
 services:
     app:
-        image: swarmboty/swarmboty:${SWARMBOTY_TAG:-latest}
+        image: sw4rmbot/sw4rmbot:${SW4RM_BOT_TAG:-latest}
         environment:
-            - SWARMBOTY_DB=http://${COUCHDB_USER:-admin}:${COUCHDB_PASSWORD:-swarmboty}@db:5984
-            - SWARMBOTY_INFLUXDB=http://influxdb:8086
-            - SWARMBOTY_INFLUXDB_TOKEN=${INFLUXDB_TOKEN}
-            - SWARMBOTY_PORT=8080
-            - SWARMBOTY_WORK_DIR=/tmp
+            - SW4RM_BOT_DB=http://${COUCHDB_USER:-admin}:${COUCHDB_PASSWORD:-swarmboty}@db:5984
+            - SW4RM_BOT_INFLUXDB=http://influxdb:8086
+            - SW4RM_BOT_INFLUXDB_TOKEN=${INFLUXDB_TOKEN}
+            - SW4RM_BOT_PORT=8080
+            - SW4RM_BOT_WORK_DIR=/tmp
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock:ro
         ports:
             - target: 8080
-              published: ${SWARMBOTY_PORT:-888}
+              published: ${SW4RM_BOT_PORT:-888}
               protocol: tcp
               mode: ingress
         healthcheck:
@@ -78,8 +78,8 @@ services:
             DOCKER_INFLUXDB_INIT_MODE: setup
             DOCKER_INFLUXDB_INIT_USERNAME: ${INFLUXDB_USER:-admin}
             DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUXDB_PASSWORD:-swarmboty}
-            DOCKER_INFLUXDB_INIT_ORG: swarmboty
-            DOCKER_INFLUXDB_INIT_BUCKET: swarmboty
+            DOCKER_INFLUXDB_INIT_ORG: sw4rmbot
+            DOCKER_INFLUXDB_INIT_BUCKET: sw4rmbot
             DOCKER_INFLUXDB_INIT_RETENTION: 0
             DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB_TOKEN}
         volumes:
@@ -99,7 +99,7 @@ services:
                     - node.role == manager
 
     agent:
-        image: swarmboty/swarmagent:${SWARMAGENT_TAG:-latest}
+        image: sw4rmbot/swarmagent:${SWARMAGENT_TAG:-latest}
         environment:
             - DOCKER_API_VERSION=1.44
         volumes:

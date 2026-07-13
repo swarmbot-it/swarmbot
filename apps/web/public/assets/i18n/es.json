@@ -2,6 +2,7 @@
     "nav": {
         "dashboard": "Panel",
         "stacks": "Entornos",
+        "namespaces": "Espacios de nombres",
         "services": "Servicios",
         "tasks": "Tareas",
         "nodes": "Nodos",
@@ -27,7 +28,7 @@
     "auth": {
         "login": {
             "title": "Bienvenido de nuevo",
-            "subtitle": "Inicia sesión en la consola de administración de SwarmBoty.",
+            "subtitle": "Inicia sesión en la consola de administración de sw4rm.bot.",
             "username": "Nombre de usuario",
             "password": "Contraseña",
             "submit": "Iniciar sesión",
@@ -47,7 +48,12 @@
         "preferences": "Preferencias",
         "apiTokens": "Tokens de API",
         "logout": "Cerrar sesión",
-        "administrator": "Administrador"
+        "administrator": "Administrador",
+        "orchestratorTitle": "Orquestador",
+        "orchestrator": {
+            "swarm": "Swarm",
+            "kubernetes": "Kubernetes"
+        }
     },
     "table": {
         "search": "Buscar…",
@@ -136,6 +142,7 @@
             "add": "Nuevo entorno",
             "columns": {
                 "stack": "Entorno",
+                "namespace": "Espacio de nombres",
                 "services": "Servicios",
                 "networks": "Redes",
                 "volumes": "Volúmenes",
@@ -339,33 +346,9 @@
         "choose": "Elegir",
         "upload": "Subir",
         "cancel": "Cancelar",
-        "dayNames": [
-            "Domingo",
-            "Lunes",
-            "Martes",
-            "Miércoles",
-            "Jueves",
-            "Viernes",
-            "Sábado"
-        ],
-        "dayNamesShort": [
-            "Dom",
-            "Lun",
-            "Mar",
-            "Mié",
-            "Jue",
-            "Vie",
-            "Sáb"
-        ],
-        "dayNamesMin": [
-            "Do",
-            "Lu",
-            "Ma",
-            "Mi",
-            "Ju",
-            "Vi",
-            "Sá"
-        ],
+        "dayNames": ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
+        "dayNamesShort": ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"],
+        "dayNamesMin": ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sá"],
         "monthNames": [
             "Enero",
             "Febrero",

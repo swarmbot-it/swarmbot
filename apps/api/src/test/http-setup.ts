@@ -3,26 +3,25 @@ import type { AddressInfo } from "net";
 import { once } from "node:events";
 import { createMockCouch } from "../couch.mock.js";
 import { createSecret, insertDoc } from "../couch.js";
-import { loadConfig, type SwarmbotyConfig } from "../config.js";
+import { loadConfig, type Sw4rmBotConfig } from "../config.js";
 import { derivePassword } from "../auth/password.js";
 import { createHttpServer } from "../server.js";
-import { createDocker } from "../docker/engine.js";
 import type { GraphQLContext } from "../graphql/context.js";
 import { buildContext } from "../graphql/context.js";
+import type { Orchestrator } from "../orchestrator/types.js";
 import type nano from "nano";
 import type { CouchDoc } from "../couch.js";
-import type Dockerode from "dockerode";
 
 export type TestHttp = {
 	httpServer: Server;
 	baseUrl: string;
-	cfg: SwarmbotyConfig;
+	cfg: Sw4rmBotConfig;
 	couchDb: nano.DocumentScope<CouchDoc>;
-	docker: Dockerode;
+	orchestrator: Orchestrator;
 	cleanup: () => Promise<void>;
 };
 
-export async function startTestHttp(opts?: Partial<SwarmbotyConfig>): Promise<TestHttp> {
+export async function startTestHttp(opts?: Partial<Sw4rmBotConfig>): Promise<TestHttp> {
 	const { db } = createMockCouch();
 	await createSecret(db, "test-secret");
 	await insertDoc(db, {
@@ -33,7 +32,7 @@ export async function startTestHttp(opts?: Partial<SwarmbotyConfig>): Promise<Te
 		email: "admin@test.local",
 	});
 
-	const cfg: SwarmbotyConfig = {
+	const cfg: Sw4rmBotConfig = {
 		...loadConfig(),
 		mock: true,
 		port: 0,
@@ -41,8 +40,7 @@ export async function startTestHttp(opts?: Partial<SwarmbotyConfig>): Promise<Te
 		...opts,
 	};
 
-	const docker = createDocker(cfg);
-	const { httpServer, cleanup } = await createHttpServer(cfg, db);
+	const { httpServer, cleanup, orchestrator } = await createHttpServer(cfg, db);
 	httpServer.listen(0, "127.0.0.1");
 	await once(httpServer, "listening");
 	const addr = httpServer.address() as AddressInfo | null;
@@ -56,7 +54,7 @@ export async function startTestHttp(opts?: Partial<SwarmbotyConfig>): Promise<Te
 		baseUrl,
 		cfg,
 		couchDb: db,
-		docker,
+		orchestrator,
 		cleanup: async () => {
 			await cleanup();
 			if (httpServer.listening) {
@@ -76,7 +74,7 @@ export function gqlContext(
 		req as Parameters<typeof buildContext>[0],
 		test.cfg,
 		test.couchDb,
-		test.docker
+		test.orchestrator
 	);
 }
 

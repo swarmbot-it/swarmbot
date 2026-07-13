@@ -3,6 +3,7 @@ import { AsyncPipe, NgFor, NgIf } from "@angular/common";
 import { TranslocoPipe, TranslocoService } from "@jsverse/transloco";
 import { Apollo } from "apollo-angular";
 import { I18nStateService } from "../../core/i18n/i18n-state.service";
+import { OrchestratorStateService } from "../../core/orchestrator-state.service";
 import { combineLatest, forkJoin, from, Observable, timer } from "rxjs";
 import { map, startWith } from "rxjs/operators";
 
@@ -91,7 +92,7 @@ type MetricsResponse = {
 			<!-- Summary counters -->
 			<div class="dash-summary">
 				<div class="summary-card">
-					<div class="summary-card__label">{{ "nav.stacks" | transloco }}</div>
+					<div class="summary-card__label">{{ orch.stacksNavKey() | transloco }}</div>
 					<div class="summary-card__value">{{ vm.overview.stacks }}</div>
 					<div class="summary-card__delta" *ngIf="vm.overview.stacksDelta as d">
 						▲ {{ d }} <span>{{ "dashboard.thisWeek" | transloco }}</span>
@@ -523,6 +524,7 @@ type MetricsResponse = {
 })
 export class DashboardComponent {
 	private readonly apollo = inject(Apollo);
+	readonly orch = inject(OrchestratorStateService);
 	private readonly transloco = inject(TranslocoService);
 	private readonly i18n = inject(I18nStateService);
 	private readonly bootService = inject(BootService);
