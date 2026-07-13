@@ -568,7 +568,9 @@ export class DashboardComponent {
 				from(this.overviewRef.refetch()),
 				from(this.nodesRef.refetch()),
 				from(
-					this.metricsRef.refetch({ input: { range: this.range(), resolution: "medium" } })
+					this.metricsRef.refetch({
+						input: { range: this.range(), resolution: "medium" },
+					})
 				),
 			]),
 			timer(500),

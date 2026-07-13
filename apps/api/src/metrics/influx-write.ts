@@ -67,8 +67,7 @@ export function buildInfluxLines(
 		// Kubernetes: the namespace plays the role of the stack, and is also
 		// tagged explicitly so k8s-native queries can filter on `namespace`.
 		const namespace = c.namespace ?? null;
-		const stackTag =
-			stacksByContainer.get(c.containerId) ?? map?.stack ?? namespace ?? null;
+		const stackTag = stacksByContainer.get(c.containerId) ?? map?.stack ?? namespace ?? null;
 		if (stackTag) tags["stack"] = stackTag;
 		if (orchestrator === "kubernetes" && (namespace ?? stackTag)) {
 			tags["namespace"] = (namespace ?? stackTag)!;

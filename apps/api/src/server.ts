@@ -275,16 +275,18 @@ export async function createHttpServer(
 		});
 	});
 
-	app.use((err: unknown, req: express.Request, res: express.Response, next: express.NextFunction) => {
-		if (err instanceof SyntaxError && req.path === "/events") {
-			const raw = (req as { rawBody?: Buffer }).rawBody;
-			const preview = raw ? raw.subarray(0, 120).toString("utf8") : "(no body)";
-			console.warn("POST /events JSON parse failed:", err.message, "preview:", preview);
-			res.status(400).json({ error: "invalid json" });
-			return;
+	app.use(
+		(err: unknown, req: express.Request, res: express.Response, next: express.NextFunction) => {
+			if (err instanceof SyntaxError && req.path === "/events") {
+				const raw = (req as { rawBody?: Buffer }).rawBody;
+				const preview = raw ? raw.subarray(0, 120).toString("utf8") : "(no body)";
+				console.warn("POST /events JSON parse failed:", err.message, "preview:", preview);
+				res.status(400).json({ error: "invalid json" });
+				return;
+			}
+			next(err);
 		}
-		next(err);
-	});
+	);
 
 	return {
 		httpServer,

@@ -33,12 +33,7 @@ import {
 	updateUserProfile,
 	changeUserPassword,
 } from "../store/users.js";
-import {
-	mockSeries,
-	taskMockHistory,
-	type Range,
-	type Resolution,
-} from "../metrics/series.js";
+import { mockSeries, taskMockHistory, type Range, type Resolution } from "../metrics/series.js";
 import {
 	influxClusterSeries,
 	influxNodeLivePercent,
@@ -149,10 +144,9 @@ function validateManifestYamlOrThrow(
 					"NOT_SUPPORTED_IN_ORCHESTRATOR"
 				);
 			}
-			throw new GraphQLError(
-				`${t(ctx.locale, "errors.invalidManifest")} ${e.detail}`,
-				{ extensions: { code: "INVALID_MANIFEST" } }
-			);
+			throw new GraphQLError(`${t(ctx.locale, "errors.invalidManifest")} ${e.detail}`, {
+				extensions: { code: "INVALID_MANIFEST" },
+			});
 		}
 		throw e;
 	}
@@ -331,10 +325,7 @@ export const resolvers = {
 				const spark = getTaskSparkline(ts.id);
 				const cpuBase = live?.cpu ?? pseudoLoad(ts.id, "cpu") / 1.2;
 				const memBase = live?.mem ?? pseudoLoad(ts.id, "mem") / 1.1;
-				const hist =
-					spark.cpu.length > 0
-						? spark
-						: taskMockHistory(idx, cpuBase, memBase);
+				const hist = spark.cpu.length > 0 ? spark : taskMockHistory(idx, cpuBase, memBase);
 				const updatedAge = Date.now() - new Date(ts.timestamp).getTime();
 				return {
 					id: ts.id,
@@ -431,10 +422,7 @@ export const resolvers = {
 		},
 		stackLoadSeries: async (
 			_: unknown,
-			{
-				range,
-				resolution,
-			}: { range: Range; resolution?: Resolution },
+			{ range, resolution }: { range: Range; resolution?: Resolution },
 			ctx: GraphQLContext
 		) => {
 			requireUser(ctx);
@@ -817,7 +805,12 @@ export const resolvers = {
 			ctx: GraphQLContext
 		) => {
 			requireUser(ctx);
-			return changeUserPassword(ctx.couchDb, ctx.user!.usr.username, input.current, input.next);
+			return changeUserPassword(
+				ctx.couchDb,
+				ctx.user!.usr.username,
+				input.current,
+				input.next
+			);
 		},
 	},
 

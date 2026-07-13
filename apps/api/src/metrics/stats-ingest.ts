@@ -98,9 +98,7 @@ export function parseStatsBatch(message: unknown): ParsedStatsBatch | null {
 	const m = payload as AgentStatsPayload;
 	const swarmId = String(m.id ?? "").trim();
 	const hostname =
-		typeof m.hostname === "string" && m.hostname.trim().length > 0
-			? m.hostname.trim()
-			: null;
+		typeof m.hostname === "string" && m.hostname.trim().length > 0 ? m.hostname.trim() : null;
 	const nodeId = swarmId || hostname;
 	if (!nodeId) return null;
 
@@ -110,8 +108,7 @@ export function parseStatsBatch(message: unknown): ParsedStatsBatch | null {
 	const diskTotal = Math.max(0, Math.round(num(m.disk?.total)));
 	const diskUsed = Math.max(0, Math.round(num(m.disk?.used)));
 
-	const memPct =
-		memTotal > 0 ? pct((memUsed / memTotal) * 100) : pct(m.memory?.used_percentage);
+	const memPct = memTotal > 0 ? pct((memUsed / memTotal) * 100) : pct(m.memory?.used_percentage);
 	const diskPct =
 		diskTotal > 0 ? pct((diskUsed / diskTotal) * 100) : pct(m.disk?.used_percentage);
 
@@ -153,8 +150,7 @@ export function parseStatsBatch(message: unknown): ParsedStatsBatch | null {
 	}
 
 	const orchRaw = String(m.orchestrator ?? "").toLowerCase();
-	const orchestrator =
-		orchRaw === "swarm" || orchRaw === "kubernetes" ? orchRaw : null;
+	const orchestrator = orchRaw === "swarm" || orchRaw === "kubernetes" ? orchRaw : null;
 
 	return { node, containers, orchestrator };
 }

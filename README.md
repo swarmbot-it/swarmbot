@@ -243,12 +243,14 @@ npm run swarm:undeploy
 The manager exposes the Docker API over TCP on port `2375` (no TLS — the start script sets `DOCKER_TLS_CERTDIR=""`). To make sw4rm.bot API talk to the test Swarm instead of the local daemon, resolve the manager IP and set:
 
 **macOS / Linux:**
+
 ```sh
 MANAGER_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' swarm-manager)
 SW4RM_BOT_DOCKER_SOCK=tcp://$MANAGER_IP:2375 npm run dev:api
 ```
 
 **Windows PowerShell:**
+
 ```powershell
 $MANAGER_IP = docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' swarm-manager
 $env:SW4RM_BOT_DOCKER_SOCK = "tcp://${MANAGER_IP}:2375"
@@ -291,18 +293,18 @@ field, and as a badge in the UI top bar.
 
 ### Concept mapping (feature matrix)
 
-| sw4rm.bot | Docker Swarm | Kubernetes/k3s |
-| --- | --- | --- |
-| Node | swarm node | `v1.Node` (role from `node-role.kubernetes.io/*` labels) |
-| Service | swarm service | Deployment / StatefulSet / DaemonSet |
-| Task | swarm task | Pod (slot = StatefulSet ordinal, state from `status.phase`) |
-| Stack | `com.docker.stack.namespace` | Namespace |
-| Networks | overlay networks | — (empty list) |
-| Volumes | docker volumes | PersistentVolumeClaims |
-| Secrets / Configs | swarm secrets/configs | Secrets (without SA tokens) / ConfigMaps |
-| Stack deploy | `docker stack deploy` (Compose) | manifest YAML apply into the stack's namespace; Compose input returns `NOT_SUPPORTED_IN_ORCHESTRATOR` |
-| Container logs | Dockerode container logs | pod logs via the apiserver |
-| Agent metrics | container id = docker id | container id = `{namespace}/{pod}/{container}` + `orchestrator: "kubernetes"` in the payload |
+| sw4rm.bot         | Docker Swarm                    | Kubernetes/k3s                                                                                        |
+| ----------------- | ------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Node              | swarm node                      | `v1.Node` (role from `node-role.kubernetes.io/*` labels)                                              |
+| Service           | swarm service                   | Deployment / StatefulSet / DaemonSet                                                                  |
+| Task              | swarm task                      | Pod (slot = StatefulSet ordinal, state from `status.phase`)                                           |
+| Stack             | `com.docker.stack.namespace`    | Namespace                                                                                             |
+| Networks          | overlay networks                | — (empty list)                                                                                        |
+| Volumes           | docker volumes                  | PersistentVolumeClaims                                                                                |
+| Secrets / Configs | swarm secrets/configs           | Secrets (without SA tokens) / ConfigMaps                                                              |
+| Stack deploy      | `docker stack deploy` (Compose) | manifest YAML apply into the stack's namespace; Compose input returns `NOT_SUPPORTED_IN_ORCHESTRATOR` |
+| Container logs    | Dockerode container logs        | pod logs via the apiserver                                                                            |
+| Agent metrics     | container id = docker id        | container id = `{namespace}/{pod}/{container}` + `orchestrator: "kubernetes"` in the payload          |
 
 The push-only `swarmagent` posts to `POST /events` in both modes; on Kubernetes
 InfluxDB series are tagged with `orchestrator` and `namespace` (the namespace also

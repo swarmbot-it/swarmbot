@@ -65,7 +65,11 @@ type NamedRow = { name: string; updated: string };
 							<sb-icon name="stacks" [size]="14"></sb-icon>
 							{{ orch.stacksNavKey() | transloco }}
 						</a>
-						<sb-icon name="chevronRight" [size]="12" style="color:var(--muted-2)"></sb-icon>
+						<sb-icon
+							name="chevronRight"
+							[size]="12"
+							style="color:var(--muted-2)"
+						></sb-icon>
 						<span>{{ vm.stack?.name }}</span>
 					</div>
 					<div class="stack-detail__title-row">
@@ -81,7 +85,10 @@ type NamedRow = { name: string; updated: string };
 						<sb-icon name="chevronLeft" [size]="14"></sb-icon>
 						{{ "common.back" | transloco }}
 					</a>
-					<sb-split-button [actions]="stackActions" (action)="onAction($event)"></sb-split-button>
+					<sb-split-button
+						[actions]="stackActions"
+						(action)="onAction($event)"
+					></sb-split-button>
 				</div>
 			</div>
 
@@ -101,7 +108,11 @@ type NamedRow = { name: string; updated: string };
 							{{ d.value | number: "1.0-0"
 							}}<span style="font-size:14px;color:var(--muted)">%</span>
 						</div>
-						<div class="dash-tile__value" *ngIf="d.value == null" style="font-size:22px">
+						<div
+							class="dash-tile__value"
+							*ngIf="d.value == null"
+							style="font-size:22px"
+						>
 							{{ "common.na" | transloco }}
 						</div>
 						<div class="dash-tile__spark" *ngIf="d.spark.length">
@@ -119,9 +130,14 @@ type NamedRow = { name: string; updated: string };
 			<div class="card" style="margin-bottom:16px;">
 				<div class="card__header">
 					<div>
-						<div class="card__title">{{ "pages.stackDetail.utilization" | transloco }}</div>
+						<div class="card__title">
+							{{ "pages.stackDetail.utilization" | transloco }}
+						</div>
 						<div style="font-size:12px;color:var(--muted);margin-top:2px">
-							{{ "pages.stackDetail.utilizationSub" | transloco: { count: vm.services.length } }}
+							{{
+								"pages.stackDetail.utilizationSub"
+									| transloco: { count: vm.services.length }
+							}}
 						</div>
 					</div>
 					<sb-segmented
@@ -182,7 +198,10 @@ type NamedRow = { name: string; updated: string };
 					<ng-template #cell let-row let-key="key">
 						<div *ngIf="key === 'name'">
 							<span class="link-name">{{ row.name }}</span>
-							<div class="mono" style="font-size:11.5px;color:var(--muted);margin-top:2px">
+							<div
+								class="mono"
+								style="font-size:11.5px;color:var(--muted);margin-top:2px"
+							>
 								{{ row.image }}
 							</div>
 						</div>
@@ -237,7 +256,11 @@ type NamedRow = { name: string; updated: string };
 								*ngIf="key === 'name'"
 								style="display:flex;align-items:center;gap:8px"
 							>
-								<sb-icon name="networks" [size]="13" style="color:var(--primary-500)"></sb-icon>
+								<sb-icon
+									name="networks"
+									[size]="13"
+									style="color:var(--primary-500)"
+								></sb-icon>
 								<span style="font-weight:600">{{ row.name }}</span>
 							</div>
 							<span
@@ -272,7 +295,11 @@ type NamedRow = { name: string; updated: string };
 								*ngIf="key === 'name'"
 								style="display:flex;align-items:center;gap:8px"
 							>
-								<sb-icon name="volumes" [size]="13" style="color:var(--primary-500)"></sb-icon>
+								<sb-icon
+									name="volumes"
+									[size]="13"
+									style="color:var(--primary-500)"
+								></sb-icon>
 								<span style="font-weight:600">{{ row.name }}</span>
 							</div>
 							<span
@@ -308,7 +335,11 @@ type NamedRow = { name: string; updated: string };
 								*ngIf="key === 'name'"
 								style="display:flex;align-items:center;gap:8px"
 							>
-								<sb-icon name="configs" [size]="13" style="color:var(--primary-500)"></sb-icon>
+								<sb-icon
+									name="configs"
+									[size]="13"
+									style="color:var(--primary-500)"
+								></sb-icon>
 								<span class="mono" style="font-weight:600;font-size:12.5px">{{
 									row.name
 								}}</span>
@@ -338,7 +369,11 @@ type NamedRow = { name: string; updated: string };
 								*ngIf="key === 'name'"
 								style="display:flex;align-items:center;gap:8px"
 							>
-								<sb-icon name="secrets" [size]="13" style="color:var(--primary-500)"></sb-icon>
+								<sb-icon
+									name="secrets"
+									[size]="13"
+									style="color:var(--primary-500)"
+								></sb-icon>
 								<span class="mono" style="font-weight:600;font-size:12.5px">{{
 									row.name
 								}}</span>
@@ -429,12 +464,14 @@ export class StackDetailPageComponent {
 					.valueChanges,
 				this.apollo.watchQuery<{ volumes: VolumeRow[] }>({ query: QUERY_VOLUMES })
 					.valueChanges,
-				this.apollo.watchQuery<{ configs: NamedRow[] }>({ query: QUERY_CONFIGS }).valueChanges,
-				this.apollo.watchQuery<{ secrets: NamedRow[] }>({ query: QUERY_SECRETS }).valueChanges,
+				this.apollo.watchQuery<{ configs: NamedRow[] }>({ query: QUERY_CONFIGS })
+					.valueChanges,
+				this.apollo.watchQuery<{ secrets: NamedRow[] }>({ query: QUERY_SECRETS })
+					.valueChanges,
 				this.range$.pipe(
-					switchMap((range) =>
-						this.apollo
-							.watchQuery<{
+					switchMap(
+						(range) =>
+							this.apollo.watchQuery<{
 								metricsSeries: {
 									labels: string[];
 									cpu: number[];
@@ -446,8 +483,7 @@ export class StackDetailPageComponent {
 								variables: {
 									input: { range, resolution: "medium", stack: name },
 								},
-							})
-							.valueChanges
+							}).valueChanges
 					)
 				),
 			]).pipe(
@@ -476,7 +512,11 @@ export class StackDetailPageComponent {
 									data: [...(metrics.cpu ?? [])],
 									color: "var(--primary-500)",
 								},
-								{ name: "Memory", data: [...(metrics.mem ?? [])], color: "#3b82f6" },
+								{
+									name: "Memory",
+									data: [...(metrics.mem ?? [])],
+									color: "#3b82f6",
+								},
 								{ name: "Disk", data: [...(metrics.disk ?? [])], color: "#10b981" },
 							]
 						: [];

@@ -31,8 +31,7 @@ export async function processStatsEvent(
 	const stacksByContainer = new Map<string, string | null>();
 
 	if (kind === "kubernetes") {
-		const kube =
-			orchestrator instanceof KubernetesOrchestrator ? orchestrator.kube : null;
+		const kube = orchestrator instanceof KubernetesOrchestrator ? orchestrator.kube : null;
 		for (const c of batch.containers) {
 			const map = await resolveKubeContainerMapping(kube, c);
 			mappings.set(c.containerId, map);
@@ -41,15 +40,10 @@ export async function processStatsEvent(
 			ingestContainerSample(taskKey, map?.stack ?? null, c.cpu, c.mem);
 		}
 	} else {
-		const docker =
-			orchestrator instanceof SwarmOrchestrator ? orchestrator.docker : null;
+		const docker = orchestrator instanceof SwarmOrchestrator ? orchestrator.docker : null;
 		if (docker) {
 			for (const c of batch.containers) {
-				const map = await resolveContainerMapping(
-					docker,
-					c.containerId,
-					c.containerName
-				);
+				const map = await resolveContainerMapping(docker, c.containerId, c.containerName);
 				mappings.set(c.containerId, map);
 				const stack = await resolveStackName(docker, c.containerId, c.containerName);
 				stacksByContainer.set(c.containerId, stack);

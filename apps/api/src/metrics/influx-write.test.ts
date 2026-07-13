@@ -42,8 +42,8 @@ describe("buildInfluxLines", () => {
 			])
 		);
 		expect(lines.some((l) => l.startsWith("node_cpu,"))).toBe(true);
-		expect(lines.some((l) => l.includes("container_cpu,") && l.includes("stack=frontend"))).toBe(
-			true
-		);
+		expect(
+			lines.some((l) => l.includes("container_cpu,") && l.includes("stack=frontend"))
+		).toBe(true);
 	});
 });

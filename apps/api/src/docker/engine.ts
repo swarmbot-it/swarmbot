@@ -184,9 +184,7 @@ export function mapServiceSummary(
 	const isGlobal = Boolean(spec?.Mode?.Global);
 	const desired = spec?.Mode?.Replicated?.Replicas ?? 0;
 	const running = taskCounts?.running ?? 0;
-	const replicasTotal = isGlobal
-		? Math.max(taskCounts?.total ?? 0, running)
-		: desired;
+	const replicasTotal = isGlobal ? Math.max(taskCounts?.total ?? 0, running) : desired;
 	return {
 		id,
 		name,

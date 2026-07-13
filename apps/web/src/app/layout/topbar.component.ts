@@ -248,10 +248,14 @@ const CJK_LANGS: { code: LangCode; label: string }[] = [
 			.theme-slider__btn--active {
 				background: var(--surface);
 				color: var(--primary-500);
-				box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 0 1px var(--border);
+				box-shadow:
+					0 1px 3px rgba(0, 0, 0, 0.1),
+					0 0 0 1px var(--border);
 			}
-			:host-context([data-theme='dark']) .theme-slider__btn--active {
-				box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35), 0 0 0 1px var(--border-strong);
+			:host-context([data-theme="dark"]) .theme-slider__btn--active {
+				box-shadow:
+					0 1px 4px rgba(0, 0, 0, 0.35),
+					0 0 0 1px var(--border-strong);
 			}
 			.theme-slider__btn:not(.theme-slider__btn--active):hover {
 				color: var(--muted);
@@ -419,10 +423,10 @@ const CJK_LANGS: { code: LangCode; label: string }[] = [
 				color: var(--primary-600);
 				border-color: transparent;
 			}
-			:host-context([data-theme='dark']) .lang-item--active {
+			:host-context([data-theme="dark"]) .lang-item--active {
 				color: var(--primary-400);
 			}
-			:host-context([data-theme='dark']) .lang-item--active .lang-code {
+			:host-context([data-theme="dark"]) .lang-item--active .lang-code {
 				color: var(--primary-400);
 			}
 			.lang-item__name {
@@ -461,8 +465,7 @@ export class TopbarComponent implements OnInit {
 	readonly clusterName = computed(() => {
 		this.i18n.activeLang();
 		return (
-			this.clusterInstanceName()?.trim() ||
-			this.transloco.translate("topbar.clusterUnknown")
+			this.clusterInstanceName()?.trim() || this.transloco.translate("topbar.clusterUnknown")
 		);
 	});
 
@@ -483,9 +486,7 @@ export class TopbarComponent implements OnInit {
 
 	readonly currentLang = computed(() => {
 		const code = this.i18n.activeLang();
-		return (
-			[...LATIN_LANGS, ...CJK_LANGS].find((l) => l.code === code) ?? LATIN_LANGS[1]
-		);
+		return [...LATIN_LANGS, ...CJK_LANGS].find((l) => l.code === code) ?? LATIN_LANGS[1];
 	});
 
 	toggle(): void {
