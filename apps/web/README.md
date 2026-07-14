@@ -1,6 +1,6 @@
-# SwarmBoty Web UI
+# swarmbot.it Web UI
 
-Angular **21** single-page application for the SwarmBoty Docker Swarm admin console. It talks to the API through Apollo GraphQL (`/graphql`), uses PrimeNG for data tables and widgets, and Transloco for runtime i18n (9 languages).
+Angular **21** single-page application for the swarmbot.it Docker Swarm admin console. It talks to the API through Apollo GraphQL (`/graphql`), uses PrimeNG for data tables and widgets, and Transloco for runtime i18n (9 languages).
 
 ## Requirements
 

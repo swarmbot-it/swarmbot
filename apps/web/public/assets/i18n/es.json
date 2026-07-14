@@ -24,7 +24,7 @@
     "auth": {
         "login": {
             "title": "Bienvenido de nuevo",
-            "subtitle": "Inicia sesión en la consola de administración de SwarmBoty.",
+            "subtitle": "Inicia sesión en la consola de administración de swarmbot.it.",
             "username": "Nombre de usuario",
             "password": "Contraseña",
             "submit": "Iniciar sesión",

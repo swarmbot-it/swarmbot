@@ -4,7 +4,7 @@ import { findDocs, insertDoc, updateDoc, type CouchDoc } from "../couch.js";
 import { encryptAtRest } from "../crypto/secret-box.js";
 
 /**
- * CouchDB-backed store for SwarmBoty registry credentials.
+ * CouchDB-backed store for swarmbot.it registry credentials.
  * Each document carries type="registry" and is keyed by display name.
  */
 

@@ -3,7 +3,7 @@
 const PBKDF2_ITER = 200000;
 const PBKDF2_KEYLEN = 64;
 
-/** Verify Swarmboty password hashes. */
+/** Verify swarmbot.it password hashes. */
 export function verifyPassword(plain: string, stored: string): boolean {
 	if (!plain || !stored) return false;
 	const shaHex = createHash("sha256").update(plain, "utf8").digest("hex");

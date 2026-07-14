@@ -1,11 +1,11 @@
 ﻿/**
- * GraphQL schema definitions for the SwarmBoty admin API.
+ * GraphQL schema definitions for the swarmbot.it admin API.
  *
  * Coverage:
  *   - Cluster overview (counts + per-resource breakdown).
  *   - Docker Swarm resources: stacks, services, tasks, nodes, networks,
  *     volumes, secrets, configs.
- *   - SwarmBoty registries and application users (CouchDB-backed).
+ *   - swarmbot.it registries and application users (CouchDB-backed).
  *   - Telemetry series (InfluxDB-backed): per-cluster and per-node history.
  */
 export const typeDefs = `#graphql

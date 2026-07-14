@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, Input } from "@angular/core";
 import { NgIf } from "@angular/common";
 
 /**
- * SwarmBoty logo: four nodes and hub links with gentle out-of-sync opacity fade.
+ * swarmbot.it logo: four nodes and hub links with gentle out-of-sync opacity fade.
  * Animations are disabled when the user prefers reduced motion.
  */
 @Component({
@@ -67,7 +67,7 @@ import { NgIf } from "@angular/common";
 			</svg>
 			<span class="sb-logo__word" *ngIf="showWord">
 				<span class="sb-logo__title"
-					>swarm<span style="color: var(--primary-500)">boty</span></span
+					>swarmbot<span style="color: var(--primary-500)">.it</span></span
 				>
 				<span class="sb-logo__subtitle">v2.14.0 · prod-eu-1</span>
 			</span>
@@ -179,6 +179,6 @@ import { NgIf } from "@angular/common";
 	imports: [NgIf],
 })
 export class LogoComponent {
-	/** When true, shows the "swarmboty" wordmark and version subtitle beside the mark. */
+	/** When true, shows the "swarmbot.it" wordmark and version subtitle beside the mark. */
 	@Input() showWord = true;
 }

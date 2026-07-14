@@ -1,6 +1,6 @@
-﻿# Swarmboty
+﻿# swarmbot.it
 
-Swarmboty is a Node.js monorepo for managing Docker Swarm resources. It contains:
+swarmbot.it is a Node.js monorepo for managing Docker Swarm resources. It contains:
 
 - `apps/api` - Express and Apollo GraphQL API for authentication, Docker access, events, and persistence.
 - `apps/web` - Angular web UI built with Apollo Angular and PrimeNG.
@@ -10,7 +10,7 @@ Swarmboty is a Node.js monorepo for managing Docker Swarm resources. It contains
 - Node.js 20 or newer
 - npm
 - Docker, when using Docker-related API features or `docker-compose`
-- **Docker Swarm mode active on the daemon you point Swarmboty at.** A fresh
+- **Docker Swarm mode active on the daemon you point swarmbot.it at.** A fresh
   Docker Desktop install does not enable this by default — run
   `docker swarm init` once before starting the app, or Swarm API calls
   (`docker service ls`, `docker node ls`, etc.) will fail with
@@ -263,9 +263,9 @@ npm run swarm:undeploy
 
 ---
 
-### Point Swarmboty API at the test cluster
+### Point swarmbot.it API at the test cluster
 
-The manager exposes the Docker API over TCP on port `2375` (no TLS — the start script sets `DOCKER_TLS_CERTDIR=""`). To make Swarmboty API talk to the test Swarm instead of the local daemon, resolve the manager IP and set:
+The manager exposes the Docker API over TCP on port `2375` (no TLS — the start script sets `DOCKER_TLS_CERTDIR=""`). To make swarmbot.it API talk to the test Swarm instead of the local daemon, resolve the manager IP and set:
 
 **macOS / Linux:**
 ```sh
@@ -288,7 +288,7 @@ Then open http://localhost:4200 (after `npm run dev:web`) and sign in as `admin`
 
 ## Docker Compose — production
 
-Start the full production stack with CouchDB, InfluxDB, the Swarmboty app, and the Swarm agent:
+Start the full production stack with CouchDB, InfluxDB, the swarmbot.it app, and the Swarm agent:
 
 ```sh
 docker compose up --build

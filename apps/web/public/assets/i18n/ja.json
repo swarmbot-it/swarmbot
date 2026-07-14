@@ -24,7 +24,7 @@
     "auth": {
         "login": {
             "title": "おかえりなさい",
-            "subtitle": "SwarmBoty 管理コンソールにサインインしてください。",
+            "subtitle": "swarmbot.it 管理コンソールにサインインしてください。",
             "username": "ユーザー名",
             "password": "パスワード",
             "submit": "サインイン",

@@ -3,7 +3,7 @@ import { authGuard } from "./core/auth.guard";
 import { ShellComponent } from "./layout/shell.component";
 
 /**
- * Route map for the SwarmBoty admin SPA.
+ * Route map for the swarmbot.it admin SPA.
  *
  * `/login` is public; everything under `/app/*` is wrapped in the
  * authenticated shell (sidebar + topbar) and guarded by `authGuard`.

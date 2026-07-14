@@ -1,7 +1,7 @@
 ﻿import { gql } from "apollo-angular";
 
 /**
- * Centralised GraphQL operations used by the SwarmBoty admin UI.
+ * Centralised GraphQL operations used by the swarmbot.it admin UI.
  * Keeping them in one file makes it easy to keep selection sets aligned
  * with the schema and to share fragments between pages.
  */
@@ -285,7 +285,7 @@ export const QUERY_REGISTRIES = gql`
 	}
 `;
 
-/** List application users who can sign in to SwarmBoty. */
+/** List application users who can sign in to swarmbot.it. */
 export const QUERY_USERS = gql`
 	query AppUsers {
 		users {

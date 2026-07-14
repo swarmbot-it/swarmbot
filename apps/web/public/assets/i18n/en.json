@@ -25,7 +25,7 @@
     "auth": {
         "login": {
             "title": "Welcome back",
-            "subtitle": "Sign in to the SwarmBoty admin console.",
+            "subtitle": "Sign in to the swarmbot.it admin console.",
             "username": "Username",
             "password": "Password",
             "submit": "Sign in",
