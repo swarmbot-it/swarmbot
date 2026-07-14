@@ -1,4 +1,4 @@
-﻿/** Swarmboty environment-driven configuration. */
+﻿/** swarmbot.it environment-driven configuration. */
 
 function envStr(key: string): string | undefined {
 	const v = process.env[key];

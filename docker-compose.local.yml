@@ -20,7 +20,7 @@
 version: "3.9"
 
 services:
-    # ── SwarmBoty API + UI ────────────────────────────────────────────────────
+    # ── swarmbot.it API + UI ──────────────────────────────────────────────────
     # Obraz lokalny; skrypt swarm-deploy.mjs buduje go i ładuje do managera.
 
     app:
