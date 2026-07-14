@@ -10,7 +10,12 @@ const buckets = new Map<string, Bucket>();
 const DEFAULT_WINDOW_MS = 60_000;
 const DEFAULT_MAX_ATTEMPTS = 10;
 
-/** Returns true if another attempt under `key` is allowed within the current window. */
+/**
+ * @param key Identifies the bucket (e.g. IP or username) being rate-limited.
+ * @param max Maximum attempts allowed within `windowMs`.
+ * @param windowMs Fixed window size in milliseconds.
+ * @returns True if another attempt under `key` is allowed within the current window.
+ */
 export function allowAttempt(
 	key: string,
 	max = DEFAULT_MAX_ATTEMPTS,

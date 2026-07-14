@@ -23,6 +23,7 @@ import { UserFormComponent } from "./forms/user-form.component";
  * hosts and makes the routing module shorter.
  */
 
+/** Wires the stacks table page to its deploy-stack modal. */
 @Component({
 	selector: "sb-stacks-host",
 	standalone: true,
@@ -37,11 +38,11 @@ import { UserFormComponent } from "./forms/user-form.component";
 	`,
 	imports: [StacksPageComponent, StackFormComponent],
 })
-/** Wires the stacks table page to its deploy-stack modal. */
 export class StacksHostComponent {
 	open = false;
 }
 
+/** Wires the services table page to its create-service modal. */
 @Component({
 	selector: "sb-services-host",
 	standalone: true,
@@ -56,11 +57,11 @@ export class StacksHostComponent {
 	`,
 	imports: [ServicesPageComponent, ServiceFormComponent],
 })
-/** Wires the services table page to its create-service modal. */
 export class ServicesHostComponent {
 	open = false;
 }
 
+/** Wires the networks table page to its create-network modal. */
 @Component({
 	selector: "sb-networks-host",
 	standalone: true,
@@ -75,11 +76,11 @@ export class ServicesHostComponent {
 	`,
 	imports: [NetworksPageComponent, NetworkFormComponent],
 })
-/** Wires the networks table page to its create-network modal. */
 export class NetworksHostComponent {
 	open = false;
 }
 
+/** Wires the volumes table page to its create-volume modal. */
 @Component({
 	selector: "sb-volumes-host",
 	standalone: true,
@@ -94,11 +95,11 @@ export class NetworksHostComponent {
 	`,
 	imports: [VolumesPageComponent, VolumeFormComponent],
 })
-/** Wires the volumes table page to its create-volume modal. */
 export class VolumesHostComponent {
 	open = false;
 }
 
+/** Wires the secrets table page to its create-secret modal. */
 @Component({
 	selector: "sb-secrets-host",
 	standalone: true,
@@ -113,11 +114,11 @@ export class VolumesHostComponent {
 	`,
 	imports: [SecretsPageComponent, SecretFormComponent],
 })
-/** Wires the secrets table page to its create-secret modal. */
 export class SecretsHostComponent {
 	open = false;
 }
 
+/** Wires the configs table page to its create-config modal. */
 @Component({
 	selector: "sb-configs-host",
 	standalone: true,
@@ -132,11 +133,11 @@ export class SecretsHostComponent {
 	`,
 	imports: [ConfigsPageComponent, ConfigFormComponent],
 })
-/** Wires the configs table page to its create-config modal. */
 export class ConfigsHostComponent {
 	open = false;
 }
 
+/** Wires the registries table page to its connect-registry modal. */
 @Component({
 	selector: "sb-registries-host",
 	standalone: true,
@@ -151,11 +152,11 @@ export class ConfigsHostComponent {
 	`,
 	imports: [RegistriesPageComponent, RegistryFormComponent],
 })
-/** Wires the registries table page to its connect-registry modal. */
 export class RegistriesHostComponent {
 	open = false;
 }
 
+/** Wires the users table page to its create-user modal. */
 @Component({
 	selector: "sb-users-host",
 	standalone: true,
@@ -166,7 +167,6 @@ export class RegistriesHostComponent {
 	`,
 	imports: [UsersPageComponent, UserFormComponent],
 })
-/** Wires the users table page to its create-user modal. */
 export class UsersHostComponent {
 	open = false;
 }

@@ -47,8 +47,10 @@ export const createNetworkInputSchema = z.object({
 	labels: z.array(z.object({ k: z.string().min(1), v: z.string() })).optional(),
 });
 
-/** Parses `input` against `schema`; throws a localized GraphQLError (VALIDATION_ERROR)
- * carrying the raw zod issues in extensions when it doesn't match. */
+/**
+ * Parses `input` against `schema`.
+ * @throws {GraphQLError} Localized (VALIDATION_ERROR), carrying the raw zod issues in `extensions` when `input` doesn't match `schema`.
+ */
 export function validateInput<T>(schema: z.ZodType<T>, input: unknown, locale: SupportedLocale): T {
 	const result = schema.safeParse(input);
 	if (!result.success) {

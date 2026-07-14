@@ -91,7 +91,10 @@ export async function initDb(
 	await ensureAppSecret(db);
 }
 
-/** Returns the JWT signing key (also the source key for registry-password encryption). Throws if not yet seeded. */
+/**
+ * Returns the JWT signing key (also the source key for registry-password encryption).
+ * @throws {Error} If `initDb()` has not yet seeded the secret.
+ */
 export async function getAppSecret(db: Kysely<Database>): Promise<string> {
 	const row = await db.selectFrom("appSecrets").select("secret").executeTakeFirst();
 	if (!row) throw new Error("no app secret found — initDb() must run before serving requests");

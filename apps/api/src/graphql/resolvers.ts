@@ -88,16 +88,15 @@ function summarizeDockerEvent(raw: string): string {
 	}
 }
 
+/** Measurements/fields this app ever writes (see events/stats-writer.ts) — the only ones `Query.statsSeries` may read. */
+const STATS_MEASUREMENTS = new Set(["cpu", "memory", "disk", "container_stats"]);
+const STATS_FIELDS = new Set(["percent", "total_bytes", "used_bytes", "cpu_percent", "mem_percent"]);
+
 /**
  * Stable per-resource pseudo-load so dashboards look the same between
  * polls when InfluxDB is not configured. The hash mixes the node id
  * into a 0–100 range with mild offsets per metric.
  */
-
-/** Measurements/fields this app ever writes (see events/stats-writer.ts) — the only ones `Query.statsSeries` may read. */
-const STATS_MEASUREMENTS = new Set(["cpu", "memory", "disk", "container_stats"]);
-const STATS_FIELDS = new Set(["percent", "total_bytes", "used_bytes", "cpu_percent", "mem_percent"]);
-
 function pseudoLoad(id: string, kind: "cpu" | "mem" | "disk"): number {
 	let h = 0;
 	for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
