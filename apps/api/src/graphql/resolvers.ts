@@ -123,23 +123,25 @@ async function decorateNodes(ctx: GraphQLContext, base: NodeSummary[]): Promise<
 					influxQuery(ctx.cfg, memQuery),
 					influxQuery(ctx.cfg, diskQuery),
 				]);
-				const valueOf = (rows: unknown, kind: "cpu" | "mem" | "disk"): number => {
+				// Influx being configured but returning no rows means the agent isn't
+				// connected/reporting for this node yet — not that its real usage is
+				// some plausible-looking number. Only synthesize a placeholder when
+				// there's no telemetry backend at all (handled by the branch above);
+				// here, honest 0 beats a believable fake reading.
+				const valueOf = (rows: unknown): number => {
 					const r = rows as {
 						results?: Array<{
 							series?: Array<{ values?: Array<Array<number | string>> }>;
 						}>;
 					};
 					const v = r.results?.[0]?.series?.[0]?.values?.[0]?.[1];
-					return typeof v === "number" ? Math.round(v) : pseudoLoad(n.id, kind);
+					return typeof v === "number" ? Math.round(v) : 0;
 				};
-				return { ...n, cpu: valueOf(c, "cpu"), mem: valueOf(m, "mem"), disk: valueOf(d, "disk") };
+				return { ...n, cpu: valueOf(c), mem: valueOf(m), disk: valueOf(d) };
 			} catch {
-				return {
-					...n,
-					cpu: pseudoLoad(n.id, "cpu"),
-					mem: pseudoLoad(n.id, "mem"),
-					disk: pseudoLoad(n.id, "disk"),
-				};
+				// Same reasoning as above: a failed Influx query means "no data",
+				// not "here's a plausible number."
+				return { ...n, cpu: 0, mem: 0, disk: 0 };
 			}
 		})
 	);
@@ -657,6 +659,8 @@ export const resolvers = {
 			requireUser(ctx);
 			const range = (args.range ?? "1h") as Range;
 			const resolution: Resolution = "medium";
+			const empty = { labels: [] as string[], cpu: [] as number[], mem: [] as number[] };
+
 			if (ctx.cfg.influxdbUrl) {
 				try {
 					const services = await ctx.docker.listServices();
@@ -697,9 +701,16 @@ export const resolvers = {
 						}
 					}
 				} catch {
-					/* fall through to mock */
+					/* fall through to empty below */
 				}
+				// Influx is configured but has no matching container_stats rows for
+				// this stack (agent not connected/reporting yet) — an honest empty
+				// series, not a fabricated chart.
+				return empty;
 			}
+
+			// No telemetry backend configured at all: keep the demo/mock-mode
+			// placeholder so the chart isn't just blank in that specific setup.
 			let seed = 0;
 			for (let i = 0; i < args.name.length; i++) seed = (seed * 31 + args.name.charCodeAt(i)) >>> 0;
 			const mock = mockSeries(range, resolution, seed % 5);
