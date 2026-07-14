@@ -215,16 +215,21 @@ function mapTaskInfo(
 	const node = nodeMap.get(ts.nodeId);
 	const stats = svc ? containerStats.get(`/${svc.name}.${ts.slot}.${ts.id}`) : undefined;
 
+	// A task that isn't running has no live process to measure — showing a
+	// pseudo/mock number here would misrepresent a dead task as consuming
+	// real CPU/memory. Only running tasks are eligible for the placeholder
+	// (no-Influx) fallback; every other state always gets honest zeros.
+	const isRunning = ts.state === "running";
 	let cpu: number;
 	let mem: number;
 	let cpuSeries: number[];
 	let memSeries: number[];
-	if (stats && (stats.cpu.length > 0 || stats.mem.length > 0)) {
+	if (isRunning && stats && (stats.cpu.length > 0 || stats.mem.length > 0)) {
 		cpuSeries = stats.cpu;
 		memSeries = stats.mem;
 		cpu = cpuSeries.length ? Math.round(cpuSeries[cpuSeries.length - 1]) : 0;
 		mem = memSeries.length ? Math.round(memSeries[memSeries.length - 1]) : 0;
-	} else if (!hasInflux) {
+	} else if (isRunning && !hasInflux) {
 		const cpuBase = pseudoLoad(ts.id, "cpu") / 1.2;
 		const memBase = pseudoLoad(ts.id, "mem") / 1.1;
 		const hist = taskMockHistory(idx, cpuBase, memBase);
@@ -480,19 +485,27 @@ export const resolvers = {
 		) => {
 			requireUser(ctx);
 			const range = (args.range ?? "1h") as Range;
-			if (ctx.cfg.influxdbUrl) {
+			const empty = { labels: [] as string[], cpu: [] as number[], mem: [] as number[] };
+
+			const [tasksRaw, services] = await Promise.all([
+				ctx.docker.listTasks(),
+				ctx.docker.listServices(),
+			]);
+			const raw = tasksRaw.find((t) => (t as unknown as { ID?: string }).ID === args.id);
+			const ts = raw ? mapTaskSummary(raw) : null;
+			// A dead task (failed/shutdown/rejected/...) has no live container to
+			// measure — only "running" is eligible for real stats or, absent
+			// Influx, the mock placeholder. Everything else gets an honest empty
+			// series instead of a fabricated chart.
+			const isRunning = ts?.state === "running";
+
+			if (ctx.cfg.influxdbUrl && ts && /^[a-z0-9]+$/i.test(args.id)) {
 				try {
-					const [tasksRaw, services] = await Promise.all([
-						ctx.docker.listTasks(),
-						ctx.docker.listServices(),
-					]);
-					const raw = tasksRaw.find((t) => (t as unknown as { ID?: string }).ID === args.id);
 					const svcMap = new Map(
 						services.map((s) => [(s as unknown as { ID?: string }).ID, mapServiceSummary(s)])
 					);
-					const ts = raw ? mapTaskSummary(raw) : null;
-					const svc = ts ? svcMap.get(ts.serviceId) : null;
-					if (ts && svc && /^[a-z0-9]+$/i.test(args.id)) {
+					const svc = svcMap.get(ts.serviceId);
+					if (svc) {
 						const escapedName = svc.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 						const pattern = `^\\/?${escapedName}\\.${ts.slot}\\.${args.id}`;
 						const RANGES: Record<string, { window: string; bucket: string }> = {
@@ -524,13 +537,18 @@ export const resolvers = {
 						}
 					}
 				} catch {
-					/* fall through to mock */
+					/* fall through to empty below */
 				}
+				return empty;
 			}
-			let seed = 0;
-			for (let i = 0; i < args.id.length; i++) seed = (seed * 31 + args.id.charCodeAt(i)) >>> 0;
-			const mock = mockSeries(range, "medium", seed % 5);
-			return { labels: mock.labels, cpu: mock.cpu, mem: mock.mem };
+
+			if (!ctx.cfg.influxdbUrl && isRunning) {
+				let seed = 0;
+				for (let i = 0; i < args.id.length; i++) seed = (seed * 31 + args.id.charCodeAt(i)) >>> 0;
+				const mock = mockSeries(range, "medium", seed % 5);
+				return { labels: mock.labels, cpu: mock.cpu, mem: mock.mem };
+			}
+			return empty;
 		},
 		nodes: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
 			requireUser(ctx);
