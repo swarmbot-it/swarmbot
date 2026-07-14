@@ -1,7 +1,7 @@
 ﻿import type { GraphQLContext } from "./context.js";
 import { requireUser, requireAdmin, requireEditor } from "./guards.js";
 import { localizedError } from "../i18n/errors.js";
-import { getSecret, userByUsername, updateDoc, findOne, type CouchDoc } from "../couch.js";
+import { getAppSecret } from "../db.js";
 import { decryptAtRest } from "../crypto/secret-box.js";
 import { allowAttempt } from "../auth/rate-limit.js";
 import { generateJwt } from "../auth/jwt.js";
@@ -38,17 +38,22 @@ import type Dockerode from "dockerode";
 import { randomUUID } from "crypto";
 import {
 	createRegistry as createRegistryDoc,
+	getRegistryByName,
 	listRegistries,
 	removeRegistry,
 	setDefaultRegistry,
 } from "../store/registries.js";
 import {
 	createUser as createUserDoc,
+	findAuthUser,
 	getUserByUsername,
 	listUsers as listUserAccounts,
 	removeUser,
+	setApiToken,
+	touchLastLogin,
 	updateUserProfile,
 	changeUserPassword,
+	upgradePasswordHash,
 } from "../store/users.js";
 import {
 	influxClusterSeries,
@@ -290,7 +295,7 @@ export const resolvers = {
 		}),
 		me: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
 			requireUser(ctx);
-			const u = await getUserByUsername(ctx.couchDb, ctx.user!.usr.username);
+			const u = await getUserByUsername(ctx.db, ctx.user!.usr.username);
 			if (!u) return null;
 			return {
 				username: u.username,
@@ -328,8 +333,8 @@ export const resolvers = {
 				docker.listVolumes(),
 				docker.listSecrets(),
 				docker.listConfigs(),
-				listRegistries(ctx.couchDb),
-				listUserAccounts(ctx.couchDb),
+				listRegistries(ctx.db),
+				listUserAccounts(ctx.db),
 			]);
 			const nodes = await decorateNodes(ctx, nodesRaw.map(mapNodeSummary));
 			const active = nodes.filter((n) => !n.tags.includes("DRAIN"));
@@ -361,8 +366,8 @@ export const resolvers = {
 			const rawTasks = tasks as unknown as Array<{ Status?: { State?: string } }>;
 			const tasksRunning = rawTasks.filter((t) => t.Status?.State === "running").length;
 			const counts = { stacks: stacksCount, services: services.length, tasks: tasks.length };
-			await recordDailySnapshot(ctx.couchDb, counts);
-			const deltas = await weekOverWeekDeltas(ctx.couchDb, counts);
+			await recordDailySnapshot(ctx.db, counts);
+			const deltas = await weekOverWeekDeltas(ctx.db, counts);
 			return {
 				nodes: nodes.length,
 				managers,
@@ -584,11 +589,11 @@ export const resolvers = {
 		},
 		registries: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
 			requireUser(ctx);
-			return listRegistries(ctx.couchDb);
+			return listRegistries(ctx.db);
 		},
 		users: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
 			requireUser(ctx);
-			return listUserAccounts(ctx.couchDb);
+			return listUserAccounts(ctx.db);
 		},
 		metricsSeries: async (
 			_: unknown,
@@ -727,7 +732,7 @@ export const resolvers = {
 			if (!allowAttempt(`${ctx.ip}:${username.toLowerCase()}`)) {
 				throw localizedError(ctx.locale, "errors.tooManyAttempts", "TOO_MANY_ATTEMPTS");
 			}
-			const u = await userByUsername(ctx.couchDb, username);
+			const u = await findAuthUser(ctx.db, username);
 			if (!u || typeof u.password !== "string") {
 				throw localizedError(
 					ctx.locale,
@@ -744,11 +749,10 @@ export const resolvers = {
 				);
 			}
 			if (isSha256Digest(password, u.password)) {
-				await updateDoc(ctx.couchDb, u, { password: derivePassword(password) });
+				await upgradePasswordHash(ctx.db, u.username, derivePassword(password));
 			}
-			await updateDoc(ctx.couchDb, u, { lastLoginAt: new Date().toISOString() });
-			const secretDoc = await getSecret(ctx.couchDb);
-			const secret = String(secretDoc?.secret ?? "");
+			await touchLastLogin(ctx.db, u.username);
+			const secret = await getAppSecret(ctx.db).catch(() => "");
 			if (!secret) {
 				throw localizedError(
 					ctx.locale,
@@ -762,13 +766,13 @@ export const resolvers = {
 		logout: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
 			if (!ctx.user) return true;
 			if (ctx.user.iss === "swarmboty") {
-				await revokeJti(ctx.couchDb, ctx.user.jti);
+				await revokeJti(ctx.db, ctx.user.jti);
 			}
 			return true;
 		},
 		apiTokenGenerate: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
 			requireUser(ctx);
-			const u = await userByUsername(ctx.couchDb, ctx.user!.usr.username);
+			const u = await findAuthUser(ctx.db, ctx.user!.usr.username);
 			if (!u) {
 				throw localizedError(ctx.locale, "errors.userNotFound", "USER_NOT_FOUND");
 			}
@@ -778,8 +782,7 @@ export const resolvers = {
 				ctx.cfg.apiTokenExpiryDays && ctx.cfg.apiTokenExpiryDays > 0
 					? now + ctx.cfg.apiTokenExpiryDays * 86400
 					: null;
-			const secretDoc = await getSecret(ctx.couchDb);
-			const secret = String(secretDoc?.secret ?? "");
+			const secret = await getAppSecret(ctx.db).catch(() => "");
 			if (!secret) {
 				throw localizedError(
 					ctx.locale,
@@ -789,16 +792,18 @@ export const resolvers = {
 			}
 			const token = generateJwt(secret, u, { iss: "swarmboty-api", jti, exp });
 			const expiresAt = exp ? new Date(exp * 1000).toISOString() : null;
-			await updateDoc(ctx.couchDb, u, {
-				"api-token": { jti, mask: token.slice(-5), ...(expiresAt ? { expiresAt } : {}) },
+			await setApiToken(ctx.db, u.username, {
+				jti,
+				mask: token.slice(-5),
+				...(expiresAt ? { expiresAt } : {}),
 			});
 			return { token, expiresAt };
 		},
 		apiTokenRemove: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
 			requireUser(ctx);
-			const u = await userByUsername(ctx.couchDb, ctx.user!.usr.username);
+			const u = await findAuthUser(ctx.db, ctx.user!.usr.username);
 			if (u) {
-				await updateDoc(ctx.couchDb, u, { "api-token": null });
+				await setApiToken(ctx.db, u.username, null);
 			}
 			return true;
 		},
@@ -915,13 +920,11 @@ export const resolvers = {
 					stack: input.stack ?? null,
 				};
 			}
-			const registryDoc = (await findOne(ctx.couchDb, "registry", { name: input.registry })) as
-				| (CouchDoc & { url?: string; user?: string; password?: string })
-				| undefined;
-			const authconfig = registryDoc?.user
+			const registryDoc = await getRegistryByName(ctx.db, input.registry);
+			const authconfig = registryDoc?.registryUser
 				? {
-						username: registryDoc.user,
-						password: await decryptAtRest(ctx.couchDb, registryDoc.password),
+						username: registryDoc.registryUser,
+						password: await decryptAtRest(ctx.db, registryDoc.password ?? undefined),
 						serveraddress: registryDoc.url ?? "",
 					}
 				: undefined;
@@ -1131,15 +1134,15 @@ export const resolvers = {
 		) => {
 			requireAdmin(ctx);
 			input = validateInput(createRegistryInputSchema, input, ctx.locale);
-			return createRegistryDoc(ctx.couchDb, input);
+			return createRegistryDoc(ctx.db, input);
 		},
 		removeRegistry: async (_: unknown, { id }: { id: string }, ctx: GraphQLContext) => {
 			requireAdmin(ctx);
-			return removeRegistry(ctx.couchDb, id);
+			return removeRegistry(ctx.db, id);
 		},
 		setDefaultRegistry: async (_: unknown, { id }: { id: string }, ctx: GraphQLContext) => {
 			requireAdmin(ctx);
-			return setDefaultRegistry(ctx.couchDb, id);
+			return setDefaultRegistry(ctx.db, id);
 		},
 		setNodeAvailability: async (
 			_: unknown,
@@ -1178,11 +1181,11 @@ export const resolvers = {
 		) => {
 			requireAdmin(ctx);
 			input = validateInput(createUserInputSchema, input, ctx.locale);
-			return createUserDoc(ctx.couchDb, input);
+			return createUserDoc(ctx.db, input);
 		},
 		removeUser: async (_: unknown, { id }: { id: string }, ctx: GraphQLContext) => {
 			requireAdmin(ctx);
-			return removeUser(ctx.couchDb, id);
+			return removeUser(ctx.db, id);
 		},
 		updateProfile: async (
 			_: unknown,
@@ -1190,7 +1193,7 @@ export const resolvers = {
 			ctx: GraphQLContext
 		) => {
 			requireUser(ctx);
-			return updateUserProfile(ctx.couchDb, ctx.user!.usr.username, input);
+			return updateUserProfile(ctx.db, ctx.user!.usr.username, input);
 		},
 		changePassword: async (
 			_: unknown,
@@ -1198,7 +1201,7 @@ export const resolvers = {
 			ctx: GraphQLContext
 		) => {
 			requireUser(ctx);
-			return changeUserPassword(ctx.couchDb, ctx.user!.usr.username, input.current, input.next);
+			return changeUserPassword(ctx.db, ctx.user!.usr.username, input.current, input.next);
 		},
 	},
 

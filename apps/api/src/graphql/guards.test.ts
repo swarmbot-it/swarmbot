@@ -2,17 +2,17 @@ import { describe, it, expect } from "vitest";
 import { requireUser, requireAdmin } from "./guards.js";
 import type { GraphQLContext } from "./context.js";
 import { loadConfig } from "../config.js";
-import { createMockCouch } from "../couch.mock.js";
+import { createTestDb } from "../test/db-setup.js";
 import { createDocker } from "../docker/engine.js";
 
-function ctx(
+async function ctx(
 	user?: GraphQLContext["user"],
 	locale: GraphQLContext["locale"] = "en"
-): GraphQLContext {
-	const { db } = createMockCouch();
+): Promise<GraphQLContext> {
+	const db = await createTestDb();
 	return {
 		cfg: { ...loadConfig(), mock: true },
-		couchDb: db,
+		db,
 		docker: createDocker({ ...loadConfig(), mock: true }),
 		user,
 		locale,
@@ -21,39 +21,41 @@ function ctx(
 }
 
 describe("requireUser", () => {
-	it("returns claims when authenticated", () => {
+	it("returns claims when authenticated", async () => {
 		const claims = {
 			iss: "swarmboty",
 			iat: 1,
 			jti: "j",
 			usr: { username: "admin", role: "admin" },
 		};
-		expect(requireUser(ctx(claims)).usr.username).toBe("admin");
+		expect(requireUser(await ctx(claims)).usr.username).toBe("admin");
 	});
 
-	it("throws when anonymous", () => {
-		expect(() => requireUser(ctx())).toThrow(/unauthorized/i);
+	it("throws when anonymous", async () => {
+		const c = await ctx();
+		expect(() => requireUser(c)).toThrow(/unauthorized/i);
 	});
 });
 
 describe("requireAdmin", () => {
-	it("allows admin role", () => {
+	it("allows admin role", async () => {
 		const claims = {
 			iss: "swarmboty",
 			iat: 1,
 			jti: "j",
 			usr: { username: "admin", role: "admin" },
 		};
-		expect(requireAdmin(ctx(claims)).usr.role).toBe("admin");
+		expect(requireAdmin(await ctx(claims)).usr.role).toBe("admin");
 	});
 
-	it("rejects non-admin", () => {
+	it("rejects non-admin", async () => {
 		const claims = {
 			iss: "swarmboty",
 			iat: 1,
 			jti: "j",
 			usr: { username: "bob", role: "editor" },
 		};
-		expect(() => requireAdmin(ctx(claims))).toThrow(/forbidden/i);
+		const c = await ctx(claims);
+		expect(() => requireAdmin(c)).toThrow(/forbidden/i);
 	});
 });

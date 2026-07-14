@@ -16,7 +16,7 @@
 #   http://localhost:4200          Angular dev server  (HMR / live-reload)
 #   http://localhost:8080/graphql  GraphQL API          (tsx hot-reload)
 #   http://localhost:8080/health   API health
-#   http://localhost:5984/_utils   CouchDB Fauxton admin UI
+#   localhost:5432                 Postgres (psql/pgAdmin — no bundled admin UI)
 #   http://localhost:8086          InfluxDB HTTP API
 #
 # ── Default credentials (bootstrap / mock) ────────────────────────────────
@@ -36,29 +36,23 @@
 #     npm run dev:web
 
 services:
-    # ── CouchDB ───────────────────────────────────────────────────────────────
+    # ── Postgres ──────────────────────────────────────────────────────────────
 
     db:
-        image: couchdb:3
+        image: postgres:16-alpine
         environment:
-            COUCHDB_USER: ${COUCHDB_USER:-admin}
-            COUCHDB_PASSWORD: ${COUCHDB_PASSWORD:-swarmboty}
+            POSTGRES_USER: ${POSTGRES_USER:-admin}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-swarmboty}
+            POSTGRES_DB: ${POSTGRES_DB:-swarmboty}
         ports:
-            - "5984:5984" # HTTP API + Fauxton at /_utils
+            - "5432:5432"
         volumes:
-            - db-data:/opt/couchdb/data
+            - db-data:/var/lib/postgresql/data
         networks:
             - net
         restart: unless-stopped
         healthcheck:
-            test:
-                - "CMD-SHELL"
-                - >-
-                    curl -sf http://$$COUCHDB_USER:$$COUCHDB_PASSWORD@localhost:5984/ &&
-                    curl -s -X PUT http://$$COUCHDB_USER:$$COUCHDB_PASSWORD@localhost:5984/_users 2>/dev/null ;
-                    curl -s -X PUT http://$$COUCHDB_USER:$$COUCHDB_PASSWORD@localhost:5984/_replicator 2>/dev/null ;
-                    curl -s -X PUT http://$$COUCHDB_USER:$$COUCHDB_PASSWORD@localhost:5984/_global_changes 2>/dev/null ;
-                    curl -sf http://$$COUCHDB_USER:$$COUCHDB_PASSWORD@localhost:5984/_users
+            test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
             interval: 5s
             timeout: 5s
             retries: 20
@@ -109,7 +103,7 @@ services:
             # Windows-hosted bind mounts, so force polling (mirrors the web service's --poll 500).
             CHOKIDAR_USEPOLLING: "true"
             CHOKIDAR_INTERVAL: "500"
-            SWARMBOTY_DB: http://${COUCHDB_USER:-admin}:${COUCHDB_PASSWORD:-swarmboty}@db:5984
+            SWARMBOTY_DB: postgres://${POSTGRES_USER:-admin}:${POSTGRES_PASSWORD:-swarmboty}@db:5432/${POSTGRES_DB:-swarmboty}
             SWARMBOTY_INFLUXDB: http://influxdb:8086
             SWARMBOTY_INFLUXDB_TOKEN: ${INFLUXDB_TOKEN:-swarmboty-influx-dev-token}
             SWARMBOTY_PORT: "8080"

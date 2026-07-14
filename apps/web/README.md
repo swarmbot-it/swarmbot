@@ -29,7 +29,7 @@ Open [http://localhost:4200](http://localhost:4200). The dev server proxies API 
 
 ## Signing in (development)
 
-1. Start the API in **mock mode** (in-memory CouchDB + sample Swarm data):
+1. Start the API in **mock mode** (in-memory SQLite + sample Swarm data):
 
    ```powershell
    # Windows PowerShell
@@ -50,7 +50,7 @@ Open [http://localhost:4200](http://localhost:4200). The dev server proxies API 
    | Username | `admin`     |
    | Password | `swarmboty` |
 
-Mock mode creates this demo admin automatically. Without mock mode you need a real CouchDB-backed user (see root `README.md`).
+Mock mode creates this demo admin automatically. Without mock mode you need a real Postgres-backed user (see root `README.md`).
 
 After login you are redirected to `/app/dashboard`. The JWT is stored in `localStorage` under `swarmboty.token`.
 

@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { buildContext, localeFromHeader } from "./context.js";
 import { loadConfig } from "../config.js";
-import { createMockCouch } from "../couch.mock.js";
+import { createTestDb } from "../test/db-setup.js";
 import { createDocker } from "../docker/engine.js";
 
 describe("localeFromHeader", () => {
@@ -14,8 +14,8 @@ describe("localeFromHeader", () => {
 });
 
 describe("buildContext", () => {
-	it("maps request user and locale", () => {
-		const { db } = createMockCouch();
+	it("maps request user and locale", async () => {
+		const db = await createTestDb();
 		const cfg = { ...loadConfig(), mock: true };
 		const docker = createDocker(cfg);
 		const claims = {

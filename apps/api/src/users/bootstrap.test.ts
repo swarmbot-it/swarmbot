@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { randomUUID } from "crypto";
 import { bootstrapAdminIfEmpty, initUsersFromConfig } from "./bootstrap.js";
-import { createMockCouch } from "../couch.mock.js";
-import { users } from "../couch.js";
+import { createTestDb } from "../test/db-setup.js";
+import { listUsers } from "../store/users.js";
 import { derivePassword } from "../auth/password.js";
 
 vi.mock("fs/promises", () => ({
@@ -17,23 +18,25 @@ describe("bootstrapAdminIfEmpty", () => {
 	});
 
 	it("creates mock admin when database is empty", async () => {
-		const { db } = createMockCouch();
+		const db = await createTestDb();
 		await bootstrapAdminIfEmpty(db, { mock: true });
-		const list = await users(db);
+		const list = await listUsers(db);
 		expect(list.some((u) => u.username === "admin")).toBe(true);
 	});
 
 	it("skips when users already exist", async () => {
-		const { db } = createMockCouch();
-		const { insertDoc } = await import("../couch.js");
-		await insertDoc(db, {
-			type: "user",
-			username: "existing",
-			password: derivePassword("x"),
-			role: "user",
-		});
+		const db = await createTestDb();
+		await db
+			.insertInto("users")
+			.values({
+				id: randomUUID(),
+				username: "existing",
+				password: derivePassword("x"),
+				role: "user",
+			})
+			.execute();
 		await bootstrapAdminIfEmpty(db, { mock: true });
-		const list = await users(db);
+		const list = await listUsers(db);
 		expect(list).toHaveLength(1);
 	});
 });
@@ -51,15 +54,15 @@ users:
     email: y@example.com
     role: editor
 `);
-		const { db } = createMockCouch();
+		const db = await createTestDb();
 		await initUsersFromConfig(db);
-		const list = await users(db);
+		const list = await listUsers(db);
 		expect(list.some((u) => u.username === "yamluser")).toBe(true);
 	});
 
 	it("ignores missing config file", async () => {
 		vi.mocked(readFile).mockRejectedValue(new Error("ENOENT"));
-		const { db } = createMockCouch();
+		const db = await createTestDb();
 		await expect(initUsersFromConfig(db)).resolves.toBeUndefined();
 	});
 });

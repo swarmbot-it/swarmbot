@@ -1,8 +1,10 @@
 ﻿import jwt from "jsonwebtoken";
 import { randomUUID } from "crypto";
-import type { CouchDoc } from "../couch.js";
 
 export type JwtUser = { username: string; email?: string; role?: string };
+
+/** Structural subset any user record needs to carry to be signable into a JWT. */
+type SignableUser = { username: string; email?: string | null; role?: string | null };
 
 export type JwtClaims = {
 	iss: string;
@@ -22,13 +24,13 @@ export function tokenValue(header: string | undefined): string {
 
 export function generateJwt(
 	secret: string,
-	user: CouchDoc,
+	user: SignableUser,
 	opts?: { exp?: number | null; jti?: string; iss?: string }
 ): string {
 	const usr: JwtUser = {
-		username: String(user.username),
-		email: user.email !== undefined ? String(user.email) : undefined,
-		role: user.role !== undefined ? String(user.role) : undefined,
+		username: user.username,
+		email: user.email ?? undefined,
+		role: user.role ?? undefined,
 	};
 	const now = Math.floor(Date.now() / 1000);
 	const payload: JwtClaims = {

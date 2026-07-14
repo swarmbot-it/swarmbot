@@ -1,37 +1,40 @@
 import type { Server } from "http";
 import type { AddressInfo } from "net";
 import { once } from "node:events";
-import { createMockCouch } from "../couch.mock.js";
-import { createSecret, insertDoc } from "../couch.js";
+import { randomUUID } from "crypto";
+import type { Kysely } from "kysely";
+import { createTestDb } from "./db-setup.js";
+import type { Database } from "../db.js";
 import { loadConfig, type SwarmbotyConfig } from "../config.js";
 import { derivePassword } from "../auth/password.js";
 import { createHttpServer } from "../server.js";
 import { createDocker } from "../docker/engine.js";
 import type { GraphQLContext } from "../graphql/context.js";
 import { buildContext } from "../graphql/context.js";
-import type nano from "nano";
-import type { CouchDoc } from "../couch.js";
 import type Dockerode from "dockerode";
 
 export type TestHttp = {
 	httpServer: Server;
 	baseUrl: string;
 	cfg: SwarmbotyConfig;
-	couchDb: nano.DocumentScope<CouchDoc>;
+	db: Kysely<Database>;
 	docker: Dockerode;
 	cleanup: () => Promise<void>;
 };
 
 export async function startTestHttp(opts?: Partial<SwarmbotyConfig>): Promise<TestHttp> {
-	const { db } = createMockCouch();
-	await createSecret(db, "test-secret");
-	await insertDoc(db, {
-		type: "user",
-		username: "admin",
-		password: derivePassword("swarmboty"),
-		role: "admin",
-		email: "admin@test.local",
-	});
+	const db = await createTestDb();
+	await db
+		.insertInto("users")
+		.values({
+			id: randomUUID(),
+			username: "admin",
+			password: derivePassword("swarmboty"),
+			role: "admin",
+			email: "admin@test.local",
+			createdAt: new Date().toISOString(),
+		})
+		.execute();
 
 	const cfg: SwarmbotyConfig = {
 		...loadConfig(),
@@ -55,7 +58,7 @@ export async function startTestHttp(opts?: Partial<SwarmbotyConfig>): Promise<Te
 		httpServer,
 		baseUrl,
 		cfg,
-		couchDb: db,
+		db,
 		docker,
 		cleanup: async () => {
 			await cleanup();
@@ -72,12 +75,7 @@ export function gqlContext(
 	req: { headers: Record<string, string | undefined>; swarmUser?: GraphQLContext["user"] },
 	test: TestHttp
 ): GraphQLContext {
-	return buildContext(
-		req as Parameters<typeof buildContext>[0],
-		test.cfg,
-		test.couchDb,
-		test.docker
-	);
+	return buildContext(req as Parameters<typeof buildContext>[0], test.cfg, test.db, test.docker);
 }
 
 export async function gql<T>(

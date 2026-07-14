@@ -1,6 +1,6 @@
 ﻿import { loadConfig, resolvedDockerApi } from "./config.js";
-import { createCouch } from "./couch.js";
-import { initCouch, initInflux } from "./database.js";
+import { createDb, initDb } from "./db.js";
+import { initInflux } from "./database.js";
 import { createHttpServer } from "./server.js";
 import { bootstrapAdminIfEmpty, initUsersFromConfig } from "./users/bootstrap.js";
 import { seedDefaultRegistries } from "./store/registries.js";
@@ -25,17 +25,17 @@ async function main(): Promise<void> {
 		{ mock: cfg0.mock, db: redactCredentials(cfg0.dbUrl), port: cfg0.port },
 		"Starting Swarmboty"
 	);
-	const couchServer = createCouch(cfg0);
-	const couchDb = await initCouch(cfg0, couchServer);
-	await initUsersFromConfig(couchDb);
-	await bootstrapAdminIfEmpty(couchDb, { mock: cfg0.mock });
-	await seedDefaultRegistries(couchDb);
+	const db = createDb(cfg0);
+	await initDb(cfg0, db);
+	await initUsersFromConfig(db);
+	await bootstrapAdminIfEmpty(db, { mock: cfg0.mock });
+	await seedDefaultRegistries(db);
 	if (cfg0.mock) {
-		await seedDemoUsers(couchDb);
+		await seedDemoUsers(db);
 	}
 	await initInflux(cfg0);
 	const cfg = { ...cfg0, dockerApi: resolvedDockerApi(cfg0.dockerApi) };
-	const { httpServer, cleanup } = await createHttpServer(cfg, couchDb);
+	const { httpServer, cleanup } = await createHttpServer(cfg, db);
 	await new Promise<void>((resolve, reject) => {
 		httpServer.once("error", reject);
 		httpServer.listen(cfg.port, () => {

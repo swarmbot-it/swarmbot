@@ -1,13 +1,7 @@
-import type nano from "nano";
-import { getDoc, insertDoc, findDocs, type CouchDoc } from "../couch.js";
+import type { Kysely } from "kysely";
+import type { Database } from "../db.js";
 
 type SnapshotCounts = { stacks: number; services: number; tasks: number };
-
-type SnapshotDoc = CouchDoc &
-	SnapshotCounts & {
-		type: "metrics_snapshot";
-		recordedAt: string;
-	};
 
 function todayKey(): string {
 	return new Date().toISOString().slice(0, 10);
@@ -17,19 +11,14 @@ function todayKey(): string {
  * Upserts today's resource counts once per day so week-over-week deltas can
  * be computed later. Cheap no-op after the first call each day.
  */
-export async function recordDailySnapshot(
-	d: nano.DocumentScope<CouchDoc>,
-	counts: SnapshotCounts
-): Promise<void> {
-	const id = `metrics_snapshot:${todayKey()}`;
-	const existing = await getDoc(d, id);
+export async function recordDailySnapshot(db: Kysely<Database>, counts: SnapshotCounts): Promise<void> {
+	const day = todayKey();
+	const existing = await db.selectFrom("metricsSnapshots").select("day").where("day", "=", day).executeTakeFirst();
 	if (existing) return;
-	await insertDoc(d, {
-		_id: id,
-		type: "metrics_snapshot",
-		recordedAt: new Date().toISOString(),
-		...counts,
-	});
+	await db
+		.insertInto("metricsSnapshots")
+		.values({ day, recordedAt: new Date().toISOString(), ...counts })
+		.execute();
 }
 
 function signedDelta(n: number): string | null {
@@ -49,17 +38,20 @@ export type WeeklyDeltas = {
  * no fabricated numbers for a freshly bootstrapped instance.
  */
 export async function weekOverWeekDeltas(
-	d: nano.DocumentScope<CouchDoc>,
+	db: Kysely<Database>,
 	current: SnapshotCounts
 ): Promise<WeeklyDeltas> {
-	const docs = (await findDocs(d, "metrics_snapshot", {})) as SnapshotDoc[];
+	const rows = await db.selectFrom("metricsSnapshots").selectAll().execute();
 	const now = Date.now();
 	const weekMs = 7 * 24 * 60 * 60 * 1000;
-	const candidates = docs
-		.map((doc) => ({ doc, ageMs: now - new Date(doc.recordedAt).getTime() }))
+	const candidates = rows
+		.map((row) => ({
+			row,
+			ageMs: now - new Date(row.recordedAt).getTime(),
+		}))
 		.filter((c) => c.ageMs >= 6 * 86_400_000 && c.ageMs <= 8 * 86_400_000)
 		.sort((a, b) => Math.abs(a.ageMs - weekMs) - Math.abs(b.ageMs - weekMs));
-	const baseline = candidates[0]?.doc;
+	const baseline = candidates[0]?.row;
 	if (!baseline) {
 		return { stacksDelta: null, servicesDelta: null, tasksDelta: null };
 	}

@@ -1,4 +1,4 @@
-﻿import http from "http";
+import http from "http";
 import path from "path";
 import express from "express";
 import cors from "cors";
@@ -10,14 +10,17 @@ import { makeExecutableSchema } from "@graphql-tools/schema";
 import { WebSocketServer } from "ws";
 import { useServer } from "graphql-ws/lib/use/ws";
 import { execute, subscribe } from "graphql";
+import type { Kysely } from "kysely";
 import type { SwarmbotyConfig } from "./config.js";
+import type { Database } from "./db.js";
+import { getAppSecret } from "./db.js";
 import { typeDefs } from "./graphql/schema.js";
 import { resolvers } from "./graphql/resolvers.js";
 import { buildContext, localeFromHeader, type GraphQLContext } from "./graphql/context.js";
 import { localizedMessage } from "./i18n/errors.js";
 import type { AuthedRequest } from "./http/optional-jwt.js";
 import { optionalJwtMiddleware } from "./http/optional-jwt.js";
-import { userByUsername, updateDoc, getSecret, type CouchDoc } from "./couch.js";
+import { findAuthUser, upgradePasswordHash } from "./store/users.js";
 import { decodeBasic, generateJwt, verifyJwt } from "./auth/jwt.js";
 import { allowAttempt } from "./auth/rate-limit.js";
 import { verifyPassword, derivePassword, isSha256Digest } from "./auth/password.js";
@@ -26,11 +29,10 @@ import { createDocker, setupDockerApi } from "./docker/engine.js";
 import { consumeSlt, createSlt } from "./auth/slt.js";
 import { publishEvent, subscribeEvents } from "./events/hub.js";
 import { startStatsWriter } from "./events/stats-writer.js";
-import type nano from "nano";
 
 export async function createHttpServer(
 	cfg: SwarmbotyConfig,
-	couchDb: nano.DocumentScope<CouchDoc>
+	db: Kysely<Database>
 ): Promise<{
 	httpServer: http.Server;
 	apollo: ApolloServer<GraphQLContext>;
@@ -58,15 +60,14 @@ export async function createHttpServer(
 					typeof langHeader === "string" ? langHeader : undefined
 				);
 				const ip = ctx.extra.request.socket.remoteAddress ?? "unknown";
-				const base: GraphQLContext = { cfg, couchDb, docker, user: undefined, locale, ip };
+				const base: GraphQLContext = { cfg, db, docker, user: undefined, locale, ip };
 				if (!auth || typeof auth !== "string") {
 					return base;
 				}
 				try {
-					const secretDoc = await getSecret(couchDb);
-					const secret = String(secretDoc?.secret ?? "");
+					const secret = await getAppSecret(db);
 					const claims = verifyJwt(secret, auth);
-					const u = await userByUsername(couchDb, claims.usr.username);
+					const u = await findAuthUser(db, claims.usr.username);
 					if (u) {
 						return { ...base, user: claims };
 					}
@@ -119,7 +120,7 @@ export async function createHttpServer(
 			credentials: true,
 		})
 	);
-	app.use(optionalJwtMiddleware(couchDb));
+	app.use(optionalJwtMiddleware(db));
 
 	app.get("/health", (_req, res) => {
 		res.json({ status: "ok" });
@@ -148,7 +149,7 @@ export async function createHttpServer(
 				res.status(429).json({ error: localizedMessage(locale, "errors.tooManyAttempts") });
 				return;
 			}
-			const u = await userByUsername(couchDb, username);
+			const u = await findAuthUser(db, username);
 			if (!u || typeof u.password !== "string") {
 				res.status(401).json({
 					error: localizedMessage(locale, "errors.invalidCredentials"),
@@ -162,10 +163,9 @@ export async function createHttpServer(
 				return;
 			}
 			if (isSha256Digest(password, u.password)) {
-				await updateDoc(couchDb, u, { password: derivePassword(password) });
+				await upgradePasswordHash(db, username, derivePassword(password));
 			}
-			const secretDoc = await getSecret(couchDb);
-			const secret = String(secretDoc?.secret ?? "");
+			const secret = await getAppSecret(db);
 			const token = generateJwt(secret, u);
 			res.json({ token });
 		} catch {
@@ -179,11 +179,10 @@ export async function createHttpServer(
 		const auth = req.headers.authorization;
 		if (auth) {
 			try {
-				const secretDoc = await getSecret(couchDb);
-				const secret = String(secretDoc?.secret ?? "");
+				const secret = await getAppSecret(db);
 				const claims = verifyJwt(secret, auth);
 				if (claims.iss === "swarmboty") {
-					await revokeJti(couchDb, claims.jti);
+					await revokeJti(db, claims.jti);
 				}
 			} catch {
 				/* ignore */
@@ -198,14 +197,14 @@ export async function createHttpServer(
 			res.status(401).json({ error: localizedMessage(locale, "errors.unauthenticated") });
 			return;
 		}
-		const slt = await createSlt(couchDb, req.swarmUser.usr.username);
+		const slt = await createSlt(db, req.swarmUser.usr.username);
 		res.json({ slt });
 	});
 
 	app.get("/events", async (req, res) => {
 		const locale = localeFromHeader(req.headers["accept-language"]);
 		const slt = typeof req.query.slt === "string" ? req.query.slt : undefined;
-		const user = await consumeSlt(couchDb, slt);
+		const user = await consumeSlt(db, slt);
 		if (!user) {
 			res.status(401).json({ error: localizedMessage(locale, "errors.invalidSlt") });
 			return;
@@ -280,7 +279,7 @@ export async function createHttpServer(
 		bodyParser.json(),
 		expressMiddleware(apollo, {
 			context: async ({ req }: { req: AuthedRequest }): Promise<GraphQLContext> =>
-				buildContext(req, cfg, couchDb, docker),
+				buildContext(req, cfg, db, docker),
 		})
 	);
 

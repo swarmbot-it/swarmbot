@@ -17,6 +17,7 @@ export type SwarmbotyConfig = {
 	dockerApi: string;
 	dockerHttpTimeoutMs: number;
 	logLevel: string;
+	/** Postgres connection string (e.g. `postgres://user:pass@host:5432/swarmboty`). */
 	dbUrl: string;
 	influxdbUrl: string | undefined;
 	influxdbToken: string | undefined;
@@ -37,7 +38,7 @@ const defaults: SwarmbotyConfig = {
 	dockerApi: "1.44",
 	dockerHttpTimeoutMs: 5000,
 	logLevel: "info",
-	dbUrl: "http://localhost:5984",
+	dbUrl: "postgres://localhost:5432/swarmboty",
 	influxdbUrl: undefined,
 	influxdbToken: undefined,
 	agentUrl: undefined,

@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { resolvers } from "./resolvers.js";
 import { startTestHttp, gqlContext } from "../test/http-setup.js";
 import { generateJwt } from "../auth/jwt.js";
-import { getSecret } from "../couch.js";
+import { getAppSecret } from "../db.js";
 
 describe.sequential("resolvers.Query", () => {
 	it("health returns ok", () => {
@@ -19,16 +19,14 @@ describe.sequential("resolvers.Query", () => {
 
 	it("me returns profile for authenticated user", async () => {
 		const test = await startTestHttp();
-		const secretDoc = await getSecret(test.couchDb);
-		const token = generateJwt(String(secretDoc?.secret), {
-			type: "user",
+		const secret = await getAppSecret(test.db);
+		const token = generateJwt(secret, {
 			username: "admin",
-			password: "x",
 			role: "admin",
 			email: "admin@test.local",
 		});
 		const { verifyJwt } = await import("../auth/jwt.js");
-		const claims = verifyJwt(String(secretDoc?.secret), token);
+		const claims = verifyJwt(secret, token);
 		const ctx = gqlContext({ headers: {}, swarmUser: claims }, test);
 		const me = await resolvers.Query.me(null, null, ctx);
 		expect(me?.username).toBe("admin");
@@ -37,15 +35,10 @@ describe.sequential("resolvers.Query", () => {
 
 	it("metricsSeries returns mock data without influx", async () => {
 		const test = await startTestHttp();
-		const secretDoc = await getSecret(test.couchDb);
-		const token = generateJwt(String(secretDoc?.secret), {
-			type: "user",
-			username: "admin",
-			password: "x",
-			role: "admin",
-		});
+		const secret = await getAppSecret(test.db);
+		const token = generateJwt(secret, { username: "admin", role: "admin" });
 		const { verifyJwt } = await import("../auth/jwt.js");
-		const claims = verifyJwt(String(secretDoc?.secret), token);
+		const claims = verifyJwt(secret, token);
 		const ctx = gqlContext({ headers: {}, swarmUser: claims }, test);
 		const series = await resolvers.Query.metricsSeries(
 			null,
@@ -61,15 +54,10 @@ describe.sequential("resolvers.Query", () => {
 describe.sequential("resolvers.Mutation", () => {
 	it("createService returns pending service", async () => {
 		const test = await startTestHttp();
-		const secretDoc = await getSecret(test.couchDb);
-		const token = generateJwt(String(secretDoc?.secret), {
-			type: "user",
-			username: "admin",
-			password: "x",
-			role: "admin",
-		});
+		const secret = await getAppSecret(test.db);
+		const token = generateJwt(secret, { username: "admin", role: "admin" });
 		const { verifyJwt } = await import("../auth/jwt.js");
-		const claims = verifyJwt(String(secretDoc?.secret), token);
+		const claims = verifyJwt(secret, token);
 		const ctx = gqlContext({ headers: {}, swarmUser: claims }, test);
 		const svc = await resolvers.Mutation.createService(
 			null,

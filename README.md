@@ -42,7 +42,7 @@ fabricated) until the agent is available.
 
 ## Development
 
-Run the API (loads `apps/api/.env.development` with `SWARMBOTY_MOCK=true` — no CouchDB/Docker required):
+Run the API (loads `apps/api/.env.development` with `SWARMBOTY_MOCK=true` — no Postgres/Docker required):
 
 ```sh
 npm run dev:api
@@ -50,7 +50,7 @@ npm run dev:api
 
 You should see `Swarmboty listening on http://0.0.0.0:8081`. Demo login: `admin` / `swarmboty`.
 
-To use a real CouchDB instead, unset mock mode (e.g. remove `SWARMBOTY_MOCK` from `.env.development` or set `SWARMBOTY_MOCK=false` and ensure `SWARMBOTY_DB` points at CouchDB).
+To use a real Postgres instead, unset mock mode (e.g. remove `SWARMBOTY_MOCK` from `.env.development` or set `SWARMBOTY_MOCK=false` and ensure `SWARMBOTY_DB` points at Postgres).
 
 Run the web app:
 
@@ -78,7 +78,7 @@ npm run test:all         # Vitest + Playwright
 npm run lint
 ```
 
-API tests use **Vitest** with an in-memory CouchDB/Docker mock. Web UI tests use **Playwright** against `ng serve` with `SWARMBOTY_MOCK=true` on the API. Karma was removed.
+API tests use **Vitest** against a real Postgres instance (see `apps/api/src/test/db-setup.ts`), with an in-memory Docker mock. Web UI tests use **Playwright** against `ng serve` with `SWARMBOTY_MOCK=true` on the API. Karma was removed.
 
 The dev proxy does not forward `GET /login` to the API (that path is the Angular login screen). GraphQL login uses `/graphql`.
 
@@ -98,7 +98,7 @@ Every HTTP and GraphQL request sends `Accept-Language`. The API returns localize
 
 ## Demo / mock mode
 
-For a quick demo without Docker, CouchDB, or InfluxDB, set `SWARMBOTY_MOCK=true`:
+For a quick demo without Docker, Postgres, or InfluxDB, set `SWARMBOTY_MOCK=true`:
 
 ```sh
 # Windows PowerShell
@@ -110,7 +110,7 @@ $env:SWARMBOTY_MOCK="true"; npm run dev:api
 SWARMBOTY_MOCK=true npm run dev:api
 ```
 
-In mock mode the API uses an in-memory CouchDB shim and a mocked Docker engine with sample services and nodes. A demo admin user `admin / swarmboty` is created automatically.
+In mock mode the API uses an in-memory SQLite database (via Kysely) and a mocked Docker engine with sample services and nodes. A demo admin user `admin / swarmboty` is created automatically.
 
 Run the Angular dev server in another terminal:
 
@@ -135,7 +135,7 @@ docker compose -f docker-compose.dev.yml up
 | Angular dev server | http://localhost:4200         | Live-reload, HMR |
 | API (GraphQL)      | http://localhost:8080/graphql | tsx hot-reload   |
 | API health         | http://localhost:8080/health  |                  |
-| CouchDB Fauxton    | http://localhost:5984/\_utils | Admin UI         |
+| Postgres           | localhost:5432                | psql/pgAdmin (no bundled admin UI) |
 | InfluxDB           | http://localhost:8086         | HTTP API         |
 
 Sign in as `admin` / `swarmboty`.
@@ -288,7 +288,7 @@ Then open http://localhost:4200 (after `npm run dev:web`) and sign in as `admin`
 
 ## Docker Compose — production
 
-Start the full production stack with CouchDB, InfluxDB, the swarmbot.it app, and the Swarm agent:
+Start the full production stack with Postgres, InfluxDB, the swarmbot.it app, and the Swarm agent:
 
 ```sh
 docker compose up --build
@@ -307,7 +307,7 @@ The API supports `SWARMBOTY_*` environment variables.
 Common variables:
 
 - `SWARMBOTY_PORT` - API port, defaults to `8080`.
-- `SWARMBOTY_DB` - CouchDB URL, defaults to `http://localhost:5984`.
+- `SWARMBOTY_DB` - Postgres connection string, defaults to `postgres://localhost:5432/swarmboty`.
 - `SWARMBOTY_INFLUXDB` - optional InfluxDB URL.
 - `SWARMBOTY_DOCKER_SOCK` - Docker socket path, defaults to `/var/run/docker.sock`.
 - `SWARMBOTY_DOCKER_API` - Docker API version, defaults to `1.44`.

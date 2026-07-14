@@ -1,15 +1,12 @@
 ﻿import { describe, it, expect } from "vitest";
 import { decodeBasic, generateJwt, tokenValue, verifyJwt } from "./jwt.js";
-import type { CouchDoc } from "../couch.js";
 
 const SECRET = "test-secret";
 
-const user: CouchDoc = {
-	type: "user",
+const user = {
 	username: "alice",
 	email: "alice@example.com",
 	role: "admin",
-	password: "x",
 };
 
 describe("tokenValue", () => {

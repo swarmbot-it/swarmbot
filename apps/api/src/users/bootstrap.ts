@@ -1,11 +1,12 @@
-﻿import { readFile } from "fs/promises";
-import { insertDoc, users as listUsers, type CouchDoc } from "../couch.js";
-import type nano from "nano";
+import { readFile } from "fs/promises";
+import { randomUUID } from "crypto";
+import type { Kysely } from "kysely";
+import type { Database } from "../db.js";
 import { derivePassword } from "../auth/password.js";
 import yaml from "js-yaml";
 import { logger } from "../logger.js";
 
-export async function initUsersFromConfig(couchDb: nano.DocumentScope<CouchDoc>): Promise<void> {
+export async function initUsersFromConfig(db: Kysely<Database>): Promise<void> {
 	const path = process.env.SWARMBOTY_USERS_CONFIG ?? "/run/configs/users.yaml";
 	try {
 		const raw = await readFile(path, "utf8");
@@ -24,15 +25,23 @@ export async function initUsersFromConfig(couchDb: nano.DocumentScope<CouchDoc>)
 				(plainPassword !== undefined ? derivePassword(plainPassword) : undefined) ??
 				(envPassword !== undefined ? derivePassword(envPassword) : undefined);
 			if (!username || !storedPassword) continue;
-			const existing = await listUsers(couchDb);
-			if (existing.some((x) => x.username === username)) continue;
-			await insertDoc(couchDb, {
-				type: "user",
-				username,
-				password: storedPassword,
-				email: (u.email as string) ?? "",
-				role: (u.role as string) ?? "user",
-			});
+			const existing = await db
+				.selectFrom("users")
+				.select("id")
+				.where("username", "=", username)
+				.executeTakeFirst();
+			if (existing) continue;
+			await db
+				.insertInto("users")
+				.values({
+					id: randomUUID(),
+					username,
+					password: storedPassword,
+					email: (u.email as string) ?? "",
+					role: (u.role as string) ?? "user",
+					createdAt: new Date().toISOString(),
+				})
+				.execute();
 			logger.info({ username }, "Created user from config");
 		}
 	} catch {
@@ -41,11 +50,11 @@ export async function initUsersFromConfig(couchDb: nano.DocumentScope<CouchDoc>)
 }
 
 export async function bootstrapAdminIfEmpty(
-	couchDb: nano.DocumentScope<CouchDoc>,
+	db: Kysely<Database>,
 	opts?: { mock?: boolean }
 ): Promise<void> {
-	const existing = await listUsers(couchDb);
-	if (existing.length > 0) return;
+	const existing = await db.selectFrom("users").select("id").executeTakeFirst();
+	if (existing) return;
 	const mock = Boolean(opts?.mock);
 	const u = process.env.SWARMBOTY_BOOTSTRAP_ADMIN ?? (mock ? "admin" : undefined);
 	const p = process.env.SWARMBOTY_BOOTSTRAP_PASSWORD ?? (mock ? "swarmboty" : undefined);
@@ -55,12 +64,16 @@ export async function bootstrapAdminIfEmpty(
 		);
 		return;
 	}
-	await insertDoc(couchDb, {
-		type: "user",
-		username: u,
-		password: derivePassword(p),
-		email: mock ? "admin@swarmboty.local" : "",
-		role: "admin",
-	});
+	await db
+		.insertInto("users")
+		.values({
+			id: randomUUID(),
+			username: u,
+			password: derivePassword(p),
+			email: mock ? "admin@swarmboty.local" : "",
+			role: "admin",
+			createdAt: new Date().toISOString(),
+		})
+		.execute();
 	logger.info({ username: u }, "Bootstrap admin user created");
 }

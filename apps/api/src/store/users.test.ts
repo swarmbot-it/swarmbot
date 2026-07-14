@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { createMockCouch } from "../couch.mock.js";
+import { createTestDb } from "../test/db-setup.js";
 import { createUser, listUsers, removeUser, seedDemoUsers } from "./users.js";
 
 describe("users store", () => {
 	it("create + list + remove", async () => {
-		const { db } = createMockCouch();
+		const db = await createTestDb();
 		const u = await createUser(db, {
 			username: "alice",
 			password: "very-secret-1",
@@ -18,7 +18,7 @@ describe("users store", () => {
 	});
 
 	it("rejects duplicate usernames", async () => {
-		const { db } = createMockCouch();
+		const db = await createTestDb();
 		await createUser(db, { username: "dup", password: "p1", email: "a@b.c", role: "Editor" });
 		await expect(
 			createUser(db, { username: "dup", password: "p2", email: "x@y.z", role: "Editor" })
@@ -26,7 +26,7 @@ describe("users store", () => {
 	});
 
 	it("seedDemoUsers populates a non-empty list", async () => {
-		const { db } = createMockCouch();
+		const db = await createTestDb();
 		await seedDemoUsers(db);
 		const all = await listUsers(db);
 		expect(all.length).toBeGreaterThan(0);

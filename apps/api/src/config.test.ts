@@ -36,19 +36,19 @@ describe("loadConfig", () => {
 	it("returns sensible defaults", () => {
 		const cfg = loadConfig();
 		expect(cfg.port).toBe(8080);
-		expect(cfg.dbUrl).toBe("http://localhost:5984");
+		expect(cfg.dbUrl).toBe("postgres://localhost:5432/swarmboty");
 		expect(cfg.dockerSock).toBe("/var/run/docker.sock");
 		expect(cfg.mock).toBe(false);
 	});
 
 	it("reads SWARMBOTY_* env vars", () => {
 		process.env.SWARMBOTY_PORT = "9090";
-		process.env.SWARMBOTY_DB = "http://couch:5984";
+		process.env.SWARMBOTY_DB = "postgres://db:5432/swarmboty";
 		process.env.SWARMBOTY_INSTANCE_NAME = "demo";
 		process.env.SWARMBOTY_MOCK = "true";
 		const cfg = loadConfig();
 		expect(cfg.port).toBe(9090);
-		expect(cfg.dbUrl).toBe("http://couch:5984");
+		expect(cfg.dbUrl).toBe("postgres://db:5432/swarmboty");
 		expect(cfg.instanceName).toBe("demo");
 		expect(cfg.mock).toBe(true);
 	});

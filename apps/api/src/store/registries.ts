@@ -1,12 +1,9 @@
-﻿import type nano from "nano";
+import type { Kysely } from "kysely";
 import { randomUUID } from "crypto";
-import { findDocs, insertDoc, updateDoc, type CouchDoc } from "../couch.js";
+import type { Database } from "../db.js";
 import { encryptAtRest } from "../crypto/secret-box.js";
 
-/**
- * CouchDB-backed store for swarmbot.it registry credentials.
- * Each document carries type="registry" and is keyed by display name.
- */
+/** Postgres-backed store for swarmbot.it registry credentials (`registries` table). */
 
 export type StoredRegistry = {
 	id: string;
@@ -17,36 +14,56 @@ export type StoredRegistry = {
 	default: boolean;
 };
 
-type RegistryDoc = CouchDoc & {
-	type: "registry";
+const REGISTRY_COLUMNS = ["id", "name", "url", "registryType", "registryUser", "isDefault"] as const;
+
+function toView(row: {
+	id: string;
 	name: string;
 	url: string;
 	registryType: string;
-	user: string;
-	password?: string;
-	default: boolean;
-};
-
-function toView(doc: RegistryDoc): StoredRegistry {
+	registryUser: string | null;
+	isDefault: boolean;
+}): StoredRegistry {
 	return {
-		id: String(doc._id),
-		name: doc.name,
-		url: doc.url,
-		type: doc.registryType,
-		user: doc.user,
-		default: Boolean(doc.default),
+		id: row.id,
+		name: row.name,
+		url: row.url,
+		type: row.registryType,
+		user: row.registryUser ?? "",
+		default: Boolean(row.isDefault),
 	};
 }
 
-export async function listRegistries(db: nano.DocumentScope<CouchDoc>): Promise<StoredRegistry[]> {
-	const docs = (await findDocs(db, "registry", {})) as RegistryDoc[];
-	return docs
-		.sort((a, b) => (b.default ? 1 : 0) - (a.default ? 1 : 0) || a.name.localeCompare(b.name))
-		.map(toView);
+export type RawRegistry = {
+	url: string;
+	registryUser: string | null;
+	password: string | null;
+};
+
+/** Raw lookup (undecrypted password) used by createService to build a Docker registry authconfig. */
+export async function getRegistryByName(
+	db: Kysely<Database>,
+	name: string
+): Promise<RawRegistry | undefined> {
+	return db
+		.selectFrom("registries")
+		.select(["url", "registryUser", "password"])
+		.where("name", "=", name)
+		.executeTakeFirst();
+}
+
+export async function listRegistries(db: Kysely<Database>): Promise<StoredRegistry[]> {
+	const rows = await db
+		.selectFrom("registries")
+		.select(REGISTRY_COLUMNS)
+		.orderBy("isDefault", "desc")
+		.orderBy("name", "asc")
+		.execute();
+	return rows.map(toView);
 }
 
 export async function createRegistry(
-	db: nano.DocumentScope<CouchDoc>,
+	db: Kysely<Database>,
 	input: {
 		name: string;
 		url: string;
@@ -56,56 +73,56 @@ export async function createRegistry(
 		default?: boolean;
 	}
 ): Promise<StoredRegistry> {
-	if (input.default) {
-		const existing = (await findDocs(db, "registry", {})) as RegistryDoc[];
-		for (const doc of existing.filter((d) => d.default)) {
-			await updateDoc(db, doc, { default: false });
+	const password = await encryptAtRest(db, input.password ?? "");
+	return db.transaction().execute(async (trx) => {
+		if (input.default) {
+			await trx.updateTable("registries").set({ isDefault: false }).where("isDefault", "=", true).execute();
 		}
-	}
-	const doc: RegistryDoc = {
-		_id: `registry:${randomUUID()}`,
-		type: "registry",
-		name: input.name,
-		url: input.url,
-		registryType: input.type,
-		user: input.user ?? "",
-		password: await encryptAtRest(db, input.password ?? ""),
-		default: Boolean(input.default),
-	};
-	const inserted = (await insertDoc(db, doc)) as RegistryDoc;
-	return toView(inserted);
+		const row = await trx
+			.insertInto("registries")
+			.values({
+				id: randomUUID(),
+				name: input.name,
+				url: input.url,
+				registryType: input.type,
+				registryUser: input.user ?? "",
+				password,
+				isDefault: Boolean(input.default),
+			})
+			.returning(REGISTRY_COLUMNS)
+			.executeTakeFirstOrThrow();
+		return toView(row);
+	});
 }
 
-export async function removeRegistry(
-	db: nano.DocumentScope<CouchDoc>,
-	id: string
-): Promise<boolean> {
-	try {
-		const doc = (await db.get(id)) as RegistryDoc;
-		await db.destroy(doc._id!, doc._rev!);
-		return true;
-	} catch {
-		return false;
-	}
+export async function removeRegistry(db: Kysely<Database>, id: string): Promise<boolean> {
+	const result = await db.deleteFrom("registries").where("id", "=", id).executeTakeFirst();
+	return result.numDeletedRows > 0n;
 }
 
-/** Marks the given registry as default and clears the flag on every other registry. */
-export async function setDefaultRegistry(
-	db: nano.DocumentScope<CouchDoc>,
-	id: string
-): Promise<StoredRegistry> {
-	const existing = (await findDocs(db, "registry", {})) as RegistryDoc[];
-	for (const doc of existing.filter((d) => d.default && String(d._id) !== id)) {
-		await updateDoc(db, doc, { default: false });
-	}
-	const target = (await db.get(id)) as RegistryDoc;
-	await updateDoc(db, target, { default: true });
-	return toView({ ...target, default: true });
+/** Marks the given registry as default and clears the flag on every other registry, atomically. */
+export async function setDefaultRegistry(db: Kysely<Database>, id: string): Promise<StoredRegistry> {
+	return db.transaction().execute(async (trx) => {
+		await trx
+			.updateTable("registries")
+			.set({ isDefault: false })
+			.where("isDefault", "=", true)
+			.where("id", "!=", id)
+			.execute();
+		const row = await trx
+			.updateTable("registries")
+			.set({ isDefault: true })
+			.where("id", "=", id)
+			.returning(REGISTRY_COLUMNS)
+			.executeTakeFirst();
+		if (!row) throw new Error("registry_not_found");
+		return toView(row);
+	});
 }
 
 /** Insert built-in registries when the database is empty. Useful for the demo. */
-export async function seedDefaultRegistries(db: nano.DocumentScope<CouchDoc>): Promise<void> {
-	const existing = await findDocs(db, "registry", {});
+export async function seedDefaultRegistries(db: Kysely<Database>): Promise<void> {
+	const existing = await db.selectFrom("registries").select("id").execute();
 	if (existing.length > 0) return;
 
 	const seeds: Array<{
