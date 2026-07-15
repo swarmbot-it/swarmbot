@@ -33,6 +33,7 @@ import {
 	type ServiceSummary,
 } from "../docker/engine.js";
 import { stackDeploy, stackRemove } from "../docker/cli.js";
+import yaml from "js-yaml";
 import { pubsub, SWARM_TOPIC } from "./pubsub.js";
 import type Dockerode from "dockerode";
 import { randomUUID } from "crypto";
@@ -642,22 +643,26 @@ export const resolvers = {
 			if (input.nodeId) {
 				const nodeInflux = await influxNodeSeries(ctx.cfg, input.nodeId, range, resolution);
 				if (nodeInflux) return nodeInflux;
-				const hist = nodeMockHistory(
-					input.nodeId.charCodeAt(0) % 8,
-					pseudoLoad(input.nodeId, "cpu"),
-					pseudoLoad(input.nodeId, "mem"),
-					pseudoLoad(input.nodeId, "disk")
-				);
-				return {
-					labels: hist.cpu.map((_v, i) => `${hist.cpu.length - i}`),
-					cpu: hist.cpu,
-					mem: hist.mem,
-					disk: hist.disk,
-				};
+				if (ctx.cfg.mock) {
+					const hist = nodeMockHistory(
+						input.nodeId.charCodeAt(0) % 8,
+						pseudoLoad(input.nodeId, "cpu"),
+						pseudoLoad(input.nodeId, "mem"),
+						pseudoLoad(input.nodeId, "disk")
+					);
+					return {
+						labels: hist.cpu.map((_v, i) => `${hist.cpu.length - i}`),
+						cpu: hist.cpu,
+						mem: hist.mem,
+						disk: hist.disk,
+					};
+				}
+				return null;
 			}
 			const influx = await influxClusterSeries(ctx.cfg, range, resolution);
 			if (influx) return influx;
-			return mockSeries(range, resolution);
+			if (ctx.cfg.mock) return mockSeries(range, resolution);
+			return null;
 		},
 		statsSeries: async (
 			_: unknown,
@@ -851,9 +856,19 @@ export const resolvers = {
 		) => {
 			requireEditor(ctx);
 			if (ctx.cfg.mock) {
+				let compose: unknown;
+				try {
+					compose = yaml.load(input.composeYaml);
+				} catch (e) {
+					throw new Error(`Invalid compose YAML: ${(e as Error).message}`);
+				}
+				const services = (compose as { services?: Record<string, unknown> } | null)?.services;
+				if (!services || typeof services !== "object") {
+					throw new Error("Invalid compose YAML: missing services");
+				}
 				return {
 					name: input.name,
-					services: 0,
+					services: Object.keys(services).length,
 					networks: 0,
 					volumes: 0,
 					configs: 0,

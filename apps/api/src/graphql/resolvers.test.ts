@@ -33,7 +33,7 @@ describe.sequential("resolvers.Query", () => {
 		await test.cleanup();
 	});
 
-	it("metricsSeries returns mock data without influx", async () => {
+	it("metricsSeries returns mock cluster series in mock mode without influx", async () => {
 		const test = await startTestHttp();
 		const secret = await getAppSecret(test.db);
 		const token = generateJwt(secret, { username: "admin", role: "admin" });
@@ -45,8 +45,86 @@ describe.sequential("resolvers.Query", () => {
 			{ input: { range: "1h", resolution: "medium" } },
 			ctx
 		);
-		expect(series.labels.length).toBeGreaterThan(0);
-		expect(series.cpu.length).toBe(series.labels.length);
+		expect(series?.labels.length).toBeGreaterThan(0);
+		expect(series?.cpu.length).toBeGreaterThan(0);
+		await test.cleanup();
+	});
+
+	it("metricsSeries returns null for cluster without data when mock is off", async () => {
+		const test = await startTestHttp();
+		const secret = await getAppSecret(test.db);
+		const token = generateJwt(secret, {
+			username: "admin",
+			role: "admin",
+		});
+		const { verifyJwt } = await import("../auth/jwt.js");
+		const claims = verifyJwt(secret, token);
+		const ctx = gqlContext({ headers: {}, swarmUser: claims }, test);
+		ctx.cfg = { ...ctx.cfg, mock: false };
+		const series = await resolvers.Query.metricsSeries(
+			null,
+			{ input: { range: "1h", resolution: "medium" } },
+			ctx
+		);
+		expect(series).toBeNull();
+		await test.cleanup();
+	});
+});
+
+describe.sequential("resolvers.Mutation.createStack", () => {
+	it("rejects invalid compose YAML", async () => {
+		const test = await startTestHttp();
+		const secret = await getAppSecret(test.db);
+		const token = generateJwt(secret, {
+			username: "admin",
+			role: "admin",
+		});
+		const { verifyJwt } = await import("../auth/jwt.js");
+		const claims = verifyJwt(secret, token);
+		const ctx = gqlContext({ headers: {}, swarmUser: claims }, test);
+
+		await expect(
+			resolvers.Mutation.createStack(
+				null,
+				{ input: { name: "demo", composeYaml: "services: [" } },
+				ctx
+			)
+		).rejects.toThrow(/YAML/i);
+
+		await test.cleanup();
+	});
+
+	it("deploys stack in mock mode and returns summary", async () => {
+		const test = await startTestHttp();
+		const secret = await getAppSecret(test.db);
+		const token = generateJwt(secret, {
+			username: "admin",
+			role: "admin",
+		});
+		const { verifyJwt } = await import("../auth/jwt.js");
+		const claims = verifyJwt(secret, token);
+		const ctx = gqlContext({ headers: {}, swarmUser: claims }, test);
+
+		const stack = await resolvers.Mutation.createStack(
+			null,
+			{
+				input: {
+					name: "mock-stack",
+					composeYaml: `version: "3.9"
+services:
+  web:
+    image: nginx:alpine
+    deploy:
+      replicas: 1`,
+				},
+			},
+			ctx
+		);
+
+		expect(stack.name).toBe("mock-stack");
+		expect(stack.services).toBe(1);
+		expect(stack.status).toBeTruthy();
+
 		await test.cleanup();
 	});
 });
