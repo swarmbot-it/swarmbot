@@ -2,18 +2,14 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from "@a
 import { AsyncPipe, NgFor, NgIf } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { Apollo } from "apollo-angular";
-import { map, switchMap } from "rxjs/operators";
-import { Observable, forkJoin, of } from "rxjs";
+import { map } from "rxjs/operators";
+import { Observable } from "rxjs";
 import { IconComponent } from "../../shared/icon.component";
 import { SparklineComponent } from "../../shared/sparkline.component";
 import { TagComponent } from "../../shared/tag.component";
 import { SegmentedComponent } from "../../shared/segmented.component";
 import { TranslocoPipe, TranslocoService } from "@jsverse/transloco";
-import {
-	MUTATION_SET_NODE_AVAILABILITY,
-	QUERY_METRICS_SERIES,
-	QUERY_NODES,
-} from "../../core/graphql.queries";
+import { MUTATION_SET_NODE_AVAILABILITY, QUERY_NODES } from "../../core/graphql.queries";
 import { I18nStateService } from "../../core/i18n/i18n-state.service";
 import { AuthService } from "../../core/auth.service";
 import { ToastService } from "../../core/toast.service";
@@ -29,10 +25,10 @@ type Node = {
 	cpu: number;
 	mem: number;
 	disk: number;
+	cpuHistory: number[] | null;
+	memHistory: number[] | null;
+	diskHistory: number[] | null;
 };
-
-type NodeSpark = { cpu: number[]; mem: number[]; disk: number[] };
-type MetricsResponse = { metricsSeries: { cpu: number[]; mem: number[]; disk: number[] } };
 
 /**
  * Cluster nodes page. Shows node roles, resource usage, and CPU/memory sparklines per host.
@@ -125,7 +121,7 @@ type MetricsResponse = { metricsSeries: { cpu: number[]; mem: number[]; disk: nu
 							<span class="node-mini__value">{{ n.cpu }}%</span>
 						</div>
 						<sb-sparkline
-							[data]="series(n.id, 'cpu')"
+							[data]="series(n, 'cpu')"
 							[width]="120"
 							[height]="32"
 							color="var(--primary-500)"
@@ -141,7 +137,7 @@ type MetricsResponse = { metricsSeries: { cpu: number[]; mem: number[]; disk: nu
 							<span class="node-mini__value">{{ n.mem }}%</span>
 						</div>
 						<sb-sparkline
-							[data]="series(n.id, 'mem')"
+							[data]="series(n, 'mem')"
 							[width]="120"
 							[height]="32"
 							color="#3b82f6"
@@ -155,7 +151,7 @@ type MetricsResponse = { metricsSeries: { cpu: number[]; mem: number[]; disk: nu
 							<span class="node-mini__value">{{ n.disk }}%</span>
 						</div>
 						<sb-sparkline
-							[data]="series(n.id, 'disk')"
+							[data]="series(n, 'disk')"
 							[width]="120"
 							[height]="32"
 							color="#10b981"
@@ -298,38 +294,14 @@ export class NodesPageComponent {
 		];
 	});
 
-	private readonly sparks = signal<Record<string, NodeSpark>>({});
-
 	private readonly nodesQuery = this.apollo.watchQuery<{ nodes: Node[] }>({
 		query: QUERY_NODES,
 		pollInterval: 30_000,
 	});
 
 	readonly nodes$: Observable<Node[]> = this.nodesQuery.valueChanges.pipe(
-			map((x) => (x.data?.nodes ?? []) as Node[]),
-			switchMap((nodes) => (nodes.length === 0 ? of(nodes) : this.withSparks(nodes)))
-		);
-
-	private withSparks(nodes: Node[]): Observable<Node[]> {
-		return forkJoin(
-			nodes.map((n) =>
-				this.apollo
-					.query<MetricsResponse>({
-						query: QUERY_METRICS_SERIES,
-						variables: { input: { nodeId: n.id, range: "1h", resolution: "low" } },
-						fetchPolicy: "network-only",
-					})
-					.pipe(map((r) => [n.id, r.data?.metricsSeries] as const))
-			)
-		).pipe(
-			map((results) => {
-				const next: Record<string, NodeSpark> = {};
-				for (const [id, m] of results) if (m) next[id] = m;
-				this.sparks.set(next);
-				return nodes;
-			})
-		);
-	}
+		map((x) => (x.data?.nodes ?? []) as Node[])
+	);
 
 	count(nodes: Node[], role: string): number {
 		return nodes.filter((n) => n.role === role).length;
@@ -347,8 +319,8 @@ export class NodesPageComponent {
 		});
 	}
 
-	series(id: string, kind: "cpu" | "mem" | "disk"): number[] {
-		return this.sparks()[id]?.[kind] ?? [];
+	series(n: Node, kind: "cpu" | "mem" | "disk"): number[] {
+		return n[`${kind}History`] ?? [];
 	}
 
 	toggleMenu(id: string): void {

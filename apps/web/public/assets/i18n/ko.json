@@ -2,6 +2,7 @@
     "nav": {
         "dashboard": "대시보드",
         "stacks": "환경",
+        "namespaces": "네임스페이스",
         "services": "서비스",
         "tasks": "작업",
         "nodes": "노드",
@@ -34,6 +35,12 @@
     },
     "topbar": {
         "notifications": "알림",
+        "clusterUnknown": "클러스터",
+        "orchestratorTitle": "오케스트레이터",
+        "orchestrator": {
+            "swarm": "Swarm",
+            "kubernetes": "Kubernetes"
+        },
         "switchToLight": "라이트 모드로 전환",
         "switchToDark": "다크 모드로 전환",
         "theme": "테마",
@@ -136,6 +143,7 @@
             "add": "새 환경",
             "columns": {
                 "stack": "환경",
+                "namespace": "네임스페이스",
                 "services": "서비스",
                 "networks": "네트워크",
                 "volumes": "볼륨",

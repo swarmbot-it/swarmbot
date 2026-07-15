@@ -143,6 +143,9 @@ export type NodeSummary = {
 	cpu: number;
 	mem: number;
 	disk: number;
+	cpuHistory?: number[] | null;
+	memHistory?: number[] | null;
+	diskHistory?: number[] | null;
 };
 
 export type TaskSummary = {

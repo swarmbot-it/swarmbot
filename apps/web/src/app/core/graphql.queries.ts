@@ -6,13 +6,25 @@
  * with the schema and to share fragments between pages.
  */
 
+/** Runtime build identity, negotiated Docker Engine API version and orchestrator. */
+export const QUERY_VERSION = gql`
+	query Version {
+		version {
+			version
+			dockerApi
+			instanceName
+			orchestrator
+		}
+	}
+`;
+
 /** Cluster overview counts and resource utilization for the dashboard. */
 export const QUERY_OVERVIEW = gql`
 	query Overview {
 		overview {
 			nodes
-			managers
-			managersReachable
+			managersTotal
+			managersReady
 			workers
 			stacks
 			stacksDelta
@@ -139,6 +151,9 @@ export const QUERY_NODES = gql`
 			cpu
 			mem
 			disk
+			cpuHistory
+			memHistory
+			diskHistory
 		}
 	}
 `;

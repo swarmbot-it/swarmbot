@@ -6,15 +6,20 @@ import {
 	inject,
 	computed,
 	signal,
+	OnInit,
 } from "@angular/core";
 import { NgFor, NgIf } from "@angular/common";
 import { Router } from "@angular/router";
 import { Apollo, gql } from "apollo-angular";
-import { TranslocoPipe } from "@jsverse/transloco";
+import { map } from "rxjs/operators";
+import { TranslocoPipe, TranslocoService } from "@jsverse/transloco";
 import { AuthService } from "../core/auth.service";
 import { ThemeService } from "../core/theme.service";
 import { I18nStateService } from "../core/i18n/i18n-state.service";
 import { type LangCode, isLangCode } from "../core/i18n/i18n-languages";
+import { OrchestratorStateService } from "../core/orchestrator-state.service";
+import { BUILD_APP_VERSION } from "../core/build-version";
+import { QUERY_VERSION } from "../core/graphql.queries";
 import { LogoComponent } from "../shared/logo.component";
 import { IconComponent } from "../shared/icon.component";
 import { ApiTokenModalComponent } from "../shared/api-token-modal.component";
@@ -50,14 +55,22 @@ const CJK_LANGS: { code: LangCode; label: string }[] = [
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	template: `
 		<header class="topbar">
-			<sb-logo></sb-logo>
+			<sb-logo [subtitle]="logoSubtitle()"></sb-logo>
 
 			<span class="topbar__divider"></span>
 			<div class="topbar__cluster">
 				<span class="dot dot--success"></span>
-				<span class="topbar__cluster-name">prod-eu-1</span>
+				<span class="topbar__cluster-name">{{ clusterName() }}</span>
 				<sb-icon name="chevronDown" [size]="14"></sb-icon>
 			</div>
+			<span
+				class="topbar__orch"
+				data-testid="orchestrator-badge"
+				[attr.data-orchestrator]="orch.orchestrator()"
+				[title]="'topbar.orchestratorTitle' | transloco"
+			>
+				{{ "topbar.orchestrator." + orch.orchestrator() | transloco }}
+			</span>
 
 			<span class="topbar__spacer"></span>
 
@@ -198,6 +211,19 @@ const CJK_LANGS: { code: LangCode; label: string }[] = [
 			.topbar__cluster-name {
 				font-size: 13px;
 				font-weight: 600;
+			}
+			.topbar__orch {
+				font-family: var(--font-mono);
+				font-size: 10.5px;
+				font-weight: 700;
+				letter-spacing: 0.04em;
+				text-transform: uppercase;
+				background: var(--surface-2);
+				color: var(--muted);
+				padding: 2px 8px;
+				border-radius: 999px;
+				border: 1px solid var(--border);
+				flex-shrink: 0;
 			}
 			.topbar__spacer {
 				flex: 1;
@@ -424,20 +450,30 @@ const CJK_LANGS: { code: LangCode; label: string }[] = [
 		NotificationsComponent,
 	],
 })
-export class TopbarComponent {
+export class TopbarComponent implements OnInit {
 	readonly theme = inject(ThemeService);
 	readonly i18n = inject(I18nStateService);
+	readonly orch = inject(OrchestratorStateService);
 	readonly latinLangs = LATIN_LANGS;
 	readonly cjkLangs = CJK_LANGS;
 	private readonly auth = inject(AuthService);
 	private readonly apollo = inject(Apollo);
 	private readonly router = inject(Router);
 	private readonly host = inject(ElementRef<HTMLElement>);
+	private readonly transloco = inject(TranslocoService);
 
 	menuOpen = false;
 	langOpen = false;
+	private readonly clusterInstanceName = signal<string | null>(null);
 
 	readonly apiTokenModalOpen = signal(false);
+
+	readonly logoSubtitle = computed(() => `v${BUILD_APP_VERSION} · ${this.clusterName()}`);
+
+	readonly clusterName = computed(() => {
+		this.i18n.activeLang();
+		return this.clusterInstanceName()?.trim() || this.transloco.translate("topbar.clusterUnknown");
+	});
 
 	readonly currentLang = computed(() => {
 		const code = this.i18n.activeLang();
@@ -445,6 +481,21 @@ export class TopbarComponent {
 			[...LATIN_LANGS, ...CJK_LANGS].find((l) => l.code === code) ?? LATIN_LANGS[1]
 		);
 	});
+
+	ngOnInit(): void {
+		this.apollo
+			.watchQuery<{
+				version: { instanceName: string | null; orchestrator: string | null };
+			}>({
+				query: QUERY_VERSION,
+				pollInterval: 60_000,
+			})
+			.valueChanges.pipe(map((r) => r.data?.version ?? null))
+			.subscribe((version) => {
+				this.clusterInstanceName.set(version?.instanceName ?? null);
+				this.orch.set(version?.orchestrator);
+			});
+	}
 
 	toggle(): void {
 		this.menuOpen = !this.menuOpen;

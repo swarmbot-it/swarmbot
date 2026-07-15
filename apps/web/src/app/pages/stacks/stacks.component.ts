@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Output, inject } from "@angular/core";
+import { ChangeDetectionStrategy, Component, EventEmitter, Output, computed, inject } from "@angular/core";
 import { AsyncPipe, NgIf, NgSwitch, NgSwitchCase, NgSwitchDefault } from "@angular/common";
 import { Apollo } from "apollo-angular";
 import { TranslocoPipe } from "@jsverse/transloco";
@@ -13,6 +13,7 @@ import { translatedColumns } from "../../core/i18n/page-columns.helper";
 import { TranslocoService } from "@jsverse/transloco";
 import { QUERY_STACKS } from "../../core/graphql.queries";
 import { AuthService } from "../../core/auth.service";
+import { OrchestratorStateService } from "../../core/orchestrator-state.service";
 
 type Stack = {
 	name: string;
@@ -87,12 +88,13 @@ export class StacksPageComponent {
 	private readonly i18n = inject(I18nStateService);
 	private readonly router = inject(Router);
 	readonly auth = inject(AuthService);
+	readonly orch = inject(OrchestratorStateService);
 
 	open(name: string): void {
 		this.router.navigate(["/app/stacks", name]);
 	}
 
-	readonly cols = translatedColumns<Stack>(this.transloco, this.i18n.activeLang, [
+	private readonly baseCols = translatedColumns<Stack>(this.transloco, this.i18n.activeLang, [
 		{ key: "name", labelKey: "pages.stacks.columns.stack" },
 		{ key: "services", labelKey: "pages.stacks.columns.services", align: "right" },
 		{ key: "networks", labelKey: "pages.stacks.columns.networks", align: "right" },
@@ -101,6 +103,14 @@ export class StacksPageComponent {
 		{ key: "secrets", labelKey: "pages.stacks.columns.secrets", align: "right" },
 		{ key: "status", labelKey: "columns.status" },
 	]);
+
+	/** Mode-dependent "name" column header: "Stack" becomes "Namespace" on Kubernetes. */
+	readonly cols = computed(() => {
+		const columnKey = this.orch.stackColumnKey();
+		return this.baseCols().map((c) =>
+			c.key === "name" ? { ...c, label: this.transloco.translate(columnKey) } : c
+		);
+	});
 
 	readonly rows$: Observable<Stack[]> = this.apollo
 		.watchQuery<{ stacks: Stack[] }>({ query: QUERY_STACKS, pollInterval: 30_000 })

@@ -3,6 +3,7 @@
         "dashboard": "Dashboard",
         "load": "Load",
         "stacks": "Stacks",
+        "namespaces": "Namespaces",
         "services": "Services",
         "tasks": "Tasks",
         "nodes": "Nodes",
@@ -35,6 +36,12 @@
     },
     "topbar": {
         "notifications": "Notifications",
+        "clusterUnknown": "cluster",
+        "orchestratorTitle": "Orchestrator",
+        "orchestrator": {
+            "swarm": "Swarm",
+            "kubernetes": "Kubernetes"
+        },
         "recentActivity": "Recent activity",
         "liveFromDocker": "live from Docker",
         "noActivity": "No activity yet.",
@@ -169,6 +176,7 @@
             "add": "New stack",
             "columns": {
                 "stack": "Stack",
+                "namespace": "Namespace",
                 "services": "Services",
                 "networks": "Networks",
                 "volumes": "Volumes",

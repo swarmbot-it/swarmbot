@@ -10,8 +10,8 @@ import { NgIf } from "@angular/common";
 	standalone: true,
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	template: `
-		<span class="sb-logo-wrap">
-			<svg width="28" height="28" viewBox="0 0 32 32" class="sb-logo" fill="none">
+		<span class="sb-logo-wrap" aria-label="swarmbot.it">
+			<svg width="28" height="28" viewBox="0 0 32 32" class="sb-logo" fill="none" aria-hidden="true">
 				<path
 					class="sb-logo__link sb-logo__link--1"
 					d="M12.5 16 L15.5 9.5"
@@ -66,10 +66,10 @@ import { NgIf } from "@angular/common";
 				/>
 			</svg>
 			<span class="sb-logo__word" *ngIf="showWord">
-				<span class="sb-logo__title"
+				<span class="sb-logo__title" aria-hidden="true"
 					>swarmbot<span style="color: var(--primary-500)">.it</span></span
 				>
-				<span class="sb-logo__subtitle">v2.14.0 · prod-eu-1</span>
+				<span class="sb-logo__subtitle" *ngIf="subtitle">{{ subtitle }}</span>
 			</span>
 		</span>
 	`,
@@ -181,4 +181,6 @@ import { NgIf } from "@angular/common";
 export class LogoComponent {
 	/** When true, shows the "swarmbot.it" wordmark and version subtitle beside the mark. */
 	@Input() showWord = true;
+	/** e.g. `0.1.4 · prod-eu-1` — app version and cluster name. */
+	@Input() subtitle?: string;
 }

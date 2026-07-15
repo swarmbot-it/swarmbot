@@ -2,6 +2,7 @@
     "nav": {
         "dashboard": "Tableau de bord",
         "stacks": "Environnements",
+        "namespaces": "Espaces de noms",
         "services": "Services",
         "tasks": "Tâches",
         "nodes": "Nœuds",
@@ -34,6 +35,12 @@
     },
     "topbar": {
         "notifications": "Notifications",
+        "clusterUnknown": "cluster",
+        "orchestratorTitle": "Orchestrateur",
+        "orchestrator": {
+            "swarm": "Swarm",
+            "kubernetes": "Kubernetes"
+        },
         "switchToLight": "Passer au mode clair",
         "switchToDark": "Passer au mode sombre",
         "theme": "Thème",
@@ -136,6 +143,7 @@
             "add": "Nouvel environnement",
             "columns": {
                 "stack": "Environnement",
+                "namespace": "Espace de noms",
                 "services": "Services",
                 "networks": "Réseaux",
                 "volumes": "Volumes",

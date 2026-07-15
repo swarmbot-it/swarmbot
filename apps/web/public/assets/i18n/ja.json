@@ -2,6 +2,7 @@
     "nav": {
         "dashboard": "ダッシュボード",
         "stacks": "環境",
+        "namespaces": "ネームスペース",
         "services": "サービス",
         "tasks": "タスク",
         "nodes": "ノード",
@@ -34,6 +35,12 @@
     },
     "topbar": {
         "notifications": "通知",
+        "clusterUnknown": "クラスター",
+        "orchestratorTitle": "オーケストレーター",
+        "orchestrator": {
+            "swarm": "Swarm",
+            "kubernetes": "Kubernetes"
+        },
         "switchToLight": "ライトモードに切り替え",
         "switchToDark": "ダークモードに切り替え",
         "theme": "テーマ",
@@ -136,6 +143,7 @@
             "add": "新しい環境",
             "columns": {
                 "stack": "環境",
+                "namespace": "ネームスペース",
                 "services": "サービス",
                 "networks": "ネットワーク",
                 "volumes": "ボリューム",

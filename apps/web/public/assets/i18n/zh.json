@@ -2,6 +2,7 @@
     "nav": {
         "dashboard": "仪表板",
         "stacks": "环境",
+        "namespaces": "命名空间",
         "services": "服务",
         "tasks": "任务",
         "nodes": "节点",
@@ -34,6 +35,12 @@
     },
     "topbar": {
         "notifications": "通知",
+        "clusterUnknown": "集群",
+        "orchestratorTitle": "编排器",
+        "orchestrator": {
+            "swarm": "Swarm",
+            "kubernetes": "Kubernetes"
+        },
         "switchToLight": "切换到浅色模式",
         "switchToDark": "切换到深色模式",
         "theme": "主题",
@@ -136,6 +143,7 @@
             "add": "新建环境",
             "columns": {
                 "stack": "环境",
+                "namespace": "命名空间",
                 "services": "服务",
                 "networks": "网络",
                 "volumes": "卷",

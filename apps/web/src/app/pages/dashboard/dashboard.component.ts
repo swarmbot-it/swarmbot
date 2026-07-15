@@ -23,7 +23,8 @@ import { IconComponent } from "../../shared/icon.component";
 
 type Overview = {
 	nodes: number;
-	managers: number;
+	managersTotal: number;
+	managersReady: number;
 	workers: number;
 	stacks: number;
 	services: number;
@@ -136,7 +137,7 @@ type MetricsResponse = {
 					<div class="summary-card__label">{{ "nav.nodes" | transloco }}</div>
 					<div class="summary-card__value">
 						{{ vm.overview.nodes }}
-						<small>{{ vm.overview.managers }}M · {{ vm.overview.workers }}W</small>
+						<small>{{ vm.overview.managersTotal }}M · {{ vm.overview.workers }}W</small>
 					</div>
 				</div>
 			</div>
@@ -285,7 +286,7 @@ type MetricsResponse = {
 									| transloco
 										: {
 												count: vm.nodes.length,
-												managers: vm.overview.managers,
+												managers: vm.overview.managersTotal,
 												workers: vm.overview.workers,
 										  }
 							}}
@@ -298,7 +299,7 @@ type MetricsResponse = {
 							<div class="nodes-bucket__title">
 								<sb-icon name="leader" [size]="14"></sb-icon>
 								{{ "dashboard.managers" | transloco }}
-								<span class="nodes-bucket__count">{{ vm.overview.managers }}</span>
+								<span class="nodes-bucket__count">{{ vm.overview.managersTotal }}</span>
 							</div>
 							<div *ngFor="let n of managers(vm.nodes)" class="node-row">
 								<span

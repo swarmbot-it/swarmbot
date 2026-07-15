@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, Input } from "@angular/core";
+import { ChangeDetectionStrategy, Component, Input, inject } from "@angular/core";
 import { NgFor, NgIf } from "@angular/common";
 import { RouterLink, RouterLinkActive } from "@angular/router";
 import { TranslocoPipe } from "@jsverse/transloco";
 import { IconComponent } from "../shared/icon.component";
+import { OrchestratorStateService } from "../core/orchestrator-state.service";
 
 type NavItem = {
 	id: string;
@@ -148,7 +149,7 @@ const GROUPS: NavItem["group"][] = ["overview", "workloads", "infra", "store", "
 					[routerLink]="['/app', item.path]"
 				>
 					<sb-icon [name]="item.icon" [size]="17"></sb-icon>
-					<span>{{ item.labelKey | transloco }}</span>
+					<span>{{ navLabelKey(item) | transloco }}</span>
 					<span class="sidebar__count" *ngIf="item.countKey && counts">{{
 						counts[item.countKey]
 					}}</span>
@@ -165,8 +166,8 @@ const GROUPS: NavItem["group"][] = ["overview", "workloads", "infra", "store", "
 						"nav.quorum"
 							| transloco
 								: {
-										managers: counts?.["managersReachable"] ?? 0,
-										total: counts?.["managers"] ?? 0,
+										managers: counts?.["managersReady"] ?? 0,
+										total: counts?.["managersTotal"] ?? 0,
 								  }
 					}}
 				</div>
@@ -266,6 +267,14 @@ const GROUPS: NavItem["group"][] = ["overview", "workloads", "infra", "store", "
 export class SidebarComponent {
 	/** Optional map of nav count keys to totals (stacks, services, nodes, etc.). */
 	@Input() counts: Record<string, number> | null = null;
+
+	readonly orch = inject(OrchestratorStateService);
+
+	/** Mode-dependent nav labels: "Stacks" becomes "Namespaces" on Kubernetes. */
+	navLabelKey(item: NavItem): string {
+		if (item.id === "stacks") return this.orch.stacksNavKey();
+		return item.labelKey;
+	}
 
 	readonly groups = GROUPS;
 	readonly groupKeys = GROUP_KEYS;

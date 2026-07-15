@@ -99,6 +99,7 @@ export const typeDefs = `#graphql
     version: String!
     dockerApi: String!
     instanceName: String
+    orchestrator: String!
     influxdb: Boolean!
   }
 
@@ -116,8 +117,8 @@ export const typeDefs = `#graphql
 
   type ClusterOverview {
     nodes: Int!
-    managers: Int!
-    managersReachable: Int!
+    managersTotal: Int!
+    managersReady: Int!
     workers: Int!
     stacks: Int!
     stacksDelta: String
@@ -224,6 +225,9 @@ export const typeDefs = `#graphql
     cpu: Int!
     mem: Int!
     disk: Int!
+    cpuHistory: [Float!]
+    memHistory: [Float!]
+    diskHistory: [Float!]
   }
 
   type NetworkInfo {

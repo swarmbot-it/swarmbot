@@ -107,14 +107,46 @@ function pseudoLoad(id: string, kind: "cpu" | "mem" | "disk"): number {
 	return 20 + ((h + offsets[kind] * 1000) % 60);
 }
 
+/** Rough, stable hash used only to seed the mock-mode history sparkline (not for pseudoLoad's real value). */
+function historySeed(id: string): number {
+	let h = 0;
+	for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+	return h % 100;
+}
+
+/** Attaches the CPU/mem/disk sparkline history the Nodes page renders per host, alongside its live values. */
+async function nodeHistoryFields(
+	ctx: GraphQLContext,
+	n: NodeSummary,
+	cpu: number,
+	mem: number,
+	disk: number
+): Promise<Pick<NodeSummary, "cpuHistory" | "memHistory" | "diskHistory">> {
+	if (ctx.cfg.mock) {
+		const h = nodeMockHistory(historySeed(n.id), cpu, mem, disk);
+		return { cpuHistory: h.cpu, memHistory: h.mem, diskHistory: h.disk };
+	}
+	if (!ctx.cfg.influxdbUrl) {
+		return { cpuHistory: null, memHistory: null, diskHistory: null };
+	}
+	const series = await influxNodeSeries(ctx.cfg, n.id, "1h", "low");
+	return {
+		cpuHistory: series?.cpu ?? null,
+		memHistory: series?.mem ?? null,
+		diskHistory: series?.disk ?? null,
+	};
+}
+
 async function decorateNodes(ctx: GraphQLContext, base: NodeSummary[]): Promise<NodeSummary[]> {
 	if (!ctx.cfg.influxdbUrl) {
-		return base.map((n) => ({
-			...n,
-			cpu: pseudoLoad(n.id, "cpu"),
-			mem: pseudoLoad(n.id, "mem"),
-			disk: pseudoLoad(n.id, "disk"),
-		}));
+		return Promise.all(
+			base.map(async (n) => {
+				const cpu = pseudoLoad(n.id, "cpu");
+				const mem = pseudoLoad(n.id, "mem");
+				const disk = pseudoLoad(n.id, "disk");
+				return { ...n, cpu, mem, disk, ...(await nodeHistoryFields(ctx, n, cpu, mem, disk)) };
+			})
+		);
 	}
 	return Promise.all(
 		base.map(async (n) => {
@@ -141,11 +173,14 @@ async function decorateNodes(ctx: GraphQLContext, base: NodeSummary[]): Promise<
 					const v = r.results?.[0]?.series?.[0]?.values?.[0]?.[1];
 					return typeof v === "number" ? Math.round(v) : 0;
 				};
-				return { ...n, cpu: valueOf(c), mem: valueOf(m), disk: valueOf(d) };
+				const cpu = valueOf(c);
+				const mem = valueOf(m);
+				const disk = valueOf(d);
+				return { ...n, cpu, mem, disk, ...(await nodeHistoryFields(ctx, n, cpu, mem, disk)) };
 			} catch {
 				// Same reasoning as above: a failed Influx query means "no data",
 				// not "here's a plausible number."
-				return { ...n, cpu: 0, mem: 0, disk: 0 };
+				return { ...n, cpu: 0, mem: 0, disk: 0, ...(await nodeHistoryFields(ctx, n, 0, 0, 0)) };
 			}
 		})
 	);
@@ -286,10 +321,12 @@ export const resolvers = {
 	Query: {
 		health: () => "ok",
 		version: async (_: unknown, __: unknown, ctx: GraphQLContext) => ({
-			name: "swarmboty",
+			name: "swarmbot.it",
 			version: process.env.SWARMBOTY_VERSION ?? "0.1.0",
 			dockerApi: ctx.cfg.dockerApi,
 			instanceName: ctx.cfg.instanceName ?? null,
+			// No orchestrator abstraction yet — this backend only ever talks to Docker Swarm.
+			orchestrator: "swarm",
 			influxdb: Boolean(ctx.cfg.influxdbUrl),
 		}),
 		me: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
@@ -342,8 +379,8 @@ export const resolvers = {
 					? 0
 					: Math.round(active.reduce((s, n) => s + n[key], 0) / active.length);
 			const volumes = (volRes as { Volumes?: unknown[] }).Volumes ?? [];
-			const managers = nodes.filter((n) => n.role === "manager").length;
-			const managersReachable = nodes.filter(
+			const managersTotal = nodes.filter((n) => n.role === "manager").length;
+			const managersReady = nodes.filter(
 				(n) => n.role === "manager" && (n.tags.includes("LEADER") || n.tags.includes("REACHABLE"))
 			).length;
 			const workers = nodes.filter((n) => n.role === "worker").length;
@@ -369,8 +406,8 @@ export const resolvers = {
 			const deltas = await weekOverWeekDeltas(ctx.db, counts);
 			return {
 				nodes: nodes.length,
-				managers,
-				managersReachable,
+				managersTotal,
+				managersReady,
 				workers,
 				stacks: stacksCount,
 				services: services.length,

@@ -3,6 +3,7 @@
         "dashboard": "Panel",
         "load": "Obciążenie",
         "stacks": "Stosy",
+        "namespaces": "Przestrzenie nazw",
         "services": "Usługi",
         "tasks": "Zadania",
         "nodes": "Węzły",
@@ -35,6 +36,12 @@
     },
     "topbar": {
         "notifications": "Powiadomienia",
+        "clusterUnknown": "klaster",
+        "orchestratorTitle": "Orkiestrator",
+        "orchestrator": {
+            "swarm": "Swarm",
+            "kubernetes": "Kubernetes"
+        },
         "recentActivity": "Ostatnia aktywność",
         "liveFromDocker": "na żywo z Dockera",
         "noActivity": "Brak aktywności.",
@@ -169,6 +176,7 @@
             "add": "Nowy stos",
             "columns": {
                 "stack": "Stos",
+                "namespace": "Przestrzeń nazw",
                 "services": "Usługi",
                 "networks": "Sieci",
                 "volumes": "Wolumeny",

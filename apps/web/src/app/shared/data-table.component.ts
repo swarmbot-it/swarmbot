@@ -95,7 +95,13 @@ export type ColumnDef<R = Record<string, unknown>> = {
 					</tr>
 				</ng-template>
 				<ng-template pTemplate="body" let-row>
-					<tr [class.dt-row--clickable]="rowClick.observed" (click)="rowClick.emit(row)">
+					<tr
+						[class.dt-row--clickable]="rowClick.observed"
+						[attr.tabindex]="rowClick.observed ? 0 : null"
+						[attr.role]="rowClick.observed ? 'link' : null"
+						(click)="onRowActivate(row, $event)"
+						(keydown.enter)="onRowActivate(row, $event)"
+					>
 						<td *ngFor="let c of columns()" [style.text-align]="c.align ?? 'left'">
 							<ng-container
 								*ngIf="cellTemplate; else fallback"
@@ -244,5 +250,19 @@ export class DataTableComponent<R extends Record<string, unknown> = Record<strin
 	widthOf(c: ColumnDef<R>): string | undefined {
 		if (c.width === undefined) return undefined;
 		return typeof c.width === "number" ? `${c.width}px` : c.width;
+	}
+
+	/** Ignores clicks/Enter presses on interactive descendants (links, buttons, form controls) so row navigation doesn't hijack their own actions. */
+	onRowActivate(row: R, event: Event): void {
+		if (!this.rowClick.observed) return;
+		const target = event.target as HTMLElement;
+		if (
+			target.closest(
+				"a, button, input, label, select, textarea, [role='button'], [data-no-row-nav]"
+			)
+		) {
+			return;
+		}
+		this.rowClick.emit(row);
 	}
 }
