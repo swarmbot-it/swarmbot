@@ -9,7 +9,7 @@ type NavItem = {
 	id: string;
 	labelKey: string;
 	icon: string;
-	group: "overview" | "resources" | "infra" | "store" | "admin";
+	group: "overview" | "workloads" | "infra" | "store" | "admin";
 	countKey?:
 		| "stacks"
 		| "services"
@@ -35,15 +35,15 @@ const NAV: NavItem[] = [
 	{
 		id: "load",
 		labelKey: "nav.load",
-		icon: "load",
-		group: "resources",
+		icon: "trending",
+		group: "workloads",
 		path: "load",
 	},
 	{
 		id: "stacks",
 		labelKey: "nav.stacks",
 		icon: "stacks",
-		group: "resources",
+		group: "workloads",
 		path: "stacks",
 		countKey: "stacks",
 	},
@@ -51,7 +51,7 @@ const NAV: NavItem[] = [
 		id: "services",
 		labelKey: "nav.services",
 		icon: "services",
-		group: "resources",
+		group: "workloads",
 		path: "services",
 		countKey: "services",
 	},
@@ -59,7 +59,7 @@ const NAV: NavItem[] = [
 		id: "tasks",
 		labelKey: "nav.tasks",
 		icon: "tasks",
-		group: "resources",
+		group: "workloads",
 		path: "tasks",
 		countKey: "tasks",
 	},
@@ -123,21 +123,17 @@ const NAV: NavItem[] = [
 
 const GROUP_KEYS: Record<NavItem["group"], string> = {
 	overview: "nav.groups.overview",
-	resources: "nav.groups.resources",
+	workloads: "nav.groups.workloads",
 	infra: "nav.groups.infra",
 	store: "nav.groups.store",
 	admin: "nav.groups.admin",
 };
 
-const GROUPS: NavItem["group"][] = ["overview", "resources", "infra", "store", "admin"];
+const GROUPS: NavItem["group"][] = ["overview", "workloads", "infra", "store", "admin"];
 
-export type SidebarFooter = {
-	clusterStatus: string;
-	managersReady: number;
-	managersTotal: number;
-	dockerApi: string | null;
-};
-
+/**
+ * Primary app navigation. Groups routes by area and shows live resource counts from the cluster.
+ */
 @Component({
 	selector: "sb-sidebar",
 	standalone: true,
@@ -145,55 +141,37 @@ export type SidebarFooter = {
 	template: `
 		<nav class="sidebar">
 			<ng-container *ngFor="let group of groups">
-				<div class="sidebar__group-label">
-					<span class="sidebar__group-text">{{ groupKeys[group] | transloco }}</span>
-				</div>
+				<div class="sidebar__group-label">{{ groupKeys[group] | transloco }}</div>
 				<a
 					*ngFor="let item of nav[group]"
 					class="sidebar__item"
 					routerLinkActive="sidebar__item--active"
 					[routerLink]="['/app', item.path]"
-					[attr.data-label]="navLabelKey(item) | transloco"
 				>
 					<sb-icon [name]="item.icon" [size]="17"></sb-icon>
-					<span class="sidebar__item-text">{{ navLabelKey(item) | transloco }}</span>
-					<span
-						class="sidebar__count"
-						*ngIf="item.countKey && counts && counts[item.countKey] != null"
-						>{{ counts[item.countKey] }}</span
-					>
+					<span>{{ navLabelKey(item) | transloco }}</span>
+					<span class="sidebar__count" *ngIf="item.countKey && counts">{{
+						counts[item.countKey]
+					}}</span>
 				</a>
 			</ng-container>
 
-			<div class="sidebar__footer" *ngIf="footer">
+			<div class="sidebar__footer">
 				<div class="sidebar__cluster-status">
-					<span
-						class="dot"
-						[class.dot--success]="footer.clusterStatus === 'healthy'"
-						[class.dot--warning]="footer.clusterStatus === 'degraded'"
-						[class.dot--danger]="footer.clusterStatus === 'unhealthy'"
-					></span>
-					<span class="sidebar__footer-text">{{
-						clusterStatusKey(footer.clusterStatus) | transloco
-					}}</span>
+					<span class="dot dot--success"></span>
+					{{ "nav.clusterHealthy" | transloco }}
 				</div>
-				<div class="sidebar__footer-text" *ngIf="footer.managersTotal > 0">
+				<div>
 					{{
 						"nav.quorum"
 							| transloco
 								: {
-										managers: footer.managersReady,
-										total: footer.managersTotal,
+										managers: counts?.["managersReady"] ?? 0,
+										total: counts?.["managersTotal"] ?? 0,
 								  }
 					}}
 				</div>
-				<div class="sidebar__api-line sidebar__footer-text mono">
-					API
-					<ng-container *ngIf="footer.dockerApi; else apiUnknown"
-						>v{{ footer.dockerApi }}</ng-container
-					>
-					<ng-template #apiUnknown>{{ "common.na" | transloco }}</ng-template>
-				</div>
+				<div>API: <span class="mono">v1.45</span></div>
 			</div>
 		</nav>
 	`,
@@ -287,8 +265,8 @@ export type SidebarFooter = {
 	imports: [NgFor, NgIf, RouterLink, RouterLinkActive, IconComponent, TranslocoPipe],
 })
 export class SidebarComponent {
+	/** Optional map of nav count keys to totals (stacks, services, nodes, etc.). */
 	@Input() counts: Record<string, number> | null = null;
-	@Input() footer: SidebarFooter | null = null;
 
 	readonly orch = inject(OrchestratorStateService);
 
@@ -296,19 +274,6 @@ export class SidebarComponent {
 	navLabelKey(item: NavItem): string {
 		if (item.id === "stacks") return this.orch.stacksNavKey();
 		return item.labelKey;
-	}
-
-	clusterStatusKey(status: string): string {
-		switch (status) {
-			case "healthy":
-				return "nav.clusterHealthy";
-			case "degraded":
-				return "nav.clusterDegraded";
-			case "unhealthy":
-				return "nav.clusterUnhealthy";
-			default:
-				return "nav.clusterUnknown";
-		}
 	}
 
 	readonly groups = GROUPS;

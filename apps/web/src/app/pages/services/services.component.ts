@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
+import { ChangeDetectionStrategy, Component, EventEmitter, Output, inject } from "@angular/core";
 import { AsyncPipe, NgFor, NgIf, NgSwitch, NgSwitchCase, NgSwitchDefault } from "@angular/common";
 import { Apollo } from "apollo-angular";
 import { map } from "rxjs/operators";
@@ -10,6 +10,8 @@ import { TranslocoPipe, TranslocoService } from "@jsverse/transloco";
 import { QUERY_SERVICES } from "../../core/graphql.queries";
 import { I18nStateService } from "../../core/i18n/i18n-state.service";
 import { translatedColumns } from "../../core/i18n/page-columns.helper";
+import { AuthService } from "../../core/auth.service";
+import { Router } from "@angular/router";
 
 type ServiceRow = {
 	id: string;
@@ -39,17 +41,21 @@ type ServiceRow = {
 						{{ "pages.services.countSuffix" | transloco }}
 					</div>
 				</div>
+				<button *ngIf="auth.isEditor()" class="btn btn--primary" (click)="createRequested.emit()">
+					<sb-icon name="plus" [size]="16"></sb-icon>
+					{{ "pages.services.add" | transloco }}
+				</button>
 			</div>
 			<sb-data-table
 				[columns]="cols()"
 				[rows]="rows"
 				[searchKeys]="['name', 'image', 'stack', 'status']"
-				[rowRoute]="serviceRowRoute"
+				(rowClick)="open($event.id)"
 			>
 				<ng-template #cell let-row let-key="key">
 					<ng-container [ngSwitch]="key">
 						<div *ngSwitchCase="'name'">
-							<span class="link-name">{{ row.name }}</span>
+							<div style="font-weight: 600">{{ row.name }}</div>
 							<div class="mono" style="color: var(--muted); margin-top: 2px;">
 								{{ row.image }}
 							</div>
@@ -125,13 +131,22 @@ type ServiceRow = {
 		AsyncPipe,
 		DataTableComponent,
 		StatusBadgeComponent,
+		IconComponent,
 		TranslocoPipe,
 	],
 })
 export class ServicesPageComponent {
+	/** Emitted when the user clicks "New service" to open the create modal. */
+	@Output() createRequested = new EventEmitter<void>();
 	private readonly apollo = inject(Apollo);
 	private readonly transloco = inject(TranslocoService);
 	private readonly i18n = inject(I18nStateService);
+	private readonly router = inject(Router);
+	readonly auth = inject(AuthService);
+
+	open(id: string): void {
+		this.router.navigate(["/app/services", id]);
+	}
 
 	readonly cols = translatedColumns<ServiceRow>(this.transloco, this.i18n.activeLang, [
 		{
@@ -152,6 +167,4 @@ export class ServicesPageComponent {
 	readonly rows$: Observable<ServiceRow[]> = this.apollo
 		.watchQuery<{ services: ServiceRow[] }>({ query: QUERY_SERVICES, pollInterval: 30_000 })
 		.valueChanges.pipe(map((x) => (x.data?.services ?? []) as ServiceRow[]));
-
-	readonly serviceRowRoute = (row: ServiceRow) => ["/app/services", row.id];
 }

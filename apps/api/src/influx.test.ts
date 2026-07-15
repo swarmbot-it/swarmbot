@@ -27,13 +27,16 @@ describe("influx helpers", () => {
 		await expect(createDatabase(cfg)).resolves.toBeUndefined();
 	});
 
-	it("createDatabase pings InfluxDB v2 health", async () => {
+	it("createDatabase posts CREATE DATABASE", async () => {
 		const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 200 });
 		vi.stubGlobal("fetch", fetchMock);
 		const cfg = { ...loadConfig(), influxdbUrl: "http://influx:8086/" };
-		await createDatabase(cfg, "sw4rmbot");
+		await createDatabase(cfg, "swarmboty");
 		expect(fetchMock).toHaveBeenCalled();
-		const [url] = fetchMock.mock.calls[0] as [string];
-		expect(url).toContain("/health");
+		const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+		expect(url).toContain("/query");
+		const body = decodeURIComponent(String(init.body).replace(/\+/g, " "));
+		expect(body).toContain("CREATE DATABASE");
+		expect(body).toContain("swarmboty");
 	});
 });

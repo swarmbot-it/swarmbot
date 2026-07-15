@@ -1,23 +1,27 @@
-/** Revoked login JWT JTIs with a 25-hour TTL. */
+import type { Kysely } from "kysely";
+import type { Database } from "../db.js";
+
+/** Revoked login JWT JTIs with a 25-hour TTL, persisted in Postgres so
+ * revocations survive API restarts and are shared across replicas. */
 
 const TTL_MS = 25 * 60 * 60 * 1000;
-const store = new Map<string, number>();
 
-export function revokeJti(jti: string | undefined): void {
+export async function revokeJti(db: Kysely<Database>, jti: string | undefined): Promise<void> {
 	if (!jti) return;
-	store.set(jti, Date.now() + TTL_MS);
+	await db
+		.insertInto("revokedJti")
+		.values({ jti, expiresAt: new Date(Date.now() + TTL_MS).toISOString() })
+		.onConflict((oc) => oc.column("jti").doNothing())
+		.execute();
 }
 
-export function isRevoked(jti: string | undefined): boolean {
+export async function isRevoked(db: Kysely<Database>, jti: string | undefined): Promise<boolean> {
 	if (!jti) return false;
-	prune();
-	const exp = store.get(jti);
-	return exp !== undefined && exp > Date.now();
-}
-
-function prune(): void {
-	const now = Date.now();
-	for (const [k, exp] of store) {
-		if (exp <= now) store.delete(k);
+	const row = await db.selectFrom("revokedJti").select("expiresAt").where("jti", "=", jti).executeTakeFirst();
+	if (!row) return false;
+	if (new Date(row.expiresAt).getTime() <= Date.now()) {
+		await db.deleteFrom("revokedJti").where("jti", "=", jti).execute();
+		return false;
 	}
+	return true;
 }

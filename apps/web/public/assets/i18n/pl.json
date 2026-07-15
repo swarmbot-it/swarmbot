@@ -15,22 +15,18 @@
         "users": "Użytkownicy",
         "groups": {
             "overview": "Przegląd",
-            "resources": "Zasoby",
             "workloads": "Zasoby",
             "infra": "Infrastruktura",
             "store": "Magazyn i konfiguracja",
             "admin": "Administracja"
         },
         "clusterHealthy": "Klaster zdrowy",
-        "clusterDegraded": "Klaster obniżony",
-        "clusterUnhealthy": "Utrata kworum",
-        "clusterUnknown": "Status klastra nieznany",
         "quorum": "Kworum: {{managers}} z {{total}} managerów"
     },
     "auth": {
         "login": {
             "title": "Witaj ponownie",
-            "subtitle": "Zaloguj się do konsoli administracyjnej sw4rm.bot.",
+            "subtitle": "Zaloguj się do konsoli administracyjnej swarmbot.it.",
             "username": "Nazwa użytkownika",
             "password": "Hasło",
             "submit": "Zaloguj się",
@@ -40,6 +36,19 @@
     },
     "topbar": {
         "notifications": "Powiadomienia",
+        "clusterUnknown": "klaster",
+        "orchestratorTitle": "Orkiestrator",
+        "orchestrator": {
+            "swarm": "Swarm",
+            "kubernetes": "Kubernetes"
+        },
+        "recentActivity": "Ostatnia aktywność",
+        "liveFromDocker": "na żywo z Dockera",
+        "noActivity": "Brak aktywności.",
+        "secondsAgo": "{{n}}s temu",
+        "minutesAgo": "{{n}}m temu",
+        "hoursAgo": "{{n}}h temu",
+        "daysAgo": "{{n}}d temu",
         "switchToLight": "Przełącz na jasny motyw",
         "switchToDark": "Przełącz na ciemny motyw",
         "theme": "Motyw",
@@ -49,14 +58,23 @@
         "profile": "Profil",
         "preferences": "Preferencje",
         "apiTokens": "Tokeny API",
+        "apiTokensSubtitle": "Użyj tokenu, żeby wywoływać API GraphQL bez sesji przeglądarki",
+        "apiTokensYourNew": "Twój nowy token",
+        "apiTokensActive": "Aktywny token",
+        "apiTokensExpires": "Wygasa",
+        "apiTokensNoExpiry": "Nie wygasa",
+        "apiTokensNone": "Brak aktywnego tokenu API. Wygeneruj jeden, żeby uwierzytelniać zapytania nagłówkiem Authorization.",
+        "apiTokensGenerate": "Wygeneruj token",
+        "apiTokensRegenerate": "Wygeneruj ponownie",
+        "apiTokensRevoke": "Unieważnij",
+        "apiTokensCopyHint": "Skopiuj go teraz — nie zostanie pokazany ponownie.",
+        "apiTokensCopy": "Kopiuj do schowka",
+        "apiTokensCopied": "Token skopiowany do schowka",
+        "apiTokensRevoked": "Token API unieważniony",
+        "apiTokensGenFailed": "Nie udało się wygenerować tokenu.",
+        "apiTokensRevokeFailed": "Nie udało się unieważnić tokenu.",
         "logout": "Wyloguj",
-        "administrator": "Administrator",
-        "clusterUnknown": "klaster",
-        "orchestratorTitle": "Orkiestrator",
-        "orchestrator": {
-            "swarm": "Swarm",
-            "kubernetes": "Kubernetes"
-        }
+        "administrator": "Administrator"
     },
     "table": {
         "search": "Szukaj…",
@@ -64,8 +82,8 @@
         "count": "{{filtered}} z {{total}}"
     },
     "common": {
-        "na": "N/D",
         "cancel": "Anuluj",
+        "close": "Zamknij",
         "create": "Utwórz",
         "save": "Zapisz",
         "optional": "Opcjonalne",
@@ -74,7 +92,8 @@
         "continue": "Dalej",
         "default": "DOMYŚLNY",
         "type": "Typ",
-        "user": "Użytkownik"
+        "user": "Użytkownik",
+        "loading": "Ładowanie…"
     },
     "dashboard": {
         "title": "Przegląd klastra",
@@ -92,7 +111,6 @@
         "resourceUtilization": "Wykorzystanie zasobów",
         "influxHint": "Szereg czasowy z InfluxDB · agregacja na żywo",
         "loadingMetrics": "Ładowanie metryk…",
-        "noMetrics": "Brak telemetrii — uruchom swarmagent na węzłach klastra.",
         "nodesTitle": "Węzły",
         "nodesSubtitle": "{{count}} węzłów · {{managers}} managerów · {{workers}} workerów",
         "managers": "Managery",
@@ -106,6 +124,15 @@
             "medium": "Średnia",
             "high": "Wysoka"
         }
+    },
+    "load": {
+        "title": "Obciążenie stosów",
+        "subtitle": "Zużycie CPU i pamięci dla {{count}} najbardziej obciążonych stosów",
+        "loading": "Wczytywanie metryk stosów…",
+        "empty": "Brak wdrożonych stosów. Wdróż jeden przez \"docker stack deploy\", żeby zobaczyć wykresy obciążenia.",
+        "cpu": "CPU",
+        "memory": "Pamięć",
+        "peak": "Szczyt:"
     },
     "columns": {
         "name": "Nazwa",
@@ -125,7 +152,8 @@
         "task": "Zadanie",
         "node": "Węzeł",
         "replicas": "Repliki",
-        "ports": "Porty"
+        "ports": "Porty",
+        "actions": "Akcje"
     },
     "status": {
         "RUNNING": "Uruchomione",
@@ -139,72 +167,10 @@
         "REJECTED": "Odrzucone",
         "COMPLETE": "Zakończone",
         "SHUTDOWN": "Wyłączone",
+        "STOPPED": "Zatrzymane",
         "UNKNOWN": "Nieznany"
     },
     "pages": {
-        "load": {
-            "title": "Obciążenie",
-            "subtitle": "Top 7 stosów wg aktualnego CPU",
-            "peak": "Szczyt: {{peak}}% · {{count}} stosów",
-            "empty": "Brak telemetrii stosów"
-        },
-        "stackDetail": {
-            "back": "Wróć do stosów",
-            "uptime": "Czas działania",
-            "lastDeploy": "Ostatnie wdrożenie",
-            "replicas": "Repliki",
-            "servicesTile": "Usługi",
-            "configs": "Konfiguracje",
-            "secrets": "Poświadczenia",
-            "utilization": "Wykorzystanie stosu",
-            "utilizationSub": "Agregacja z {{count}} usług",
-            "noNetworks": "Brak podłączonych sieci.",
-            "noVolumes": "Brak podłączonych wolumenów.",
-            "noConfigs": "Brak zamontowanych konfiguracji.",
-            "noSecrets": "Brak przyznanych poświadczeń.",
-            "noServices": "Brak usług w tym stosie.",
-            "noMetrics": "Brak telemetrii w tym zakresie — dane pojawią się po zebraniu próbek przez swarmagenta."
-        },
-        "serviceDetail": {
-            "back": "Wróć do usług",
-            "replicas": "repliki",
-            "running": "Uruchomione",
-            "stopped": "Zatrzymane",
-            "env": "Zmienne środowiskowe",
-            "labels": "Etykiety",
-            "tasks": "Zadania",
-            "secrets": "Poświadczenia",
-            "configs": "Konfiguracje",
-            "networks": "Sieci",
-            "publishedPorts": "Opublikowane porty",
-            "bindMounts": "Montowania bind",
-            "volumes": "Wolumeny",
-            "containerPort": "Port kontenera",
-            "hostPort": "Port hosta",
-            "protocol": "Protokół",
-            "mode": "Tryb",
-            "containerPath": "Ścieżka w kontenerze",
-            "hostPath": "Ścieżka na hoście",
-            "volumeName": "Nazwa wolumenu",
-            "readOnly": "Tylko odczyt",
-            "updated": "Aktualizacja",
-            "noEntries": "Brak wpisów.",
-            "noSecrets": "Brak powiązanych poświadczeń.",
-            "noConfigs": "Brak powiązanych konfiguracji.",
-            "noPorts": "Brak opublikowanych portów.",
-            "noMounts": "Brak montowań bind.",
-            "noVolumes": "Brak zamontowanych wolumenów."
-        },
-        "taskDetail": {
-            "back": "Wróć do zadań",
-            "on": "na",
-            "taskId": "ID zadania",
-            "imageDigest": "Digest obrazu",
-            "cpuUsage": "Wykorzystanie CPU",
-            "memUsage": "Wykorzystanie pamięci",
-            "lastHour": "Ostatnia godzina · aktualnie",
-            "noMetrics": "Brak telemetrii w tym zakresie."
-        },
         "stacks": {
             "countSuffix": "stosów wdrożonych",
             "add": "Nowy stos",
@@ -216,6 +182,46 @@
                 "volumes": "Wolumeny",
                 "configs": "Konfiguracje",
                 "secrets": "Poświadczenia"
+            },
+            "detail": {
+                "countsSummary": "{{services}} usług · {{networks}} sieci · {{volumes}} wolumenów · {{configs}} konfiguracji · {{secrets}} poświadczeń",
+                "working": "Trwa…",
+                "edit": "Edytuj",
+                "editUnsupported": "Edycja stosu w miejscu nie jest jeszcze obsługiwana — użyj poniżej Redeploy/Rollback/Deactivate albo usuń stos i wdróż nowy plik Compose.",
+                "redeploy": "Redeploy",
+                "redeployHint": "rolling",
+                "rollback": "Rollback",
+                "rollbackHint": "poprz. spec",
+                "deactivate": "Deaktywuj",
+                "deactivateHint": "skaluj do 0",
+                "reactivate": "Reaktywuj",
+                "reactivateHint": "skaluj do 1",
+                "delete": "Usuń",
+                "utilization": "Wykorzystanie stosu",
+                "utilizationHint": "Zagregowane CPU i pamięć kontenerów · z InfluxDB",
+                "noMetrics": "Brak metryk — agent raportuje statystyki co 30s.",
+                "diskHint": "Zużycie dysku per kontener nie jest zbierane przez agenta (tylko CPU i pamięć)",
+                "diskNotTracked": "Nie śledzone per stos",
+                "notFound": "Nie znaleziono stosu.",
+                "noServices": "Brak usług w tym stosie.",
+                "noNetworks": "Brak podłączonych sieci.",
+                "noVolumes": "Brak podłączonych wolumenów.",
+                "noConfigs": "Brak zamontowanych konfiguracji.",
+                "noSecrets": "Brak przyznanych poświadczeń.",
+                "stopped": "Zatrzymane",
+                "stopping": "Zatrzymywanie…",
+                "confirmRemove": "Usunąć stos \"{{name}}\"? To usunie wszystkie jego usługi, sieci i pozostałe zasoby.",
+                "toastNothingToRedeploy": "\"{{name}}\" ma 0 replik — nie ma czego redeployować. Najpierw użyj \"Reaktywuj\".",
+                "toastRedeploying": "Redeployowanie \"{{name}}\"… zadania zrestartują się za kilka sekund.",
+                "toastRolledBack": "Cofnięto \"{{name}}\" do poprzedniej specyfikacji.",
+                "toastDeactivated": "Stos \"{{name}}\" zdezaktywowany.",
+                "toastReactivated": "Stos \"{{name}}\" reaktywowany (skalowany do 1 repliki).",
+                "toastRemoved": "Stos \"{{name}}\" usunięty.",
+                "redeployFailed": "Redeploy nie powiódł się.",
+                "rollbackFailed": "Rollback nie powiódł się.",
+                "deactivateFailed": "Deaktywacja nie powiodła się.",
+                "reactivateFailed": "Reaktywacja nie powiodła się.",
+                "removeFailed": "Usunięcie nie powiodło się."
             }
         },
         "services": {
@@ -225,6 +231,39 @@
                 "service": "Usługa",
                 "replicas": "Repliki",
                 "ports": "Porty"
+            },
+            "detail": {
+                "back": "Wróć do usług",
+                "scale": "Skaluj",
+                "scaleSubtitle": "Ustaw docelową liczbę replik dla {{name}}",
+                "serviceId": "ID usługi",
+                "mode": "Tryb",
+                "env": "Zmienne środowiskowe",
+                "noEnv": "Brak ustawionych zmiennych środowiskowych.",
+                "labels": "Etykiety",
+                "noLabels": "Brak ustawionych etykiet.",
+                "noSecrets": "Brak podpiętych secretów.",
+                "noConfigs": "Brak podpiętych configów.",
+                "noTasks": "Brak aktywnych tasków.",
+                "noNetworks": "Brak podłączonych sieci.",
+                "noPorts": "Brak opublikowanych portów.",
+                "mounts": "Mounty",
+                "noMounts": "Brak mountów.",
+                "mountSource": "Źródło",
+                "mountTarget": "Cel",
+                "mountMode": "Tryb",
+                "notFound": "Nie znaleziono usługi.",
+                "editUnsupported": "Edycja usługi w miejscu nie jest jeszcze obsługiwana — użyj poniżej Redeploy/Rollback/Scale, albo usuń ją i wdróż ponownie przez jej stos.",
+                "confirmRemove": "Usunąć usługę \"{{name}}\"?",
+                "toastNothingToRedeploy": "\"{{name}}\" ma 0 replik — nie ma czego redeployować. Najpierw użyj \"Skaluj\", żeby ją podnieść.",
+                "toastRedeploying": "Redeployowanie \"{{name}}\"… zadania zrestartują się za kilka sekund.",
+                "toastRolledBack": "Cofnięto \"{{name}}\" do poprzedniej specyfikacji.",
+                "toastScaled": "Przeskalowano \"{{name}}\" do {{replicas}} replik.",
+                "toastRemoved": "Usługa \"{{name}}\" usunięta.",
+                "redeployFailed": "Redeploy nie powiódł się.",
+                "rollbackFailed": "Rollback nie powiódł się.",
+                "scaleFailed": "Skalowanie nie powiodło się.",
+                "removeFailed": "Usunięcie nie powiodło się."
             }
         },
         "tasks": {
@@ -234,6 +273,13 @@
                 "node": "Węzeł",
                 "cpu": "CPU",
                 "memory": "Pamięć"
+            },
+            "detail": {
+                "back": "Wróć do zadań",
+                "on": "na",
+                "desiredState": "Stan docelowy",
+                "statusMessage": "Komunikat statusu",
+                "notFound": "Nie znaleziono zadania."
             }
         },
         "nodes": {
@@ -244,11 +290,18 @@
                 "manager": "Managery",
                 "worker": "Workery"
             },
-            "agent": "agent",
             "labels": {
                 "cpu": "CPU",
                 "memory": "Pamięć",
                 "disk": "Dysk"
+            },
+            "actions": {
+                "title": "Akcje",
+                "drain": "Drenuj",
+                "activate": "Aktywuj",
+                "toastDrained": "\"{{name}}\" jest drenowany — nowe zadania nie będą tam planowane.",
+                "toastActivated": "\"{{name}}\" jest znów aktywny i przyjmuje zadania.",
+                "failed": "Nie udało się zmienić dostępności węzła."
             }
         },
         "networks": {
@@ -261,11 +314,25 @@
         },
         "secrets": {
             "countSuffix": "poświadczeń zapisanych",
-            "add": "Nowe poświadczenie"
+            "add": "Nowe poświadczenie",
+            "view": "Pokaż szczegóły",
+            "modal": {
+                "subtitle": "Szczegóły poświadczenia",
+                "id": "ID poświadczenia",
+                "created": "Utworzono",
+                "updated": "Ostatnia aktualizacja",
+                "writeOnlyNotice": "Poświadczenia Dockera są tylko do zapisu — wartości nie da się odczytać po utworzeniu, to celowe. Aby ją zrotować, usuń poświadczenie i utwórz je ponownie."
+            }
         },
         "configs": {
             "countSuffix": "konfiguracji zapisanych",
-            "add": "Nowa konfiguracja"
+            "add": "Nowa konfiguracja",
+            "view": "Pokaż zawartość",
+            "modal": {
+                "subtitle": "Zawartość pliku konfiguracji",
+                "loading": "Ładowanie…",
+                "empty": "(puste)"
+            }
         },
         "registries": {
             "countSuffix": "rejestrów podłączonych",
@@ -273,7 +340,14 @@
             "columns": {
                 "registry": "Rejestr",
                 "authUser": "Użytkownik auth"
-            }
+            },
+            "setDefault": "Ustaw jako domyślny",
+            "remove": "Usuń",
+            "confirmRemove": "Usunąć rejestr \"{{name}}\"?",
+            "toastSetDefault": "\"{{name}}\" jest teraz domyślnym rejestrem.",
+            "toastRemoved": "Rejestr \"{{name}}\" usunięty.",
+            "setDefaultFailed": "Nie udało się ustawić domyślnego rejestru.",
+            "removeFailed": "Usunięcie nie powiodło się."
         }
     },
     "users": {
@@ -301,16 +375,7 @@
             "title": "Wdróż stos",
             "subtitle": "Wklej plik Compose lub definicję stosu.",
             "name": "Nazwa stosu",
-            "content": "Plik stosu",
-            "deploy": "Wdróż",
-            "errors": {
-                "nameRequired": "Podaj nazwę stosu.",
-                "contentRequired": "Wklej definicję Compose."
-            },
-            "toast": {
-                "success": "Stos „{{name}}” wdrożony (status: {{status}}).",
-                "failed": "Nie udało się wdrożyć stosu."
-            }
+            "content": "Plik stosu"
         },
         "service": {
             "title": "Utwórz usługę",
@@ -433,8 +498,24 @@
             "Piątek",
             "Sobota"
         ],
-        "dayNamesShort": ["Nd", "Pn", "Wt", "Śr", "Cz", "Pt", "So"],
-        "dayNamesMin": ["Nd", "Pn", "Wt", "Śr", "Cz", "Pt", "So"],
+        "dayNamesShort": [
+            "Nd",
+            "Pn",
+            "Wt",
+            "Śr",
+            "Cz",
+            "Pt",
+            "So"
+        ],
+        "dayNamesMin": [
+            "Nd",
+            "Pn",
+            "Wt",
+            "Śr",
+            "Cz",
+            "Pt",
+            "So"
+        ],
         "monthNames": [
             "Styczeń",
             "Luty",

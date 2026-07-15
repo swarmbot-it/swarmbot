@@ -36,7 +36,7 @@ import { BootService } from "../../core/boot.service";
 			[attr.aria-busy]="!leaving()"
 		>
 			<div class="sb-boot__stage">
-				<svg class="sb-boot__mark" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+				<svg class="sb-boot__mark" viewBox="0 0 32 32" fill="none" aria-label="Loading">
 					<line class="sb-blink sb-blink--1" x1="12"   y1="16"   x2="15.7" y2="9.4"  stroke="#F97316" stroke-width="1.2" stroke-linecap="round"/>
 					<line class="sb-blink sb-blink--2" x1="12"   y1="16"   x2="15.7" y2="22.6" stroke="#F97316" stroke-width="1.2" stroke-linecap="round"/>
 					<line class="sb-blink sb-blink--3" x1="20.3" y1="9.4"  x2="23"   y2="14"   stroke="#F97316" stroke-width="1.2" stroke-linecap="round"/>
@@ -47,7 +47,7 @@ import { BootService } from "../../core/boot.service";
 					<circle class="sb-bdot sb-bdot--right"  cx="25" cy="16" r="2.8" fill="#EA580C"/>
 				</svg>
 
-				<div class="sb-boot__title" aria-label="sw4rm.bot">sw4rm<span>.bot</span></div>
+				<div class="sb-boot__title">swarmbot<span>.it</span></div>
 
 				<div class="sb-boot__progress">
 					<div class="sb-boot__progress-bar" [style.width.%]="progressPct$ | async"></div>

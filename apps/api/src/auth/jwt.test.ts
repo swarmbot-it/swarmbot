@@ -1,15 +1,12 @@
 ﻿import { describe, it, expect } from "vitest";
 import { decodeBasic, generateJwt, tokenValue, verifyJwt } from "./jwt.js";
-import type { CouchDoc } from "../couch.js";
 
 const SECRET = "test-secret";
 
-const user: CouchDoc = {
-	type: "user",
+const user = {
 	username: "alice",
 	email: "alice@example.com",
 	role: "admin",
-	password: "x",
 };
 
 describe("tokenValue", () => {
@@ -29,7 +26,7 @@ describe("generateJwt / verifyJwt", () => {
 		const token = generateJwt(SECRET, user);
 		expect(token.startsWith("Bearer ")).toBe(true);
 		const claims = verifyJwt(SECRET, token);
-		expect(claims.iss).toBe("sw4rm.bot");
+		expect(claims.iss).toBe("swarmboty");
 		expect(claims.usr.username).toBe("alice");
 		expect(claims.usr.role).toBe("admin");
 		expect(claims.jti).toBeTruthy();
@@ -42,12 +39,12 @@ describe("generateJwt / verifyJwt", () => {
 
 	it("respects custom iss/jti/exp", () => {
 		const token = generateJwt(SECRET, user, {
-			iss: "sw4rm.bot-api",
+			iss: "swarmboty-api",
 			jti: "fixed-jti",
 			exp: null,
 		});
 		const claims = verifyJwt(SECRET, token);
-		expect(claims.iss).toBe("sw4rm.bot-api");
+		expect(claims.iss).toBe("swarmboty-api");
 		expect(claims.jti).toBe("fixed-jti");
 		expect(claims.exp).toBeUndefined();
 	});

@@ -1,6 +1,6 @@
 {
 	"$schema": "https://compodoc.app/guides/json-config.html",
-	"name": "SwarmBoty Web UI",
+	"name": "swarmbot.it Web UI",
 	"tsconfig": "tsconfig.app.json",
 	"output": "documentation",
 	"theme": "gitbook",

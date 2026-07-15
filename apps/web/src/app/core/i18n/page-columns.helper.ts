@@ -2,10 +2,7 @@ import { computed, type Signal } from "@angular/core";
 import type { TranslocoService } from "@jsverse/transloco";
 import type { ColumnDef } from "../../shared/data-table.component";
 
-export type ColumnDefInput<R> = Omit<ColumnDef<R>, "label"> & {
-	/** Static i18n key, or a function (e.g. reading a signal) for mode-dependent labels. */
-	labelKey: string | (() => string);
-};
+export type ColumnDefInput<R> = Omit<ColumnDef<R>, "label"> & { labelKey: string };
 
 /** Builds table column definitions with labels resolved from Transloco on language change. */
 export function translatedColumns<R>(
@@ -17,7 +14,7 @@ export function translatedColumns<R>(
 		activeLang();
 		return defs.map(({ labelKey, ...rest }) => ({
 			...rest,
-			label: transloco.translate(typeof labelKey === "function" ? labelKey() : labelKey),
+			label: transloco.translate(labelKey),
 		}));
 	});
 }

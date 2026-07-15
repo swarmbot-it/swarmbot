@@ -7,7 +7,6 @@ import {
 	inject,
 	signal,
 } from "@angular/core";
-import { NgIf } from "@angular/common";
 import { form, FormField, required } from "@angular/forms/signals";
 import { TranslocoPipe } from "@jsverse/transloco";
 import { Apollo } from "apollo-angular";

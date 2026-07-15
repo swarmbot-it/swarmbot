@@ -7,9 +7,15 @@ import { DataTableComponent } from "../../shared/data-table.component";
 import { IconComponent } from "../../shared/icon.component";
 import { TagComponent } from "../../shared/tag.component";
 import { TranslocoPipe, TranslocoService } from "@jsverse/transloco";
-import { QUERY_REGISTRIES } from "../../core/graphql.queries";
+import {
+	MUTATION_REMOVE_REGISTRY,
+	MUTATION_SET_DEFAULT_REGISTRY,
+	QUERY_REGISTRIES,
+} from "../../core/graphql.queries";
 import { I18nStateService } from "../../core/i18n/i18n-state.service";
 import { translatedColumns } from "../../core/i18n/page-columns.helper";
+import { AuthService } from "../../core/auth.service";
+import { ToastService } from "../../core/toast.service";
 
 type Registry = {
 	id: string;
@@ -37,7 +43,7 @@ type Registry = {
 						{{ "pages.registries.countSuffix" | transloco }}
 					</div>
 				</div>
-				<button class="btn btn--primary" (click)="createRequested.emit()">
+				<button *ngIf="auth.isAdmin()" class="btn btn--primary" (click)="createRequested.emit()">
 					<sb-icon name="plus" [size]="16"></sb-icon>
 					{{ "pages.registries.add" | transloco }}
 				</button>
@@ -75,6 +81,27 @@ type Registry = {
 							>{{ row.type }}</span
 						>
 						<span *ngSwitchCase="'user'" class="mono">{{ row.user }}</span>
+						<span
+							*ngSwitchCase="'actions'"
+							style="display:flex; gap:4px; justify-content:flex-end;"
+						>
+							<button
+								*ngIf="auth.isAdmin() && !row.default"
+								class="btn btn--ghost btn--icon btn--sm"
+								[title]="'pages.registries.setDefault' | transloco"
+								(click)="setDefault(row)"
+							>
+								<sb-icon name="check" [size]="14"></sb-icon>
+							</button>
+							<button
+								*ngIf="auth.isAdmin()"
+								class="btn btn--ghost btn--icon btn--sm"
+								[title]="'pages.registries.remove' | transloco"
+								(click)="remove(row)"
+							>
+								<sb-icon name="trash" [size]="14" style="color: var(--danger)"></sb-icon>
+							</button>
+						</span>
 						<ng-container *ngSwitchDefault>{{ row[key] }}</ng-container>
 					</ng-container>
 				</ng-template>
@@ -99,14 +126,70 @@ export class RegistriesPageComponent {
 	private readonly apollo = inject(Apollo);
 	private readonly transloco = inject(TranslocoService);
 	private readonly i18n = inject(I18nStateService);
+	private readonly toast = inject(ToastService);
+	readonly auth = inject(AuthService);
 
 	readonly cols = translatedColumns<Registry>(this.transloco, this.i18n.activeLang, [
 		{ key: "name", labelKey: "pages.registries.columns.registry" },
 		{ key: "type", labelKey: "columns.type" },
 		{ key: "user", labelKey: "pages.registries.columns.authUser" },
+		{ key: "actions", labelKey: "columns.actions", sortable: false, align: "right" },
 	]);
 
-	readonly rows$: Observable<Registry[]> = this.apollo
-		.watchQuery<{ registries: Registry[] }>({ query: QUERY_REGISTRIES, pollInterval: 60_000 })
-		.valueChanges.pipe(map((x) => (x.data?.registries ?? []) as Registry[]));
+	private readonly query = this.apollo.watchQuery<{ registries: Registry[] }>({
+		query: QUERY_REGISTRIES,
+		pollInterval: 60_000,
+	});
+
+	readonly rows$: Observable<Registry[]> = this.query.valueChanges.pipe(
+		map((x) => (x.data?.registries ?? []) as Registry[])
+	);
+
+	setDefault(row: Registry): void {
+		this.apollo
+			.mutate<{ setDefaultRegistry: Registry }>({
+				mutation: MUTATION_SET_DEFAULT_REGISTRY,
+				variables: { id: row.id },
+			})
+			.subscribe({
+				next: () => {
+					this.toast.push(
+						"success",
+						this.transloco.translate("pages.registries.toastSetDefault", { name: row.name })
+					);
+					this.query.refetch();
+				},
+				error: (err) => {
+					this.toast.push(
+						"error",
+						err?.message || this.transloco.translate("pages.registries.setDefaultFailed")
+					);
+				},
+			});
+	}
+
+	remove(row: Registry): void {
+		if (!confirm(this.transloco.translate("pages.registries.confirmRemove", { name: row.name })))
+			return;
+		this.apollo
+			.mutate<{ removeRegistry: boolean }>({
+				mutation: MUTATION_REMOVE_REGISTRY,
+				variables: { id: row.id },
+			})
+			.subscribe({
+				next: () => {
+					this.toast.push(
+						"success",
+						this.transloco.translate("pages.registries.toastRemoved", { name: row.name })
+					);
+					this.query.refetch();
+				},
+				error: (err) => {
+					this.toast.push(
+						"error",
+						err?.message || this.transloco.translate("pages.registries.removeFailed")
+					);
+				},
+			});
+	}
 }

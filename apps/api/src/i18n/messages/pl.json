@@ -2,6 +2,7 @@
     "errors.unauthenticated": "Brak autoryzacji",
     "errors.forbidden": "Brak uprawnień",
     "errors.invalidCredentials": "Podana nazwa użytkownika lub hasło jest nieprawidłowe.",
+    "errors.tooManyAttempts": "Zbyt wiele prób logowania. Poczekaj minutę i spróbuj ponownie.",
     "errors.userNotFound": "Nie znaleziono użytkownika",
     "errors.serverMisconfigured": "Błąd konfiguracji serwera",
     "errors.missingToken": "Brak tokenu",
@@ -10,13 +11,5 @@
     "errors.noDataSent": "Nie przesłano danych",
     "errors.noRunningTask": "Brak uruchomionego zadania",
     "errors.usernameTaken": "Nazwa użytkownika jest już zajęta",
-    "errors.invalidStackName": "Nieprawidłowa nazwa stosu (dozwolone: litery, cyfry, _, ., -).",
-    "errors.composeEmpty": "Plik Compose jest pusty.",
-    "errors.composeYamlSyntax": "Nieprawidłowy YAML:",
-    "errors.composeInvalidRoot": "Plik Compose musi być obiektem (mapą) na najwyższym poziomie.",
-    "errors.composeMissingServices": "Plik Compose musi zawierać co najmniej jedną usługę w sekcji services.",
-    "errors.composeInvalidService": "Usługa ma nieprawidową definicję:",
-    "errors.stackDeployFailed": "Wdrożenie stosu nie powiodło się:",
-    "errors.invalidManifest": "Nieprawidłowy manifest Kubernetes:",
-    "errors.notSupportedInOrchestrator": "Ta operacja nie jest obsługiwana przez bieżący orkiestrator."
+    "errors.validationFailed": "Nieprawidłowe dane"
 }

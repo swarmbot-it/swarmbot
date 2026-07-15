@@ -9,6 +9,7 @@ import { TranslocoPipe, TranslocoService } from "@jsverse/transloco";
 import { QUERY_NETWORKS } from "../../core/graphql.queries";
 import { I18nStateService } from "../../core/i18n/i18n-state.service";
 import { translatedColumns } from "../../core/i18n/page-columns.helper";
+import { AuthService } from "../../core/auth.service";
 
 type Network = {
 	id: string;
@@ -36,7 +37,7 @@ type Network = {
 						{{ "pages.networks.countSuffix" | transloco }}
 					</div>
 				</div>
-				<button class="btn btn--primary" (click)="createRequested.emit()">
+				<button *ngIf="auth.isAdmin()" class="btn btn--primary" (click)="createRequested.emit()">
 					<sb-icon name="plus" [size]="16"></sb-icon>
 					{{ "pages.networks.add" | transloco }}
 				</button>
@@ -87,6 +88,7 @@ export class NetworksPageComponent {
 	/** Emitted when the user clicks "New network" to open the create modal. */
 	@Output() createRequested = new EventEmitter<void>();
 	private readonly apollo = inject(Apollo);
+	readonly auth = inject(AuthService);
 	private readonly transloco = inject(TranslocoService);
 	private readonly i18n = inject(I18nStateService);
 

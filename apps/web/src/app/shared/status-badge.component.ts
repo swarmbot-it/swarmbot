@@ -22,6 +22,7 @@ const VARIANTS: Record<string, Variant> = {
 	REJECTED: "danger",
 	COMPLETE: "info",
 	SHUTDOWN: "neutral",
+	STOPPED: "neutral",
 };
 
 @Component({

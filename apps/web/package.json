@@ -1,18 +1,17 @@
 {
     "name": "web",
-    "version": "0.1.4",
+    "version": "0.0.0",
     "scripts": {
         "ng": "ng",
-        "prebuild": "node ../../scripts/sync-app-version.mjs",
-        "prestart": "node ../../scripts/sync-app-version.mjs",
         "start": "ng serve",
         "build": "ng build",
         "watch": "ng build --watch --configuration development",
+        "test": "ng test --no-watch",
+        "test:watch": "ng test",
         "test:e2e": "playwright test",
-        "test:e2e:k8s": "playwright test --config playwright.k8s.config.js",
         "test:e2e:ui": "playwright test --ui",
         "postinstall": "playwright install chromium",
-        "lint": "tsc -p tsconfig.app.json --noEmit",
+        "lint": "tsc -p tsconfig.app.json --noEmit && ng lint",
         "docs": "compodoc -c compodoc.json",
         "docs:serve": "compodoc -c compodoc.json -s -o"
     },
@@ -40,10 +39,16 @@
     },
     "devDependencies": {
         "@angular-devkit/build-angular": "^21.2.0",
+        "@angular-eslint/builder": "21.4.0",
         "@angular/cli": "^21.2.0",
         "@angular/compiler-cli": "^21.2.0",
         "@compodoc/compodoc": "^1.1.32",
+        "@eslint/js": "^10.0.1",
         "@playwright/test": "^1.51.1",
-        "typescript": "~5.9.3"
+        "angular-eslint": "21.4.0",
+        "eslint": "^10.3.0",
+        "jsdom": "^29.1.1",
+        "typescript": "~5.9.3",
+        "typescript-eslint": "8.59.2"
     }
 }

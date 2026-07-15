@@ -2,6 +2,7 @@
     "errors.unauthenticated": "Unauthorized",
     "errors.forbidden": "Forbidden",
     "errors.invalidCredentials": "The username or password you entered is incorrect.",
+    "errors.tooManyAttempts": "Too many login attempts. Please wait a minute and try again.",
     "errors.userNotFound": "User not found",
     "errors.serverMisconfigured": "Server misconfigured",
     "errors.missingToken": "Missing token",
@@ -10,13 +11,5 @@
     "errors.noDataSent": "No data sent",
     "errors.noRunningTask": "No running task",
     "errors.usernameTaken": "Username is already taken",
-    "errors.invalidStackName": "Invalid stack name (allowed: letters, digits, _, ., -).",
-    "errors.composeEmpty": "Compose file is empty.",
-    "errors.composeYamlSyntax": "Invalid YAML:",
-    "errors.composeInvalidRoot": "Compose file must be a mapping at the top level.",
-    "errors.composeMissingServices": "Compose file must define at least one service under services.",
-    "errors.composeInvalidService": "Service has an invalid definition:",
-    "errors.stackDeployFailed": "Stack deployment failed:",
-    "errors.invalidManifest": "Invalid Kubernetes manifest:",
-    "errors.notSupportedInOrchestrator": "This operation is not supported on the current orchestrator."
+    "errors.validationFailed": "Invalid input"
 }

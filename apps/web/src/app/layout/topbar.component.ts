@@ -3,25 +3,27 @@ import {
 	Component,
 	ElementRef,
 	HostListener,
-	OnInit,
 	inject,
 	computed,
 	signal,
+	OnInit,
 } from "@angular/core";
 import { NgFor, NgIf } from "@angular/common";
 import { Router } from "@angular/router";
 import { Apollo, gql } from "apollo-angular";
 import { map } from "rxjs/operators";
 import { TranslocoPipe, TranslocoService } from "@jsverse/transloco";
-import { BUILD_APP_VERSION } from "../core/build-version";
-import { QUERY_VERSION } from "../core/graphql.queries";
 import { AuthService } from "../core/auth.service";
 import { ThemeService } from "../core/theme.service";
 import { I18nStateService } from "../core/i18n/i18n-state.service";
-import { OrchestratorStateService } from "../core/orchestrator-state.service";
 import { type LangCode, isLangCode } from "../core/i18n/i18n-languages";
+import { OrchestratorStateService } from "../core/orchestrator-state.service";
+import { BUILD_APP_VERSION } from "../core/build-version";
+import { QUERY_VERSION } from "../core/graphql.queries";
 import { LogoComponent } from "../shared/logo.component";
 import { IconComponent } from "../shared/icon.component";
+import { ApiTokenModalComponent } from "../shared/api-token-modal.component";
+import { NotificationsComponent } from "../shared/notifications.component";
 
 const LOGOUT = gql`
 	mutation Logout {
@@ -91,13 +93,7 @@ const CJK_LANGS: { code: LangCode; label: string }[] = [
 				</button>
 			</div>
 
-			<button
-				class="btn btn--ghost btn--icon topbar__bell"
-				[title]="'topbar.notifications' | transloco"
-			>
-				<sb-icon name="bell" [size]="18"></sb-icon>
-				<span class="topbar__bell-dot"></span>
-			</button>
+			<sb-notifications></sb-notifications>
 
 			<div #anchor class="topbar__user-anchor">
 				<div class="topbar__user" (click)="toggle()">
@@ -118,6 +114,10 @@ const CJK_LANGS: { code: LangCode; label: string }[] = [
 					<div class="popover__item" (click)="goToProfile()">
 						<sb-icon name="user" [size]="15"></sb-icon
 						><span>{{ "topbar.profile" | transloco }}</span>
+					</div>
+					<div class="popover__item" (click)="openApiTokens()">
+						<sb-icon name="keys" [size]="15"></sb-icon
+						><span>{{ "topbar.apiTokens" | transloco }}</span>
 					</div>
 					<div class="popover__divider"></div>
 
@@ -177,6 +177,11 @@ const CJK_LANGS: { code: LangCode; label: string }[] = [
 					</div>
 				</div>
 			</div>
+
+			<sb-api-token-modal
+				[open]="apiTokenModalOpen()"
+				(close)="closeApiTokens()"
+			></sb-api-token-modal>
 		</header>
 	`,
 	styles: [
@@ -248,14 +253,10 @@ const CJK_LANGS: { code: LangCode; label: string }[] = [
 			.theme-slider__btn--active {
 				background: var(--surface);
 				color: var(--primary-500);
-				box-shadow:
-					0 1px 3px rgba(0, 0, 0, 0.1),
-					0 0 0 1px var(--border);
+				box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 0 1px var(--border);
 			}
-			:host-context([data-theme="dark"]) .theme-slider__btn--active {
-				box-shadow:
-					0 1px 4px rgba(0, 0, 0, 0.35),
-					0 0 0 1px var(--border-strong);
+			:host-context([data-theme='dark']) .theme-slider__btn--active {
+				box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35), 0 0 0 1px var(--border-strong);
 			}
 			.theme-slider__btn:not(.theme-slider__btn--active):hover {
 				color: var(--muted);
@@ -423,10 +424,10 @@ const CJK_LANGS: { code: LangCode; label: string }[] = [
 				color: var(--primary-600);
 				border-color: transparent;
 			}
-			:host-context([data-theme="dark"]) .lang-item--active {
+			:host-context([data-theme='dark']) .lang-item--active {
 				color: var(--primary-400);
 			}
-			:host-context([data-theme="dark"]) .lang-item--active .lang-code {
+			:host-context([data-theme='dark']) .lang-item--active .lang-code {
 				color: var(--primary-400);
 			}
 			.lang-item__name {
@@ -439,7 +440,15 @@ const CJK_LANGS: { code: LangCode; label: string }[] = [
 			}
 		`,
 	],
-	imports: [NgIf, NgFor, LogoComponent, IconComponent, TranslocoPipe],
+	imports: [
+		NgIf,
+		NgFor,
+		LogoComponent,
+		IconComponent,
+		TranslocoPipe,
+		ApiTokenModalComponent,
+		NotificationsComponent,
+	],
 })
 export class TopbarComponent implements OnInit {
 	readonly theme = inject(ThemeService);
@@ -457,15 +466,19 @@ export class TopbarComponent implements OnInit {
 	langOpen = false;
 	private readonly clusterInstanceName = signal<string | null>(null);
 
-	readonly logoSubtitle = computed(() => {
-		const cluster = this.clusterName();
-		return `${BUILD_APP_VERSION} · ${cluster}`;
-	});
+	readonly apiTokenModalOpen = signal(false);
+
+	readonly logoSubtitle = computed(() => `v${BUILD_APP_VERSION} · ${this.clusterName()}`);
 
 	readonly clusterName = computed(() => {
 		this.i18n.activeLang();
+		return this.clusterInstanceName()?.trim() || this.transloco.translate("topbar.clusterUnknown");
+	});
+
+	readonly currentLang = computed(() => {
+		const code = this.i18n.activeLang();
 		return (
-			this.clusterInstanceName()?.trim() || this.transloco.translate("topbar.clusterUnknown")
+			[...LATIN_LANGS, ...CJK_LANGS].find((l) => l.code === code) ?? LATIN_LANGS[1]
 		);
 	});
 
@@ -483,11 +496,6 @@ export class TopbarComponent implements OnInit {
 				this.orch.set(version?.orchestrator);
 			});
 	}
-
-	readonly currentLang = computed(() => {
-		const code = this.i18n.activeLang();
-		return [...LATIN_LANGS, ...CJK_LANGS].find((l) => l.code === code) ?? LATIN_LANGS[1];
-	});
 
 	toggle(): void {
 		this.menuOpen = !this.menuOpen;
@@ -531,6 +539,15 @@ export class TopbarComponent implements OnInit {
 				.join("")
 				.toUpperCase() || "SB"
 		);
+	}
+
+	openApiTokens(): void {
+		this.menuOpen = false;
+		this.apiTokenModalOpen.set(true);
+	}
+
+	closeApiTokens(): void {
+		this.apiTokenModalOpen.set(false);
 	}
 
 	onLogout(): void {

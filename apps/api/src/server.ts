@@ -1,4 +1,4 @@
-﻿import http from "http";
+import http from "http";
 import path from "path";
 import express from "express";
 import cors from "cors";
@@ -10,37 +10,36 @@ import { makeExecutableSchema } from "@graphql-tools/schema";
 import { WebSocketServer } from "ws";
 import { useServer } from "graphql-ws/lib/use/ws";
 import { execute, subscribe } from "graphql";
-import type { Sw4rmBotConfig } from "./config.js";
-import { appVersion } from "./app-version.js";
+import type { Kysely } from "kysely";
+import type { SwarmbotyConfig } from "./config.js";
+import type { Database } from "./db.js";
+import { getAppSecret } from "./db.js";
 import { typeDefs } from "./graphql/schema.js";
 import { resolvers } from "./graphql/resolvers.js";
 import { buildContext, localeFromHeader, type GraphQLContext } from "./graphql/context.js";
 import { localizedMessage } from "./i18n/errors.js";
 import type { AuthedRequest } from "./http/optional-jwt.js";
 import { optionalJwtMiddleware } from "./http/optional-jwt.js";
-import { userByUsername, updateDoc, getSecret, type CouchDoc } from "./couch.js";
+import { findAuthUser, upgradePasswordHash } from "./store/users.js";
 import { decodeBasic, generateJwt, verifyJwt } from "./auth/jwt.js";
+import { allowAttempt } from "./auth/rate-limit.js";
 import { verifyPassword, derivePassword, isSha256Digest } from "./auth/password.js";
 import { revokeJti } from "./auth/blacklist.js";
-import { createOrchestrator } from "./orchestrator/factory.js";
-import type { Orchestrator } from "./orchestrator/types.js";
-import { NoRunningTaskError } from "./orchestrator/swarm/adapter.js";
+import { createDocker, setupDockerApi } from "./docker/engine.js";
 import { consumeSlt, createSlt } from "./auth/slt.js";
 import { publishEvent, subscribeEvents } from "./events/hub.js";
-import { processStatsEvent } from "./metrics/ingest-pipeline.js";
-import type nano from "nano";
+import { startStatsWriter } from "./events/stats-writer.js";
 
 export async function createHttpServer(
-	cfg: Sw4rmBotConfig,
-	couchDb: nano.DocumentScope<CouchDoc>
+	cfg: SwarmbotyConfig,
+	db: Kysely<Database>
 ): Promise<{
 	httpServer: http.Server;
 	apollo: ApolloServer<GraphQLContext>;
-	orchestrator: Orchestrator;
 	cleanup: () => Promise<void>;
 }> {
-	const { orchestrator, detection } = await createOrchestrator(cfg);
-	console.log(`orchestrator: ${detection.kind} (${detection.reason})`);
+	const docker = createDocker(cfg);
+	await setupDockerApi(cfg, docker);
 
 	const app = express();
 	const httpServer = http.createServer(app);
@@ -60,21 +59,15 @@ export async function createHttpServer(
 				const locale = localeFromHeader(
 					typeof langHeader === "string" ? langHeader : undefined
 				);
-				const base: GraphQLContext = {
-					cfg,
-					couchDb,
-					orchestrator,
-					user: undefined,
-					locale,
-				};
+				const ip = ctx.extra.request.socket.remoteAddress ?? "unknown";
+				const base: GraphQLContext = { cfg, db, docker, user: undefined, locale, ip };
 				if (!auth || typeof auth !== "string") {
 					return base;
 				}
 				try {
-					const secretDoc = await getSecret(couchDb);
-					const secret = String(secretDoc?.secret ?? "");
+					const secret = await getAppSecret(db);
 					const claims = verifyJwt(secret, auth);
-					const u = await userByUsername(couchDb, claims.usr.username);
+					const u = await findAuthUser(db, claims.usr.username);
 					if (u) {
 						return { ...base, user: claims };
 					}
@@ -105,8 +98,29 @@ export async function createHttpServer(
 	});
 	await apollo.start();
 
-	app.use(cors({ origin: true, credentials: true }));
-	app.use(optionalJwtMiddleware(couchDb));
+	// Reflecting any Origin with credentials:true (the old behavior) lets any
+	// third-party page call this API using a victim's browser session. Restrict
+	// to an explicit allowlist; SWARMBOTY_ALLOWED_ORIGINS overrides the dev defaults.
+	const DEV_DEFAULT_ORIGINS = [
+		"http://localhost:4200",
+		"http://localhost:8080",
+		"http://localhost:8081",
+	];
+	const allowedOrigins = cfg.allowedOrigins ?? DEV_DEFAULT_ORIGINS;
+	app.use(
+		cors({
+			origin(origin, callback) {
+				// No Origin header (curl, server-to-server, same-origin in some browsers) — allow.
+				if (!origin || allowedOrigins.includes(origin)) {
+					callback(null, true);
+					return;
+				}
+				callback(new Error("Not allowed by CORS"));
+			},
+			credentials: true,
+		})
+	);
+	app.use(optionalJwtMiddleware(db));
 
 	app.get("/health", (_req, res) => {
 		res.json({ status: "ok" });
@@ -114,10 +128,9 @@ export async function createHttpServer(
 
 	app.get("/version", (_req, res) => {
 		res.json({
-			name: "sw4rm.bot",
-			version: appVersion(),
+			name: "swarmboty",
+			version: process.env.SWARMBOTY_VERSION ?? "0.1.0",
 			docker: { api: cfg.dockerApi },
-			orchestrator: orchestrator.kind,
 			initialized: true,
 			instanceName: cfg.instanceName ?? null,
 		});
@@ -132,7 +145,11 @@ export async function createHttpServer(
 				return;
 			}
 			const { username, password } = decodeBasic(auth);
-			const u = await userByUsername(couchDb, username);
+			if (!allowAttempt(`${req.ip}:${username.toLowerCase()}`)) {
+				res.status(429).json({ error: localizedMessage(locale, "errors.tooManyAttempts") });
+				return;
+			}
+			const u = await findAuthUser(db, username);
 			if (!u || typeof u.password !== "string") {
 				res.status(401).json({
 					error: localizedMessage(locale, "errors.invalidCredentials"),
@@ -146,10 +163,9 @@ export async function createHttpServer(
 				return;
 			}
 			if (isSha256Digest(password, u.password)) {
-				await updateDoc(couchDb, u, { password: derivePassword(password) });
+				await upgradePasswordHash(db, username, derivePassword(password));
 			}
-			const secretDoc = await getSecret(couchDb);
-			const secret = String(secretDoc?.secret ?? "");
+			const secret = await getAppSecret(db);
 			const token = generateJwt(secret, u);
 			res.json({ token });
 		} catch {
@@ -163,11 +179,10 @@ export async function createHttpServer(
 		const auth = req.headers.authorization;
 		if (auth) {
 			try {
-				const secretDoc = await getSecret(couchDb);
-				const secret = String(secretDoc?.secret ?? "");
+				const secret = await getAppSecret(db);
 				const claims = verifyJwt(secret, auth);
-				if (claims.iss === "sw4rm.bot") {
-					revokeJti(claims.jti);
+				if (claims.iss === "swarmboty") {
+					await revokeJti(db, claims.jti);
 				}
 			} catch {
 				/* ignore */
@@ -182,14 +197,14 @@ export async function createHttpServer(
 			res.status(401).json({ error: localizedMessage(locale, "errors.unauthenticated") });
 			return;
 		}
-		const slt = createSlt(req.swarmUser.usr.username);
+		const slt = await createSlt(db, req.swarmUser.usr.username);
 		res.json({ slt });
 	});
 
-	app.get("/events", (req, res) => {
+	app.get("/events", async (req, res) => {
 		const locale = localeFromHeader(req.headers["accept-language"]);
 		const slt = typeof req.query.slt === "string" ? req.query.slt : undefined;
-		const user = consumeSlt(slt);
+		const user = await consumeSlt(db, slt);
 		if (!user) {
 			res.status(401).json({ error: localizedMessage(locale, "errors.invalidSlt") });
 			return;
@@ -206,30 +221,23 @@ export async function createHttpServer(
 		});
 	});
 
-	app.post(
-		"/events",
-		bodyParser.json({
-			limit: "2mb",
-			verify: (req, _res, buf) => {
-				(req as { rawBody?: Buffer }).rawBody = buf;
-			},
-		}),
-		(req, res) => {
-			const locale = localeFromHeader(req.headers["accept-language"]);
-			if (!req.body) {
-				res.status(400).json({ error: localizedMessage(locale, "errors.noDataSent") });
-				return;
-			}
-			const body = req.body as Record<string, unknown>;
-			if (body.type === "stats") {
-				void processStatsEvent(cfg, orchestrator, body.message).catch((e) =>
-					console.warn("stats ingest failed:", e)
-				);
-			}
-			publishEvent(body);
-			res.status(202).json({ accepted: true });
+	const writeStats = startStatsWriter(cfg);
+
+	app.post("/events", bodyParser.json({ limit: "2mb" }), (req, res) => {
+		const locale = localeFromHeader(req.headers["accept-language"]);
+		if (cfg.agentSharedSecret && req.headers["x-agent-token"] !== cfg.agentSharedSecret) {
+			res.status(401).json({ error: localizedMessage(locale, "errors.unauthenticated") });
+			return;
 		}
-	);
+		if (!req.body) {
+			res.status(400).json({ error: localizedMessage(locale, "errors.noDataSent") });
+			return;
+		}
+		const event = req.body as Record<string, unknown>;
+		publishEvent(event);
+		writeStats(event);
+		res.status(202).json({ accepted: true });
+	});
 
 	app.get("/api/services/:id/logs", async (req: AuthedRequest, res) => {
 		const locale = localeFromHeader(req.headers["accept-language"]);
@@ -239,14 +247,26 @@ export async function createHttpServer(
 		}
 		const serviceId = req.params.id;
 		try {
-			const logs = await orchestrator.serviceLogs(serviceId, { tail: 500 });
-			res.setHeader("Content-Type", "text/plain; charset=utf-8");
-			res.send(logs);
-		} catch (e) {
-			if (e instanceof NoRunningTaskError || /no running pod/i.test(String(e))) {
+			const tasks = await docker.listTasks({
+				filters: { service: [serviceId], "desired-state": ["running"] },
+			});
+			const task = tasks[0];
+			const containerId = task?.Status?.ContainerStatus?.ContainerID;
+			if (!containerId) {
 				res.status(404).json({ error: localizedMessage(locale, "errors.noRunningTask") });
 				return;
 			}
+			const c = docker.getContainer(containerId);
+			const logStream = await c.logs({
+				stdout: true,
+				stderr: true,
+				tail: 500,
+				timestamps: true,
+				follow: false,
+			});
+			res.setHeader("Content-Type", "text/plain; charset=utf-8");
+			res.send(Buffer.from(logStream).toString("utf8"));
+		} catch (e) {
 			res.status(500).json({ error: String(e) });
 		}
 	});
@@ -259,7 +279,7 @@ export async function createHttpServer(
 		bodyParser.json(),
 		expressMiddleware(apollo, {
 			context: async ({ req }: { req: AuthedRequest }): Promise<GraphQLContext> =>
-				buildContext(req, cfg, couchDb, orchestrator),
+				buildContext(req, cfg, db, docker),
 		})
 	);
 
@@ -275,23 +295,9 @@ export async function createHttpServer(
 		});
 	});
 
-	app.use(
-		(err: unknown, req: express.Request, res: express.Response, next: express.NextFunction) => {
-			if (err instanceof SyntaxError && req.path === "/events") {
-				const raw = (req as { rawBody?: Buffer }).rawBody;
-				const preview = raw ? raw.subarray(0, 120).toString("utf8") : "(no body)";
-				console.warn("POST /events JSON parse failed:", err.message, "preview:", preview);
-				res.status(400).json({ error: "invalid json" });
-				return;
-			}
-			next(err);
-		}
-	);
-
 	return {
 		httpServer,
 		apollo,
-		orchestrator,
 		cleanup: async () => {
 			await apollo.stop();
 		},

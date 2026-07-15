@@ -5,7 +5,6 @@ import {
 	mapNetworkSummary,
 	mapNodeSummary,
 	mapServiceSummary,
-	replicaCountsByService,
 	mapStamped,
 	mapTaskSummary,
 	mapVolumeSummary,
@@ -39,19 +38,15 @@ describe("mapServiceSummary", () => {
 			id: "abc",
 			name: "frontend_web",
 			image: "nginx:alpine",
-			replicasRunning: 0,
+			replicasRunning: 3,
 			replicasTotal: 3,
 			ports: ["80→8080"],
 			status: "RUNNING",
 			stack: "frontend",
 		});
-		expect(mapServiceSummary(s as never, { running: 2, total: 3 })).toMatchObject({
-			replicasRunning: 2,
-			replicasTotal: 3,
-		});
 	});
 
-	it("uses task counts for global services", () => {
+	it("treats global services as 1 replica", () => {
 		const s = {
 			ID: "g",
 			Spec: {
@@ -60,22 +55,8 @@ describe("mapServiceSummary", () => {
 				Mode: { Global: {} },
 			},
 		};
-		const r = mapServiceSummary(s as never, { running: 3, total: 3 });
-		expect(r.replicasRunning).toBe(3);
-		expect(r.replicasTotal).toBe(3);
-	});
-});
-
-describe("replicaCountsByService", () => {
-	it("counts running tasks per service id", () => {
-		const m = replicaCountsByService([
-			{ ServiceID: "s1", Status: { State: "running" } },
-			{ ServiceID: "s1", Status: { State: "shutdown" } },
-			{ ServiceID: "s1", Status: { State: "running" } },
-			{ ServiceID: "s2", Status: { State: "failed" } },
-		]);
-		expect(m.get("s1")).toEqual({ running: 2, total: 3 });
-		expect(m.get("s2")).toEqual({ running: 0, total: 1 });
+		const r = mapServiceSummary(s as never);
+		expect(r.replicasTotal).toBe(1);
 	});
 });
 
@@ -164,6 +145,7 @@ describe("network/volume/task/stamped mappers", () => {
 			name: "n",
 			created: "2026-01-01T00:00:00Z",
 			updated: "2026-02-01T00:00:00Z",
+			stack: null,
 		});
 	});
 });

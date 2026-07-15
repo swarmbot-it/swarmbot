@@ -1,38 +1,42 @@
 import type { Server } from "http";
 import type { AddressInfo } from "net";
 import { once } from "node:events";
-import { createMockCouch } from "../couch.mock.js";
-import { createSecret, insertDoc } from "../couch.js";
-import { loadConfig, type Sw4rmBotConfig } from "../config.js";
+import { randomUUID } from "crypto";
+import type { Kysely } from "kysely";
+import { createTestDb } from "./db-setup.js";
+import type { Database } from "../db.js";
+import { loadConfig, type SwarmbotyConfig } from "../config.js";
 import { derivePassword } from "../auth/password.js";
 import { createHttpServer } from "../server.js";
+import { createDocker } from "../docker/engine.js";
 import type { GraphQLContext } from "../graphql/context.js";
 import { buildContext } from "../graphql/context.js";
-import type { Orchestrator } from "../orchestrator/types.js";
-import type nano from "nano";
-import type { CouchDoc } from "../couch.js";
+import type Dockerode from "dockerode";
 
 export type TestHttp = {
 	httpServer: Server;
 	baseUrl: string;
-	cfg: Sw4rmBotConfig;
-	couchDb: nano.DocumentScope<CouchDoc>;
-	orchestrator: Orchestrator;
+	cfg: SwarmbotyConfig;
+	db: Kysely<Database>;
+	docker: Dockerode;
 	cleanup: () => Promise<void>;
 };
 
-export async function startTestHttp(opts?: Partial<Sw4rmBotConfig>): Promise<TestHttp> {
-	const { db } = createMockCouch();
-	await createSecret(db, "test-secret");
-	await insertDoc(db, {
-		type: "user",
-		username: "admin",
-		password: derivePassword("swarmboty"),
-		role: "admin",
-		email: "admin@test.local",
-	});
+export async function startTestHttp(opts?: Partial<SwarmbotyConfig>): Promise<TestHttp> {
+	const db = await createTestDb();
+	await db
+		.insertInto("users")
+		.values({
+			id: randomUUID(),
+			username: "admin",
+			password: derivePassword("swarmboty"),
+			role: "admin",
+			email: "admin@test.local",
+			createdAt: new Date().toISOString(),
+		})
+		.execute();
 
-	const cfg: Sw4rmBotConfig = {
+	const cfg: SwarmbotyConfig = {
 		...loadConfig(),
 		mock: true,
 		port: 0,
@@ -40,7 +44,8 @@ export async function startTestHttp(opts?: Partial<Sw4rmBotConfig>): Promise<Tes
 		...opts,
 	};
 
-	const { httpServer, cleanup, orchestrator } = await createHttpServer(cfg, db);
+	const docker = createDocker(cfg);
+	const { httpServer, cleanup } = await createHttpServer(cfg, db);
 	httpServer.listen(0, "127.0.0.1");
 	await once(httpServer, "listening");
 	const addr = httpServer.address() as AddressInfo | null;
@@ -53,8 +58,8 @@ export async function startTestHttp(opts?: Partial<Sw4rmBotConfig>): Promise<Tes
 		httpServer,
 		baseUrl,
 		cfg,
-		couchDb: db,
-		orchestrator,
+		db,
+		docker,
 		cleanup: async () => {
 			await cleanup();
 			if (httpServer.listening) {
@@ -70,12 +75,7 @@ export function gqlContext(
 	req: { headers: Record<string, string | undefined>; swarmUser?: GraphQLContext["user"] },
 	test: TestHttp
 ): GraphQLContext {
-	return buildContext(
-		req as Parameters<typeof buildContext>[0],
-		test.cfg,
-		test.couchDb,
-		test.orchestrator
-	);
+	return buildContext(req as Parameters<typeof buildContext>[0], test.cfg, test.db, test.docker);
 }
 
 export async function gql<T>(

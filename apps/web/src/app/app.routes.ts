@@ -3,7 +3,7 @@ import { authGuard } from "./core/auth.guard";
 import { ShellComponent } from "./layout/shell.component";
 
 /**
- * Route map for the SwarmBoty admin SPA.
+ * Route map for the swarmbot.it admin SPA.
  *
  * `/login` is public; everything under `/app/*` is wrapped in the
  * authenticated shell (sidebar + topbar) and guarded by `authGuard`.
@@ -30,7 +30,7 @@ export const routes: Routes = [
 			{
 				path: "load",
 				loadComponent: () =>
-					import("./pages/load/load-page.component").then((m) => m.LoadPageComponent),
+					import("./pages/load/load.component").then((m) => m.LoadPageComponent),
 			},
 			{
 				path: "stacks",
@@ -40,7 +40,7 @@ export const routes: Routes = [
 			{
 				path: "stacks/:name",
 				loadComponent: () =>
-					import("./pages/stacks/stack-detail-page.component").then(
+					import("./pages/stacks/stack-detail.component").then(
 						(m) => m.StackDetailPageComponent
 					),
 			},
@@ -52,7 +52,7 @@ export const routes: Routes = [
 			{
 				path: "services/:id",
 				loadComponent: () =>
-					import("./pages/services/service-detail-page.component").then(
+					import("./pages/services/service-detail.component").then(
 						(m) => m.ServiceDetailPageComponent
 					),
 			},
@@ -64,7 +64,7 @@ export const routes: Routes = [
 			{
 				path: "tasks/:id",
 				loadComponent: () =>
-					import("./pages/tasks/task-detail-page.component").then(
+					import("./pages/tasks/task-detail.component").then(
 						(m) => m.TaskDetailPageComponent
 					),
 			},

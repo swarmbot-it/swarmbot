@@ -2,14 +2,15 @@ import {
 	ChangeDetectionStrategy,
 	Component,
 	ContentChild,
+	EventEmitter,
 	Input,
+	Output,
 	TemplateRef,
 	computed,
-	inject,
+	input,
 	signal,
 } from "@angular/core";
 import { NgFor, NgIf, NgTemplateOutlet } from "@angular/common";
-import { Router } from "@angular/router";
 import { FormsModule } from "@angular/forms";
 import { TableModule } from "primeng/table";
 import { TranslocoPipe } from "@jsverse/transloco";
@@ -42,9 +43,6 @@ export type ColumnDef<R = Record<string, unknown>> = {
 	width?: string | number;
 };
 
-/** Route command for {@link DataTableComponent.rowRoute} (same shape as `Router.navigate`). */
-export type RowRoute = string | readonly unknown[];
-
 @Component({
 	selector: "sb-data-table",
 	standalone: true,
@@ -58,10 +56,10 @@ export type RowRoute = string | readonly unknown[];
 				[ngModel]="query()"
 				(ngModelChange)="query.set($event)"
 			/>
-			<span *ngIf="query() && rows" class="dt-toolbar__count">
+			<span *ngIf="query() && rows()" class="dt-toolbar__count">
 				{{
 					"table.count"
-						| transloco: { filtered: filteredRows().length, total: rows.length }
+						| transloco: { filtered: filteredRows().length, total: rows().length }
 				}}
 			</span>
 			<span class="dt-toolbar__spacer"></span>
@@ -86,7 +84,7 @@ export type RowRoute = string | readonly unknown[];
 				<ng-template pTemplate="header">
 					<tr>
 						<th
-							*ngFor="let c of columns"
+							*ngFor="let c of columns()"
 							[pSortableColumn]="c.sortable === false ? undefined : c.key"
 							[style.text-align]="c.align ?? 'left'"
 							[style.width]="widthOf(c)"
@@ -98,13 +96,13 @@ export type RowRoute = string | readonly unknown[];
 				</ng-template>
 				<ng-template pTemplate="body" let-row>
 					<tr
-						[class.dt-row--clickable]="!!rowRoute"
-						[attr.tabindex]="rowRoute ? 0 : null"
-						[attr.role]="rowRoute ? 'link' : null"
+						[class.dt-row--clickable]="rowClick.observed"
+						[attr.tabindex]="rowClick.observed ? 0 : null"
+						[attr.role]="rowClick.observed ? 'link' : null"
 						(click)="onRowActivate(row, $event)"
 						(keydown.enter)="onRowActivate(row, $event)"
 					>
-						<td *ngFor="let c of columns" [style.text-align]="c.align ?? 'left'">
+						<td *ngFor="let c of columns()" [style.text-align]="c.align ?? 'left'">
 							<ng-container
 								*ngIf="cellTemplate; else fallback"
 								[ngTemplateOutlet]="cellTemplate"
@@ -117,7 +115,7 @@ export type RowRoute = string | readonly unknown[];
 				</ng-template>
 				<ng-template pTemplate="emptymessage">
 					<tr>
-						<td [attr.colspan]="columns.length" class="dt-empty">
+						<td [attr.colspan]="columns().length" class="dt-empty">
 							{{ emptyText || ("table.empty" | transloco) }}
 						</td>
 					</tr>
@@ -172,10 +170,6 @@ export type RowRoute = string | readonly unknown[];
 			:host ::ng-deep .sb-table .p-datatable-tbody > tr.dt-row--clickable {
 				cursor: pointer;
 			}
-			:host ::ng-deep .sb-table .p-datatable-tbody > tr.dt-row--clickable:focus-visible {
-				outline: 2px solid var(--primary-500);
-				outline-offset: -2px;
-			}
 			:host ::ng-deep .sb-table .p-paginator {
 				background: var(--surface-2);
 				border-color: var(--border);
@@ -197,19 +191,18 @@ export type RowRoute = string | readonly unknown[];
 	imports: [NgFor, NgIf, NgTemplateOutlet, FormsModule, TableModule, TranslocoPipe],
 })
 export class DataTableComponent<R extends Record<string, unknown> = Record<string, unknown>> {
-	private readonly router = inject(Router);
-
-	@Input() columns: ColumnDef<R>[] = [];
-	@Input() rows: R[] = [];
+	readonly columns = input<ColumnDef<R>[]>([]);
+	readonly rows = input<R[]>([]);
 	@Input() searchKeys?: (keyof R)[];
 	@Input() pageSize = 10;
 	@Input() searchable = true;
-	/** When set, clicking anywhere on the row navigates (except interactive controls). */
-	@Input() rowRoute?: (row: R) => RowRoute | null | undefined;
 	/** Override search placeholder; defaults to `table.search` via Transloco when empty. */
 	@Input() searchPlaceholder = "";
 	/** Override empty-state text; defaults to `table.empty` via Transloco when empty. */
 	@Input() emptyText = "";
+
+	/** Emits the row data when a row is clicked anywhere (not just a specific cell). Rows get a pointer cursor once this has a subscriber. */
+	@Output() rowClick = new EventEmitter<R>();
 
 	@ContentChild("cell", { static: false })
 	cellTemplate?: TemplateRef<{ $implicit: R; row: R; key: string }>;
@@ -224,7 +217,7 @@ export class DataTableComponent<R extends Record<string, unknown> = Record<strin
 
 	filteredRows = computed(() => {
 		const q = this.query().trim().toLowerCase();
-		let rows: R[] = this.rows ?? [];
+		let rows: R[] = this.rows();
 		if (q && this.searchKeys && this.searchKeys.length) {
 			rows = rows.filter((r) =>
 				this.searchKeys!.some((k) => {
@@ -236,7 +229,7 @@ export class DataTableComponent<R extends Record<string, unknown> = Record<strin
 		const field = this.sortField();
 		const order = this.sortOrder();
 		if (!field) return rows;
-		const col = this.columns.find((c) => c.key === field);
+		const col = this.columns().find((c) => c.key === field);
 		const sortFn = col?.sortFn;
 		return [...rows].sort((a, b) => {
 			const av = sortFn ? sortFn(a) : (a as Record<string, unknown>)[field];
@@ -259,9 +252,9 @@ export class DataTableComponent<R extends Record<string, unknown> = Record<strin
 		return typeof c.width === "number" ? `${c.width}px` : c.width;
 	}
 
+	/** Ignores clicks/Enter presses on interactive descendants (links, buttons, form controls) so row navigation doesn't hijack their own actions. */
 	onRowActivate(row: R, event: Event): void {
-		if (!this.rowRoute) return;
-		if (event.type === "keydown" && (event as KeyboardEvent).key !== "Enter") return;
+		if (!this.rowClick.observed) return;
 		const target = event.target as HTMLElement;
 		if (
 			target.closest(
@@ -270,10 +263,6 @@ export class DataTableComponent<R extends Record<string, unknown> = Record<strin
 		) {
 			return;
 		}
-		const route = this.rowRoute(row);
-		if (!route) return;
-		event.preventDefault();
-		const commands = Array.isArray(route) ? [...route] : [route];
-		void this.router.navigate(commands);
+		this.rowClick.emit(row);
 	}
 }

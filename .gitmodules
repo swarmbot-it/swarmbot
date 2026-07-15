@@ -1,0 +1,3 @@
+[submodule "swarmagent"]
+	path = swarmagent
+	url = https://github.com/no-human-tech/sw4rm.agent.git

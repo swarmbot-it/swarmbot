@@ -6,7 +6,7 @@ import {
 	Output,
 	inject,
 } from "@angular/core";
-import { NgFor, NgIf } from "@angular/common";
+import { NgFor } from "@angular/common";
 import { TranslocoPipe, TranslocoService } from "@jsverse/transloco";
 import { IconComponent } from "./icon.component";
 

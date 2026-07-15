@@ -36,7 +36,7 @@ const RESET = "\x1b[0m";
 
 function col(text, color) { return `${color}${text}${RESET}`; }
 
-console.log(`\n${BOLD}=== SwarmBoty test cluster status ===${RESET}\n`);
+console.log(`\n${BOLD}=== swarmbot.it test cluster status ===${RESET}\n`);
 
 // — Container state —
 console.log(`${BOLD}Containers${RESET}`);

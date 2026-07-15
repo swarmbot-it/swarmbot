@@ -1,19 +1,16 @@
-﻿import { setTimeout as delay } from "timers/promises";
-import { randomUUID } from "crypto";
-import type nano from "nano";
-import type { Sw4rmBotConfig } from "./config.js";
-import * as couch from "./couch.js";
-import { createSecret, db, recordMigration, migrationsDone, findDocs, updateDoc } from "./couch.js";
+import { setTimeout as delay } from "timers/promises";
+import type { SwarmbotyConfig } from "./config.js";
 import { influxPing, createDatabase } from "./influx.js";
+import { logger } from "./logger.js";
 
 async function waitFor(name: string, maxSec: number, fn: () => Promise<boolean>): Promise<void> {
 	for (let i = 0; i < maxSec; i++) {
 		if (i === 0 || i % 10 === 0) {
-			console.log(`Waiting for ${name}… (${i}/${maxSec}s)`);
+			logger.info({ service: name, attempt: i, maxSec }, `Waiting for ${name}…`);
 		}
 		try {
 			if (await fn()) {
-				console.log(`${name} connected after ${i}s`);
+				logger.info({ service: name, afterSec: i }, `${name} connected`);
 				return;
 			}
 		} catch {
@@ -24,84 +21,16 @@ async function waitFor(name: string, maxSec: number, fn: () => Promise<boolean>)
 	throw new Error(`${name} connection timeout after ${maxSec}s`);
 }
 
-async function runMigration(
-	d: nano.DocumentScope<couch.CouchDoc>,
-	done: Set<string>,
-	name: string,
-	fn: () => Promise<void>
-): Promise<void> {
-	if (done.has(name)) return;
-	await fn();
-	await recordMigration(d, name, "ok");
-	done.add(name);
-}
-
-export async function initCouch(
-	_cfg: Sw4rmBotConfig,
-	server: nano.ServerScope
-): Promise<nano.DocumentScope<couch.CouchDoc>> {
-	await waitFor("CouchDB", 100, async () => {
-		try {
-			await couch.couchVersion(server);
-			return true;
-		} catch {
-			return false;
-		}
-	});
-
-	await couch.snsUsers(server);
-	await couch.snsReplicator(server);
-	await couch.snsGlobalChanges(server);
-
-	if (!(await couch.databaseExists(server))) {
-		await couch.createDatabase(server);
-		console.log("sw4rm.bot DB created");
-	} else {
-		console.log("sw4rm.bot DB already exists");
-	}
-
-	const d = db(server);
-	let done = await migrationsDone(d);
-
-	await runMigration(d, done, "initial", async () => {
-		const sec = await couch.getSecret(d);
-		if (!sec?.secret) {
-			await createSecret(d, randomUUID());
-			console.log("Default token secret created");
-		}
-	});
-	done = await migrationsDone(d);
-
-	await runMigration(d, done, "single-node-setup", async () => {
-		console.log("Single node setup finished");
-	});
-	done = await migrationsDone(d);
-
-	await runMigration(d, done, "change-reg-types", async () => {
-		const dockerusers = await findDocs(d, "dockeruser", {});
-		for (const doc of dockerusers) {
-			await updateDoc(d, doc, { type: "dockerhub" });
-		}
-		const registries = await findDocs(d, "registry", {});
-		for (const doc of registries) {
-			await updateDoc(d, doc, { type: "v2" });
-		}
-		console.log("Change reg types finished");
-	});
-
-	return d;
-}
-
-export async function initInflux(cfg: Sw4rmBotConfig): Promise<void> {
+export async function initInflux(cfg: SwarmbotyConfig): Promise<void> {
 	if (!cfg.influxdbUrl) {
-		console.log("InfluxDB not configured, stats disabled");
+		logger.info("InfluxDB not configured, stats disabled");
 		return;
 	}
 	try {
 		await waitFor("InfluxDB", 100, () => influxPing(cfg.influxdbUrl!));
 		await createDatabase(cfg);
-		console.log("InfluxDB database ready (minimal init)");
+		logger.info("InfluxDB database ready (minimal init)");
 	} catch (e) {
-		console.warn("InfluxDB init failed, stats disabled:", e);
+		logger.warn({ err: e }, "InfluxDB init failed, stats disabled");
 	}
 }

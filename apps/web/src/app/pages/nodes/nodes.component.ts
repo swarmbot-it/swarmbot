@@ -9,24 +9,25 @@ import { SparklineComponent } from "../../shared/sparkline.component";
 import { TagComponent } from "../../shared/tag.component";
 import { SegmentedComponent } from "../../shared/segmented.component";
 import { TranslocoPipe, TranslocoService } from "@jsverse/transloco";
-import { QUERY_NODES } from "../../core/graphql.queries";
+import { MUTATION_SET_NODE_AVAILABILITY, QUERY_NODES } from "../../core/graphql.queries";
 import { I18nStateService } from "../../core/i18n/i18n-state.service";
-import { pctOrNa } from "../../core/metrics-display";
+import { AuthService } from "../../core/auth.service";
+import { ToastService } from "../../core/toast.service";
 
 type Node = {
 	id: string;
 	hostname: string;
 	ip: string;
 	dockerVersion: string;
-	agentVersion: string | null;
 	role: string;
+	availability: string | null;
 	tags: string[];
-	cpu: number | null;
-	mem: number | null;
-	disk: number | null;
-	cpuHistory?: number[] | null;
-	memHistory?: number[] | null;
-	diskHistory?: number[] | null;
+	cpu: number;
+	mem: number;
+	disk: number;
+	cpuHistory: number[] | null;
+	memHistory: number[] | null;
+	diskHistory: number[] | null;
 };
 
 /**
@@ -81,76 +82,80 @@ type Node = {
 							></span>
 							{{ n.hostname }}
 						</div>
-						<div class="node-card__meta">
-							{{ n.ip }} · Docker {{ n.dockerVersion
-							}}<ng-container *ngIf="n.agentVersion">
-								· {{ "pages.nodes.agent" | transloco }} {{ n.agentVersion }}</ng-container
-							>
-						</div>
+						<div class="node-card__meta">{{ n.ip }} · Docker {{ n.dockerVersion }}</div>
 					</div>
-					<button class="btn btn--ghost btn--icon btn--sm" title="Actions">
-						<sb-icon name="settings" [size]="14"></sb-icon>
-					</button>
+					<div class="node-actions" *ngIf="auth.isAdmin()">
+						<button
+							class="btn btn--ghost btn--icon btn--sm"
+							[title]="'pages.nodes.actions.title' | transloco"
+							(click)="toggleMenu(n.id)"
+						>
+							<sb-icon name="settings" [size]="14"></sb-icon>
+						</button>
+						@if (openMenuId() === n.id) {
+							<div class="splitbtn__menu">
+								@if (n.availability === 'drain') {
+									<div class="splitbtn__item" (click)="setAvailability(n)">
+										<sb-icon name="play" [size]="14" style="color:var(--muted)"></sb-icon>
+										<span>{{ "pages.nodes.actions.activate" | transloco }}</span>
+									</div>
+								} @else {
+									<div class="splitbtn__item" (click)="setAvailability(n)">
+										<sb-icon name="pause" [size]="14" style="color:var(--muted)"></sb-icon>
+										<span>{{ "pages.nodes.actions.drain" | transloco }}</span>
+									</div>
+								}
+							</div>
+						}
+					</div>
 				</div>
 				<div class="node-card__tags">
 					<sb-tag *ngFor="let t of n.tags" [text]="t">{{ t }}</sb-tag>
 				</div>
 				<div class="node-card__charts">
 					<div class="node-mini">
-						<div class="node-mini__head">
+						<div
+							style="display:flex; justify-content:space-between; align-items:baseline"
+						>
 							<span class="node-mini__label">{{ "pages.nodes.labels.cpu" | transloco }}</span>
-							<span class="node-mini__value"
-								>{{ pct(n.cpu) }}<span *ngIf="n.cpu != null">%</span></span
-							>
+							<span class="node-mini__value">{{ n.cpu }}%</span>
 						</div>
 						<sb-sparkline
-							*ngIf="n.cpuHistory?.length; else cpuNa"
-							[data]="n.cpuHistory!"
-							[fluid]="true"
+							[data]="series(n, 'cpu')"
+							[width]="120"
 							[height]="32"
 							color="var(--primary-500)"
 						></sb-sparkline>
-						<ng-template #cpuNa
-							><div class="node-mini__na">{{ "common.na" | transloco }}</div></ng-template
-						>
 					</div>
 					<div class="node-mini">
-						<div class="node-mini__head">
+						<div
+							style="display:flex; justify-content:space-between; align-items:baseline"
+						>
 							<span class="node-mini__label">{{
 								"pages.nodes.labels.memory" | transloco
 							}}</span>
-							<span class="node-mini__value"
-								>{{ pct(n.mem) }}<span *ngIf="n.mem != null">%</span></span
-							>
+							<span class="node-mini__value">{{ n.mem }}%</span>
 						</div>
 						<sb-sparkline
-							*ngIf="n.memHistory?.length; else memNa"
-							[data]="n.memHistory!"
-							[fluid]="true"
+							[data]="series(n, 'mem')"
+							[width]="120"
 							[height]="32"
 							color="#3b82f6"
 						></sb-sparkline>
-						<ng-template #memNa
-							><div class="node-mini__na">{{ "common.na" | transloco }}</div></ng-template
-						>
 					</div>
 					<div class="node-mini">
-						<div class="node-mini__head">
+						<div
+							style="display:flex; justify-content:space-between; align-items:baseline"
+						>
 							<span class="node-mini__label">{{ "pages.nodes.labels.disk" | transloco }}</span>
-							<span class="node-mini__value"
-								>{{ pct(n.disk) }}<span *ngIf="n.disk != null">%</span></span
-							>
+							<span class="node-mini__value">{{ n.disk }}%</span>
 						</div>
 						<sb-sparkline
-							*ngIf="n.diskHistory?.length; else diskNa"
-							[data]="n.diskHistory!"
-							[fluid]="true"
+							[data]="series(n, 'disk')"
+							[width]="120"
 							[height]="32"
 							color="#10b981"
 						></sb-sparkline>
-						<ng-template #diskNa
-							><div class="node-mini__na">{{ "common.na" | transloco }}</div></ng-template
-						>
 					</div>
 				</div>
 			</div>
@@ -205,36 +210,14 @@ type Node = {
 			}
 			.node-card__charts {
 				display: grid;
-				grid-template-columns: repeat(3, minmax(0, 1fr));
-				gap: 8px;
+				grid-template-columns: repeat(3, 1fr);
+				gap: 10px;
 			}
 			.node-mini {
 				background: var(--surface-2);
 				border-radius: var(--r-md);
 				padding: 10px;
-				min-width: 0;
 				overflow: hidden;
-			}
-			.node-mini__head {
-				display: flex;
-				justify-content: space-between;
-				align-items: baseline;
-				gap: 4px;
-			}
-			.node-mini sb-sparkline {
-				display: block;
-				width: 100%;
-				margin-top: 6px;
-			}
-			.node-mini__na {
-				margin-top: 6px;
-				height: 32px;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				font-size: 12px;
-				font-weight: 600;
-				color: var(--muted);
 			}
 			.node-mini__label {
 				font-size: 10.5px;
@@ -247,6 +230,35 @@ type Node = {
 				font-size: 16px;
 				font-weight: 700;
 				font-variant-numeric: tabular-nums;
+			}
+			.node-actions {
+				position: relative;
+				display: inline-flex;
+			}
+			.splitbtn__menu {
+				position: absolute;
+				top: calc(100% + 6px);
+				right: 0;
+				min-width: 180px;
+				background: var(--surface);
+				border: 1px solid var(--border);
+				border-radius: var(--r-md);
+				box-shadow: var(--shadow-3);
+				padding: 6px;
+				z-index: 20;
+			}
+			.splitbtn__item {
+				display: flex;
+				align-items: center;
+				gap: 10px;
+				padding: 8px 10px;
+				border-radius: 6px;
+				font-size: 13px;
+				cursor: pointer;
+				white-space: nowrap;
+			}
+			.splitbtn__item:hover {
+				background: var(--surface-2);
 			}
 		`,
 	],
@@ -266,9 +278,12 @@ export class NodesPageComponent {
 	private readonly apollo = inject(Apollo);
 	private readonly transloco = inject(TranslocoService);
 	private readonly i18n = inject(I18nStateService);
+	private readonly toast = inject(ToastService);
+	readonly auth = inject(AuthService);
 
 	readonly filter = signal<"all" | "manager" | "worker">("all");
 	readonly query = signal("");
+	readonly openMenuId = signal<string | null>(null);
 
 	readonly filters = computed(() => {
 		this.i18n.activeLang();
@@ -279,9 +294,14 @@ export class NodesPageComponent {
 		];
 	});
 
-	readonly nodes$: Observable<Node[]> = this.apollo
-		.watchQuery<{ nodes: Node[] }>({ query: QUERY_NODES, pollInterval: 30_000 })
-		.valueChanges.pipe(map((x) => (x.data?.nodes ?? []) as Node[]));
+	private readonly nodesQuery = this.apollo.watchQuery<{ nodes: Node[] }>({
+		query: QUERY_NODES,
+		pollInterval: 30_000,
+	});
+
+	readonly nodes$: Observable<Node[]> = this.nodesQuery.valueChanges.pipe(
+		map((x) => (x.data?.nodes ?? []) as Node[])
+	);
 
 	count(nodes: Node[], role: string): number {
 		return nodes.filter((n) => n.role === role).length;
@@ -299,7 +319,34 @@ export class NodesPageComponent {
 		});
 	}
 
-	pct(value: number | null | undefined): string {
-		return pctOrNa(value, this.transloco.translate("common.na"));
+	series(n: Node, kind: "cpu" | "mem" | "disk"): number[] {
+		return n[`${kind}History`] ?? [];
+	}
+
+	toggleMenu(id: string): void {
+		this.openMenuId.set(this.openMenuId() === id ? null : id);
+	}
+
+	setAvailability(node: Node): void {
+		this.openMenuId.set(null);
+		const next = node.availability === "drain" ? "active" : "drain";
+		this.apollo
+			.mutate<{ setNodeAvailability: { id: string; availability: string } }>({
+				mutation: MUTATION_SET_NODE_AVAILABILITY,
+				variables: { id: node.id, availability: next },
+			})
+			.subscribe({
+				next: () => {
+					const key = next === "drain" ? "pages.nodes.actions.toastDrained" : "pages.nodes.actions.toastActivated";
+					this.toast.push("success", this.transloco.translate(key, { name: node.hostname }));
+					this.nodesQuery.refetch();
+				},
+				error: (err) => {
+					this.toast.push(
+						"error",
+						err?.message || this.transloco.translate("pages.nodes.actions.failed")
+					);
+				},
+			});
 	}
 }

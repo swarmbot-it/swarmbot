@@ -1,0 +1,24 @@
+name: Security audit
+
+on:
+  push:
+    branches: [main, rc-1]
+  pull_request:
+  schedule:
+    # Catches newly-disclosed CVEs in already-pinned dependencies even
+    # when nothing in the repo changes.
+    - cron: "0 6 * * 1"
+
+jobs:
+  npm-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      # Only production dependencies gate the build — dev-tooling advisories
+      # (build/test tooling that never ships) are tracked by Dependabot
+      # instead of failing CI on every transitive bump.
+      - run: npm audit --omit=dev --audit-level=high

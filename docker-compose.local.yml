@@ -1,0 +1,146 @@
+# docker-compose.local.yml — Stack wdrażany do lokalnego klastra DinD
+#
+# ── Wymagania ─────────────────────────────────────────────────────────────────
+#
+#   1. Zbuduj i wdróż (opcjonalnie sam klaster: npm run swarm:start):  npm run swarm:deploy
+#   3. Sprawdź stan:             npm run swarm:status
+#   4. Usuń stack:               npm run swarm:undeploy
+#   5. Zatrzymaj klaster:        npm run swarm:stop
+#
+# ── Dostęp ───────────────────────────────────────────────────────────────────
+#
+#   http://localhost:888   (host port forwarded into DinD manager)
+#   Login:  admin / swarmboty
+#
+# ── Uwaga ─────────────────────────────────────────────────────────────────────
+#
+#   Nie używaj tego pliku z „docker compose up" — to plik Swarm stack.
+#   Wdrożenie obsługuje skrypt: npm run swarm:deploy
+
+version: "3.9"
+
+services:
+    # ── swarmbot.it API + UI ──────────────────────────────────────────────────
+    # Obraz lokalny; skrypt swarm-deploy.mjs buduje go i ładuje do managera.
+
+    app:
+        image: swarmboty:local
+        environment:
+            - SWARMBOTY_DB=postgres://${POSTGRES_USER:-admin}:${POSTGRES_PASSWORD:-swarmboty}@db:5432/${POSTGRES_DB:-swarmboty}
+            - SWARMBOTY_INFLUXDB=http://influxdb:8086
+            - SWARMBOTY_INFLUXDB_TOKEN=${INFLUXDB_TOKEN:-swarmboty-influx-dev-token}
+            - SWARMBOTY_PORT=8080
+            - SWARMBOTY_WORK_DIR=/tmp
+            - SWARMBOTY_BOOTSTRAP_ADMIN=${SWARMBOTY_BOOTSTRAP_ADMIN:-admin}
+            - SWARMBOTY_BOOTSTRAP_PASSWORD=${SWARMBOTY_BOOTSTRAP_PASSWORD:-swarmboty}
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+        ports:
+            - target: 8080
+              published: 888
+              protocol: tcp
+              mode: ingress
+        healthcheck:
+            test: ["CMD", "wget", "-qO-", "http://localhost:8080/health"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 20s
+        networks:
+            - net
+        deploy:
+            replicas: 1
+            restart_policy:
+                condition: on-failure
+                delay: 10s
+                max_attempts: 3
+            update_config:
+                parallelism: 1
+                delay: 10s
+                failure_action: rollback
+            placement:
+                constraints:
+                    - node.role == manager
+
+    # ── Postgres ──────────────────────────────────────────────────────────────
+
+    db:
+        image: postgres:16-alpine
+        environment:
+            POSTGRES_USER: ${POSTGRES_USER:-admin}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-swarmboty}
+            POSTGRES_DB: ${POSTGRES_DB:-swarmboty}
+        volumes:
+            - db-data:/var/lib/postgresql/data
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+            interval: 10s
+            timeout: 5s
+            retries: 20
+            start_period: 10s
+        networks:
+            - net
+        deploy:
+            replicas: 1
+            restart_policy:
+                condition: on-failure
+            placement:
+                constraints:
+                    - node.role == manager
+
+    # ── InfluxDB ──────────────────────────────────────────────────────────────
+
+    influxdb:
+        image: influxdb:2.7
+        environment:
+            DOCKER_INFLUXDB_INIT_MODE: setup
+            DOCKER_INFLUXDB_INIT_USERNAME: ${INFLUXDB_USER:-admin}
+            DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUXDB_PASSWORD:-swarmboty}
+            DOCKER_INFLUXDB_INIT_ORG: swarmboty
+            DOCKER_INFLUXDB_INIT_BUCKET: swarmboty
+            DOCKER_INFLUXDB_INIT_RETENTION: 0
+            DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB_TOKEN:-swarmboty-influx-dev-token}
+        volumes:
+            - influx-data:/var/lib/influxdb2
+        networks:
+            - net
+        deploy:
+            replicas: 1
+            restart_policy:
+                condition: on-failure
+            placement:
+                constraints:
+                    - node.role == manager
+
+    # ── Swarmagent ────────────────────────────────────────────────────────────
+    # Tryb global: jedna instancja na każdym node klastra.
+    # Montuje socket dockera, żeby zbierać metryki z każdego node'a.
+
+    agent:
+        image: swarmagent:local
+        environment:
+            - SWARMBOTY_URL=http://app:8080
+            - DOCKER_API_VERSION=1.44
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+        networks:
+            - net
+        deploy:
+            mode: global
+            restart_policy:
+                condition: on-failure
+                delay: 5s
+            update_config:
+                parallelism: 1
+                delay: 5s
+
+networks:
+    net:
+        driver: overlay
+        attachable: true
+
+volumes:
+    db-data:
+        driver: local
+    influx-data:
+        driver: local

@@ -1,0 +1,79 @@
+﻿services:
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        environment:
+            - SWARMBOTY_DB=postgres://${POSTGRES_USER:?POSTGRES_USER must be set for production deploys}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set for production deploys}@db:5432/${POSTGRES_DB:?POSTGRES_DB must be set for production deploys}
+            - SWARMBOTY_INFLUXDB=http://influxdb:8086
+            - SWARMBOTY_INFLUXDB_TOKEN=${INFLUXDB_TOKEN:?INFLUXDB_TOKEN must be set for production deploys}
+            - SWARMBOTY_PORT=8080
+            - SWARMBOTY_WORK_DIR=/tmp
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+        ports:
+            - 888:8080
+        depends_on:
+            db:
+                condition: service_healthy
+        healthcheck:
+            test: ["CMD", "wget", "-qO-", "http://localhost:8080/health"]
+            interval: 60s
+            timeout: 10s
+            retries: 3
+        networks:
+            - net
+
+    db:
+        image: postgres:16-alpine
+        environment:
+            POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER must be set for production deploys}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set for production deploys}
+            POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB must be set for production deploys}
+        volumes:
+            - db-data:/var/lib/postgresql/data
+        networks:
+            - net
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+            interval: 5s
+            timeout: 5s
+            retries: 20
+            start_period: 5s
+
+    influxdb:
+        image: influxdb:2.7
+        environment:
+            DOCKER_INFLUXDB_INIT_MODE: setup
+            DOCKER_INFLUXDB_INIT_USERNAME: ${INFLUXDB_USER:?INFLUXDB_USER must be set for production deploys}
+            DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUXDB_PASSWORD:?INFLUXDB_PASSWORD must be set for production deploys}
+            DOCKER_INFLUXDB_INIT_ORG: swarmboty
+            DOCKER_INFLUXDB_INIT_BUCKET: swarmboty
+            DOCKER_INFLUXDB_INIT_RETENTION: 0
+            DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB_TOKEN:?INFLUXDB_TOKEN must be set for production deploys}
+        volumes:
+            - influx-data:/var/lib/influxdb2
+        networks:
+            - net
+
+    agent:
+        build:
+            context: ./swarmagent
+            dockerfile: Dockerfile
+        image: swarmagent:latest
+        environment:
+            - DOCKER_API_VERSION=1.44
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+        networks:
+            - net
+
+networks:
+    net:
+        driver: bridge
+
+volumes:
+    db-data:
+        driver: local
+    influx-data:
+        driver: local

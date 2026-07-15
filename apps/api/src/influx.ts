@@ -1,15 +1,7 @@
-﻿import type { Sw4rmBotConfig } from "./config.js";
+﻿import type { SwarmbotyConfig } from "./config.js";
 
-function authHeaders(cfg: Sw4rmBotConfig): Record<string, string> {
+export function authHeaders(cfg: SwarmbotyConfig): Record<string, string> {
 	return cfg.influxdbToken ? { Authorization: `Token ${cfg.influxdbToken}` } : {};
-}
-
-export function influxOrg(cfg: Sw4rmBotConfig): string {
-	return cfg.influxOrg ?? "sw4rmbot";
-}
-
-export function influxBucket(cfg: Sw4rmBotConfig): string {
-	return cfg.influxBucket ?? "sw4rmbot";
 }
 
 export async function influxPing(url: string): Promise<boolean> {
@@ -21,54 +13,10 @@ export async function influxPing(url: string): Promise<boolean> {
 	}
 }
 
-/** InfluxDB 2.x — execute Flux and return annotated CSV text. */
-export async function influxQueryFlux(cfg: Sw4rmBotConfig, flux: string): Promise<string> {
-	const base = cfg.influxdbUrl?.replace(/\/$/, "");
-	if (!base) throw new Error("influx_not_configured");
-	const org = encodeURIComponent(influxOrg(cfg));
-	const r = await fetch(`${base}/api/v2/query?org=${org}`, {
-		method: "POST",
-		headers: {
-			...authHeaders(cfg),
-			Accept: "application/csv",
-			"Content-Type": "application/vnd.flux",
-		},
-		body: flux,
-	});
-	if (!r.ok) {
-		const text = await r.text().catch(() => "");
-		throw new Error(`influx_flux_failed:${r.status}:${text.slice(0, 200)}`);
-	}
-	return r.text();
-}
-
-/** InfluxDB 2.x — write line protocol (nanosecond precision). */
-export async function influxWrite(cfg: Sw4rmBotConfig, lines: string[]): Promise<void> {
-	if (lines.length === 0) return;
-	const base = cfg.influxdbUrl?.replace(/\/$/, "");
-	if (!base) throw new Error("influx_not_configured");
-	const org = encodeURIComponent(influxOrg(cfg));
-	const bucket = encodeURIComponent(influxBucket(cfg));
-	const body = lines.join("\n");
-	const r = await fetch(`${base}/api/v2/write?org=${org}&bucket=${bucket}&precision=ns`, {
-		method: "POST",
-		headers: {
-			...authHeaders(cfg),
-			"Content-Type": "text/plain; charset=utf-8",
-		},
-		body,
-	});
-	if (!r.ok) {
-		const text = await r.text().catch(() => "");
-		throw new Error(`influx_write_failed:${r.status}:${text.slice(0, 200)}`);
-	}
-}
-
-/** Legacy InfluxQL (InfluxDB 1.x compatibility) — kept for tests only. */
 export async function influxQuery(
-	cfg: Sw4rmBotConfig,
+	cfg: SwarmbotyConfig,
 	influxql: string,
-	db = "sw4rmbot"
+	db = "swarmboty"
 ): Promise<unknown> {
 	const base = cfg.influxdbUrl?.replace(/\/$/, "");
 	if (!base) throw new Error("influx_not_configured");
@@ -80,7 +28,15 @@ export async function influxQuery(
 	return r.json();
 }
 
-export async function createDatabase(cfg: Sw4rmBotConfig, _name = "sw4rmbot"): Promise<void> {
-	if (!cfg.influxdbUrl) return;
-	await influxPing(cfg.influxdbUrl);
+export async function createDatabase(cfg: SwarmbotyConfig, name = "swarmboty"): Promise<void> {
+	const base = cfg.influxdbUrl?.replace(/\/$/, "");
+	if (!base) return;
+	const r = await fetch(`${base}/query`, {
+		method: "POST",
+		headers: { "Content-Type": "application/x-www-form-urlencoded", ...authHeaders(cfg) },
+		body: new URLSearchParams({ q: `CREATE DATABASE "${name}"` }),
+	});
+	if (!r.ok && r.status !== 400) {
+		throw new Error(`influx_create_db:${r.status}`);
+	}
 }

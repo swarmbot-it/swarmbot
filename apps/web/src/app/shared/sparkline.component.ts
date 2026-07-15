@@ -9,27 +9,8 @@ import { NgIf } from "@angular/common";
 	selector: "sb-sparkline",
 	standalone: true,
 	changeDetection: ChangeDetectionStrategy.OnPush,
-	host: {
-		"[class.sb-sparkline--fluid]": "fluid",
-	},
-	styles: [
-		`
-			:host {
-				display: block;
-			}
-			:host(.sb-sparkline--fluid) {
-				width: 100%;
-			}
-		`,
-	],
 	template: `
-		<svg
-			[attr.width]="fluid ? '100%' : width"
-			[attr.height]="height"
-			[attr.viewBox]="fluid ? viewBox : null"
-			[attr.preserveAspectRatio]="fluid ? 'none' : null"
-			style="display:block; max-width:100%"
-		>
+		<svg [attr.width]="width" [attr.height]="height" style="display:block">
 			<defs>
 				<linearGradient [attr.id]="gradientId" x1="0" y1="0" x2="0" y2="1">
 					<stop offset="0%" [attr.stop-color]="color" stop-opacity="0.35"></stop>
@@ -54,12 +35,10 @@ export class SparklineComponent {
 	@Input() set data(values: number[]) {
 		this._data.set(values ?? []);
 	}
-	/** Coordinate width for path math (and pixel width when not fluid). */
+	/** SVG width in pixels. */
 	@Input() width = 120;
 	/** SVG height in pixels. */
 	@Input() height = 32;
-	/** Stretch to parent width via viewBox (keeps path math at `width`). */
-	@Input() fluid = false;
 	/** Stroke and gradient fill color (CSS color). */
 	@Input() color = "var(--primary-500)";
 	/** Line stroke width. */
@@ -69,10 +48,6 @@ export class SparklineComponent {
 
 	readonly gradientId = `spark-${Math.random().toString(36).slice(2, 9)}`;
 	private readonly _data = signal<number[]>([]);
-
-	get viewBox(): string {
-		return `0 0 ${this.width} ${this.height}`;
-	}
 
 	readonly paths = computed(() => {
 		const data = this._data();

@@ -20,15 +20,12 @@
             "admin": "관리"
         },
         "clusterHealthy": "클러스터 정상",
-        "clusterDegraded": "클러스터 저하",
-        "clusterUnhealthy": "쿼럼 손실",
-        "clusterUnknown": "클러스터 상태 알 수 없음",
         "quorum": "쿼럼: {{managers}} / {{total}} 매니저"
     },
     "auth": {
         "login": {
             "title": "다시 오신 것을 환영합니다",
-            "subtitle": "sw4rm.bot 관리 콘솔에 로그인하세요.",
+            "subtitle": "swarmbot.it 관리 콘솔에 로그인하세요.",
             "username": "사용자 이름",
             "password": "비밀번호",
             "submit": "로그인",
@@ -38,6 +35,12 @@
     },
     "topbar": {
         "notifications": "알림",
+        "clusterUnknown": "클러스터",
+        "orchestratorTitle": "오케스트레이터",
+        "orchestrator": {
+            "swarm": "Swarm",
+            "kubernetes": "Kubernetes"
+        },
         "switchToLight": "라이트 모드로 전환",
         "switchToDark": "다크 모드로 전환",
         "theme": "테마",
@@ -48,12 +51,7 @@
         "preferences": "환경 설정",
         "apiTokens": "API 토큰",
         "logout": "로그아웃",
-        "administrator": "관리자",
-        "orchestratorTitle": "오케스트레이터",
-        "orchestrator": {
-            "swarm": "Swarm",
-            "kubernetes": "Kubernetes"
-        }
+        "administrator": "관리자"
     },
     "table": {
         "search": "검색…",
@@ -70,7 +68,8 @@
         "continue": "계속",
         "default": "기본값",
         "type": "유형",
-        "user": "사용자"
+        "user": "사용자",
+        "loading": "로드 중…"
     },
     "dashboard": {
         "title": "클러스터 개요",
@@ -120,7 +119,8 @@
         "task": "작업",
         "node": "노드",
         "replicas": "복제본",
-        "ports": "포트"
+        "ports": "포트",
+        "actions": "작업"
     },
     "status": {
         "RUNNING": "실행 중",
@@ -134,6 +134,7 @@
         "REJECTED": "거부됨",
         "COMPLETE": "완료",
         "SHUTDOWN": "종료됨",
+        "STOPPED": "중지됨",
         "UNKNOWN": "알 수 없음"
     },
     "pages": {
@@ -148,6 +149,46 @@
                 "volumes": "볼륨",
                 "configs": "구성",
                 "secrets": "비밀"
+            },
+            "detail": {
+                "countsSummary": "서비스 {{services}}개 · 네트워크 {{networks}}개 · 볼륨 {{volumes}}개 · 구성 {{configs}}개 · 비밀 {{secrets}}개",
+                "working": "처리 중…",
+                "edit": "편집",
+                "editUnsupported": "환경을 즉시 편집하는 기능은 아직 지원되지 않습니다 — 아래의 Redeploy/Rollback/Deactivate를 사용하거나, 삭제 후 새 Compose 파일을 배포하세요.",
+                "redeploy": "Redeploy",
+                "redeployHint": "롤링",
+                "rollback": "Rollback",
+                "rollbackHint": "이전 spec",
+                "deactivate": "비활성화",
+                "deactivateHint": "0으로 스케일",
+                "reactivate": "재활성화",
+                "reactivateHint": "1로 스케일",
+                "delete": "삭제",
+                "utilization": "환경 사용률",
+                "utilizationHint": "컨테이너 CPU 및 메모리 집계 · InfluxDB 기반",
+                "noMetrics": "아직 메트릭이 없습니다 — 에이전트는 30초마다 통계를 보고합니다.",
+                "diskHint": "컨테이너별 디스크 사용량은 에이전트가 수집하지 않습니다 (CPU와 메모리만 수집)",
+                "diskNotTracked": "환경별로 추적되지 않음",
+                "notFound": "환경을 찾을 수 없습니다.",
+                "noServices": "이 환경에 서비스가 없습니다.",
+                "noNetworks": "연결된 네트워크가 없습니다.",
+                "noVolumes": "연결된 볼륨이 없습니다.",
+                "noConfigs": "마운트된 구성이 없습니다.",
+                "noSecrets": "부여된 비밀이 없습니다.",
+                "stopped": "중지됨",
+                "stopping": "중지 중…",
+                "confirmRemove": "환경 \"{{name}}\"을(를) 삭제하시겠습니까? 모든 서비스, 네트워크 및 기타 리소스가 삭제됩니다.",
+                "toastNothingToRedeploy": "\"{{name}}\"의 복제본이 0개입니다 — redeploy할 것이 없습니다. 먼저 \"재활성화\"를 사용하세요.",
+                "toastRedeploying": "\"{{name}}\" redeploy 중… 작업이 몇 초 후 재시작됩니다.",
+                "toastRolledBack": "\"{{name}}\"이(가) 이전 spec으로 롤백되었습니다.",
+                "toastDeactivated": "환경 \"{{name}}\"이(가) 비활성화되었습니다.",
+                "toastReactivated": "환경 \"{{name}}\"이(가) 재활성화되었습니다 (복제본 1로 스케일).",
+                "toastRemoved": "환경 \"{{name}}\"이(가) 삭제되었습니다.",
+                "redeployFailed": "Redeploy에 실패했습니다.",
+                "rollbackFailed": "Rollback에 실패했습니다.",
+                "deactivateFailed": "비활성화에 실패했습니다.",
+                "reactivateFailed": "재활성화에 실패했습니다.",
+                "removeFailed": "삭제에 실패했습니다."
             }
         },
         "services": {
@@ -157,6 +198,39 @@
                 "service": "서비스",
                 "replicas": "복제본",
                 "ports": "포트"
+            },
+            "detail": {
+                "back": "서비스로 돌아가기",
+                "scale": "스케일",
+                "scaleSubtitle": "{{name}}의 목표 복제본 수 설정",
+                "serviceId": "서비스 ID",
+                "mode": "모드",
+                "env": "환경 변수",
+                "noEnv": "설정된 환경 변수가 없습니다.",
+                "labels": "레이블",
+                "noLabels": "설정된 레이블이 없습니다.",
+                "noSecrets": "연결된 비밀이 없습니다.",
+                "noConfigs": "연결된 구성이 없습니다.",
+                "noTasks": "활성 작업이 없습니다.",
+                "noNetworks": "연결된 네트워크가 없습니다.",
+                "noPorts": "공개된 포트가 없습니다.",
+                "mounts": "마운트",
+                "noMounts": "마운트가 없습니다.",
+                "mountSource": "소스",
+                "mountTarget": "대상",
+                "mountMode": "모드",
+                "notFound": "서비스를 찾을 수 없습니다.",
+                "editUnsupported": "서비스를 즉시 편집하는 기능은 아직 지원되지 않습니다 — 아래의 Redeploy/Rollback/Scale을 사용하거나, 삭제 후 해당 스택을 통해 다시 배포하세요.",
+                "confirmRemove": "서비스 \"{{name}}\"을(를) 삭제하시겠습니까?",
+                "toastNothingToRedeploy": "\"{{name}}\"의 복제본이 0개입니다 — redeploy할 것이 없습니다. 먼저 \"스케일\"로 다시 올리세요.",
+                "toastRedeploying": "\"{{name}}\" redeploy 중… 작업이 몇 초 후 재시작됩니다.",
+                "toastRolledBack": "\"{{name}}\"이(가) 이전 spec으로 롤백되었습니다.",
+                "toastScaled": "\"{{name}}\"을(를) {{replicas}}개 복제본으로 스케일했습니다.",
+                "toastRemoved": "서비스 \"{{name}}\"이(가) 삭제되었습니다.",
+                "redeployFailed": "Redeploy에 실패했습니다.",
+                "rollbackFailed": "Rollback에 실패했습니다.",
+                "scaleFailed": "스케일링에 실패했습니다.",
+                "removeFailed": "삭제에 실패했습니다."
             }
         },
         "tasks": {
@@ -166,6 +240,13 @@
                 "node": "노드",
                 "cpu": "CPU",
                 "memory": "메모리"
+            },
+            "detail": {
+                "back": "작업으로 돌아가기",
+                "on": "위치:",
+                "desiredState": "목표 상태",
+                "statusMessage": "상태 메시지",
+                "notFound": "작업을 찾을 수 없습니다."
             }
         },
         "nodes": {
@@ -180,6 +261,14 @@
                 "cpu": "CPU",
                 "memory": "메모리",
                 "disk": "디스크"
+            },
+            "actions": {
+                "title": "작업",
+                "drain": "드레인",
+                "activate": "활성화",
+                "toastDrained": "\"{{name}}\"이(가) 드레인 중입니다 — 새 작업이 예약되지 않습니다.",
+                "toastActivated": "\"{{name}}\"이(가) 다시 활성화되어 작업을 받습니다.",
+                "failed": "노드 가용성을 업데이트하지 못했습니다."
             }
         },
         "networks": {
@@ -192,11 +281,25 @@
         },
         "secrets": {
             "countSuffix": "비밀 저장됨",
-            "add": "새 비밀"
+            "add": "새 비밀",
+            "view": "세부 정보 보기",
+            "modal": {
+                "subtitle": "비밀 세부 정보",
+                "id": "비밀 ID",
+                "created": "생성됨",
+                "updated": "마지막 업데이트",
+                "writeOnlyNotice": "Docker 비밀은 쓰기 전용입니다 — 설계상 한 번 생성되면 값을 다시 가져올 수 없습니다. 교체하려면 비밀을 삭제하고 다시 만드세요."
+            }
         },
         "configs": {
             "countSuffix": "구성 저장됨",
-            "add": "새 구성"
+            "add": "새 구성",
+            "view": "내용 보기",
+            "modal": {
+                "subtitle": "구성 파일 내용",
+                "loading": "로드 중…",
+                "empty": "(비어 있음)"
+            }
         },
         "registries": {
             "countSuffix": "레지스트리 연결됨",
@@ -204,7 +307,14 @@
             "columns": {
                 "registry": "레지스트리",
                 "authUser": "인증 사용자"
-            }
+            },
+            "setDefault": "기본값으로 설정",
+            "remove": "제거",
+            "confirmRemove": "레지스트리 \"{{name}}\"을(를) 제거하시겠습니까?",
+            "toastSetDefault": "\"{{name}}\"이(가) 이제 기본 레지스트리입니다.",
+            "toastRemoved": "레지스트리 \"{{name}}\"이(가) 제거되었습니다.",
+            "setDefaultFailed": "기본 레지스트리를 설정하지 못했습니다.",
+            "removeFailed": "제거에 실패했습니다."
         }
     },
     "users": {
@@ -346,9 +456,33 @@
         "choose": "선택",
         "upload": "업로드",
         "cancel": "취소",
-        "dayNames": ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"],
-        "dayNamesShort": ["일", "월", "화", "수", "목", "금", "토"],
-        "dayNamesMin": ["일", "월", "화", "수", "목", "금", "토"],
+        "dayNames": [
+            "일요일",
+            "월요일",
+            "화요일",
+            "수요일",
+            "목요일",
+            "금요일",
+            "토요일"
+        ],
+        "dayNamesShort": [
+            "일",
+            "월",
+            "화",
+            "수",
+            "목",
+            "금",
+            "토"
+        ],
+        "dayNamesMin": [
+            "일",
+            "월",
+            "화",
+            "수",
+            "목",
+            "금",
+            "토"
+        ],
         "monthNames": [
             "1월",
             "2월",

@@ -1,8 +1,11 @@
-﻿import { Injectable, signal } from "@angular/core";
+﻿import { Injectable, computed, signal } from "@angular/core";
 import { Router } from "@angular/router";
 
-const TOKEN_KEY = "sw4rm.bot.token";
-const PROFILE_KEY = "sw4rm.bot.profile";
+const ADMIN_ROLES = new Set(["admin", "administrator"]);
+const EDITOR_ROLES = new Set(["admin", "administrator", "editor"]);
+
+const TOKEN_KEY = "swarmboty.token";
+const PROFILE_KEY = "swarmboty.profile";
 
 /** Cached user profile shown in the top bar and profile page. */
 export type Profile = {
@@ -27,6 +30,12 @@ export class AuthService {
 	/** Read-only profile signal for templates. */
 	readonly profile = this._profile.asReadonly();
 
+	/** True for Administrator (and the legacy lowercase "admin" bootstrap account). Mirrors requireAdmin on the API. */
+	readonly isAdmin = computed(() => ADMIN_ROLES.has((this._profile()?.role ?? "").toLowerCase()));
+
+	/** True for Editor and above. Mirrors requireEditor on the API. */
+	readonly isEditor = computed(() => EDITOR_ROLES.has((this._profile()?.role ?? "").toLowerCase()));
+
 	constructor(private readonly router: Router) {}
 
 	/**
@@ -39,7 +48,7 @@ export class AuthService {
 		return stored;
 	}
 
-	/** JWT from `sw4rm.bot.token`, or `null` when logged out. */
+	/** JWT from `swarmboty.token`, or `null` when logged out. */
 	token(): string | null {
 		return localStorage.getItem(TOKEN_KEY);
 	}
@@ -54,7 +63,7 @@ export class AuthService {
 		this._authed.set(true);
 	}
 
-	/** Updates the cached profile and persists it to `sw4rm.bot.profile`. */
+	/** Updates the cached profile and persists it to `swarmboty.profile`. */
 	setProfile(profile: Profile): void {
 		this._profile.set(profile);
 		try {

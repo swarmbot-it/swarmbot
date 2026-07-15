@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { buildContext, localeFromHeader } from "./context.js";
 import { loadConfig } from "../config.js";
-import { createMockCouch } from "../couch.mock.js";
-import { SwarmOrchestrator } from "../orchestrator/swarm/adapter.js";
+import { createTestDb } from "../test/db-setup.js";
+import { createDocker } from "../docker/engine.js";
 
 describe("localeFromHeader", () => {
 	it("prefers Polish", () => {
@@ -14,12 +14,12 @@ describe("localeFromHeader", () => {
 });
 
 describe("buildContext", () => {
-	it("maps request user and locale", () => {
-		const { db } = createMockCouch();
+	it("maps request user and locale", async () => {
+		const db = await createTestDb();
 		const cfg = { ...loadConfig(), mock: true };
-		const orchestrator = new SwarmOrchestrator(cfg);
+		const docker = createDocker(cfg);
 		const claims = {
-			iss: "sw4rm.bot",
+			iss: "swarmboty",
 			iat: 1,
 			jti: "x",
 			usr: { username: "admin" },
@@ -31,7 +31,7 @@ describe("buildContext", () => {
 			} as Parameters<typeof buildContext>[0],
 			cfg,
 			db,
-			orchestrator
+			docker
 		);
 		expect(ctx.user).toBe(claims);
 		expect(ctx.locale).toBe("pl");

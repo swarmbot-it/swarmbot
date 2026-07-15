@@ -1,32 +1,26 @@
 {
-    "name": "sw4rm.bot",
-    "version": "0.1.4",
+    "name": "swarmboty",
     "private": true,
     "workspaces": [
         "apps/api",
         "apps/web"
     ],
     "scripts": {
-        "prebuild": "node scripts/sync-app-version.mjs",
-        "build": "npm run build -w @sw4rmbot/api && npm run build -w web",
-        "dev:api": "npm run dev -w @sw4rmbot/api",
+        "build": "npm run build -w @swarmboty/api && npm run build -w web",
+        "dev:api": "npm run dev -w @swarmboty/api",
         "dev:web": "npm run start -w web",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
-        "test": "npm run test -w @sw4rmbot/api",
+        "test": "npm run test -w @swarmboty/api && npm run test -w web",
         "test:e2e": "npm run test:e2e -w web",
-        "test:e2e:k8s": "npm run test:e2e:k8s -w web",
-        "test:coverage": "npm run test:coverage -w @sw4rmbot/api",
+        "test:coverage": "npm run test:coverage -w @swarmboty/api",
         "test:all": "npm run test && npm run test:e2e",
-        "lint": "npm run lint -w @sw4rmbot/api && npm run lint -w web",
+        "lint": "npm run lint -w @swarmboty/api && npm run lint -w web",
         "swarm:start": "node scripts/swarm-start.mjs",
         "swarm:stop": "node scripts/swarm-stop.mjs",
         "swarm:status": "node scripts/swarm-status.mjs",
         "swarm:deploy": "node scripts/swarm-deploy.mjs",
-        "swarm:undeploy": "node scripts/swarm-undeploy.mjs",
-        "k3d:start": "node scripts/k3d-start.mjs",
-        "k3d:stop": "node scripts/k3d-stop.mjs",
-        "k3d:deploy": "node scripts/k3d-deploy.mjs"
+        "swarm:undeploy": "node scripts/swarm-undeploy.mjs"
     },
     "devDependencies": {
         "prettier": "^3.5.3"

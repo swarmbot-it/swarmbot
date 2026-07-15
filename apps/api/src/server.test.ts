@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { startTestHttp, gql } from "./test/http-setup.js";
 import { generateJwt } from "./auth/jwt.js";
-import { getSecret } from "./couch.js";
+import { getAppSecret } from "./db.js";
 import { createSlt } from "./auth/slt.js";
 
 describe.sequential("HTTP server", () => {
@@ -23,7 +23,7 @@ describe.sequential("HTTP server", () => {
 		test = await startTestHttp();
 		const res = await fetch(`${test.baseUrl}/version`);
 		const body = (await res.json()) as { name: string; initialized: boolean };
-		expect(body.name).toBe("sw4rm.bot");
+		expect(body.name).toBe("swarmboty");
 		expect(body.initialized).toBe(true);
 	});
 
@@ -57,7 +57,7 @@ describe.sequential("HTTP server", () => {
 
 	it("GET /events streams with valid slt", async () => {
 		test = await startTestHttp();
-		const slt = createSlt("admin");
+		const slt = await createSlt(test.db, "admin");
 		const res = await fetch(`${test.baseUrl}/events?slt=${encodeURIComponent(slt)}`);
 		expect(res.status).toBe(200);
 		expect(res.headers.get("content-type")).toContain("text/event-stream");
@@ -96,11 +96,9 @@ describe.sequential("HTTP server", () => {
 
 	it("GraphQL overview with token", async () => {
 		test = await startTestHttp();
-		const secretDoc = await getSecret(test.couchDb);
-		const token = generateJwt(String(secretDoc?.secret), {
-			type: "user",
+		const secret = await getAppSecret(test.db);
+		const token = generateJwt(secret, {
 			username: "admin",
-			password: "x",
 			role: "admin",
 		});
 		const data = await gql<{ overview: { nodes: number; services: number } }>(

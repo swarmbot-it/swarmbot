@@ -20,15 +20,12 @@
             "admin": "Administration"
         },
         "clusterHealthy": "Cluster gesund",
-        "clusterDegraded": "Cluster eingeschränkt",
-        "clusterUnhealthy": "Quorum verloren",
-        "clusterUnknown": "Clusterstatus unbekannt",
         "quorum": "Quorum: {{managers}} von {{total}} Managern"
     },
     "auth": {
         "login": {
             "title": "Willkommen zurück",
-            "subtitle": "Melden Sie sich in der sw4rm.bot-Administrationskonsole an.",
+            "subtitle": "Melden Sie sich in der swarmbot.it-Administrationskonsole an.",
             "username": "Benutzername",
             "password": "Passwort",
             "submit": "Anmelden",
@@ -38,6 +35,12 @@
     },
     "topbar": {
         "notifications": "Benachrichtigungen",
+        "clusterUnknown": "Cluster",
+        "orchestratorTitle": "Orchestrator",
+        "orchestrator": {
+            "swarm": "Swarm",
+            "kubernetes": "Kubernetes"
+        },
         "switchToLight": "Zum hellen Modus wechseln",
         "switchToDark": "Zum dunklen Modus wechseln",
         "theme": "Design",
@@ -48,12 +51,7 @@
         "preferences": "Einstellungen",
         "apiTokens": "API-Token",
         "logout": "Abmelden",
-        "administrator": "Administrator",
-        "orchestratorTitle": "Orchestrator",
-        "orchestrator": {
-            "swarm": "Swarm",
-            "kubernetes": "Kubernetes"
-        }
+        "administrator": "Administrator"
     },
     "table": {
         "search": "Suchen…",
@@ -70,7 +68,8 @@
         "continue": "Weiter",
         "default": "STANDARD",
         "type": "Typ",
-        "user": "Benutzer"
+        "user": "Benutzer",
+        "loading": "Wird geladen…"
     },
     "dashboard": {
         "title": "Cluster-Übersicht",
@@ -120,7 +119,8 @@
         "task": "Aufgabe",
         "node": "Knoten",
         "replicas": "Replikas",
-        "ports": "Ports"
+        "ports": "Ports",
+        "actions": "Aktionen"
     },
     "status": {
         "RUNNING": "Läuft",
@@ -134,6 +134,7 @@
         "REJECTED": "Abgelehnt",
         "COMPLETE": "Abgeschlossen",
         "SHUTDOWN": "Heruntergefahren",
+        "STOPPED": "Gestoppt",
         "UNKNOWN": "Unbekannt"
     },
     "pages": {
@@ -148,6 +149,46 @@
                 "volumes": "Volumes",
                 "configs": "Konfigurationen",
                 "secrets": "Geheimnisse"
+            },
+            "detail": {
+                "countsSummary": "{{services}} Dienste · {{networks}} Netzwerke · {{volumes}} Volumes · {{configs}} Konfigurationen · {{secrets}} Geheimnisse",
+                "working": "Wird ausgeführt…",
+                "edit": "Bearbeiten",
+                "editUnsupported": "Das Bearbeiten einer Umgebung vor Ort wird noch nicht unterstützt — verwende unten Redeploy/Rollback/Deactivate oder lösche sie und stelle eine neue Compose-Datei bereit.",
+                "redeploy": "Redeploy",
+                "redeployHint": "rolling",
+                "rollback": "Rollback",
+                "rollbackHint": "vorh. Spec",
+                "deactivate": "Deaktivieren",
+                "deactivateHint": "auf 0 skalieren",
+                "reactivate": "Reaktivieren",
+                "reactivateHint": "auf 1 skalieren",
+                "delete": "Löschen",
+                "utilization": "Auslastung der Umgebung",
+                "utilizationHint": "Aggregierte Container-CPU & -Speicher · aus InfluxDB",
+                "noMetrics": "Noch keine Metriken — der Agent meldet Statistiken alle 30s.",
+                "diskHint": "Die Festplattennutzung pro Container wird vom Agenten nicht erfasst (nur CPU & Speicher)",
+                "diskNotTracked": "Nicht pro Umgebung erfasst",
+                "notFound": "Umgebung nicht gefunden.",
+                "noServices": "Keine Dienste in dieser Umgebung.",
+                "noNetworks": "Keine Netzwerke verbunden.",
+                "noVolumes": "Keine Volumes verbunden.",
+                "noConfigs": "Keine Konfigurationen eingebunden.",
+                "noSecrets": "Keine Geheimnisse gewährt.",
+                "stopped": "Gestoppt",
+                "stopping": "Wird gestoppt…",
+                "confirmRemove": "Umgebung \"{{name}}\" entfernen? Dies löscht alle ihre Dienste, Netzwerke und weiteren Ressourcen.",
+                "toastNothingToRedeploy": "\"{{name}}\" hat 0 Replikas — nichts zum Redeploy. Zuerst \"Reaktivieren\" verwenden.",
+                "toastRedeploying": "\"{{name}}\" wird neu bereitgestellt… Aufgaben starten in wenigen Sekunden neu.",
+                "toastRolledBack": "\"{{name}}\" wurde auf die vorherige Spec zurückgesetzt.",
+                "toastDeactivated": "Umgebung \"{{name}}\" deaktiviert.",
+                "toastReactivated": "Umgebung \"{{name}}\" reaktiviert (auf 1 Replika skaliert).",
+                "toastRemoved": "Umgebung \"{{name}}\" entfernt.",
+                "redeployFailed": "Redeploy fehlgeschlagen.",
+                "rollbackFailed": "Rollback fehlgeschlagen.",
+                "deactivateFailed": "Deaktivierung fehlgeschlagen.",
+                "reactivateFailed": "Reaktivierung fehlgeschlagen.",
+                "removeFailed": "Entfernen fehlgeschlagen."
             }
         },
         "services": {
@@ -157,6 +198,39 @@
                 "service": "Dienst",
                 "replicas": "Replikas",
                 "ports": "Ports"
+            },
+            "detail": {
+                "back": "Zurück zu Diensten",
+                "scale": "Skalieren",
+                "scaleSubtitle": "Gewünschte Replikatanzahl für {{name}} festlegen",
+                "serviceId": "Dienst-ID",
+                "mode": "Modus",
+                "env": "Umgebungsvariablen",
+                "noEnv": "Keine Umgebungsvariablen gesetzt.",
+                "labels": "Labels",
+                "noLabels": "Keine Labels gesetzt.",
+                "noSecrets": "Keine Geheimnisse gebunden.",
+                "noConfigs": "Keine Konfigurationen gebunden.",
+                "noTasks": "Keine aktiven Aufgaben.",
+                "noNetworks": "Keine Netzwerke verbunden.",
+                "noPorts": "Keine Ports veröffentlicht.",
+                "mounts": "Mounts",
+                "noMounts": "Keine Mounts.",
+                "mountSource": "Quelle",
+                "mountTarget": "Ziel",
+                "mountMode": "Modus",
+                "notFound": "Dienst nicht gefunden.",
+                "editUnsupported": "Das Bearbeiten eines Dienstes vor Ort wird noch nicht unterstützt — verwende unten Redeploy/Rollback/Scale, oder entferne ihn und stelle ihn über seine Umgebung erneut bereit.",
+                "confirmRemove": "Dienst \"{{name}}\" entfernen?",
+                "toastNothingToRedeploy": "\"{{name}}\" hat 0 Replikas — nichts zum Redeploy. Verwende zuerst \"Skalieren\", um ihn wieder hochzufahren.",
+                "toastRedeploying": "\"{{name}}\" wird neu bereitgestellt… Aufgaben starten in wenigen Sekunden neu.",
+                "toastRolledBack": "\"{{name}}\" wurde auf die vorherige Spec zurückgesetzt.",
+                "toastScaled": "\"{{name}}\" auf {{replicas}} Replikas skaliert.",
+                "toastRemoved": "Dienst \"{{name}}\" entfernt.",
+                "redeployFailed": "Redeploy fehlgeschlagen.",
+                "rollbackFailed": "Rollback fehlgeschlagen.",
+                "scaleFailed": "Skalierung fehlgeschlagen.",
+                "removeFailed": "Entfernen fehlgeschlagen."
             }
         },
         "tasks": {
@@ -166,6 +240,13 @@
                 "node": "Knoten",
                 "cpu": "CPU",
                 "memory": "Arbeitsspeicher"
+            },
+            "detail": {
+                "back": "Zurück zu Aufgaben",
+                "on": "auf",
+                "desiredState": "Gewünschter Zustand",
+                "statusMessage": "Statusmeldung",
+                "notFound": "Aufgabe nicht gefunden."
             }
         },
         "nodes": {
@@ -180,6 +261,14 @@
                 "cpu": "CPU",
                 "memory": "Arbeitsspeicher",
                 "disk": "Festplatte"
+            },
+            "actions": {
+                "title": "Aktionen",
+                "drain": "Entleeren",
+                "activate": "Aktivieren",
+                "toastDrained": "\"{{name}}\" wird entleert — dort werden keine neuen Aufgaben geplant.",
+                "toastActivated": "\"{{name}}\" ist wieder aktiv und nimmt Aufgaben an.",
+                "failed": "Verfügbarkeit des Knotens konnte nicht geändert werden."
             }
         },
         "networks": {
@@ -192,11 +281,25 @@
         },
         "secrets": {
             "countSuffix": "Geheimnisse gespeichert",
-            "add": "Neues Geheimnis"
+            "add": "Neues Geheimnis",
+            "view": "Details anzeigen",
+            "modal": {
+                "subtitle": "Details zum Geheimnis",
+                "id": "Geheimnis-ID",
+                "created": "Erstellt",
+                "updated": "Zuletzt aktualisiert",
+                "writeOnlyNotice": "Docker-Geheimnisse sind nur schreibbar — der Wert kann nach dem Erstellen nicht mehr abgerufen werden, das ist beabsichtigt. Zum Rotieren das Geheimnis entfernen und neu anlegen."
+            }
         },
         "configs": {
             "countSuffix": "Konfigurationen gespeichert",
-            "add": "Neue Konfiguration"
+            "add": "Neue Konfiguration",
+            "view": "Inhalt anzeigen",
+            "modal": {
+                "subtitle": "Inhalt der Konfigurationsdatei",
+                "loading": "Wird geladen…",
+                "empty": "(leer)"
+            }
         },
         "registries": {
             "countSuffix": "Registries verbunden",
@@ -204,7 +307,14 @@
             "columns": {
                 "registry": "Registry",
                 "authUser": "Auth-Benutzer"
-            }
+            },
+            "setDefault": "Als Standard festlegen",
+            "remove": "Entfernen",
+            "confirmRemove": "Registry \"{{name}}\" entfernen?",
+            "toastSetDefault": "\"{{name}}\" ist jetzt die Standard-Registry.",
+            "toastRemoved": "Registry \"{{name}}\" entfernt.",
+            "setDefaultFailed": "Standard-Registry konnte nicht festgelegt werden.",
+            "removeFailed": "Entfernen fehlgeschlagen."
         }
     },
     "users": {
@@ -355,8 +465,24 @@
             "Freitag",
             "Samstag"
         ],
-        "dayNamesShort": ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"],
-        "dayNamesMin": ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"],
+        "dayNamesShort": [
+            "So",
+            "Mo",
+            "Di",
+            "Mi",
+            "Do",
+            "Fr",
+            "Sa"
+        ],
+        "dayNamesMin": [
+            "So",
+            "Mo",
+            "Di",
+            "Mi",
+            "Do",
+            "Fr",
+            "Sa"
+        ],
         "monthNames": [
             "Januar",
             "Februar",

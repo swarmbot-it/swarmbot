@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
 import { AsyncPipe, NgIf, NgSwitch, NgSwitchCase, NgSwitchDefault } from "@angular/common";
 import { Apollo } from "apollo-angular";
+import { Router } from "@angular/router";
 import { map } from "rxjs/operators";
 import { Observable } from "rxjs";
 import { DataTableComponent } from "../../shared/data-table.component";
@@ -47,12 +48,12 @@ type TaskRow = {
 				[rows]="rows"
 				[searchKeys]="['name', 'image', 'node', 'status']"
 				[pageSize]="12"
-				[rowRoute]="taskRowRoute"
+				(rowClick)="open($event.id)"
 			>
 				<ng-template #cell let-row let-key="key">
 					<ng-container [ngSwitch]="key">
 						<div *ngSwitchCase="'name'">
-							<span class="link-name mono">{{ row.name }}</span>
+							<div class="mono" style="font-weight: 600">{{ row.name }}</div>
 							<div class="mono" style="color: var(--muted); margin-top: 2px;">
 								{{ row.image }}
 							</div>
@@ -120,6 +121,11 @@ export class TasksPageComponent {
 	private readonly apollo = inject(Apollo);
 	private readonly transloco = inject(TranslocoService);
 	private readonly i18n = inject(I18nStateService);
+	private readonly router = inject(Router);
+
+	open(id: string): void {
+		this.router.navigate(["/app/tasks", id]);
+	}
 
 	readonly cols = translatedColumns<TaskRow>(this.transloco, this.i18n.activeLang, [
 		{ key: "name", labelKey: "pages.tasks.columns.task" },
@@ -143,6 +149,4 @@ export class TasksPageComponent {
 	readonly rows$: Observable<TaskRow[]> = this.apollo
 		.watchQuery<{ tasks: TaskRow[] }>({ query: QUERY_TASKS, pollInterval: 30_000 })
 		.valueChanges.pipe(map((x) => (x.data?.tasks ?? []) as TaskRow[]));
-
-	readonly taskRowRoute = (row: TaskRow) => ["/app/tasks", row.id];
 }

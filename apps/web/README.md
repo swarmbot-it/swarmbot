@@ -1,6 +1,6 @@
-# SwarmBoty Web UI
+# swarmbot.it Web UI
 
-Angular **21** single-page application for the SwarmBoty Docker Swarm admin console. It talks to the API through Apollo GraphQL (`/graphql`), uses PrimeNG for data tables and widgets, and Transloco for runtime i18n (9 languages).
+Angular **21** single-page application for the swarmbot.it Docker Swarm admin console. It talks to the API through Apollo GraphQL (`/graphql`), uses PrimeNG for data tables and widgets, and Transloco for runtime i18n (9 languages).
 
 ## Requirements
 
@@ -29,16 +29,16 @@ Open [http://localhost:4200](http://localhost:4200). The dev server proxies API 
 
 ## Signing in (development)
 
-1. Start the API in **mock mode** (in-memory CouchDB + sample Swarm data):
+1. Start the API in **mock mode** (in-memory SQLite + sample Swarm data):
 
    ```powershell
    # Windows PowerShell
-   $env:SW4RM_BOT_MOCK="true"; npm run dev:api
+   $env:SWARMBOTY_MOCK="true"; npm run dev:api
    ```
 
    ```bash
    # macOS / Linux
-   SW4RM_BOT_MOCK=true npm run dev:api
+   SWARMBOTY_MOCK=true npm run dev:api
    ```
 
 2. Start the web app (`npm run dev:web` in another terminal).
@@ -50,11 +50,11 @@ Open [http://localhost:4200](http://localhost:4200). The dev server proxies API 
    | Username | `admin`     |
    | Password | `swarmboty` |
 
-Mock mode creates this demo admin automatically. Without mock mode you need a real CouchDB-backed user (see root `README.md`).
+Mock mode creates this demo admin automatically. Without mock mode you need a real Postgres-backed user (see root `README.md`).
 
-After login you are redirected to `/app/dashboard`. The JWT is stored in `localStorage` under `sw4rm.bot.token`.
+After login you are redirected to `/app/dashboard`. The JWT is stored in `localStorage` under `swarmboty.token`.
 
-If the API was restarted (especially in mock mode), the old token is invalid. The UI signs you out automatically when GraphQL returns `UNAUTHENTICATED`, or you can clear `sw4rm.bot.token` in DevTools → Application → Local Storage and sign in again.
+If the API was restarted (especially in mock mode), the old token is invalid. The UI signs you out automatically when GraphQL returns `UNAUTHENTICATED`, or you can clear `swarmboty.token` in DevTools → Application → Local Storage and sign in again.
 
 ## Testing
 
@@ -75,7 +75,7 @@ npm run test:e2e
 npm run test:e2e:ui
 ```
 
-E2E specs live in `e2e/`. `playwright.config.js` sets `SW4RM_BOT_MOCK=true` on the API and reuses an existing dev server when not in CI.
+E2E specs live in `e2e/`. `playwright.config.js` sets `SWARMBOTY_MOCK=true` on the API and reuses an existing dev server when not in CI.
 
 **Type-checking** (no unit test runner in this package):
 
@@ -94,7 +94,7 @@ Production output: `dist/web/`. Fonts are self-hosted under `public/assets/fonts
 ## Internationalization
 
 - Dictionaries: `public/assets/i18n/{pl,en,de,fr,es,it,zh,ja,ko}.json`
-- Active language: `localStorage` key `sw4rm.bot.lang`
+- Active language: `localStorage` key `swarmboty.lang`
 - Switch language from the user menu (dropdown in the top bar popover)
 - Theme (light/dark) is toggled only via the sun/moon control in the top bar, not in the menu
 - `Accept-Language` is sent on HTTP and GraphQL requests (e.g. `pl-PL`, `de-DE`, `zh-CN`)

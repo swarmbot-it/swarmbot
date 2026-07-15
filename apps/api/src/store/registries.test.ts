@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createMockCouch } from "../couch.mock.js";
+import { createTestDb } from "../test/db-setup.js";
 import {
 	createRegistry,
 	listRegistries,
@@ -9,7 +9,7 @@ import {
 
 describe("registries store", () => {
 	it("seeds defaults exactly once", async () => {
-		const { db } = createMockCouch();
+		const db = await createTestDb();
 		await seedDefaultRegistries(db);
 		await seedDefaultRegistries(db);
 		const all = await listRegistries(db);
@@ -18,7 +18,7 @@ describe("registries store", () => {
 	});
 
 	it("create + remove round-trip", async () => {
-		const { db } = createMockCouch();
+		const db = await createTestDb();
 		const reg = await createRegistry(db, {
 			name: "My Reg",
 			url: "https://reg.example",
@@ -32,7 +32,7 @@ describe("registries store", () => {
 	});
 
 	it("creating a new default unsets the previous default", async () => {
-		const { db } = createMockCouch();
+		const db = await createTestDb();
 		await createRegistry(db, { name: "A", url: "a", type: "GHCR", default: true });
 		await createRegistry(db, { name: "B", url: "b", type: "GHCR", default: true });
 		const all = await listRegistries(db);

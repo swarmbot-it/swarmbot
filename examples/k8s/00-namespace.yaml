@@ -1,6 +1,0 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-    name: sw4rmbot
-    labels:
-        app.kubernetes.io/part-of: sw4rmbot

@@ -20,15 +20,12 @@
             "admin": "Amministrazione"
         },
         "clusterHealthy": "Cluster integro",
-        "clusterDegraded": "Cluster degradato",
-        "clusterUnhealthy": "Quorum perso",
-        "clusterUnknown": "Stato cluster sconosciuto",
         "quorum": "Quorum: {{managers}} su {{total}} manager"
     },
     "auth": {
         "login": {
             "title": "Bentornato",
-            "subtitle": "Accedi alla console di amministrazione sw4rm.bot.",
+            "subtitle": "Accedi alla console di amministrazione swarmbot.it.",
             "username": "Nome utente",
             "password": "Password",
             "submit": "Accedi",
@@ -38,6 +35,12 @@
     },
     "topbar": {
         "notifications": "Notifiche",
+        "clusterUnknown": "cluster",
+        "orchestratorTitle": "Orchestratore",
+        "orchestrator": {
+            "swarm": "Swarm",
+            "kubernetes": "Kubernetes"
+        },
         "switchToLight": "Passa alla modalità chiara",
         "switchToDark": "Passa alla modalità scura",
         "theme": "Tema",
@@ -48,12 +51,7 @@
         "preferences": "Preferenze",
         "apiTokens": "Token API",
         "logout": "Esci",
-        "administrator": "Amministratore",
-        "orchestratorTitle": "Orchestratore",
-        "orchestrator": {
-            "swarm": "Swarm",
-            "kubernetes": "Kubernetes"
-        }
+        "administrator": "Amministratore"
     },
     "table": {
         "search": "Cerca…",
@@ -70,7 +68,8 @@
         "continue": "Continua",
         "default": "PREDEFINITO",
         "type": "Tipo",
-        "user": "Utente"
+        "user": "Utente",
+        "loading": "Caricamento…"
     },
     "dashboard": {
         "title": "Panoramica cluster",
@@ -120,7 +119,8 @@
         "task": "Attività",
         "node": "Nodo",
         "replicas": "Repliche",
-        "ports": "Porte"
+        "ports": "Porte",
+        "actions": "Azioni"
     },
     "status": {
         "RUNNING": "In esecuzione",
@@ -134,6 +134,7 @@
         "REJECTED": "Rifiutato",
         "COMPLETE": "Completato",
         "SHUTDOWN": "Arrestato",
+        "STOPPED": "Fermato",
         "UNKNOWN": "Sconosciuto"
     },
     "pages": {
@@ -148,6 +149,46 @@
                 "volumes": "Volumi",
                 "configs": "Configurazioni",
                 "secrets": "Segreti"
+            },
+            "detail": {
+                "countsSummary": "{{services}} servizi · {{networks}} reti · {{volumes}} volumi · {{configs}} configurazioni · {{secrets}} segreti",
+                "working": "In corso…",
+                "edit": "Modifica",
+                "editUnsupported": "La modifica di un ambiente sul posto non è ancora supportata — usa Redeploy/Rollback/Deactivate qui sotto, oppure eliminalo e distribuisci un nuovo file Compose.",
+                "redeploy": "Redeploy",
+                "redeployHint": "rolling",
+                "rollback": "Rollback",
+                "rollbackHint": "spec precedente",
+                "deactivate": "Disattiva",
+                "deactivateHint": "scala a 0",
+                "reactivate": "Riattiva",
+                "reactivateHint": "scala a 1",
+                "delete": "Elimina",
+                "utilization": "Utilizzo dell'ambiente",
+                "utilizationHint": "CPU e memoria dei container aggregate · da InfluxDB",
+                "noMetrics": "Nessuna metrica ancora — l'agente riporta le statistiche ogni 30s.",
+                "diskHint": "L'utilizzo del disco per container non viene raccolto dall'agente (solo CPU e memoria)",
+                "diskNotTracked": "Non tracciato per ambiente",
+                "notFound": "Ambiente non trovato.",
+                "noServices": "Nessun servizio in questo ambiente.",
+                "noNetworks": "Nessuna rete collegata.",
+                "noVolumes": "Nessun volume collegato.",
+                "noConfigs": "Nessuna configurazione montata.",
+                "noSecrets": "Nessun segreto concesso.",
+                "stopped": "Fermato",
+                "stopping": "Arresto in corso…",
+                "confirmRemove": "Rimuovere l'ambiente \"{{name}}\"? Questo elimina tutti i suoi servizi, reti e altre risorse.",
+                "toastNothingToRedeploy": "\"{{name}}\" ha 0 repliche — niente da redeployare. Usa prima \"Riattiva\".",
+                "toastRedeploying": "Redeploy di \"{{name}}\" in corso… le attività si riavvieranno tra pochi secondi.",
+                "toastRolledBack": "\"{{name}}\" ripristinato alla spec precedente.",
+                "toastDeactivated": "Ambiente \"{{name}}\" disattivato.",
+                "toastReactivated": "Ambiente \"{{name}}\" riattivato (scalato a 1 replica).",
+                "toastRemoved": "Ambiente \"{{name}}\" rimosso.",
+                "redeployFailed": "Redeploy non riuscito.",
+                "rollbackFailed": "Rollback non riuscito.",
+                "deactivateFailed": "Disattivazione non riuscita.",
+                "reactivateFailed": "Riattivazione non riuscita.",
+                "removeFailed": "Rimozione non riuscita."
             }
         },
         "services": {
@@ -157,6 +198,39 @@
                 "service": "Servizio",
                 "replicas": "Repliche",
                 "ports": "Porte"
+            },
+            "detail": {
+                "back": "Torna ai servizi",
+                "scale": "Scala",
+                "scaleSubtitle": "Imposta il numero di repliche desiderato per {{name}}",
+                "serviceId": "ID servizio",
+                "mode": "Modalità",
+                "env": "Variabili d'ambiente",
+                "noEnv": "Nessuna variabile d'ambiente impostata.",
+                "labels": "Etichette",
+                "noLabels": "Nessuna etichetta impostata.",
+                "noSecrets": "Nessun segreto collegato.",
+                "noConfigs": "Nessuna configurazione collegata.",
+                "noTasks": "Nessuna attività attiva.",
+                "noNetworks": "Nessuna rete collegata.",
+                "noPorts": "Nessuna porta pubblicata.",
+                "mounts": "Mount",
+                "noMounts": "Nessun mount.",
+                "mountSource": "Origine",
+                "mountTarget": "Destinazione",
+                "mountMode": "Modalità",
+                "notFound": "Servizio non trovato.",
+                "editUnsupported": "La modifica di un servizio sul posto non è ancora supportata — usa Redeploy/Rollback/Scale qui sotto, oppure rimuovilo e distribuiscilo di nuovo tramite il suo ambiente.",
+                "confirmRemove": "Rimuovere il servizio \"{{name}}\"?",
+                "toastNothingToRedeploy": "\"{{name}}\" ha 0 repliche — niente da redeployare. Usa prima \"Scala\" per rimetterlo su.",
+                "toastRedeploying": "Redeploy di \"{{name}}\" in corso… le attività si riavvieranno tra pochi secondi.",
+                "toastRolledBack": "\"{{name}}\" ripristinato alla spec precedente.",
+                "toastScaled": "\"{{name}}\" scalato a {{replicas}} repliche.",
+                "toastRemoved": "Servizio \"{{name}}\" rimosso.",
+                "redeployFailed": "Redeploy non riuscito.",
+                "rollbackFailed": "Rollback non riuscito.",
+                "scaleFailed": "Scalatura non riuscita.",
+                "removeFailed": "Rimozione non riuscita."
             }
         },
         "tasks": {
@@ -166,6 +240,13 @@
                 "node": "Nodo",
                 "cpu": "CPU",
                 "memory": "Memoria"
+            },
+            "detail": {
+                "back": "Torna alle attività",
+                "on": "su",
+                "desiredState": "Stato desiderato",
+                "statusMessage": "Messaggio di stato",
+                "notFound": "Attività non trovata."
             }
         },
         "nodes": {
@@ -180,6 +261,14 @@
                 "cpu": "CPU",
                 "memory": "Memoria",
                 "disk": "Disco"
+            },
+            "actions": {
+                "title": "Azioni",
+                "drain": "Svuota",
+                "activate": "Attiva",
+                "toastDrained": "\"{{name}}\" è in fase di svuotamento — non verranno pianificate nuove attività lì.",
+                "toastActivated": "\"{{name}}\" è di nuovo attivo e accetta attività.",
+                "failed": "Impossibile aggiornare la disponibilità del nodo."
             }
         },
         "networks": {
@@ -192,11 +281,25 @@
         },
         "secrets": {
             "countSuffix": "segreti memorizzati",
-            "add": "Nuovo segreto"
+            "add": "Nuovo segreto",
+            "view": "Visualizza dettagli",
+            "modal": {
+                "subtitle": "Dettagli del segreto",
+                "id": "ID segreto",
+                "created": "Creato",
+                "updated": "Ultimo aggiornamento",
+                "writeOnlyNotice": "I segreti Docker sono di sola scrittura — il valore non può essere recuperato una volta creato, per progettazione. Per ruotarlo, rimuovi e ricrea il segreto."
+            }
         },
         "configs": {
             "countSuffix": "configurazioni memorizzate",
-            "add": "Nuova configurazione"
+            "add": "Nuova configurazione",
+            "view": "Visualizza contenuto",
+            "modal": {
+                "subtitle": "Contenuto del file di configurazione",
+                "loading": "Caricamento…",
+                "empty": "(vuoto)"
+            }
         },
         "registries": {
             "countSuffix": "registry collegati",
@@ -204,7 +307,14 @@
             "columns": {
                 "registry": "Registry",
                 "authUser": "Utente auth"
-            }
+            },
+            "setDefault": "Imposta come predefinito",
+            "remove": "Rimuovi",
+            "confirmRemove": "Rimuovere il registry \"{{name}}\"?",
+            "toastSetDefault": "\"{{name}}\" è ora il registry predefinito.",
+            "toastRemoved": "Registry \"{{name}}\" rimosso.",
+            "setDefaultFailed": "Impossibile impostare il registry predefinito.",
+            "removeFailed": "Rimozione non riuscita."
         }
     },
     "users": {
@@ -346,9 +456,33 @@
         "choose": "Scegli",
         "upload": "Carica",
         "cancel": "Annulla",
-        "dayNames": ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"],
-        "dayNamesShort": ["Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"],
-        "dayNamesMin": ["Do", "Lu", "Ma", "Me", "Gi", "Ve", "Sa"],
+        "dayNames": [
+            "Domenica",
+            "Lunedì",
+            "Martedì",
+            "Mercoledì",
+            "Giovedì",
+            "Venerdì",
+            "Sabato"
+        ],
+        "dayNamesShort": [
+            "Dom",
+            "Lun",
+            "Mar",
+            "Mer",
+            "Gio",
+            "Ven",
+            "Sab"
+        ],
+        "dayNamesMin": [
+            "Do",
+            "Lu",
+            "Ma",
+            "Me",
+            "Gi",
+            "Ve",
+            "Sa"
+        ],
         "monthNames": [
             "Gennaio",
             "Febbraio",

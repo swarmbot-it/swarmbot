@@ -1,33 +1,33 @@
 import { randomBytes } from "crypto";
+import type { Kysely } from "kysely";
+import type { Database } from "../db.js";
 
-/** Short-lived tokens for SSE (EventSource cannot set headers). */
+/** Short-lived tokens for SSE (EventSource cannot set headers), persisted in
+ * Postgres so a token minted by one API replica can be consumed by another. */
 
 const TTL_MS = 10_000;
-const cache = new Map<string, { user: string; exp: number }>();
 
-export function createSlt(username: string): string {
-	const slt = randomToken();
-	cache.set(slt, { user: username, exp: Date.now() + TTL_MS });
-	prune();
-	return slt;
+export async function createSlt(db: Kysely<Database>, username: string): Promise<string> {
+	const token = randomToken();
+	await db
+		.insertInto("slt")
+		.values({ token, username, expiresAt: new Date(Date.now() + TTL_MS).toISOString() })
+		.execute();
+	return token;
 }
 
-export function consumeSlt(slt: string | undefined): string | undefined {
-	if (!slt) return undefined;
-	prune();
-	const e = cache.get(slt);
-	if (!e || e.exp < Date.now()) return undefined;
-	cache.delete(slt);
-	return e.user;
+export async function consumeSlt(
+	db: Kysely<Database>,
+	token: string | undefined
+): Promise<string | undefined> {
+	if (!token) return undefined;
+	const row = await db.selectFrom("slt").selectAll().where("token", "=", token).executeTakeFirst();
+	if (!row) return undefined;
+	await db.deleteFrom("slt").where("token", "=", token).execute();
+	if (new Date(row.expiresAt).getTime() < Date.now()) return undefined;
+	return row.username;
 }
 
 function randomToken(): string {
 	return randomBytes(24).toString("base64url");
-}
-
-function prune(): void {
-	const now = Date.now();
-	for (const [k, v] of cache) {
-		if (v.exp < now) cache.delete(k);
-	}
 }

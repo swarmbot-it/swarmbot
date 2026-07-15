@@ -10,7 +10,9 @@ pipeline {
     }
 
     parameters {
-        choice(name: 'ACTION', choices: ['', 'CI', 'BUILD'], description: 'Empty value enables automatic PR/main branch behavior.')
+        choice(name: 'ACTION', choices: ['', 'CI', 'BUILD', 'DEPLOY', 'BUILD_AND_DEPLOY', 'DEPLOY_PROD'], description: 'Empty value enables automatic PR/main branch behavior. DEPLOY_PROD requires manual approval below and always targets PROD regardless of TARGET_ENV.')
+        choice(name: 'TARGET_ENV', choices: ['DEV', 'TST'], description: 'Standard job can deploy only to DEV or TST. PROD is only reachable via the DEPLOY_PROD action + approval gate, never auto-selected.')
+        string(name: 'IMAGE_TAG', defaultValue: '', description: 'Existing image tag for deploy-only runs. For DEPLOY_PROD this should be a tag already verified in TST.')
         string(name: 'RELEASE_VERSION', defaultValue: '', description: 'Optional release version for image tagging. Empty uses BUILD_NUMBER.')
         booleanParam(name: 'SKIP_TESTS', defaultValue: false, description: 'Skip package test and coverage scripts.')
         booleanParam(name: 'RUN_LLM_REVIEW', defaultValue: false, description: 'Run OpenAI-compatible local LLM review for PR/MR builds.')
@@ -18,8 +20,12 @@ pipeline {
 
     environment {
         INTERNAL_REGISTRY = 'registry.debian.dc4.pl'
-        IMAGE_NAMESPACE = 'swarmbotty'
+        IMAGE_NAMESPACE = 'swarmboty'
         REGISTRY_CREDENTIALS_ID = 'swarm-jenkins'
+        SWARM_MANAGER = 'debian@debian.dc4.pl'
+        SWARM_DEV_STACK = 'swarmboty-dev'
+        SWARM_TST_STACK = 'swarmboty-tst'
+        SWARM_PROD_STACK = 'swarmboty-prod'
     }
 
     stages {
@@ -27,85 +33,67 @@ pipeline {
             when {
                 anyOf {
                     changeRequest()
-                    expression { !params.ACTION || params.ACTION == 'CI' || params.ACTION == 'BUILD' }
+                    expression { !params.ACTION || params.ACTION == 'CI' || params.ACTION == 'BUILD_AND_DEPLOY' || params.ACTION == 'BUILD' }
                 }
             }
             steps {
-                script {
-                    if (!fileExists('package.json')) {
-                        error('package.json not found; CI stage requires a TypeScript/Node application repository')
-                    }
-
-                    String manager = fileExists('pnpm-lock.yaml') ? 'pnpm'
-                                   : fileExists('yarn.lock')      ? 'yarn'
-                                   : 'npm'
-
-                    sh manager == 'pnpm' ? 'corepack enable && pnpm install --frozen-lockfile'
-                     : manager == 'yarn' ? 'corepack enable && yarn install --frozen-lockfile'
-                     : 'npm ci'
-
-                    int lintExists = sh(returnStatus: true,
-                        script: "node -e \"const s=require('./package.json').scripts||{}; process.exit(s['lint'] ? 0 : 1)\"")
-                    if (lintExists == 0) {
-                        sh manager == 'pnpm' ? 'pnpm run lint' : manager == 'yarn' ? 'yarn lint' : 'npm run lint'
-                    } else {
-                        echo "package.json script 'lint' not found; skipping."
-                    }
-
-                    if (!params.SKIP_TESTS) {
-                        int testExists = sh(returnStatus: true,
-                            script: "node -e \"const s=require('./package.json').scripts||{}; process.exit(s['test'] ? 0 : 1)\"")
-                        if (testExists == 0) {
-                            sh manager == 'pnpm' ? 'pnpm run test' : manager == 'yarn' ? 'yarn test' : 'npm run test'
-                        } else {
-                            echo "package.json script 'test' not found; skipping."
-                        }
-
-                        int coverageExists = sh(returnStatus: true,
-                            script: "node -e \"const s=require('./package.json').scripts||{}; process.exit(s['coverage'] ? 0 : 1)\"")
-                        if (coverageExists == 0) {
-                            sh manager == 'pnpm' ? 'pnpm run coverage' : manager == 'yarn' ? 'yarn coverage' : 'npm run coverage'
-                        } else {
-                            echo "package.json script 'coverage' not found; skipping."
-                        }
-                    }
-
-                    if (env.CHANGE_ID) {
-                        llmReview()
-                    }
-                }
-                junit testResults: '**/junit*.xml', allowEmptyResults: true
-                archiveArtifacts artifacts: 'coverage/**', allowEmptyArchive: true
+                tsCI()
             }
         }
 
         stage('Build') {
             when {
                 not { changeRequest() }
-                expression { (!params.ACTION && env.BRANCH_NAME == 'main') || params.ACTION == 'BUILD' }
+                expression { (!params.ACTION && env.BRANCH_NAME == 'main') || params.ACTION == 'BUILD' || params.ACTION == 'BUILD_AND_DEPLOY' }
             }
             steps {
-                script {
-                    if (!fileExists('Dockerfile')) {
-                        error('Dockerfile not found; Build stage requires each application repository to provide one')
-                    }
+                tsBuild()
+            }
+        }
 
-                    String jobPart = env.JOB_BASE_NAME.replaceAll(/[^a-zA-Z0-9_.-]+/, '-').replaceAll(/^-+|-+$/, '')
-                    String version = (params.RELEASE_VERSION ?: '').trim() ?: env.BUILD_NUMBER
-                    String imageTag = "${jobPart}-${version}"
-                    String fullImage = "${env.INTERNAL_REGISTRY}/${env.IMAGE_NAMESPACE}/${env.JOB_BASE_NAME}:${imageTag}"
+        stage('Deploy') {
+            when {
+                not { changeRequest() }
+                expression { (!params.ACTION && env.BRANCH_NAME == 'main') || params.ACTION == 'DEPLOY' || params.ACTION == 'BUILD_AND_DEPLOY' }
+            }
+            steps {
+                tsDeploy(params.TARGET_ENV ?: 'DEV')
+            }
+        }
 
-                    docker.withRegistry("https://${env.INTERNAL_REGISTRY}", env.REGISTRY_CREDENTIALS_ID) {
-                        docker.build(fullImage).push()
-                    }
-
-                    env.IMAGE = fullImage
-                    env.IMAGE_TAG = imageTag
-                    writeFile file: 'image.txt', text: fullImage + '\n'
-                    archiveArtifacts artifacts: 'image.txt'
+        // PROD is intentionally never reachable through the automatic PR/main
+        // path or the DEV/TST TARGET_ENV choice above — it requires an explicit
+        // DEPLOY_PROD run plus a human approval, on main only, deploying an
+        // IMAGE_TAG that has already gone through TST.
+        stage('Approve PROD') {
+            when {
+                not { changeRequest() }
+                allOf {
+                    branch 'main'
+                    expression { params.ACTION == 'DEPLOY_PROD' }
+                }
+            }
+            steps {
+                timeout(time: 24, unit: 'HOURS') {
+                    // TODO: restrict with `submitter: '<prod-approvers-group>'` once
+                    // that Jenkins group/role is set up; unset = any user with Job
+                    // permission can approve, which is the current DEV/TST posture too.
+                    input message: "Deploy ${params.IMAGE_TAG ?: env.BUILD_NUMBER} to PRODUCTION (${SWARM_PROD_STACK})?", ok: 'Deploy to PROD'
                 }
             }
         }
 
+        stage('Deploy PROD') {
+            when {
+                not { changeRequest() }
+                allOf {
+                    branch 'main'
+                    expression { params.ACTION == 'DEPLOY_PROD' }
+                }
+            }
+            steps {
+                tsDeploy('PROD')
+            }
+        }
     }
 }

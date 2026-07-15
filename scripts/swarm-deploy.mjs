@@ -1,32 +1,28 @@
 #!/usr/bin/env node
 /**
- * Builds sw4rmbot:local and swarmagent:local on the host Docker daemon,
+ * Builds swarmboty:local and swarmagent:local on the host Docker daemon,
  * loads them into every DinD cluster node, then deploys the Swarm stack
- * defined in examples/docker-compose.local.yml via TCP to the DinD manager.
+ * defined in docker-compose.local.yml via TCP to the DinD manager.
  *
  * Cross-platform: uses temp files instead of shell pipes so it works on
  * Windows PowerShell, macOS, and Linux without changes.
  */
-import { createHash } from "crypto";
 import { execSync, spawnSync } from "child_process";
-import { existsSync, mkdirSync, readFileSync, readdirSync, unlinkSync, writeFileSync } from "fs";
+import { existsSync, readFileSync, unlinkSync } from "fs";
 import { tmpdir } from "os";
 import { dirname, join, resolve } from "path";
 import { fileURLToPath } from "url";
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
-const CACHE_DIR = join(SCRIPT_DIR, "..", ".cache");
-const AGENT_HASH_FILE = join(CACHE_DIR, "swarmagent-source.hash");
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
 const NETWORK = "swarm-net";
 const MANAGER = "swarm-manager";
 const WORKERS = ["swarm-worker-1", "swarm-worker-2"];
-const STACK = "sw4rmbot";
-const ROOT_DIR = join(SCRIPT_DIR, "..");
-const COMPOSE_FILE = join(ROOT_DIR, "examples", "docker-compose.local.yml");
-const AGENT_DIR = resolve("../swarmagent");
+const STACK = "swarmboty";
+const COMPOSE_FILE = "docker-compose.local.yml";
+const AGENT_DIR = resolve(SCRIPT_DIR, "..", "swarmagent"); // git submodule, see .gitmodules
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -75,64 +71,6 @@ function loadImageIntoNode(node, tarPath, image) {
 	if (result.status !== 0) {
 		throw new Error(`docker load into ${node} failed (exit ${result.status})`);
 	}
-}
-
-/** SHA-256 of agent sources + Dockerfile — used to skip redundant builds. */
-function agentSourceFingerprint(agentDir) {
-	const h = createHash("sha256");
-	const rootFiles = ["Cargo.toml", "Cargo.lock", "Dockerfile", ".dockerignore"];
-	for (const name of rootFiles) {
-		const p = join(agentDir, name);
-		if (!existsSync(p)) continue;
-		h.update(`file:${name}\n`);
-		h.update(readFileSync(p));
-		h.update("\n");
-	}
-	const srcDir = join(agentDir, "src");
-	if (!existsSync(srcDir)) return h.digest("hex");
-
-	function walk(dir, acc = []) {
-		for (const ent of readdirSync(dir, { withFileTypes: true })) {
-			const p = join(dir, ent.name);
-			if (ent.isDirectory()) walk(p, acc);
-			else if (ent.name.endsWith(".rs")) acc.push(p);
-		}
-		return acc;
-	}
-	for (const p of walk(srcDir).sort()) {
-		const rel = p.slice(agentDir.length + 1).replace(/\\/g, "/");
-		h.update(`file:${rel}\n`);
-		h.update(readFileSync(p));
-		h.update("\n");
-	}
-	return h.digest("hex");
-}
-
-function dockerImageId(ref) {
-	try {
-		return run(`docker image inspect -f "{{.Id}}" ${ref}`, { capture: true });
-	} catch {
-		return null;
-	}
-}
-
-function nodeImageId(node, ref) {
-	try {
-		return run(`docker exec ${node} docker image inspect -f "{{.Id}}" ${ref}`, { capture: true });
-	} catch {
-		return null;
-	}
-}
-
-/** True when every running node already has the same image digest as the host. */
-function agentImageLoadedOnNodes(image, nodes) {
-	const hostId = dockerImageId(image);
-	if (!hostId) return false;
-	for (const node of nodes) {
-		if (!containerRunning(node)) continue;
-		if (nodeImageId(node, image) !== hostId) return false;
-	}
-	return true;
 }
 
 function loadImageIntoNodes(image, nodes) {
@@ -191,37 +129,13 @@ console.log(`\nCluster nodes: ${allNodes.join(", ")}`);
 
 // ── Build images ──────────────────────────────────────────────────────────────
 
-console.log("\n>>> Building sw4rmbot:local");
-const appVersion = JSON.parse(readFileSync(join(ROOT_DIR, "package.json"), "utf8")).version;
-run(`docker build -t sw4rmbot:local --build-arg APP_VERSION=${appVersion} .`);
+console.log("\n>>> Building swarmboty:local");
+run(`docker build -t swarmboty:local .`);
 
 const hasAgent = existsSync(join(AGENT_DIR, "Dockerfile"));
-const forceAgentBuild =
-	process.env.SWARM_FORCE_AGENT_BUILD === "1" || process.env.SWARM_FORCE_AGENT_BUILD === "true";
-const skipAgentBuild =
-	process.env.SWARM_SKIP_AGENT_BUILD === "1" || process.env.SWARM_SKIP_AGENT_BUILD === "true";
-const forceAgentLoad =
-	process.env.SWARM_FORCE_AGENT_LOAD === "1" || process.env.SWARM_FORCE_AGENT_LOAD === "true";
-
 if (hasAgent) {
-	mkdirSync(CACHE_DIR, { recursive: true });
-	const fingerprint = agentSourceFingerprint(AGENT_DIR);
-	const prevHash = existsSync(AGENT_HASH_FILE) ? readFileSync(AGENT_HASH_FILE, "utf8").trim() : "";
-	const imageReady = dockerImageId("swarmagent:local") != null;
-
-	if (skipAgentBuild) {
-		if (!imageReady) {
-			console.error("\nError: SWARM_SKIP_AGENT_BUILD set but swarmagent:local is missing.");
-			process.exit(1);
-		}
-		console.log("\n>>> swarmagent:local — build skipped (SWARM_SKIP_AGENT_BUILD)");
-	} else if (!forceAgentBuild && fingerprint === prevHash && imageReady) {
-		console.log("\n>>> swarmagent:local — unchanged, skipping build (use SWARM_FORCE_AGENT_BUILD=1 to rebuild)");
-	} else {
-		console.log("\n>>> Building swarmagent:local");
-		run(`docker build -t swarmagent:local "${AGENT_DIR}"`);
-		writeFileSync(AGENT_HASH_FILE, fingerprint, "utf8");
-	}
+	console.log("\n>>> Building swarmagent:local");
+	run(`docker build -t swarmagent:local "${AGENT_DIR}"`);
 } else {
 	console.warn(`\nWarning: swarmagent not found at ${AGENT_DIR} — agent service will be skipped.`);
 }
@@ -230,22 +144,18 @@ if (hasAgent) {
 
 console.log("\n>>> Loading images into DinD nodes");
 
-// app/db/influxdb are pinned to manager — only manager needs sw4rmbot:local
-loadImageIntoNodes("sw4rmbot:local", [MANAGER]);
+// app/db/influxdb are pinned to manager — only manager needs swarmboty:local
+loadImageIntoNodes("swarmboty:local", [MANAGER]);
 
 // agent runs in global mode — all active nodes need swarmagent:local
 if (hasAgent) {
-	if (forceAgentLoad || !agentImageLoadedOnNodes("swarmagent:local", allNodes)) {
-		loadImageIntoNodes("swarmagent:local", allNodes);
-	} else {
-		console.log("\n>>> swarmagent:local already on cluster nodes — skipping load (SWARM_FORCE_AGENT_LOAD=1 to reload)");
-	}
+	loadImageIntoNodes("swarmagent:local", allNodes);
 }
 
 // ── Deploy stack ──────────────────────────────────────────────────────────────
 
 const ip = managerIp();
-const composeInManager = "/tmp/sw4rmbot-stack.yml";
+const composeInManager = "/tmp/swarmboty-stack.yml";
 const composeBody = readFileSync(COMPOSE_FILE, "utf8");
 
 console.log(`\n>>> Deploying stack '${STACK}' to DinD Swarm (manager ${ip})`);
@@ -255,16 +165,9 @@ const copyCompose = spawnSync(
 	{ input: composeBody, stdio: ["pipe", "inherit", "inherit"], encoding: "utf8" }
 );
 if (copyCompose.status !== 0) {
-	throw new Error(`failed to copy examples/docker-compose.local.yml into ${MANAGER}`);
+	throw new Error(`failed to copy ${COMPOSE_FILE} into ${MANAGER}`);
 }
 run(`docker exec ${MANAGER} docker stack deploy -c ${composeInManager} ${STACK}`);
-
-// Same tag (`:local`) — force tasks to pick up freshly loaded images.
-console.log("\n>>> Rolling service updates (force)");
-run(`docker exec ${MANAGER} docker service update --force ${STACK}_app`);
-if (hasAgent) {
-	run(`docker exec ${MANAGER} docker service update --force ${STACK}_agent`);
-}
 
 // ── Summary ───────────────────────────────────────────────────────────────────
 
