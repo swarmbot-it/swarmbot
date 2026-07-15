@@ -8,12 +8,15 @@ import { logger } from "../logger.js";
  */
 type StatsPayload = {
 	id: string;
+	/** "swarm" | "kubernetes" — stamped by the agent on every payload. */
+	orchestrator?: string;
 	cpu: { used_percentage: number; cores: number };
 	memory: { total: number; used: number; used_percentage: number; free: number };
 	disk: { total: number; used: number; used_percentage: number; free: number };
 	tasks?: Array<{
 		name: string;
 		id: string;
+		namespace?: string;
 		cpuPercentage: number;
 		memory: number;
 		memoryLimit: number;
@@ -60,10 +63,16 @@ export function startStatsWriter(cfg: SwarmbotyConfig): (event: Record<string, u
 			);
 		}
 		if (msg.tasks) {
+			const isKube = msg.orchestrator === "kubernetes";
 			for (const t of msg.tasks) {
-				const cname = (t.name || t.id.slice(0, 12)).replace(/ /g, "\\ ").replace(/,/g, "\\,");
+				// Kubernetes container names are not unique across pods — tag with
+				// the unique `{namespace}/{pod}/{container}` id instead, which the
+				// resolvers match by `{namespace}/{pod}` prefix (the task id).
+				const raw = isKube ? t.id : t.name || t.id.slice(0, 12);
+				const cname = raw.replace(/ /g, "\\ ").replace(/,/g, "\\,");
+				const nsTag = isKube && t.namespace ? `,namespace=${t.namespace}` : "";
 				lines.push(
-					`container_stats,node=${nodeId},container=${cname} cpu_percent=${t.cpuPercentage},mem_percent=${t.memoryPercentage} ${ts}`
+					`container_stats,node=${nodeId},container=${cname}${nsTag} cpu_percent=${t.cpuPercentage},mem_percent=${t.memoryPercentage} ${ts}`
 				);
 			}
 		}

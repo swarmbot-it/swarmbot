@@ -9,6 +9,8 @@ import { loadConfig, type SwarmbotyConfig } from "../config.js";
 import { derivePassword } from "../auth/password.js";
 import { createHttpServer } from "../server.js";
 import { createDocker } from "../docker/engine.js";
+import { SwarmOrchestrator } from "../orchestrator/swarm/adapter.js";
+import type { Orchestrator } from "../orchestrator/types.js";
 import type { GraphQLContext } from "../graphql/context.js";
 import { buildContext } from "../graphql/context.js";
 import type Dockerode from "dockerode";
@@ -19,6 +21,7 @@ export type TestHttp = {
 	cfg: SwarmbotyConfig;
 	db: Kysely<Database>;
 	docker: Dockerode;
+	orchestrator: Orchestrator;
 	cleanup: () => Promise<void>;
 };
 
@@ -45,6 +48,7 @@ export async function startTestHttp(opts?: Partial<SwarmbotyConfig>): Promise<Te
 	};
 
 	const docker = createDocker(cfg);
+	const orchestrator = new SwarmOrchestrator(cfg, docker);
 	const { httpServer, cleanup } = await createHttpServer(cfg, db);
 	httpServer.listen(0, "127.0.0.1");
 	await once(httpServer, "listening");
@@ -60,6 +64,7 @@ export async function startTestHttp(opts?: Partial<SwarmbotyConfig>): Promise<Te
 		cfg,
 		db,
 		docker,
+		orchestrator,
 		cleanup: async () => {
 			await cleanup();
 			if (httpServer.listening) {
@@ -75,7 +80,7 @@ export function gqlContext(
 	req: { headers: Record<string, string | undefined>; swarmUser?: GraphQLContext["user"] },
 	test: TestHttp
 ): GraphQLContext {
-	return buildContext(req as Parameters<typeof buildContext>[0], test.cfg, test.db, test.docker);
+	return buildContext(req as Parameters<typeof buildContext>[0], test.cfg, test.db, test.orchestrator, test.docker);
 }
 
 export async function gql<T>(

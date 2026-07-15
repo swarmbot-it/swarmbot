@@ -14,16 +14,12 @@ import {
 	createNetworkInputSchema,
 } from "../validation/schemas.js";
 import {
-	aggregateStacks,
-	countRunningTasksByService,
 	forceUpdateService,
 	mapConfigSummary,
 	mapNetworkSummary,
 	mapNodeSummary,
-	mapServiceDetail,
 	mapServiceSummary,
 	mapStamped,
-	mapTaskSummary,
 	mapVolumeSummary,
 	rollbackServiceById,
 	scaleServiceById,
@@ -31,8 +27,10 @@ import {
 	setNodeAvailability,
 	type NodeSummary,
 	type ServiceSummary,
+	type TaskSummary,
 } from "../docker/engine.js";
-import { stackDeploy, stackRemove } from "../docker/cli.js";
+import { stackRemove } from "../docker/cli.js";
+import { ManifestValidationError } from "../orchestrator/kubernetes/adapter.js";
 import yaml from "js-yaml";
 import { pubsub, SWARM_TOPIC } from "./pubsub.js";
 import type Dockerode from "dockerode";
@@ -69,6 +67,22 @@ import {
 import { influxQuery } from "../influx.js";
 import { recentEvents } from "../events/hub.js";
 import { recordDailySnapshot, weekOverWeekDeltas } from "../store/metrics-history.js";
+
+/** Raised for operations with no equivalent on the active orchestrator backend. */
+function notSupportedError(ctx: GraphQLContext): Error {
+	return localizedError(
+		ctx.locale,
+		"errors.notSupportedInOrchestrator",
+		"NOT_SUPPORTED_IN_ORCHESTRATOR"
+	);
+}
+
+/** Guard for Swarm-only mutations (they drive Dockerode/`docker stack` directly). */
+function requireSwarm(ctx: GraphQLContext): void {
+	if (ctx.orchestrator.kind !== "swarm") {
+		throw notSupportedError(ctx);
+	}
+}
 
 function summarizeDockerEvent(raw: string): string {
 	try {
@@ -243,19 +257,40 @@ async function fetchTaskContainerStats(ctx: GraphQLContext): Promise<Map<string,
 	return map;
 }
 
+/**
+ * Container-stats lookup for one task. The agent tags each series with the
+ * container name: Swarm uses `/{service}.{slot}.{taskId}`, Kubernetes uses
+ * the unique `{namespace}/{pod}/{container}` id (the task id is `{ns}/{pod}`,
+ * so a prefix match aggregates over the pod's containers).
+ */
+function taskContainerSeries(
+	kind: string,
+	ts: TaskSummary,
+	svc: ServiceSummary | undefined,
+	containerStats: Map<string, ContainerSeries>
+): ContainerSeries | undefined {
+	if (kind === "kubernetes") {
+		for (const [key, series] of containerStats) {
+			if (key.startsWith(`${ts.id}/`)) return series;
+		}
+		return undefined;
+	}
+	return svc ? containerStats.get(`/${svc.name}.${ts.slot}.${ts.id}`) : undefined;
+}
+
 /** Shared per-task mapping used by both the tasks list and the single-task detail lookup. */
 function mapTaskInfo(
-	raw: unknown,
+	ts: TaskSummary,
 	idx: number,
+	kind: string,
 	svcMap: Map<string | undefined, ServiceSummary>,
 	nodeMap: Map<string | undefined, NodeSummary>,
 	containerStats: Map<string, ContainerSeries>,
 	hasInflux: boolean
 ) {
-	const ts = mapTaskSummary(raw);
 	const svc = svcMap.get(ts.serviceId);
 	const node = nodeMap.get(ts.nodeId);
-	const stats = svc ? containerStats.get(`/${svc.name}.${ts.slot}.${ts.id}`) : undefined;
+	const stats = taskContainerSeries(kind, ts, svc, containerStats);
 
 	// A task that isn't running has no live process to measure — showing a
 	// pseudo/mock number here would misrepresent a dead task as consuming
@@ -287,10 +322,9 @@ function mapTaskInfo(
 	}
 
 	const updatedAge = Date.now() - new Date(ts.timestamp).getTime();
-	const rawStatus = (raw as { Status?: { Message?: string; Err?: string } }).Status;
 	return {
 		id: ts.id,
-		name: svc ? `${svc.name}.${ts.slot}` : ts.id,
+		name: ts.name ?? (svc ? `${svc.name}.${ts.slot}` : ts.id),
 		image: svc?.image ?? "—",
 		node: node?.hostname ?? ts.nodeId,
 		cpu,
@@ -302,7 +336,7 @@ function mapTaskInfo(
 		serviceName: svc?.name ?? null,
 		nodeHostname: node?.hostname ?? ts.nodeId ?? null,
 		desiredState: ts.desiredState.toUpperCase(),
-		message: rawStatus?.Err || rawStatus?.Message || null,
+		message: ts.message ?? null,
 	};
 }
 
@@ -326,8 +360,7 @@ export const resolvers = {
 			version: process.env.SWARMBOTY_VERSION ?? "0.1.0",
 			dockerApi: ctx.cfg.dockerApi,
 			instanceName: ctx.cfg.instanceName ?? null,
-			// No orchestrator abstraction yet — this backend only ever talks to Docker Swarm.
-			orchestrator: "swarm",
+			orchestrator: ctx.orchestrator.kind,
 			influxdb: Boolean(ctx.cfg.influxdbUrl),
 		}),
 		me: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
@@ -348,60 +381,51 @@ export const resolvers = {
 		},
 		overview: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
 			requireUser(ctx);
-			const docker = ctx.docker as Dockerode & {
-				listSecrets(): Promise<unknown[]>;
-				listConfigs(): Promise<unknown[]>;
-			};
+			const orch = ctx.orchestrator;
 			const [
 				services,
-				nodesRaw,
+				nodesBase,
 				tasks,
 				networks,
-				volRes,
+				volumes,
 				secrets,
 				configs,
+				stacksList,
+				health,
 				registries,
 				users,
 			] = await Promise.all([
-				docker.listServices(),
-				docker.listNodes(),
-				docker.listTasks(),
-				docker.listNetworks(),
-				docker.listVolumes(),
-				docker.listSecrets(),
-				docker.listConfigs(),
+				orch.listServices(),
+				orch.listNodes(),
+				orch.listTasks(),
+				orch.listNetworks(),
+				orch.listVolumes(),
+				orch.listSecrets(),
+				orch.listConfigs(),
+				orch.listStacks(),
+				orch.clusterHealth(),
 				listRegistries(ctx.db),
 				listUserAccounts(ctx.db),
 			]);
-			const nodes = await decorateNodes(ctx, nodesRaw.map(mapNodeSummary));
+			const nodes = await decorateNodes(ctx, nodesBase);
 			const active = nodes.filter((n) => !n.tags.includes("DRAIN"));
 			const avg = (key: "cpu" | "mem" | "disk") =>
 				active.length === 0
 					? 0
 					: Math.round(active.reduce((s, n) => s + n[key], 0) / active.length);
-			const volumes = (volRes as { Volumes?: unknown[] }).Volumes ?? [];
-			const managersTotal = nodes.filter((n) => n.role === "manager").length;
-			const managersReady = nodes.filter(
-				(n) => n.role === "manager" && (n.tags.includes("LEADER") || n.tags.includes("REACHABLE"))
-			).length;
+			const managersTotal = health.managersTotal;
+			const managersReady = health.managersReady;
 			const workers = nodes.filter((n) => n.role === "worker").length;
-			const nodeResources = nodesRaw as unknown as Array<{
-				Description?: { Resources?: { NanoCPUs?: number; MemoryBytes?: number } };
-			}>;
 			const cpuCores =
-				Math.round(
-					nodeResources.reduce((s, n) => s + (n.Description?.Resources?.NanoCPUs ?? 0), 0) / 1e9
-				) || nodes.length * 16;
+				Math.round(nodes.reduce((s, n) => s + (n.cpuCores ?? 0), 0)) || nodes.length * 16;
 			const memBytesTotal =
-				nodeResources.reduce((s, n) => s + (n.Description?.Resources?.MemoryBytes ?? 0), 0) ||
-				nodes.length * 48e9;
+				nodes.reduce((s, n) => s + (n.memBytes ?? 0), 0) || nodes.length * 48e9;
 			const diskBytesTotal = (await latestDiskBytesTotal(ctx)) || nodes.length * 1.5e12;
 			const cpu = avg("cpu");
 			const mem = avg("mem");
 			const disk = avg("disk");
-			const stacksCount = aggregateStacks(services, networks.map(mapNetworkSummary)).length;
-			const rawTasks = tasks as unknown as Array<{ Status?: { State?: string } }>;
-			const tasksRunning = rawTasks.filter((t) => t.Status?.State === "running").length;
+			const stacksCount = stacksList.length;
+			const tasksRunning = tasks.filter((t) => t.state === "running").length;
 			const counts = { stacks: stacksCount, services: services.length, tasks: tasks.length };
 			await recordDailySnapshot(ctx.db, counts);
 			const deltas = await weekOverWeekDeltas(ctx.db, counts);
@@ -434,88 +458,51 @@ export const resolvers = {
 		},
 		stacks: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
 			requireUser(ctx);
-			const docker = ctx.docker as Dockerode & {
-				listSecrets(): Promise<unknown[]>;
-				listConfigs(): Promise<unknown[]>;
-			};
-			const [services, networks, volRes, secrets, configs] = await Promise.all([
-				ctx.docker.listServices(),
-				ctx.docker.listNetworks(),
-				ctx.docker.listVolumes(),
-				docker.listSecrets(),
-				docker.listConfigs(),
-			]);
-			const volumes = ((volRes as { Volumes?: unknown[] }).Volumes ?? []).map(mapVolumeSummary);
-			return aggregateStacks(
-				services,
-				networks.map(mapNetworkSummary),
-				volumes,
-				configs.map(mapStamped),
-				secrets.map(mapStamped)
-			);
+			return ctx.orchestrator.listStacks();
 		},
 		services: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
 			requireUser(ctx);
-			const [list, tasks] = await Promise.all([ctx.docker.listServices(), ctx.docker.listTasks()]);
-			const running = countRunningTasksByService(tasks);
-			return list.map((s) => {
-				const summary = mapServiceSummary(s);
-				const withRunning = { ...summary, replicasRunning: running.get(summary.id) ?? 0 };
-				return { ...withRunning, status: classifyService(withRunning) };
-			});
+			const list = await ctx.orchestrator.listServices();
+			return list.map((s) => ({ ...s, status: classifyService(s) }));
 		},
 		service: async (_: unknown, { id }: { id: string }, ctx: GraphQLContext) => {
 			requireUser(ctx);
-			let inspected: unknown;
-			try {
-				inspected = await ctx.docker.getService(id).inspect();
-			} catch {
-				return null;
-			}
-			const tasks = await ctx.docker.listTasks();
-			const running = countRunningTasksByService(tasks);
-			const detail = mapServiceDetail(inspected);
-			const withRunning = { ...detail, replicasRunning: running.get(detail.id) ?? 0 };
-			return { ...withRunning, status: classifyService(withRunning) };
+			const detail = await ctx.orchestrator.getService(id);
+			if (!detail) return null;
+			return { ...detail, status: classifyService(detail) };
 		},
 		tasks: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
 			requireUser(ctx);
-			const [tasksRaw, services, nodes, containerStats] = await Promise.all([
-				ctx.docker.listTasks(),
-				ctx.docker.listServices(),
-				ctx.docker.listNodes(),
+			const [tasks, services, nodes, containerStats] = await Promise.all([
+				ctx.orchestrator.listTasks(),
+				ctx.orchestrator.listServices(),
+				ctx.orchestrator.listNodes(),
 				fetchTaskContainerStats(ctx),
 			]);
-			const nodeMap = new Map(
-				nodes.map((n) => [(n as unknown as { ID?: string }).ID, mapNodeSummary(n)])
-			);
-			const svcMap = new Map(
-				services.map((s) => [(s as unknown as { ID?: string }).ID, mapServiceSummary(s)])
-			);
+			const nodeMap = new Map(nodes.map((n) => [n.id as string | undefined, n]));
+			const svcMap = new Map(services.map((s) => [s.id as string | undefined, s]));
 			const hasInflux = Boolean(ctx.cfg.influxdbUrl);
-			return tasksRaw.map((t, idx) =>
-				mapTaskInfo(t, idx, svcMap, nodeMap, containerStats, hasInflux)
+			const kind = ctx.orchestrator.kind;
+			return tasks.map((t, idx) =>
+				mapTaskInfo(t, idx, kind, svcMap, nodeMap, containerStats, hasInflux)
 			);
 		},
 		task: async (_: unknown, { id }: { id: string }, ctx: GraphQLContext) => {
 			requireUser(ctx);
-			const [tasksRaw, services, nodes, containerStats] = await Promise.all([
-				ctx.docker.listTasks(),
-				ctx.docker.listServices(),
-				ctx.docker.listNodes(),
+			const [tasks, services, nodes, containerStats] = await Promise.all([
+				ctx.orchestrator.listTasks(),
+				ctx.orchestrator.listServices(),
+				ctx.orchestrator.listNodes(),
 				fetchTaskContainerStats(ctx),
 			]);
-			const idx = tasksRaw.findIndex((t) => (t as unknown as { ID?: string }).ID === id);
+			const idx = tasks.findIndex((t) => t.id === id);
 			if (idx < 0) return null;
-			const nodeMap = new Map(
-				nodes.map((n) => [(n as unknown as { ID?: string }).ID, mapNodeSummary(n)])
-			);
-			const svcMap = new Map(
-				services.map((s) => [(s as unknown as { ID?: string }).ID, mapServiceSummary(s)])
-			);
+			const nodeMap = new Map(nodes.map((n) => [n.id as string | undefined, n]));
+			const svcMap = new Map(services.map((s) => [s.id as string | undefined, s]));
 			return mapTaskInfo(
-				tasksRaw[idx],
+				tasks[idx],
 				idx,
+				ctx.orchestrator.kind,
 				svcMap,
 				nodeMap,
 				containerStats,
@@ -531,27 +518,34 @@ export const resolvers = {
 			const range = (args.range ?? "1h") as Range;
 			const empty = { labels: [] as string[], cpu: [] as number[], mem: [] as number[] };
 
-			const [tasksRaw, services] = await Promise.all([
-				ctx.docker.listTasks(),
-				ctx.docker.listServices(),
+			const [tasks, services] = await Promise.all([
+				ctx.orchestrator.listTasks(),
+				ctx.orchestrator.listServices(),
 			]);
-			const raw = tasksRaw.find((t) => (t as unknown as { ID?: string }).ID === args.id);
-			const ts = raw ? mapTaskSummary(raw) : null;
+			const ts = tasks.find((t) => t.id === args.id) ?? null;
 			// A dead task (failed/shutdown/rejected/...) has no live container to
 			// measure — only "running" is eligible for real stats or, absent
 			// Influx, the mock placeholder. Everything else gets an honest empty
 			// series instead of a fabricated chart.
 			const isRunning = ts?.state === "running";
+			const kind = ctx.orchestrator.kind;
+			// Task ids are spliced into an InfluxQL regex — restrict them to the
+			// backend's id alphabet (Swarm: hex-ish, Kubernetes: `{ns}/{pod}`).
+			const idOk =
+				kind === "kubernetes"
+					? /^[a-z0-9.-]+\/[a-z0-9.-]+$/i.test(args.id)
+					: /^[a-z0-9]+$/i.test(args.id);
 
-			if (ctx.cfg.influxdbUrl && ts && /^[a-z0-9]+$/i.test(args.id)) {
+			if (ctx.cfg.influxdbUrl && ts && idOk) {
 				try {
-					const svcMap = new Map(
-						services.map((s) => [(s as unknown as { ID?: string }).ID, mapServiceSummary(s)])
-					);
+					const svcMap = new Map(services.map((s) => [s.id as string | undefined, s]));
 					const svc = svcMap.get(ts.serviceId);
-					if (svc) {
-						const escapedName = svc.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-						const pattern = `^\\/?${escapedName}\\.${ts.slot}\\.${args.id}`;
+					if (svc || kind === "kubernetes") {
+						const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\/]/g, "\\$&");
+						const pattern =
+							kind === "kubernetes"
+								? `^${escape(ts.id)}\\/`
+								: `^\\/?${escape(svc!.name)}\\.${ts.slot}\\.${args.id}`;
 						const RANGES: Record<string, { window: string; bucket: string }> = {
 							"15m": { window: "15m", bucket: "30s" },
 							"1h": { window: "1h", bucket: "1m" },
@@ -596,33 +590,23 @@ export const resolvers = {
 		},
 		nodes: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
 			requireUser(ctx);
-			const list = await ctx.docker.listNodes();
-			return decorateNodes(
-				ctx,
-				list.map((n) => mapNodeSummary(n))
-			);
+			return decorateNodes(ctx, await ctx.orchestrator.listNodes());
 		},
 		networks: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
 			requireUser(ctx);
-			const list = await ctx.docker.listNetworks();
-			return list.map(mapNetworkSummary);
+			return ctx.orchestrator.listNetworks();
 		},
 		volumes: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
 			requireUser(ctx);
-			const res = (await ctx.docker.listVolumes()) as unknown as { Volumes?: unknown[] };
-			return (res.Volumes ?? []).map(mapVolumeSummary);
+			return ctx.orchestrator.listVolumes();
 		},
 		secrets: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
 			requireUser(ctx);
-			const docker = ctx.docker as Dockerode & { listSecrets(): Promise<unknown[]> };
-			const list = await docker.listSecrets();
-			return list.map(mapStamped);
+			return ctx.orchestrator.listSecrets();
 		},
 		configs: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
 			requireUser(ctx);
-			const docker = ctx.docker as Dockerode & { listConfigs(): Promise<unknown[]> };
-			const list = await docker.listConfigs();
-			return list.map(mapConfigSummary);
+			return ctx.orchestrator.listConfigs();
 		},
 		registries: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
 			requireUser(ctx);
@@ -709,15 +693,24 @@ export const resolvers = {
 
 			if (ctx.cfg.influxdbUrl) {
 				try {
-					const services = await ctx.docker.listServices();
-					const names = services
-						.map((s: Dockerode.Service) => mapServiceSummary(s))
-						.filter((s) => s.stack === args.name)
-						.map((s) => s.name)
-						.filter(Boolean);
-					if (names.length > 0) {
-						const escaped = names.map((n) => n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
-						const pattern = `^\\/?(${escaped.join("|")})\\.`;
+					const kind = ctx.orchestrator.kind;
+					const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\/]/g, "\\$&");
+					let pattern: string | null = null;
+					if (kind === "kubernetes") {
+						// The agent's container ids are `{namespace}/{pod}/{container}`
+						// and the stack IS the namespace.
+						pattern = `^${escape(args.name)}\\/`;
+					} else {
+						const services = await ctx.orchestrator.listServices();
+						const names = services
+							.filter((s) => s.stack === args.name)
+							.map((s) => s.name)
+							.filter(Boolean);
+						if (names.length > 0) {
+							pattern = `^\\/?(${names.map(escape).join("|")})\\.`;
+						}
+					}
+					if (pattern) {
 						const RANGES: Record<string, { window: string; bucket: string }> = {
 							"15m": { window: "15m", bucket: "30s" },
 							"1h": { window: "1h", bucket: "1m" },
@@ -855,7 +848,8 @@ export const resolvers = {
 			ctx: GraphQLContext
 		) => {
 			requireEditor(ctx);
-			if (ctx.cfg.mock) {
+			const orch = ctx.orchestrator;
+			if (ctx.cfg.mock && orch.kind === "swarm") {
 				let compose: unknown;
 				try {
 					compose = yaml.load(input.composeYaml);
@@ -876,26 +870,28 @@ export const resolvers = {
 					status: "PENDING",
 				};
 			}
-			await stackDeploy(ctx.cfg, input.name, input.composeYaml);
-			const docker = ctx.docker as Dockerode & {
-				listSecrets(): Promise<unknown[]>;
-				listConfigs(): Promise<unknown[]>;
-			};
-			const [services, networks, volRes, secrets, configs] = await Promise.all([
-				ctx.docker.listServices(),
-				ctx.docker.listNetworks(),
-				ctx.docker.listVolumes(),
-				docker.listSecrets(),
-				docker.listConfigs(),
-			]);
-			const volumes = ((volRes as { Volumes?: unknown[] }).Volumes ?? []).map(mapVolumeSummary);
-			const stacks = aggregateStacks(
-				services,
-				networks.map(mapNetworkSummary),
-				volumes,
-				configs.map(mapStamped),
-				secrets.map(mapStamped)
-			);
+			try {
+				// Swarm: compose YAML via `docker stack deploy`.
+				// Kubernetes: multi-document manifest YAML applied into the namespace.
+				await orch.deployStack(input.name, input.composeYaml);
+			} catch (e) {
+				if (e instanceof ManifestValidationError) {
+					// Compose input on Kubernetes is a capability gap, not a syntax
+					// error — surface it as NOT_SUPPORTED_IN_ORCHESTRATOR.
+					const parsed = (() => {
+						try {
+							return yaml.load(input.composeYaml) as Record<string, unknown> | null;
+						} catch {
+							return null;
+						}
+					})();
+					if (parsed && typeof parsed === "object" && "services" in parsed) {
+						throw notSupportedError(ctx);
+					}
+				}
+				throw e;
+			}
+			const stacks = await orch.listStacks();
 			return (
 				stacks.find((s) => s.name === input.name) ?? {
 					name: input.name,
@@ -910,12 +906,14 @@ export const resolvers = {
 		},
 		removeStack: async (_: unknown, { name }: { name: string }, ctx: GraphQLContext) => {
 			requireEditor(ctx);
+			requireSwarm(ctx);
 			if (ctx.cfg.mock) return true;
 			await stackRemove(ctx.cfg, name);
 			return true;
 		},
 		redeployStack: async (_: unknown, { name }: { name: string }, ctx: GraphQLContext) => {
 			requireEditor(ctx);
+			requireSwarm(ctx);
 			if (ctx.cfg.mock) return true;
 			const ids = await serviceIdsForStack(ctx.docker, name);
 			for (const id of ids) await forceUpdateService(ctx.docker, id);
@@ -923,6 +921,7 @@ export const resolvers = {
 		},
 		rollbackStack: async (_: unknown, { name }: { name: string }, ctx: GraphQLContext) => {
 			requireEditor(ctx);
+			requireSwarm(ctx);
 			if (ctx.cfg.mock) return true;
 			const ids = await serviceIdsForStack(ctx.docker, name);
 			for (const id of ids) await rollbackServiceById(ctx.docker, id);
@@ -930,6 +929,7 @@ export const resolvers = {
 		},
 		deactivateStack: async (_: unknown, { name }: { name: string }, ctx: GraphQLContext) => {
 			requireEditor(ctx);
+			requireSwarm(ctx);
 			if (ctx.cfg.mock) return true;
 			const ids = await serviceIdsForStack(ctx.docker, name);
 			for (const id of ids) await scaleServiceById(ctx.docker, id, 0);
@@ -937,6 +937,7 @@ export const resolvers = {
 		},
 		reactivateStack: async (_: unknown, { name }: { name: string }, ctx: GraphQLContext) => {
 			requireEditor(ctx);
+			requireSwarm(ctx);
 			if (ctx.cfg.mock) return true;
 			const ids = await serviceIdsForStack(ctx.docker, name);
 			for (const id of ids) await scaleServiceById(ctx.docker, id, 1);
@@ -959,6 +960,7 @@ export const resolvers = {
 			ctx: GraphQLContext
 		) => {
 			requireEditor(ctx);
+			requireSwarm(ctx);
 			if (ctx.cfg.mock) {
 				return {
 					id: `svc_${randomUUID().slice(0, 8)}`,
@@ -1001,18 +1003,21 @@ export const resolvers = {
 		},
 		removeService: async (_: unknown, { id }: { id: string }, ctx: GraphQLContext) => {
 			requireEditor(ctx);
+			requireSwarm(ctx);
 			if (ctx.cfg.mock) return true;
 			await ctx.docker.getService(id).remove();
 			return true;
 		},
 		redeployService: async (_: unknown, { id }: { id: string }, ctx: GraphQLContext) => {
 			requireEditor(ctx);
+			requireSwarm(ctx);
 			if (ctx.cfg.mock) return true;
 			await forceUpdateService(ctx.docker, id);
 			return true;
 		},
 		rollbackService: async (_: unknown, { id }: { id: string }, ctx: GraphQLContext) => {
 			requireEditor(ctx);
+			requireSwarm(ctx);
 			if (ctx.cfg.mock) return true;
 			await rollbackServiceById(ctx.docker, id);
 			return true;
@@ -1023,6 +1028,7 @@ export const resolvers = {
 			ctx: GraphQLContext
 		) => {
 			requireEditor(ctx);
+			requireSwarm(ctx);
 			if (ctx.cfg.mock) return true;
 			await scaleServiceById(ctx.docker, id, replicas);
 			return true;
@@ -1046,6 +1052,7 @@ export const resolvers = {
 			ctx: GraphQLContext
 		) => {
 			requireAdmin(ctx);
+			requireSwarm(ctx);
 			input = validateInput(createNetworkInputSchema, input, ctx.locale);
 			if (ctx.cfg.mock) {
 				return {
@@ -1082,6 +1089,7 @@ export const resolvers = {
 		},
 		removeNetwork: async (_: unknown, { id }: { id: string }, ctx: GraphQLContext) => {
 			requireAdmin(ctx);
+			requireSwarm(ctx);
 			if (ctx.cfg.mock) return true;
 			await ctx.docker.getNetwork(id).remove();
 			return true;
@@ -1092,6 +1100,7 @@ export const resolvers = {
 			ctx: GraphQLContext
 		) => {
 			requireAdmin(ctx);
+			requireSwarm(ctx);
 			if (ctx.cfg.mock) {
 				return {
 					name: input.name,
@@ -1113,6 +1122,7 @@ export const resolvers = {
 		},
 		removeVolume: async (_: unknown, { name }: { name: string }, ctx: GraphQLContext) => {
 			requireAdmin(ctx);
+			requireSwarm(ctx);
 			if (ctx.cfg.mock) return true;
 			await ctx.docker.getVolume(name).remove();
 			return true;
@@ -1123,6 +1133,7 @@ export const resolvers = {
 			ctx: GraphQLContext
 		) => {
 			requireAdmin(ctx);
+			requireSwarm(ctx);
 			if (ctx.cfg.mock) {
 				const now = new Date().toISOString();
 				return { id: `sec_${randomUUID().slice(0, 8)}`, name: input.name, created: now, updated: now, stack: null };
@@ -1134,6 +1145,7 @@ export const resolvers = {
 		},
 		removeSecret: async (_: unknown, { id }: { id: string }, ctx: GraphQLContext) => {
 			requireAdmin(ctx);
+			requireSwarm(ctx);
 			if (ctx.cfg.mock) return true;
 			await ctx.docker.getSecret(id).remove();
 			return true;
@@ -1144,6 +1156,7 @@ export const resolvers = {
 			ctx: GraphQLContext
 		) => {
 			requireAdmin(ctx);
+			requireSwarm(ctx);
 			if (ctx.cfg.mock) {
 				const now = new Date().toISOString();
 				return {
@@ -1162,6 +1175,7 @@ export const resolvers = {
 		},
 		removeConfig: async (_: unknown, { id }: { id: string }, ctx: GraphQLContext) => {
 			requireAdmin(ctx);
+			requireSwarm(ctx);
 			if (ctx.cfg.mock) return true;
 			await ctx.docker.getConfig(id).remove();
 			return true;
@@ -1201,6 +1215,7 @@ export const resolvers = {
 			ctx: GraphQLContext
 		) => {
 			requireAdmin(ctx);
+			requireSwarm(ctx);
 			if (availability !== "active" && availability !== "drain") {
 				throw new Error("availability must be \"active\" or \"drain\"");
 			}

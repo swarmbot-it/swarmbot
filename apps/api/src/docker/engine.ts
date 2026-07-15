@@ -146,6 +146,9 @@ export type NodeSummary = {
 	cpuHistory?: number[] | null;
 	memHistory?: number[] | null;
 	diskHistory?: number[] | null;
+	/** Physical capacity when the backend reports it (Swarm Description.Resources, k8s status.capacity). */
+	cpuCores?: number | null;
+	memBytes?: number | null;
 };
 
 export type TaskSummary = {
@@ -156,6 +159,10 @@ export type TaskSummary = {
 	desiredState: string;
 	slot: number;
 	timestamp: string;
+	/** Display name override (Kubernetes pod name); Swarm derives `{service}.{slot}`. */
+	name?: string | null;
+	/** Last task status message/error when the backend reports one. */
+	message?: string | null;
 };
 
 export type NetworkSummary = {
@@ -309,6 +316,11 @@ export function mapNodeSummary(n: Dockerode.Node): NodeSummary {
 	if (nl.Status?.State === "ready") tags.push("READY");
 	if (availability === "active") tags.push("ACTIVE");
 	if (availability === "drain") tags.push("DRAIN");
+	const resources = (
+		nl as unknown as {
+			Description?: { Resources?: { NanoCPUs?: number; MemoryBytes?: number } };
+		}
+	).Description?.Resources;
 	return {
 		id,
 		hostname,
@@ -320,6 +332,8 @@ export function mapNodeSummary(n: Dockerode.Node): NodeSummary {
 		cpu: 0,
 		mem: 0,
 		disk: 0,
+		cpuCores: resources?.NanoCPUs ? resources.NanoCPUs / 1e9 : null,
+		memBytes: resources?.MemoryBytes ?? null,
 	};
 }
 
@@ -343,6 +357,7 @@ export async function setNodeAvailability(
 
 export function mapTaskSummary(t: unknown): TaskSummary {
 	const tl = t as TaskLike;
+	const status = (t as { Status?: { Message?: string; Err?: string } }).Status;
 	return {
 		id: tl.ID ?? "",
 		serviceId: tl.ServiceID ?? "",
@@ -351,6 +366,7 @@ export function mapTaskSummary(t: unknown): TaskSummary {
 		desiredState: tl.DesiredState ?? "running",
 		slot: tl.Slot ?? 0,
 		timestamp: tl.Status?.Timestamp ?? new Date().toISOString(),
+		message: status?.Err || status?.Message || null,
 	};
 }
 

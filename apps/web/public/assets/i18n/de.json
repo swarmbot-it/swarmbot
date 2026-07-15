@@ -342,7 +342,8 @@
             "title": "Umgebung bereitstellen",
             "subtitle": "Compose-Datei oder Umgebungsdefinition einfügen.",
             "name": "Umgebungsname",
-            "content": "Umgebungsdatei"
+            "content": "Umgebungsdatei",
+            "contentManifest": "Kubernetes-Manifeste (YAML)"
         },
         "service": {
             "title": "Dienst erstellen",

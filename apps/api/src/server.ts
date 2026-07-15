@@ -25,7 +25,10 @@ import { decodeBasic, generateJwt, verifyJwt } from "./auth/jwt.js";
 import { allowAttempt } from "./auth/rate-limit.js";
 import { verifyPassword, derivePassword, isSha256Digest } from "./auth/password.js";
 import { revokeJti } from "./auth/blacklist.js";
-import { createDocker, setupDockerApi } from "./docker/engine.js";
+import { createDocker } from "./docker/engine.js";
+import { createOrchestrator } from "./orchestrator/factory.js";
+import { NoRunningTaskError, SwarmOrchestrator } from "./orchestrator/swarm/adapter.js";
+import { logger } from "./logger.js";
 import { consumeSlt, createSlt } from "./auth/slt.js";
 import { publishEvent, subscribeEvents } from "./events/hub.js";
 import { startStatsWriter } from "./events/stats-writer.js";
@@ -38,8 +41,12 @@ export async function createHttpServer(
 	apollo: ApolloServer<GraphQLContext>;
 	cleanup: () => Promise<void>;
 }> {
-	const docker = createDocker(cfg);
-	await setupDockerApi(cfg, docker);
+	const { orchestrator, detection } = await createOrchestrator(cfg);
+	logger.info({ orchestrator: orchestrator.kind, reason: detection.reason }, "Orchestrator selected");
+	// Raw Dockerode handle for Swarm-only mutations; on Kubernetes it is never
+	// used (every such mutation is guarded by an orchestrator-kind check).
+	const docker =
+		orchestrator instanceof SwarmOrchestrator ? orchestrator.docker : createDocker(cfg);
 
 	const app = express();
 	const httpServer = http.createServer(app);
@@ -60,7 +67,15 @@ export async function createHttpServer(
 					typeof langHeader === "string" ? langHeader : undefined
 				);
 				const ip = ctx.extra.request.socket.remoteAddress ?? "unknown";
-				const base: GraphQLContext = { cfg, db, docker, user: undefined, locale, ip };
+				const base: GraphQLContext = {
+					cfg,
+					db,
+					orchestrator,
+					docker,
+					user: undefined,
+					locale,
+					ip,
+				};
 				if (!auth || typeof auth !== "string") {
 					return base;
 				}
@@ -131,6 +146,7 @@ export async function createHttpServer(
 			name: "swarmboty",
 			version: process.env.SWARMBOTY_VERSION ?? "0.1.0",
 			docker: { api: cfg.dockerApi },
+			orchestrator: orchestrator.kind,
 			initialized: true,
 			instanceName: cfg.instanceName ?? null,
 		});
@@ -245,28 +261,16 @@ export async function createHttpServer(
 			res.status(401).json({ error: localizedMessage(locale, "errors.unauthenticated") });
 			return;
 		}
-		const serviceId = req.params.id;
+		const serviceId = String(req.params.id);
 		try {
-			const tasks = await docker.listTasks({
-				filters: { service: [serviceId], "desired-state": ["running"] },
-			});
-			const task = tasks[0];
-			const containerId = task?.Status?.ContainerStatus?.ContainerID;
-			if (!containerId) {
+			const logs = await orchestrator.serviceLogs(serviceId, { tail: 500 });
+			res.setHeader("Content-Type", "text/plain; charset=utf-8");
+			res.send(logs);
+		} catch (e) {
+			if (e instanceof NoRunningTaskError || /no running pod/i.test(String(e))) {
 				res.status(404).json({ error: localizedMessage(locale, "errors.noRunningTask") });
 				return;
 			}
-			const c = docker.getContainer(containerId);
-			const logStream = await c.logs({
-				stdout: true,
-				stderr: true,
-				tail: 500,
-				timestamps: true,
-				follow: false,
-			});
-			res.setHeader("Content-Type", "text/plain; charset=utf-8");
-			res.send(Buffer.from(logStream).toString("utf8"));
-		} catch (e) {
 			res.status(500).json({ error: String(e) });
 		}
 	});
@@ -279,7 +283,7 @@ export async function createHttpServer(
 		bodyParser.json(),
 		expressMiddleware(apollo, {
 			context: async ({ req }: { req: AuthedRequest }): Promise<GraphQLContext> =>
-				buildContext(req, cfg, db, docker),
+				buildContext(req, cfg, db, orchestrator, docker),
 		})
 	);
 

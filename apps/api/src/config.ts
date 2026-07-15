@@ -31,6 +31,14 @@ export type SwarmbotyConfig = {
 	allowedOrigins: string[] | undefined;
 	/** Shared secret required from swarmagent as X-Agent-Token on POST /events. Unset = no auth enforced (opt-in). */
 	agentSharedSecret: string | undefined;
+	/** Backend selection: explicit swarm/kubernetes, or auto-detection (default). */
+	orchestrator: "swarm" | "kubernetes" | "auto";
+	/** Explicit kubeconfig path for kubernetes mode (KUBECONFIG is honoured too). */
+	kubeconfig: string | undefined;
+	/** Restrict kubernetes views to a single namespace (default: all). */
+	k8sNamespace: string | undefined;
+	/** Which backend mock mode imitates: swarm (default) or kubernetes. */
+	mockOrchestrator: "swarm" | "kubernetes";
 };
 
 const defaults: SwarmbotyConfig = {
@@ -49,7 +57,17 @@ const defaults: SwarmbotyConfig = {
 	mock: false,
 	allowedOrigins: undefined,
 	agentSharedSecret: undefined,
+	orchestrator: "auto",
+	kubeconfig: undefined,
+	k8sNamespace: undefined,
+	mockOrchestrator: "swarm",
 };
+
+function envOrchestratorMode(key: string): "swarm" | "kubernetes" | "auto" | undefined {
+	const v = envStr(key)?.toLowerCase();
+	if (v === "swarm" || v === "kubernetes" || v === "auto") return v;
+	return undefined;
+}
 
 let dynamicDockerApi: string | undefined;
 
@@ -92,5 +110,12 @@ export function loadConfig(): SwarmbotyConfig {
 			.map((s) => s.trim())
 			.filter(Boolean),
 		agentSharedSecret: envStr("SWARMAGENT_SHARED_SECRET"),
+		orchestrator: envOrchestratorMode("SWARMBOTY_ORCHESTRATOR") ?? defaults.orchestrator,
+		kubeconfig: envStr("SWARMBOTY_KUBECONFIG"),
+		k8sNamespace: envStr("SWARMBOTY_K8S_NAMESPACE"),
+		mockOrchestrator:
+			envStr("SWARMBOTY_MOCK_ORCHESTRATOR")?.toLowerCase() === "kubernetes"
+				? "kubernetes"
+				: defaults.mockOrchestrator,
 	};
 }

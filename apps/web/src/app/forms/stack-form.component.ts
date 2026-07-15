@@ -14,6 +14,7 @@ import { Apollo } from "apollo-angular";
 import { ModalComponent } from "../shared/modal.component";
 import { IconComponent } from "../shared/icon.component";
 import { MUTATION_CREATE_STACK, QUERY_STACKS } from "../core/graphql.queries";
+import { OrchestratorStateService } from "../core/orchestrator-state.service";
 
 const COMPOSE_PLACEHOLDER = `version: "3.9"
 services:
@@ -29,6 +30,25 @@ services:
 networks:
   default:
     driver: overlay
+`;
+
+const MANIFEST_PLACEHOLDER = `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+        - name: web
+          image: nginx:1.27-alpine
 `;
 
 /**
@@ -54,7 +74,7 @@ networks:
 				<div class="field__error" *ngIf="error()">{{ error() }}</div>
 			</div>
 			<div class="field">
-				<label class="field__label">{{ "forms.stack.content" | transloco }}</label>
+				<label class="field__label">{{ contentLabelKey | transloco }}</label>
 				<textarea
 					class="textarea"
 					rows="14"
@@ -86,9 +106,18 @@ export class StackFormComponent {
 	/** Emitted after a successful deploy with the new stack name. */
 	@Output() created = new EventEmitter<{ name: string }>();
 
-	readonly placeholder = COMPOSE_PLACEHOLDER;
 	readonly error = signal("");
 	private readonly apollo = inject(Apollo);
+	private readonly orch = inject(OrchestratorStateService);
+
+	/** Kubernetes deploys raw manifests into the namespace; Swarm takes a Compose file. */
+	get placeholder(): string {
+		return this.orch.isKubernetes() ? MANIFEST_PLACEHOLDER : COMPOSE_PLACEHOLDER;
+	}
+
+	get contentLabelKey(): string {
+		return this.orch.isKubernetes() ? "forms.stack.contentManifest" : "forms.stack.content";
+	}
 
 	private readonly model = signal({ name: "", content: "" });
 	readonly stackForm = form(this.model, (f) => {

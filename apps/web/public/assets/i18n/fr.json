@@ -342,7 +342,8 @@
             "title": "Déployer un environnement",
             "subtitle": "Collez un fichier Compose ou une définition d'environnement.",
             "name": "Nom de l'environnement",
-            "content": "Fichier d'environnement"
+            "content": "Fichier d'environnement",
+            "contentManifest": "Manifestes Kubernetes (YAML)"
         },
         "service": {
             "title": "Créer un service",
