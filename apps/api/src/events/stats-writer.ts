@@ -6,6 +6,16 @@ import { logger } from "../logger.js";
  * Shape of the periodic "stats" event posted by swarmagent to `/events`
  * (see github.com/no-human-tech/sw4rm.agent, src/models.rs::Status).
  */
+type ContainerStat = {
+	name: string;
+	id: string;
+	namespace?: string;
+	cpuPercentage: number;
+	memory: number;
+	memoryLimit: number;
+	memoryPercentage: number;
+};
+
 type StatsPayload = {
 	id: string;
 	/** "swarm" | "kubernetes" — stamped by the agent on every payload. */
@@ -13,15 +23,9 @@ type StatsPayload = {
 	cpu: { used_percentage: number; cores: number };
 	memory: { total: number; used: number; used_percentage: number; free: number };
 	disk: { total: number; used: number; used_percentage: number; free: number };
-	tasks?: Array<{
-		name: string;
-		id: string;
-		namespace?: string;
-		cpuPercentage: number;
-		memory: number;
-		memoryLimit: number;
-		memoryPercentage: number;
-	}>;
+	/** Multi-orchestrator agents (≥0.1.x) send `containers`; the legacy Swarm agent sent `tasks`. */
+	containers?: ContainerStat[];
+	tasks?: ContainerStat[];
 };
 
 /**
@@ -62,9 +66,10 @@ export function startStatsWriter(cfg: SwarmbotyConfig): (event: Record<string, u
 				`disk,node=${nodeId} percent=${msg.disk.used_percentage},total_bytes=${msg.disk.total}i,used_bytes=${msg.disk.used}i ${ts}`
 			);
 		}
-		if (msg.tasks) {
+		const containerStats = msg.containers ?? msg.tasks;
+		if (containerStats) {
 			const isKube = msg.orchestrator === "kubernetes";
-			for (const t of msg.tasks) {
+			for (const t of containerStats) {
 				// Kubernetes container names are not unique across pods — tag with
 				// the unique `{namespace}/{pod}/{container}` id instead, which the
 				// resolvers match by `{namespace}/{pod}` prefix (the task id).
