@@ -1,4 +1,4 @@
-FROM node:24-alpine AS build
+FROM node:26-alpine AS build
 
 WORKDIR /app
 COPY package.json package-lock.json tsconfig.base.json ./
@@ -14,7 +14,7 @@ RUN npm run build -w @swarmboty/api && npm run build -w web
 RUN mkdir -p /app/apps/api/public \
   && cp -R /app/apps/web/dist/web/browser/* /app/apps/api/public/
 
-FROM node:24-alpine AS runtime
+FROM node:26-alpine AS runtime
 
 RUN apk add --no-cache docker-cli
 
