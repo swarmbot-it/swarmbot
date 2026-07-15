@@ -14,7 +14,7 @@
     },
     "dependencies": {
         "@apollo/server": "^5.5.1",
-        "@as-integrations/express4": "^1.1.2",
+        "@as-integrations/express5": "^1.1.2",
         "@graphql-tools/schema": "^10.0.16",
         "better-sqlite3": "^12.11.1",
         "body-parser": "^1.20.3",
