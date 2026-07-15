@@ -24,6 +24,9 @@ WORKDIR /app
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/package.json ./package.json
 COPY --from=build /app/apps/api/package.json ./apps/api/package.json
+# npm nests workspace-conflicting packages (e.g. @as-integrations/express5)
+# under apps/api/node_modules instead of hoisting them to the root.
+COPY --from=build /app/apps/api/node_modules ./apps/api/node_modules
 COPY --from=build /app/apps/api/dist ./apps/api/dist
 COPY --from=build /app/apps/api/public ./apps/api/public
 
