@@ -1,0 +1,85 @@
+# Metrics store for agent stats — the app speaks the InfluxDB 1.x API
+# (InfluxQL, CREATE DATABASE; see apps/api/src/influx.ts), so this deploys
+# InfluxDB 1.8 with HTTP auth enabled. Pinned to k3s-a1 next to the app.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+    name: influxdb-data
+    namespace: swarmboty
+spec:
+    accessModes: ["ReadWriteOnce"]
+    storageClassName: local-path
+    resources:
+        requests:
+            storage: 10Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: influxdb
+    namespace: swarmboty
+    labels:
+        app: influxdb
+spec:
+    replicas: 1
+    strategy:
+        type: Recreate
+    selector:
+        matchLabels:
+            app: influxdb
+    template:
+        metadata:
+            labels:
+                app: influxdb
+        spec:
+            nodeSelector:
+                kubernetes.io/hostname: k3s-a1.infra.no-human.tech
+            containers:
+                - name: influxdb
+                  image: influxdb:1.8
+                  env:
+                      - name: INFLUXDB_HTTP_AUTH_ENABLED
+                        value: "true"
+                      - name: INFLUXDB_ADMIN_USER
+                        valueFrom:
+                            secretKeyRef:
+                                name: influxdb-credentials
+                                key: INFLUXDB_ADMIN_USER
+                      - name: INFLUXDB_ADMIN_PASSWORD
+                        valueFrom:
+                            secretKeyRef:
+                                name: influxdb-credentials
+                                key: INFLUXDB_ADMIN_PASSWORD
+                  ports:
+                      - containerPort: 8086
+                  volumeMounts:
+                      - name: data
+                        mountPath: /var/lib/influxdb
+                  readinessProbe:
+                      httpGet:
+                          path: /ping
+                          port: 8086
+                      initialDelaySeconds: 5
+                      periodSeconds: 10
+                  resources:
+                      requests:
+                          cpu: 100m
+                          memory: 256Mi
+                      limits:
+                          memory: 1Gi
+            volumes:
+                - name: data
+                  persistentVolumeClaim:
+                      claimName: influxdb-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: influxdb
+    namespace: swarmboty
+spec:
+    selector:
+        app: influxdb
+    ports:
+        - port: 8086
+          targetPort: 8086

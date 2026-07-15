@@ -1,0 +1,124 @@
+# swarmagent — push-only per-node monitoring agent (DaemonSet).
+# Runs on every node EXCEPT k3s-a1 (the app node), per deployment requirement.
+# To also monitor k3s-a1, remove the nodeAffinity block below.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+    name: swarmagent
+    namespace: swarmboty
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+    name: swarmagent
+rules:
+    # Node identity, capacity, and addresses.
+    - apiGroups: [""]
+      resources: ["nodes"]
+      verbs: ["get", "list", "watch"]
+    # kubelet Summary API: direct (nodes/stats) and API-server proxy (nodes/proxy).
+    - apiGroups: [""]
+      resources: ["nodes/stats", "nodes/proxy"]
+      verbs: ["get"]
+    # Pod list (limits, workload owners) and the per-node pod watch (events).
+    - apiGroups: [""]
+      resources: ["pods"]
+      verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+    name: swarmagent
+roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: swarmagent
+subjects:
+    - kind: ServiceAccount
+      name: swarmagent
+      namespace: swarmboty
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+    name: swarmagent
+    namespace: swarmboty
+    labels:
+        app.kubernetes.io/name: swarmagent
+        app.kubernetes.io/part-of: swarmboty
+spec:
+    selector:
+        matchLabels:
+            app.kubernetes.io/name: swarmagent
+    updateStrategy:
+        type: RollingUpdate
+        rollingUpdate:
+            maxUnavailable: 1
+    template:
+        metadata:
+            labels:
+                app.kubernetes.io/name: swarmagent
+        spec:
+            serviceAccountName: swarmagent
+            affinity:
+                nodeAffinity:
+                    requiredDuringSchedulingIgnoredDuringExecution:
+                        nodeSelectorTerms:
+                            - matchExpressions:
+                                  - key: kubernetes.io/hostname
+                                    operator: NotIn
+                                    values: ["k3s-a1.infra.no-human.tech"]
+            # Monitor control-plane nodes too (k3s servers are schedulable by
+            # default, but keep the tolerations for hardened clusters).
+            tolerations:
+                - key: node-role.kubernetes.io/control-plane
+                  operator: Exists
+                  effect: NoSchedule
+                - key: node-role.kubernetes.io/master
+                  operator: Exists
+                  effect: NoSchedule
+            securityContext:
+                runAsNonRoot: true
+                runAsUser: 65534
+                runAsGroup: 65534
+            imagePullSecrets:
+                # Required while the GHCR package is private; see README.md.
+                - name: ghcr-pull
+            containers:
+                - name: swarmagent
+                  image: ghcr.io/swarmbot-it/swarmagent:latest
+                  imagePullPolicy: Always
+                  env:
+                      # In-cluster Service of the Swarmboty API on k3s-a1.
+                      # The agent derives /events and /version from this base URL.
+                      - name: SW4RM_BOT_URL
+                        value: "http://swarmboty.swarmboty.svc.cluster.local:8080"
+                      - name: AGENT_MODE
+                        value: "kubernetes"
+                      - name: NODE_NAME
+                        valueFrom:
+                            fieldRef:
+                                fieldPath: spec.nodeName
+                      - name: NODE_IP
+                        valueFrom:
+                            fieldRef:
+                                fieldPath: status.hostIP
+                      # k3s kubelets serve a self-signed certificate; keep the
+                      # direct Summary API call working. Set to "false" (or
+                      # AGENT_KUBELET_MODE to "proxy") with a proper kubelet CA.
+                      - name: AGENT_KUBELET_INSECURE_TLS
+                        value: "true"
+                      - name: STATS_FREQUENCY
+                        value: "30"
+                  resources:
+                      requests:
+                          cpu: 10m
+                          memory: 16Mi
+                      limits:
+                          cpu: 200m
+                          memory: 64Mi
+                  securityContext:
+                      allowPrivilegeEscalation: false
+                      readOnlyRootFilesystem: true
+                      capabilities:
+                          drop: ["ALL"]
