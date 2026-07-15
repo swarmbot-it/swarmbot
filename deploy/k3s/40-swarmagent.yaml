@@ -77,6 +77,10 @@ spec:
                 - key: node-role.kubernetes.io/master
                   operator: Exists
                   effect: NoSchedule
+                # Dedicated workload nodes (k3s-e*) carry this taint; the
+                # monitoring agent must still run there.
+                - key: infra.no-human.tech/dedicated
+                  operator: Exists
             securityContext:
                 runAsNonRoot: true
                 runAsUser: 65534

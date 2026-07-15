@@ -27,7 +27,10 @@ metadata:
     name: swarmboty
     namespace: swarmboty
     annotations:
-        traefik.ingress.kubernetes.io/router.entrypoints: web
+        # The k3s Traefik install redirects web → websecure globally, so the
+        # router must be bound to both entrypoints (TLS uses Traefik's default
+        # certificate; add a cert-manager/issuer block for a proper cert).
+        traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
         traefik.ingress.kubernetes.io/router.middlewares: swarmboty-internal-only@kubernetescrd
 spec:
     ingressClassName: traefik
