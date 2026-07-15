@@ -4,7 +4,7 @@ import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
 import { ApolloServer } from "@apollo/server";
-import { expressMiddleware } from "@as-integrations/express4";
+import { expressMiddleware } from "@as-integrations/express5";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
 import { makeExecutableSchema } from "@graphql-tools/schema";
 import { WebSocketServer } from "ws";
@@ -283,7 +283,7 @@ export async function createHttpServer(
 		})
 	);
 
-	app.get("*", (req, res, next) => {
+	app.get("/*splat", (req, res, next) => {
 		if (req.path.startsWith("/graphql")) {
 			next();
 			return;
