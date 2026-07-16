@@ -1,0 +1,47 @@
+# Internal-only ingress: http://swarmbot.infra
+#
+# The host swarmbot.infra must resolve in the INTERNAL DNS to the k3s node
+# IP(s) (internal 10.6.6.x addresses). Do not publish this record in public
+# DNS. The nodes also carry public IPs, so the ipAllowList middleware below
+# is essential: Traefik listens on all node IPs (ServiceLB) and only RFC1918
+# sources may reach this router.
+#
+# k3s ships Traefik v3 (apiVersion traefik.io/v1alpha1, "ipAllowList").
+# On older k3s with Traefik v2 use apiVersion traefik.containo.us/v1alpha1
+# and rename the plugin key to "ipWhiteList".
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+    name: internal-only
+    namespace: swarmboty
+spec:
+    ipAllowList:
+        sourceRange:
+            - 10.0.0.0/8
+            - 172.16.0.0/12
+            - 192.168.0.0/16
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+    name: swarmboty
+    namespace: swarmboty
+    annotations:
+        # The k3s Traefik install redirects web → websecure globally, so the
+        # router must be bound to both entrypoints (TLS uses Traefik's default
+        # certificate; add a cert-manager/issuer block for a proper cert).
+        traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+        traefik.ingress.kubernetes.io/router.middlewares: swarmboty-internal-only@kubernetescrd
+spec:
+    ingressClassName: traefik
+    rules:
+        - host: swarmbot.infra
+          http:
+              paths:
+                  - path: /
+                    pathType: Prefix
+                    backend:
+                        service:
+                            name: swarmboty
+                            port:
+                                number: 8080

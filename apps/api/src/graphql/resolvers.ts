@@ -860,7 +860,7 @@ export const resolvers = {
 				try {
 					compose = yaml.load(input.composeYaml);
 				} catch (e) {
-					throw new Error(`Invalid compose YAML: ${(e as Error).message}`);
+					throw new Error(`Invalid compose YAML: ${(e as Error).message}`, { cause: e });
 				}
 				const services = (compose as { services?: Record<string, unknown> } | null)?.services;
 				if (!services || typeof services !== "object") {

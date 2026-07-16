@@ -1,0 +1,88 @@
+# Swarmboty application (API + UI in one container) — pinned to node k3s-a1,
+# image pulled from GHCR. The app needs no Kubernetes API access (it only
+# receives agent pushes and serves the UI), so no ServiceAccount/RBAC here.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: swarmboty
+    namespace: swarmboty
+    labels:
+        app: swarmboty
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: swarmboty
+    template:
+        metadata:
+            labels:
+                app: swarmboty
+        spec:
+            nodeSelector:
+                kubernetes.io/hostname: k3s-a1.infra.no-human.tech
+            imagePullSecrets:
+                # Required while the GHCR package is private; see README.md.
+                - name: ghcr-pull
+            containers:
+                - name: swarmboty
+                  image: ghcr.io/swarmbot-it/swarmbot:latest
+                  imagePullPolicy: Always
+                  env:
+                      - name: SWARMBOTY_PORT
+                        value: "8080"
+                      - name: SWARMBOTY_DB
+                        valueFrom:
+                            secretKeyRef:
+                                name: postgres-credentials
+                                key: SWARMBOTY_DB
+                      - name: SWARMBOTY_INFLUXDB
+                        value: http://influxdb:8086
+                      - name: SWARMBOTY_INFLUXDB_TOKEN
+                        valueFrom:
+                            secretKeyRef:
+                                name: influxdb-credentials
+                                key: SWARMBOTY_INFLUXDB_TOKEN
+                      # Uncomment once the agent supports the shared secret
+                      # (swarmagent PR "agent-shared-secret-auth"); the agent
+                      # must send the same value in the x-agent-token header.
+                      # - name: SWARMAGENT_SHARED_SECRET
+                      #   valueFrom:
+                      #       secretKeyRef:
+                      #           name: swarmboty-agent
+                      #           key: SWARMAGENT_SHARED_SECRET
+                  envFrom:
+                      - secretRef:
+                            name: swarmboty-bootstrap
+                  ports:
+                      - containerPort: 8080
+                  readinessProbe:
+                      httpGet:
+                          path: /health
+                          port: 8080
+                      initialDelaySeconds: 5
+                      periodSeconds: 10
+                  livenessProbe:
+                      httpGet:
+                          path: /health
+                          port: 8080
+                      initialDelaySeconds: 30
+                      periodSeconds: 30
+                  resources:
+                      requests:
+                          cpu: 100m
+                          memory: 256Mi
+                      limits:
+                          memory: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: swarmboty
+    namespace: swarmboty
+spec:
+    type: ClusterIP
+    selector:
+        app: swarmboty
+    ports:
+        - port: 8080
+          targetPort: 8080
