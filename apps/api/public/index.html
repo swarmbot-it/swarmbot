@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>SW4RMBOT.IT — Intelligent Docker Swarm Manager</title>
+<title>swarmbot.it — Intelligent Docker Swarm Manager</title>
 <script>
 (function(){
   var KEY = 'swarmboty.theme';
@@ -319,7 +319,7 @@ footer .container{display:flex;justify-content:space-between;align-items:center;
         <circle cx="18" cy="23" r="2.4" fill="#FDBA74"/>
         <circle cx="25" cy="16" r="2.8" fill="#F97316"/>
       </svg>
-      <span class="brand-name">SW4RMBOT<span>.IT</span></span>
+      <span class="brand-name">swarmbot<span>.it</span></span>
     </a>
 
     <ul class="nav-links" id="nav-links">
@@ -496,7 +496,7 @@ footer .container{display:flex;justify-content:space-between;align-items:center;
         <circle cx="18" cy="23" r="2.4" fill="#FB923C"/>
         <circle cx="25" cy="16" r="2.8" fill="#EA580C"/>
       </svg>
-      <span class="foot-name">SW4RMBOT<span>.IT</span></span>
+      <span class="foot-name">swarmbot<span>.it</span></span>
     </div>
     <div class="foot-copy" data-i18n="footerCopy"></div>
   </div>
@@ -514,27 +514,27 @@ const STRINGS = {
   navCta:        { pl:'Wypróbuj demo',        en:'Try demo' },
   heroBadge:     { pl:'Inteligentne zarządzanie klastrami', en:'Intelligent cluster management' },
   heroLine1:     { pl:'Twój klaster.',        en:'Your cluster.' },
-  heroDesc:      { pl:'SW4RMBOT.IT to inteligentny agent, który monitoruje Twoje węzły Docker Swarm, automatycznie wykrywa awarie i natychmiast rebalansuje zadania — bez przestojów, bez ingerencji.', en:'SW4RMBOT.IT is an intelligent agent that monitors your Docker Swarm nodes, detects failures automatically and instantly rebalances tasks — zero downtime, zero intervention.' },
+  heroDesc:      { pl:'swarmbot.it to inteligentny agent, który monitoruje Twoje węzły Docker Swarm, automatycznie wykrywa awarie i natychmiast rebalansuje zadania — bez przestojów, bez ingerencji.', en:'swarmbot.it is an intelligent agent that monitors your Docker Swarm nodes, detects failures automatically and instantly rebalances tasks — zero downtime, zero intervention.' },
   heroCtaLogin:  { pl:'Zaloguj do panelu',    en:'Sign in to panel' },
   heroCtaDemo:   { pl:'Obejrzyj demo',        en:'Watch demo' },
   heroCheck1:    { pl:'Bez rejestracji',      en:'No sign-up' },
   heroCheck3:    { pl:'Monitoring 24/7',      en:'24/7 Monitoring' },
   featLabel:     { pl:'Możliwości',           en:'Features' },
-  featTitle:     { pl:'Dlaczego SW4RMBOT.IT?', en:'Why SW4RMBOT.IT?' },
+  featTitle:     { pl:'Dlaczego swarmbot.it?', en:'Why swarmbot.it?' },
   featDesc:      { pl:'Inteligentna automatyzacja, która pilnuje Twojej infrastruktury — nawet gdy śpisz.', en:'Intelligent automation that watches your infrastructure — even while you sleep.' },
   howLabel:      { pl:'Jak to działa',        en:'How it works' },
   howTitle:      { pl:'Dwa komponenty. Jeden niezawodny klaster.', en:'Two components. One reliable cluster.' },
   howDesc:       { pl:'Swarmagent działa na każdym węźle. Swarmbot API przetwarza zdarzenia. Ty oglądasz to na dashboardzie.', en:'Swarmagent runs on every node. Swarmbot API processes events. You watch it on the dashboard.' },
   docsLabel:     { pl:'Dokumentacja',         en:'Documentation' },
   docsTitle:     { pl:'Zacznij w 3 minuty',   en:'Get started in 3 minutes' },
-  docsDesc:      { pl:'Wszystko czego potrzebujesz, żeby uruchomić SW4RMBOT.IT w swoim środowisku.', en:'Everything you need to run SW4RMBOT.IT in your environment.' },
+  docsDesc:      { pl:'Wszystko czego potrzebujesz, żeby uruchomić swarmbot.it w swoim środowisku.', en:'Everything you need to run swarmbot.it in your environment.' },
   docsMore:      { pl:'Pełna dokumentacja — instalacja, konfiguracja, API i rozwiązywanie problemów.', en:'Full documentation — installation, configuration, API and troubleshooting.' },
   docsCta:       { pl:'Otwórz pełną dokumentację',  en:'Open full documentation' },
   demoLabel:     { pl:'Interaktywne demo',    en:'Interactive demo' },
   demoTitle:     { pl:'Zabij węzeł. Patrz jak się regeneruje.', en:'Kill a node. Watch it recover.' },
-  demoDesc:      { pl:'Kliknij Kill pod dowolnym węzłem — SW4RMBOT.IT natychmiast przerzuca zadania na pozostałe węzły.', en:'Click Kill on any node — SW4RMBOT.IT instantly redistributes tasks to the remaining nodes.' },
+  demoDesc:      { pl:'Kliknij Kill pod dowolnym węzłem — swarmbot.it natychmiast przerzuca zadania na pozostałe węzły.', en:'Click Kill on any node — swarmbot.it instantly redistributes tasks to the remaining nodes.' },
   ctaTitle:      { pl:'Gotowy na Zero Downtime?',   en:'Ready for Zero Downtime?' },
-  ctaDesc:       { pl:'Zainstaluj SW4RMBOT.IT i zapomnij o nocnych alertach. Twój klaster zasługuje na inteligentną opiekę.', en:'Install SW4RMBOT.IT and forget about late-night alerts. Your cluster deserves intelligent care.' },
+  ctaDesc:       { pl:'Zainstaluj swarmbot.it i zapomnij o nocnych alertach. Twój klaster zasługuje na inteligentną opiekę.', en:'Install swarmbot.it and forget about late-night alerts. Your cluster deserves intelligent care.' },
   ctaLogin:      { pl:'Zaloguj się',           en:'Sign in' },
   ctaDocs:       { pl:'Czytaj dokumentację',   en:'Read documentation' },
   footerCopy:    { pl:'© 2026 no-human.tech · Wszelkie prawa zastrzeżone', en:'© 2026 no-human.tech · All rights reserved' },
@@ -570,19 +570,19 @@ const STRINGS = {
   docTab2: { pl:'Jak zainstalować?',  en:'How to install' },
   // doc content
   docH0: { pl:'Architektura agenta', en:'Agent architecture' },
-  docP0a: { pl:'SW4RMBOT.IT działa jako lekki agent (Rust) obok Twojego Docker Swarm managera. Agent zbiera metryki i zdarzenia Dockera co kilkadziesiąt sekund (konfigurowalne) i wysyła je do centralnego API.', en:'SW4RMBOT.IT runs as a lightweight Rust agent alongside your Docker Swarm manager. The agent collects Docker metrics and events on a configurable interval and pushes them to the central API.' },
+  docP0a: { pl:'swarmbot.it działa jako lekki agent (Rust) obok Twojego Docker Swarm managera. Agent zbiera metryki i zdarzenia Dockera co kilkadziesiąt sekund (konfigurowalne) i wysyła je do centralnego API.', en:'swarmbot.it runs as a lightweight Rust agent alongside your Docker Swarm manager. The agent collects Docker metrics and events on a configurable interval and pushes them to the central API.' },
   docP0b: { pl:'Gdy węzeł znika z klastra, Docker Swarm samodzielnie przenosi jego zadania na pozostałe węzły — Swarmbot to wykrywa i pokazuje w panelu oraz w kanale aktywności.', en:'When a node drops out of the cluster, Docker Swarm itself reschedules its tasks onto the remaining nodes — Swarmbot detects this and surfaces it on the dashboard and activity feed.' },
   docH1: { pl:'Konfiguracja i obsługa', en:'Configuration & usage' },
-  docP1a: { pl:'Po instalacji SW4RMBOT.IT automatycznie wykrywa konfigurację Docker Swarm i zaczyna monitoring. Domyślna konfiguracja jest optymalna dla większości środowisk.', en:'After installation SW4RMBOT.IT auto-detects your Docker Swarm config and starts monitoring. The default config is optimal for most environments.' },
+  docP1a: { pl:'Po instalacji swarmbot.it automatycznie wykrywa konfigurację Docker Swarm i zaczyna monitoring. Domyślna konfiguracja jest optymalna dla większości środowisk.', en:'After installation swarmbot.it auto-detects your Docker Swarm config and starts monitoring. The default config is optimal for most environments.' },
   docP1b: { pl:'Panel webowy dostępny jest pod /app. Możesz zarządzać stackami, serwisami i węzłami, przeglądać metryki na żywo i kontrolować dostęp przez role użytkowników.', en:'The web panel is available at /app. Manage stacks, services, and nodes, review live metrics, and control access through user roles.' },
   docH2: { pl:'Instalacja w 60 sekund', en:'Install in 60 seconds' },
-  docP2a: { pl:'SW4RMBOT.IT wymaga Docker Engine 20.10+ i aktywnego Docker Swarm. Instalacja jest jednokomendowa i nie wymaga restartu istniejących usług.', en:'SW4RMBOT.IT requires Docker Engine 20.10+ and an active Docker Swarm. Installation is a single command and requires no restart of existing services.' },
+  docP2a: { pl:'swarmbot.it wymaga Docker Engine 20.10+ i aktywnego Docker Swarm. Instalacja jest jednokomendowa i nie wymaga restartu istniejących usług.', en:'swarmbot.it requires Docker Engine 20.10+ and an active Docker Swarm. Installation is a single command and requires no restart of existing services.' },
   docP2b: { pl:'Po instalacji agent automatycznie dołącza do klastra i rozpoczyna monitoring.', en:'After installation the agent automatically joins the cluster and begins monitoring.' },
   // terminal copy
   copyBtn:    { pl:'Kopiuj', en:'Copy' },
   copiedBtn:  { pl:'Skopiowano', en:'Copied' },
   // demo terminal
-  demoLog0: { pl:'[INFO] SW4RMBOT.IT v2.4.1 zainicjalizowany', en:'[INFO] SW4RMBOT.IT v2.4.1 initialized' },
+  demoLog0: { pl:'[INFO] swarmbot.it v2.4.1 zainicjalizowany', en:'[INFO] swarmbot.it v2.4.1 initialized' },
   demoLog1: { pl:'[OK] Wszystkie 3 węzły zdrowe — klaster stabilny', en:'[OK] All 3 nodes healthy — cluster stable' },
   demoLog2: { pl:'[INFO] Metryki na żywo z InfluxDB', en:'[INFO] Live metrics streaming from InfluxDB' },
   demoWarn:  { pl:'[WARN] Węzeł {n} — utracono połączenie', en:'[WARN] Node {n} — connection lost' },
