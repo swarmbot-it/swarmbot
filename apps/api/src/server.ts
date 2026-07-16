@@ -275,8 +275,23 @@ export async function createHttpServer(
 		}
 	});
 
+	// staticDir/index.html and staticDir/docs.html are the marketing landing
+	// page and docs, served at the domain root. The real dashboard (Angular
+	// build output) lives under staticDir/app and is served at /app.
 	const staticDir = path.join(process.cwd(), "public");
 	app.use(express.static(staticDir));
+	// The Angular build's own assets (fonts, i18n) are referenced by root-absolute
+	// paths (e.g. /assets/i18n/en.json) baked into its compiled output, so alias
+	// them at the domain root too rather than only under /app/assets.
+	app.use("/assets", express.static(path.join(staticDir, "app", "assets")));
+
+	app.get("/docs", (_req, res) => {
+		res.sendFile(path.join(staticDir, "docs.html"), (err) => {
+			if (err) {
+				res.status(404).send("Not found");
+			}
+		});
+	});
 
 	app.use(
 		"/graphql",
@@ -287,12 +302,8 @@ export async function createHttpServer(
 		})
 	);
 
-	app.get("/*splat", (req, res, next) => {
-		if (req.path.startsWith("/graphql")) {
-			next();
-			return;
-		}
-		res.sendFile(path.join(staticDir, "index.html"), (err) => {
+	app.get("/app/*splat", (_req, res) => {
+		res.sendFile(path.join(staticDir, "app", "index.html"), (err) => {
 			if (err) {
 				res.status(404).send("Not found");
 			}
