@@ -1,6 +1,53 @@
 # Swarmboty application (API + UI in one container) — pinned to node k3s-a1,
-# image pulled from GHCR. The app needs no Kubernetes API access (it only
-# receives agent pushes and serves the UI), so no ServiceAccount/RBAC here.
+# image pulled from GHCR. In kubernetes mode the API reads cluster resources
+# (nodes/workloads/pods/PVCs/ConfigMaps/Secrets) for the dashboard and applies
+# manifests for the "deploy stack" mutation — hence the ServiceAccount + RBAC.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+    name: swarmboty
+    namespace: swarmboty
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+    name: swarmboty
+rules:
+    - apiGroups: [""]
+      resources:
+          - nodes
+          - namespaces
+          - pods
+          - pods/log
+          - services
+          - persistentvolumeclaims
+          - configmaps
+          - secrets
+      verbs: ["get", "list", "watch"]
+    - apiGroups: ["apps"]
+      resources: ["deployments", "statefulsets", "daemonsets", "replicasets"]
+      verbs: ["get", "list", "watch"]
+    # "Deploy stack" (manifest apply). Tighten if the feature is not needed.
+    - apiGroups: [""]
+      resources: ["namespaces", "services", "configmaps", "secrets", "persistentvolumeclaims"]
+      verbs: ["create", "patch", "update"]
+    - apiGroups: ["apps"]
+      resources: ["deployments", "statefulsets", "daemonsets"]
+      verbs: ["create", "patch", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+    name: swarmboty
+roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: swarmboty
+subjects:
+    - kind: ServiceAccount
+      name: swarmboty
+      namespace: swarmboty
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -18,6 +65,7 @@ spec:
             labels:
                 app: swarmboty
         spec:
+            serviceAccountName: swarmboty
             nodeSelector:
                 kubernetes.io/hostname: k3s-a1.infra.no-human.tech
             imagePullSecrets:
@@ -28,6 +76,10 @@ spec:
                   image: ghcr.io/swarmbot-it/swarmbot:latest
                   imagePullPolicy: Always
                   env:
+                      # In-cluster ServiceAccount is auto-detected → kubernetes
+                      # mode; keep it explicit for clarity.
+                      - name: SWARMBOTY_ORCHESTRATOR
+                        value: kubernetes
                       - name: SWARMBOTY_PORT
                         value: "8080"
                       - name: SWARMBOTY_DB

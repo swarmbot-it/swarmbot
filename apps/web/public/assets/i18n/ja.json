@@ -342,7 +342,8 @@
             "title": "環境をデプロイ",
             "subtitle": "Compose ファイルまたは環境定義を貼り付けてください。",
             "name": "環境名",
-            "content": "環境ファイル"
+            "content": "環境ファイル",
+            "contentManifest": "Kubernetes マニフェスト (YAML)"
         },
         "service": {
             "title": "サービスを作成",

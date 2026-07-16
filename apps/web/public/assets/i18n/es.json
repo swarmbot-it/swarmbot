@@ -342,7 +342,8 @@
             "title": "Desplegar entorno",
             "subtitle": "Pegue un archivo Compose o una definición de entorno.",
             "name": "Nombre del entorno",
-            "content": "Archivo del entorno"
+            "content": "Archivo del entorno",
+            "contentManifest": "Manifiestos de Kubernetes (YAML)"
         },
         "service": {
             "title": "Crear servicio",

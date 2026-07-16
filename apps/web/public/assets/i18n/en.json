@@ -375,7 +375,8 @@
             "title": "Deploy stack",
             "subtitle": "Paste a Compose file or stack definition.",
             "name": "Stack name",
-            "content": "Stack file"
+            "content": "Stack file",
+            "contentManifest": "Kubernetes manifests (YAML)"
         },
         "service": {
             "title": "Create service",

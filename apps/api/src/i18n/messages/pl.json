@@ -1,15 +1,16 @@
 {
-    "errors.unauthenticated": "Brak autoryzacji",
     "errors.forbidden": "Brak uprawnień",
-    "errors.invalidCredentials": "Podana nazwa użytkownika lub hasło jest nieprawidłowe.",
-    "errors.tooManyAttempts": "Zbyt wiele prób logowania. Poczekaj minutę i spróbuj ponownie.",
-    "errors.userNotFound": "Nie znaleziono użytkownika",
-    "errors.serverMisconfigured": "Błąd konfiguracji serwera",
-    "errors.missingToken": "Brak tokenu",
     "errors.invalidAuthorization": "Nieprawidłowa autoryzacja",
+    "errors.invalidCredentials": "Podana nazwa użytkownika lub hasło jest nieprawidłowe.",
     "errors.invalidSlt": "Nieprawidłowy token SLT",
+    "errors.missingToken": "Brak tokenu",
     "errors.noDataSent": "Nie przesłano danych",
     "errors.noRunningTask": "Brak uruchomionego zadania",
+    "errors.notSupportedInOrchestrator": "Ta operacja nie jest obsługiwana przez bieżący orkiestrator.",
+    "errors.serverMisconfigured": "Błąd konfiguracji serwera",
+    "errors.tooManyAttempts": "Zbyt wiele prób logowania. Poczekaj minutę i spróbuj ponownie.",
+    "errors.unauthenticated": "Brak autoryzacji",
+    "errors.userNotFound": "Nie znaleziono użytkownika",
     "errors.usernameTaken": "Nazwa użytkownika jest już zajęta",
     "errors.validationFailed": "Nieprawidłowe dane"
 }

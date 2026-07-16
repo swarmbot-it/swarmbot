@@ -342,7 +342,8 @@
             "title": "환경 배포",
             "subtitle": "Compose 파일 또는 환경 정의를 붙여넣으세요.",
             "name": "환경 이름",
-            "content": "환경 파일"
+            "content": "환경 파일",
+            "contentManifest": "Kubernetes 매니페스트 (YAML)"
         },
         "service": {
             "title": "서비스 만들기",

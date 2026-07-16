@@ -278,11 +278,17 @@ export class SidebarComponent {
 
 	readonly groups = GROUPS;
 	readonly groupKeys = GROUP_KEYS;
-	readonly nav: Record<NavItem["group"], NavItem[]> = NAV.reduce(
-		(acc, item) => {
-			(acc[item.group] = acc[item.group] || []).push(item);
-			return acc;
-		},
-		{} as Record<NavItem["group"], NavItem[]>
-	);
+
+	/** Networks have no Kubernetes equivalent — hide the nav item in that mode. */
+	get nav(): Record<NavItem["group"], NavItem[]> {
+		const hideNetworks = this.orch.isKubernetes();
+		return NAV.reduce(
+			(acc, item) => {
+				if (hideNetworks && item.id === "networks") return acc;
+				(acc[item.group] = acc[item.group] || []).push(item);
+				return acc;
+			},
+			{} as Record<NavItem["group"], NavItem[]>
+		);
+	}
 }

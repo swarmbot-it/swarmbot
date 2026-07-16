@@ -342,7 +342,8 @@
             "title": "部署环境",
             "subtitle": "粘贴 Compose 文件或环境定义。",
             "name": "环境名称",
-            "content": "环境文件"
+            "content": "环境文件",
+            "contentManifest": "Kubernetes 清单 (YAML)"
         },
         "service": {
             "title": "创建服务",

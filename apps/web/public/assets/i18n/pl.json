@@ -375,7 +375,8 @@
             "title": "Wdróż stos",
             "subtitle": "Wklej plik Compose lub definicję stosu.",
             "name": "Nazwa stosu",
-            "content": "Plik stosu"
+            "content": "Plik stosu",
+            "contentManifest": "Manifesty Kubernetes (YAML)"
         },
         "service": {
             "title": "Utwórz usługę",

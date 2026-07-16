@@ -342,7 +342,8 @@
             "title": "Distribuisci ambiente",
             "subtitle": "Incolla un file Compose o una definizione di ambiente.",
             "name": "Nome ambiente",
-            "content": "File ambiente"
+            "content": "File ambiente",
+            "contentManifest": "Manifest Kubernetes (YAML)"
         },
         "service": {
             "title": "Crea servizio",

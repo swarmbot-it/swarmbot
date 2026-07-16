@@ -3,6 +3,7 @@ import { buildContext, localeFromHeader } from "./context.js";
 import { loadConfig } from "../config.js";
 import { createTestDb } from "../test/db-setup.js";
 import { createDocker } from "../docker/engine.js";
+import { SwarmOrchestrator } from "../orchestrator/swarm/adapter.js";
 
 describe("localeFromHeader", () => {
 	it("prefers Polish", () => {
@@ -31,6 +32,7 @@ describe("buildContext", () => {
 			} as Parameters<typeof buildContext>[0],
 			cfg,
 			db,
+			new SwarmOrchestrator(cfg, docker),
 			docker
 		);
 		expect(ctx.user).toBe(claims);

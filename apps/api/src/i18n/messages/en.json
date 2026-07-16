@@ -1,15 +1,16 @@
 {
-    "errors.unauthenticated": "Unauthorized",
     "errors.forbidden": "Forbidden",
-    "errors.invalidCredentials": "The username or password you entered is incorrect.",
-    "errors.tooManyAttempts": "Too many login attempts. Please wait a minute and try again.",
-    "errors.userNotFound": "User not found",
-    "errors.serverMisconfigured": "Server misconfigured",
-    "errors.missingToken": "Missing token",
     "errors.invalidAuthorization": "Invalid authorization",
+    "errors.invalidCredentials": "The username or password you entered is incorrect.",
     "errors.invalidSlt": "Invalid slt",
+    "errors.missingToken": "Missing token",
     "errors.noDataSent": "No data sent",
     "errors.noRunningTask": "No running task",
+    "errors.notSupportedInOrchestrator": "This operation is not supported on the current orchestrator.",
+    "errors.serverMisconfigured": "Server misconfigured",
+    "errors.tooManyAttempts": "Too many login attempts. Please wait a minute and try again.",
+    "errors.unauthenticated": "Unauthorized",
+    "errors.userNotFound": "User not found",
     "errors.usernameTaken": "Username is already taken",
     "errors.validationFailed": "Invalid input"
 }

@@ -4,6 +4,7 @@ import type { GraphQLContext } from "./context.js";
 import { loadConfig } from "../config.js";
 import { createTestDb } from "../test/db-setup.js";
 import { createDocker } from "../docker/engine.js";
+import { SwarmOrchestrator } from "../orchestrator/swarm/adapter.js";
 
 async function ctx(
 	user?: GraphQLContext["user"],
@@ -14,6 +15,7 @@ async function ctx(
 		cfg: { ...loadConfig(), mock: true },
 		db,
 		docker: createDocker({ ...loadConfig(), mock: true }),
+		orchestrator: new SwarmOrchestrator({ ...loadConfig(), mock: true }),
 		user,
 		locale,
 		ip: "127.0.0.1",
