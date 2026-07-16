@@ -4,6 +4,14 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>SW4RMBOT.IT — Intelligent Docker Swarm Manager</title>
+<script>
+(function(){
+  var KEY = 'swarmboty.theme';
+  var saved = localStorage.getItem(KEY);
+  var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  document.documentElement.setAttribute('data-theme', theme);
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"/>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"/>
@@ -11,9 +19,22 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
+
+/* ── THEME (same tokens/behavior as the swarmbot.it dashboard) ── */
+:root{
+  --bg:#060a14;--text:#f1f5f9;--text-2:#cbd5e1;--muted:#94a3b8;--muted-2:#64748b;
+  --border-strong:#232d49;--nav-bg:rgba(6,10,20,.85);
+  --surface-tint:rgba(255,255,255,.02);--surface-tint-hover:rgba(255,255,255,.04);--surface-tint-strong:rgba(255,255,255,.05);
+}
+:root[data-theme="light"]{
+  --bg:#f5f6fa;--text:#0f172a;--text-2:#334155;--muted:#64748b;--muted-2:#94a3b8;
+  --border-strong:#d4d8e2;--nav-bg:rgba(255,255,255,.85);
+  --surface-tint:rgba(15,23,42,.03);--surface-tint-hover:rgba(15,23,42,.05);--surface-tint-strong:rgba(15,23,42,.08);
+}
+
 body{
   font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
-  background:#060a14;color:#f1f5f9;line-height:1.5;overflow-x:hidden;
+  background:var(--bg);color:var(--text);line-height:1.5;overflow-x:hidden;
 }
 a{color:#fb923c}a:hover{color:#f97316}
 
@@ -34,20 +55,20 @@ a{color:#fb923c}a:hover{color:#f97316}
 /* ── NAV ── */
 nav{
   position:fixed;top:0;left:0;right:0;z-index:100;height:72px;
-  background:rgba(6,10,20,.85);backdrop-filter:blur(16px);
+  background:var(--nav-bg);backdrop-filter:blur(16px);
   border-bottom:1px solid rgba(249,115,22,.08);
 }
 nav .container{height:100%;display:flex;align-items:center;justify-content:space-between;gap:16px}
 .brand{display:flex;align-items:center;gap:14px;text-decoration:none;flex-shrink:0}
-.brand-name{font-size:17px;font-weight:800;letter-spacing:-.02em;color:#f1f5f9}
+.brand-name{font-size:17px;font-weight:800;letter-spacing:-.02em;color:var(--text)}
 .brand-name span{color:#fb923c}
 .nav-links{display:flex;gap:2px;list-style:none}
 .nav-links a{
-  display:block;padding:7px 14px;color:#94a3b8;text-decoration:none;
+  display:block;padding:7px 14px;color:var(--muted);text-decoration:none;
   font-size:13px;font-weight:500;border-radius:8px;
   transition:color .15s,background .15s;white-space:nowrap;
 }
-.nav-links a:hover{color:#f1f5f9;background:rgba(255,255,255,.04)}
+.nav-links a:hover{color:var(--text);background:var(--surface-tint-hover)}
 .nav-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
 
 /* Language switcher */
@@ -59,17 +80,26 @@ nav .container{height:100%;display:flex;align-items:center;justify-content:space
 }
 .lang-btn{
   padding:6px 12px;border:none;cursor:pointer;transition:all .2s;
-  background:transparent;color:#64748b;display:flex;align-items:center;gap:5px;
+  background:transparent;color:var(--muted-2);display:flex;align-items:center;gap:5px;
 }
 .lang-btn.active{background:rgba(249,115,22,.15);color:#f97316}
 .lang-sep{width:1px;height:16px;background:rgba(249,115,22,.12)}
 
+/* Theme switcher — same slider used in the swarmbot.it dashboard topbar */
+.theme-slider{display:flex;align-items:center;gap:2px;padding:3px;border-radius:999px;background:var(--surface-tint);border:1px solid rgba(249,115,22,.12)}
+.theme-slider__btn{
+  width:26px;height:26px;border-radius:50%;border:none;background:transparent;
+  color:var(--muted-2);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .2s;
+}
+.theme-slider__btn--active{background:var(--surface-tint-strong);color:#f97316;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+
 .btn-login{
-  font-size:13px;font-weight:500;color:#cbd5e1;cursor:pointer;white-space:nowrap;
+  font-size:13px;font-weight:500;color:var(--text-2);cursor:pointer;white-space:nowrap;
   text-decoration:none;padding:7px 14px;border-radius:8px;border:none;background:transparent;
   transition:color .15s;
 }
-.btn-login:hover{color:#f1f5f9}
+.btn-login:hover{color:var(--text)}
 .btn-cta{
   padding:8px 18px;background:linear-gradient(135deg,#f97316,#ea580c);
   border-radius:10px;font-size:13px;font-weight:700;color:white;cursor:pointer;
@@ -104,7 +134,7 @@ nav .container{height:100%;display:flex;align-items:center;justify-content:space
 
 h1{font-size:clamp(34px,4vw,52px);font-weight:800;letter-spacing:-.035em;line-height:1.1;margin-bottom:24px}
 .h1-white{
-  background:linear-gradient(135deg,#f1f5f9 0%,#cbd5e1 100%);
+  background:linear-gradient(135deg,var(--text) 0%,var(--text-2) 100%);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:block;
 }
 .h1-orange{
@@ -112,7 +142,7 @@ h1{font-size:clamp(34px,4vw,52px);font-weight:800;letter-spacing:-.035em;line-he
   background-size:200% 200%;animation:hero-gradient 6s ease infinite;
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:block;
 }
-.hero-desc{font-size:17px;color:#94a3b8;line-height:1.65;max-width:480px;margin-bottom:36px}
+.hero-desc{font-size:17px;color:var(--muted);line-height:1.65;max-width:480px;margin-bottom:36px}
 .hero-btns{display:flex;gap:16px;align-items:center;margin-bottom:32px;flex-wrap:wrap}
 .btn-primary{
   padding:14px 32px;background:linear-gradient(135deg,#f97316,#ea580c);
@@ -122,25 +152,25 @@ h1{font-size:clamp(34px,4vw,52px);font-weight:800;letter-spacing:-.035em;line-he
 }
 .btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(249,115,22,.4);color:white}
 .btn-secondary{
-  padding:14px 32px;border:1px solid #232d49;border-radius:12px;
-  font-size:16px;font-weight:600;color:#cbd5e1;cursor:pointer;
-  text-decoration:none;background:rgba(255,255,255,.02);
+  padding:14px 32px;border:1px solid var(--border-strong);border-radius:12px;
+  font-size:16px;font-weight:600;color:var(--text-2);cursor:pointer;
+  text-decoration:none;background:var(--surface-tint);
   display:inline-flex;align-items:center;gap:10px;
   transition:border-color .2s,color .2s,background .2s;
 }
-.btn-secondary:hover{border-color:#f97316;color:#f1f5f9;background:rgba(249,115,22,.05)}
-.hero-checks{display:flex;gap:28px;font-size:13px;color:#64748b;flex-wrap:wrap}
+.btn-secondary:hover{border-color:#f97316;color:var(--text);background:rgba(249,115,22,.05)}
+.hero-checks{display:flex;gap:28px;font-size:13px;color:var(--muted-2);flex-wrap:wrap}
 .hero-check{display:flex;align-items:center;gap:8px}
 .check-ok{color:#10b981;font-size:14px}
 
 /* ── DEMO WIDGET ── */
 .demo-widget{
-  background:rgba(255,255,255,.02);border:1px solid rgba(249,115,22,.12);
+  background:var(--surface-tint);border:1px solid rgba(249,115,22,.12);
   border-radius:20px;padding:20px;overflow:hidden;
   box-shadow:0 0 60px rgba(249,115,22,.03),0 0 1px rgba(249,115,22,.15);
 }
 .demo-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
-.demo-title-row{display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;color:#64748b;text-transform:uppercase}
+.demo-title-row{display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;color:var(--muted-2);text-transform:uppercase}
 .demo-status{display:flex;align-items:center;gap:6px;font-size:12px;font-family:'JetBrains Mono',monospace}
 
 .nodes-row{display:flex;gap:10px;margin-bottom:14px}
@@ -158,7 +188,7 @@ h1{font-size:clamp(34px,4vw,52px);font-weight:800;letter-spacing:-.035em;line-he
 .node-lbl{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:#f97316}
 .node-card.dead .node-lbl{color:#ef4444}
 .node-card.boosted .node-lbl{color:#10b981}
-.node-load{font-family:'JetBrains Mono',monospace;font-size:11px;color:#64748b}
+.node-load{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted-2)}
 .node-badge{font-size:10px;font-family:'JetBrains Mono',monospace;color:#10b981;background:rgba(16,185,129,.1);padding:2px 8px;border-radius:6px;display:flex;align-items:center;gap:4px}
 
 .demo-btns{display:flex;gap:6px;margin-bottom:16px}
@@ -197,21 +227,21 @@ h1{font-size:clamp(34px,4vw,52px);font-weight:800;letter-spacing:-.035em;line-he
 .features{padding:120px 0}
 .sec-head{text-align:center;margin-bottom:64px}
 .sec-label{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.15em;color:#f97316;text-transform:uppercase;margin-bottom:16px}
-.sec-title{font-size:clamp(28px,3.5vw,44px);font-weight:800;letter-spacing:-.03em;margin-bottom:16px;color:#f1f5f9;text-wrap:balance}
-.sec-desc{font-size:17px;color:#64748b;max-width:560px;margin:0 auto;line-height:1.6}
+.sec-title{font-size:clamp(28px,3.5vw,44px);font-weight:800;letter-spacing:-.03em;margin-bottom:16px;color:var(--text);text-wrap:balance}
+.sec-desc{font-size:17px;color:var(--muted-2);max-width:560px;margin:0 auto;line-height:1.6}
 .feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
 @media(max-width:900px){.feat-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:580px){.feat-grid{grid-template-columns:1fr}}
 .feat-card{
   padding:32px 28px;border-radius:16px;
-  background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);
+  background:var(--surface-tint);border:1px solid var(--surface-tint-strong);
   transition:transform .2s,background .25s,border-color .25s,box-shadow .25s;
   cursor:default;position:relative;overflow:hidden;
 }
-.feat-card:hover{transform:translateY(-2px);background:rgba(255,255,255,.04);box-shadow:0 20px 48px rgba(0,0,0,.35)}
+.feat-card:hover{transform:translateY(-2px);background:var(--surface-tint-hover);box-shadow:0 20px 48px rgba(0,0,0,.35)}
 .feat-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:20px}
-.feat-title{font-size:18px;font-weight:700;color:#f1f5f9;margin-bottom:10px;letter-spacing:-.01em}
-.feat-desc{font-size:14px;color:#64748b;line-height:1.6}
+.feat-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:10px;letter-spacing:-.01em}
+.feat-desc{font-size:14px;color:var(--muted-2);line-height:1.6}
 
 /* ── HOW IT WORKS ── */
 .how{padding:120px 0}
@@ -222,22 +252,22 @@ h1{font-size:clamp(34px,4vw,52px);font-weight:800;letter-spacing:-.035em;line-he
 @media(max-width:768px){.how-step:not(:last-child){border-right:none;border-bottom:1px solid rgba(249,115,22,.08)}}
 .how-num{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.12em;color:#f97316;margin-bottom:16px}
 .how-icon{width:52px;height:52px;border-radius:14px;border:1px solid rgba(249,115,22,.12);background:rgba(249,115,22,.06);display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:18px}
-.how-title{font-size:19px;font-weight:700;color:#f1f5f9;margin-bottom:11px}
-.how-desc{font-size:14px;color:#94a3b8;line-height:1.65}
+.how-title{font-size:19px;font-weight:700;color:var(--text);margin-bottom:11px}
+.how-desc{font-size:14px;color:var(--muted);line-height:1.65}
 
 /* ── DOCS SECTION ── */
 .docs-sec{padding:120px 0}
-.doc-tabs{display:flex;gap:4px;margin-bottom:36px;background:rgba(255,255,255,.03);border-radius:14px;padding:4px;border:1px solid rgba(249,115,22,.08)}
+.doc-tabs{display:flex;gap:4px;margin-bottom:36px;background:var(--surface-tint);border-radius:14px;padding:4px;border:1px solid rgba(249,115,22,.08)}
 .doc-tab{
   flex:1;padding:14px 20px;border-radius:10px;border:none;
-  background:transparent;color:#64748b;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;
+  background:transparent;color:var(--muted-2);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;
   transition:all .25s;
 }
 .doc-tab.active{background:rgba(249,115,22,.1);color:#f97316;box-shadow:0 0 20px rgba(249,115,22,.08)}
 .doc-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start}
 @media(max-width:768px){.doc-grid{grid-template-columns:1fr}}
-.doc-heading{font-size:28px;font-weight:700;color:#f1f5f9;margin-bottom:20px;letter-spacing:-.02em}
-.doc-text{font-size:15px;color:#94a3b8;line-height:1.7;margin-bottom:16px}
+.doc-heading{font-size:28px;font-weight:700;color:var(--text);margin-bottom:20px;letter-spacing:-.02em}
+.doc-text{font-size:15px;color:var(--muted);line-height:1.7;margin-bottom:16px}
 .code-block{background:#0a0e1a;border:1px solid rgba(249,115,22,.08);border-radius:14px;overflow:hidden;position:relative}
 .code-head{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:#0e1224;border-bottom:1px solid rgba(249,115,22,.06)}
 .code-lang{font-family:'JetBrains Mono',monospace;font-size:11px;color:#475569}
@@ -247,28 +277,28 @@ h1{font-size:clamp(34px,4vw,52px);font-weight:800;letter-spacing:-.035em;line-he
   font-family:'JetBrains Mono',monospace;font-size:11px;cursor:pointer;transition:all .2s;
 }
 .copy-btn.copied{border-color:rgba(16,185,129,.3);background:rgba(16,185,129,.1);color:#10b981}
-.code-body{padding:16px;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:#94a3b8;overflow-x:auto;white-space:pre}
+.code-body{padding:16px;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:var(--muted);overflow-x:auto;white-space:pre}
 .doc-cta-row{text-align:center;margin-top:48px}
-.doc-cta-note{font-size:15px;color:#64748b;margin-bottom:20px}
+.doc-cta-note{font-size:15px;color:var(--muted-2);margin-bottom:20px}
 
 /* ── CTA ── */
 .cta{padding:120px 0;position:relative;overflow:hidden}
 .cta-bg{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 0%,rgba(249,115,22,.06) 0%,transparent 60%)}
 .cta-inner{max-width:720px;margin:0 auto;text-align:center;position:relative;z-index:1}
-.cta-title{font-size:clamp(32px,4vw,48px);font-weight:800;letter-spacing:-.03em;margin-bottom:20px;color:#f1f5f9;text-wrap:balance}
-.cta-desc{font-size:18px;color:#64748b;line-height:1.6;margin-bottom:40px}
+.cta-title{font-size:clamp(32px,4vw,48px);font-weight:800;letter-spacing:-.03em;margin-bottom:20px;color:var(--text);text-wrap:balance}
+.cta-desc{font-size:18px;color:var(--muted-2);line-height:1.6;margin-bottom:40px}
 .cta-btns{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
 .btn-cta-lg{padding:16px 40px;border-radius:12px;font-size:17px;font-weight:700;display:inline-flex;align-items:center;gap:10px;text-decoration:none;cursor:pointer;border:none;transition:all .2s}
 .btn-cta-orange{background:linear-gradient(135deg,#f97316,#ea580c);color:white}
 .btn-cta-orange:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(249,115,22,.4);color:white}
-.btn-cta-ghost{background:rgba(255,255,255,.02);border:1px solid #232d49;color:#cbd5e1}
-.btn-cta-ghost:hover{border-color:#f97316;color:#f1f5f9}
+.btn-cta-ghost{background:var(--surface-tint);border:1px solid var(--border-strong);color:var(--text-2)}
+.btn-cta-ghost:hover{border-color:#f97316;color:var(--text)}
 
 /* ── FOOTER ── */
 footer{border-top:1px solid rgba(249,115,22,.08);padding:48px 0}
 footer .container{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
 .foot-brand{display:flex;align-items:center;gap:12px}
-.foot-name{font-weight:800;font-size:14px;letter-spacing:-.02em;color:#94a3b8}
+.foot-name{font-weight:800;font-size:14px;letter-spacing:-.02em;color:var(--muted)}
 .foot-name span{color:#fb923c}
 .foot-copy{font-family:'JetBrains Mono',monospace;font-size:12px;color:#334155}
 </style>
@@ -306,6 +336,15 @@ footer .container{display:flex;justify-content:space-between;align-items:center;
         </button>
         <div class="lang-sep"></div>
         <button class="lang-btn" id="lang-en" onclick="setLang('en')" aria-pressed="false">EN</button>
+      </div>
+      <!-- Light / dark switcher — same slider + icons as the swarmbot.it dashboard topbar -->
+      <div class="theme-slider" role="group" aria-label="Theme">
+        <button class="theme-slider__btn" id="theme-light" title="Light" onclick="setTheme('light')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        </button>
+        <button class="theme-slider__btn" id="theme-dark" title="Dark" onclick="setTheme('dark')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
       </div>
       <a href="/app" class="btn-login" id="nav-login" data-i18n="navLogin"></a>
       <a href="#demo" class="btn-cta" id="nav-cta" data-i18n="navCta"></a>
@@ -591,6 +630,24 @@ function applyI18n() {
 }
 
 /* ════════════════════════════════════════════
+   THEME — same localStorage key + data-theme
+   attribute as the swarmbot.it dashboard, so a
+   choice made here or in the app carries over.
+════════════════════════════════════════════ */
+const THEME_KEY = 'swarmboty.theme';
+
+function setTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem(THEME_KEY, theme);
+  syncThemeButtons(theme);
+}
+
+function syncThemeButtons(theme) {
+  document.getElementById('theme-light').classList.toggle('theme-slider__btn--active', theme === 'light');
+  document.getElementById('theme-dark').classList.toggle('theme-slider__btn--active', theme === 'dark');
+}
+
+/* ════════════════════════════════════════════
    FEATURES
 ════════════════════════════════════════════ */
 const FEAT_ICONS = [
@@ -871,6 +928,7 @@ function renderWidgets() {
    INIT
 ════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', () => {
+  syncThemeButtons(document.documentElement.getAttribute('data-theme'));
   applyI18n();
   renderFeatures();
   renderHowSteps();

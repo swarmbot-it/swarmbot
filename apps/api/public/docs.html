@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Documentation — SW4RMBOT.IT</title>
 <meta name="description" content="Complete documentation for SW4RMBOT.IT — installation, configuration, API reference, and troubleshooting."/>
+<script>
+(function(){
+  var KEY = 'swarmboty.theme';
+  var saved = localStorage.getItem(KEY);
+  var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  document.documentElement.setAttribute('data-theme', theme);
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"/>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
@@ -12,7 +20,20 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{font-family:'Plus Jakarta Sans',sans-serif;color:#f1f5f9;background:#060a14;overflow-x:hidden;min-height:100vh}
+
+/* ── THEME (same tokens/behavior as the swarmbot.it dashboard) ── */
+:root{
+  --bg:#060a14;--text:#f1f5f9;--text-2:#cbd5e1;--muted:#94a3b8;--muted-2:#64748b;
+  --border-strong:#232d49;--nav-bg:rgba(6,10,20,.85);
+  --surface-tint:rgba(255,255,255,.02);--surface-tint-hover:rgba(255,255,255,.04);--surface-tint-strong:rgba(255,255,255,.05);
+}
+:root[data-theme="light"]{
+  --bg:#f5f6fa;--text:#0f172a;--text-2:#334155;--muted:#64748b;--muted-2:#94a3b8;
+  --border-strong:#d4d8e2;--nav-bg:rgba(255,255,255,.85);
+  --surface-tint:rgba(15,23,42,.03);--surface-tint-hover:rgba(15,23,42,.05);--surface-tint-strong:rgba(15,23,42,.08);
+}
+
+body{font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:var(--bg);overflow-x:hidden;min-height:100vh}
 a{color:#fb923c;text-decoration:none}
 a:hover{color:#f97316}
 button{font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer}
@@ -21,27 +42,36 @@ button{font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer}
 @keyframes fade-in-up{0%{opacity:0;transform:translateY(24px)}100%{opacity:1;transform:translateY(0)}}
 
 /* NAV */
-nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(6,10,20,.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(249,115,22,.08)}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--nav-bg);backdrop-filter:blur(16px);border-bottom:1px solid rgba(249,115,22,.08)}
 .nav-inner{max-width:1280px;margin:0 auto;padding:0 48px;height:72px;display:flex;align-items:center;justify-content:space-between;gap:24px}
 .nav-logo{display:flex;align-items:center;gap:12px;flex-shrink:0;text-decoration:none}
-.nav-logo span{font-weight:800;font-size:17px;letter-spacing:-.02em;color:#f1f5f9}
+.nav-logo span{font-weight:800;font-size:17px;letter-spacing:-.02em;color:var(--text)}
 .nav-logo span em{font-style:normal;color:#fb923c}
 .nav-links{display:flex;align-items:center;gap:4px;font-size:13px;font-weight:500}
-.nav-link{padding:8px 14px;border-radius:8px;color:#94a3b8;transition:color .2s,background .2s;text-decoration:none;white-space:nowrap}
-.nav-link:hover{color:#f1f5f9;background:rgba(255,255,255,.04)}
+.nav-link{padding:8px 14px;border-radius:8px;color:var(--muted);transition:color .2s,background .2s;text-decoration:none;white-space:nowrap}
+.nav-link:hover{color:var(--text);background:var(--surface-tint-hover)}
 .nav-link.active{color:#f97316;background:rgba(249,115,22,.06)}
 .nav-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
 .btn-primary{padding:9px 20px;background:linear-gradient(135deg,#f97316,#ea580c);border-radius:10px;font-size:13px;font-weight:700;color:#fff;border:none;transition:transform .2s,box-shadow .2s;white-space:nowrap;text-decoration:none}
 .btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(249,115,22,.35)}
 
+/* Theme switcher — same slider used in the swarmbot.it dashboard topbar */
+.theme-slider{display:flex;align-items:center;gap:2px;padding:3px;border-radius:999px;background:var(--surface-tint);border:1px solid rgba(249,115,22,.12)}
+.theme-slider__btn{
+  width:26px;height:26px;border-radius:50%;border:none;background:transparent;
+  color:var(--muted-2);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .2s;
+}
+.theme-slider__btn--active{background:var(--surface-tint-strong);color:#f97316;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+
 /* DOCS LAYOUT */
 .docs-layout{max-width:1280px;margin:0 auto;padding:100px 48px 80px;display:grid;grid-template-columns:240px 1fr;gap:60px;align-items:start}
 
 /* SIDEBAR */
-.sidebar{position:sticky;top:88px;background:rgba(255,255,255,.015);border:1px solid rgba(249,115,22,.08);border-radius:16px;padding:8px;overflow:hidden}
+.sidebar{position:sticky;top:88px;background:var(--surface-tint);border:1px solid rgba(249,115,22,.08);border-radius:16px;padding:8px;overflow:hidden}
 .sidebar-header{padding:12px 16px 8px;font-size:11px;font-family:'JetBrains Mono',monospace;letter-spacing:.12em;color:#475569;text-transform:uppercase}
-.sidebar-link{display:flex;align-items:center;gap:10px;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:500;color:#94a3b8;transition:color .2s,background .2s;text-decoration:none;cursor:pointer}
-.sidebar-link:hover{color:#f1f5f9;background:rgba(255,255,255,.04)}
+.sidebar-link{display:flex;align-items:center;gap:10px;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:500;color:var(--muted);transition:color .2s,background .2s;text-decoration:none;cursor:pointer}
+.sidebar-link:hover{color:var(--text);background:var(--surface-tint-hover)}
 .sidebar-link.active{color:#f97316;background:rgba(249,115,22,.08)}
 .sidebar-link i{width:16px;text-align:center;font-size:13px}
 .sidebar-link .badge{margin-left:auto;background:rgba(249,115,22,.15);color:#f97316;font-size:10px;font-family:'JetBrains Mono',monospace;padding:2px 7px;border-radius:5px}
@@ -53,13 +83,13 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(6,10,20,.92)
 .doc-section:first-child{padding-top:0}
 
 .doc-section-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.15em;color:#f97316;text-transform:uppercase;margin-bottom:12px}
-.doc-section h2{font-size:36px;font-weight:800;letter-spacing:-.025em;color:#f1f5f9;margin-bottom:16px}
-.doc-section h3{font-size:22px;font-weight:700;letter-spacing:-.02em;color:#f1f5f9;margin:32px 0 14px}
-.doc-section h4{font-size:16px;font-weight:700;color:#cbd5e1;margin:24px 0 10px}
-.doc-section p{font-size:15px;color:#94a3b8;line-height:1.75;margin-bottom:16px}
+.doc-section h2{font-size:36px;font-weight:800;letter-spacing:-.025em;color:var(--text);margin-bottom:16px}
+.doc-section h3{font-size:22px;font-weight:700;letter-spacing:-.02em;color:var(--text);margin:32px 0 14px}
+.doc-section h4{font-size:16px;font-weight:700;color:var(--text-2);margin:24px 0 10px}
+.doc-section p{font-size:15px;color:var(--muted);line-height:1.75;margin-bottom:16px}
 .doc-section ul,.doc-section ol{padding-left:24px;margin-bottom:16px}
-.doc-section li{font-size:15px;color:#94a3b8;line-height:1.75;margin-bottom:6px}
-.doc-section li strong{color:#f1f5f9}
+.doc-section li{font-size:15px;color:var(--muted);line-height:1.75;margin-bottom:6px}
+.doc-section li strong{color:var(--text)}
 
 /* BADGES/TAGS */
 .tag{display:inline-block;padding:2px 9px;border-radius:6px;font-size:12px;font-family:'JetBrains Mono',monospace;font-weight:500;margin-right:6px}
@@ -76,14 +106,14 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(6,10,20,.92)
 .code-block-copy{display:flex;align-items:center;gap:6px;padding:4px 12px;border-radius:6px;border:1px solid rgba(249,115,22,.2);background:rgba(249,115,22,.06);color:#f97316;font-family:'JetBrains Mono',monospace;font-size:11px;cursor:pointer;transition:all .2s}
 .code-block-copy:hover{background:rgba(249,115,22,.12)}
 .code-block-copy.copied{border-color:rgba(16,185,129,.3);background:rgba(16,185,129,.1);color:#10b981}
-.code-block pre{padding:18px;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.75;overflow-x:auto;white-space:pre;color:#94a3b8}
+.code-block pre{padding:18px;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.75;overflow-x:auto;white-space:pre;color:var(--muted)}
 .code-block pre .comment{color:#475569}
 .code-block pre .output{color:#10b981}
 .code-block pre .highlight{color:#fb923c}
 .code-block pre .key{color:#f97316}
 
 /* ARCH DIAGRAM */
-.arch-diagram{background:rgba(255,255,255,.015);border:1px solid rgba(249,115,22,.08);border-radius:16px;padding:32px;margin:24px 0}
+.arch-diagram{background:var(--surface-tint);border:1px solid rgba(249,115,22,.08);border-radius:16px;padding:32px;margin:24px 0}
 .arch-row{display:flex;align-items:center;gap:16px;margin-bottom:12px;flex-wrap:wrap}
 .arch-box{padding:10px 18px;border-radius:10px;font-size:13px;font-weight:600;font-family:'JetBrains Mono',monospace;white-space:nowrap}
 .arch-box-rust{background:rgba(249,115,22,.12);border:1px solid rgba(249,115,22,.25);color:#f97316}
@@ -91,13 +121,13 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(6,10,20,.92)
 .arch-box-db{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);color:#3b82f6}
 .arch-box-ui{background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.25);color:#8b5cf6}
 .arch-arrow{color:#475569;font-size:18px}
-.arch-label{font-size:11px;color:#64748b;font-family:'JetBrains Mono',monospace;margin-top:6px}
+.arch-label{font-size:11px;color:var(--muted-2);font-family:'JetBrains Mono',monospace;margin-top:6px}
 
 /* TABLE */
 .config-table{width:100%;border-collapse:collapse;margin:20px 0;font-size:14px}
 .config-table th{padding:12px 16px;text-align:left;font-weight:600;color:#f97316;font-size:12px;letter-spacing:.05em;text-transform:uppercase;border-bottom:1px solid rgba(249,115,22,.12);background:rgba(249,115,22,.04)}
-.config-table td{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.04);color:#94a3b8;vertical-align:top}
-.config-table tr:hover td{background:rgba(255,255,255,.02)}
+.config-table td{padding:12px 16px;border-bottom:1px solid var(--surface-tint-hover);color:var(--muted);vertical-align:top}
+.config-table tr:hover td{background:var(--surface-tint)}
 .config-table code{font-family:'JetBrains Mono',monospace;font-size:12px;background:rgba(249,115,22,.08);color:#fb923c;padding:2px 6px;border-radius:4px}
 
 /* CALLOUT */
@@ -116,16 +146,16 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(6,10,20,.92)
 
 /* TROUBLE TABLE */
 .trouble-table{width:100%;border-collapse:collapse;margin:20px 0;font-size:14px}
-.trouble-table th{padding:12px 16px;text-align:left;font-weight:600;color:#f1f5f9;font-size:13px;border-bottom:1px solid rgba(249,115,22,.12);background:rgba(249,115,22,.04)}
-.trouble-table td{padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:top;font-size:14px;color:#94a3b8;line-height:1.6}
-.trouble-table td:first-child{color:#f1f5f9;font-weight:500;font-size:13px;white-space:nowrap}
-.trouble-table tr:hover td{background:rgba(255,255,255,.02)}
+.trouble-table th{padding:12px 16px;text-align:left;font-weight:600;color:var(--text);font-size:13px;border-bottom:1px solid rgba(249,115,22,.12);background:rgba(249,115,22,.04)}
+.trouble-table td{padding:14px 16px;border-bottom:1px solid var(--surface-tint-hover);vertical-align:top;font-size:14px;color:var(--muted);line-height:1.6}
+.trouble-table td:first-child{color:var(--text);font-weight:500;font-size:13px;white-space:nowrap}
+.trouble-table tr:hover td{background:var(--surface-tint)}
 
 /* GRAPHQL BLOCK */
 .gql-block{background:#0a0e1a;border:1px solid rgba(139,92,246,.1);border-radius:14px;overflow:hidden;margin:20px 0}
 .gql-header{padding:10px 16px;background:#0e1224;border-bottom:1px solid rgba(139,92,246,.08);display:flex;align-items:center;gap:10px;justify-content:space-between}
 .gql-label{font-family:'JetBrains Mono',monospace;font-size:11px;color:#8b5cf6;display:flex;align-items:center;gap:8px}
-.gql-pre{padding:18px;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.75;overflow-x:auto;color:#94a3b8}
+.gql-pre{padding:18px;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.75;overflow-x:auto;color:var(--muted)}
 .gql-pre .gql-key{color:#8b5cf6}
 .gql-pre .gql-type{color:#3b82f6}
 .gql-pre .gql-str{color:#10b981}
@@ -157,6 +187,15 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(6,10,20,.92)
       <a class="nav-link" href="https://github.com/swarmbot-it/swarmbot" target="_blank">GitHub</a>
     </div>
     <div class="nav-right">
+      <!-- Light / dark switcher — same slider + icons as the swarmbot.it dashboard topbar -->
+      <div class="theme-slider" role="group" aria-label="Theme">
+        <button class="theme-slider__btn" id="theme-light" title="Light" onclick="setTheme('light')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        </button>
+        <button class="theme-slider__btn" id="theme-dark" title="Dark" onclick="setTheme('dark')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+      </div>
       <a class="btn-primary" href="index.html#demo">Try Demo</a>
     </div>
   </div>
@@ -869,6 +908,23 @@ curl -G http://localhost:8086/query \
 </footer>
 
 <script>
+/* THEME — same localStorage key + data-theme attribute as the swarmbot.it
+   dashboard, so a choice made here or in the app carries over. */
+const THEME_KEY = 'swarmboty.theme';
+
+function setTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem(THEME_KEY, theme);
+  syncThemeButtons(theme);
+}
+
+function syncThemeButtons(theme) {
+  document.getElementById('theme-light').classList.toggle('theme-slider__btn--active', theme === 'light');
+  document.getElementById('theme-dark').classList.toggle('theme-slider__btn--active', theme === 'dark');
+}
+
+syncThemeButtons(document.documentElement.getAttribute('data-theme'));
+
 function setActive(el) {
   document.querySelectorAll('.sidebar-link').forEach(a => a.classList.remove('active'));
   el.classList.add('active');
