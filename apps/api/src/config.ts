@@ -47,6 +47,8 @@ export type SwarmbotConfig = {
 	oidcScopes: string;
 	oidcAdminGroups: string[];
 	oidcEditorGroups: string[];
+	/** Hosts whose "/" skips the marketing landing and goes straight to OIDC login (e.g. swarmbot.infra). */
+	consoleHosts: string[];
 };
 
 const defaults: SwarmbotConfig = {
@@ -76,6 +78,7 @@ const defaults: SwarmbotConfig = {
 	oidcScopes: "openid profile email groups",
 	oidcAdminGroups: [],
 	oidcEditorGroups: [],
+	consoleHosts: [],
 };
 
 function envOrchestratorMode(key: string): "swarm" | "kubernetes" | "auto" | undefined {
@@ -143,5 +146,6 @@ export function loadConfig(): SwarmbotConfig {
 		oidcScopes: envStr("SWARMBOT_OIDC_SCOPES") ?? defaults.oidcScopes,
 		oidcAdminGroups: envList("SWARMBOT_OIDC_ADMIN_GROUPS"),
 		oidcEditorGroups: envList("SWARMBOT_OIDC_EDITOR_GROUPS"),
+		consoleHosts: envList("SWARMBOT_CONSOLE_HOSTS"),
 	};
 }

@@ -345,6 +345,18 @@ export async function createHttpServer(
 	// staticDir/index.html and staticDir/docs.html are the marketing landing
 	// page and docs, served at the domain root. The real dashboard (Angular
 	// build output) lives under staticDir/app and is served at /app.
+	// On the internal console host(s) (SWARMBOT_CONSOLE_HOSTS, e.g. swarmbot.infra),
+	// "/" skips the marketing landing and goes straight to the Dex login. Public
+	// hosts (swarmbot.it) fall through to the static landing below.
+	app.get("/", (req, res, next) => {
+		const host = (req.headers.host ?? "").split(":")[0]!.toLowerCase();
+		if (oidcConfig(cfg) && cfg.consoleHosts.includes(host)) {
+			res.redirect("/api/auth/oidc/login");
+			return;
+		}
+		next();
+	});
+
 	const staticDir = path.join(process.cwd(), "public");
 	app.use(express.static(staticDir));
 	// The Angular build's own assets (fonts, i18n) are referenced by root-absolute

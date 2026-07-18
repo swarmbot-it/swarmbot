@@ -53,6 +53,14 @@ import { MUTATION_LOGIN, QUERY_PROFILE_ME } from "../../core/graphql.queries";
 					</button>
 					<div class="login-error" *ngIf="error()">{{ error() }}</div>
 				</form>
+				<button
+					type="button"
+					class="btn"
+					style="margin-top: 12px; width: 100%; height: 42px; justify-content: center;"
+					(click)="loginWithDex()"
+				>
+					Sign in with GitHub
+				</button>
 			</div>
 		</div>
 	`,
@@ -112,6 +120,11 @@ export class LoginPageComponent {
 		required(f.password);
 		minLength(f.password, 4);
 	});
+
+	/** Full-page redirect into the app-native OIDC (Dex) login. */
+	loginWithDex(): void {
+		window.location.href = "/api/auth/oidc/login";
+	}
 
 	/**
 	 * Submits credentials to the login mutation and navigates to the dashboard on success.

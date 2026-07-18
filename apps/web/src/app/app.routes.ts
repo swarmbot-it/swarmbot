@@ -15,6 +15,13 @@ export const routes: Routes = [
 			import("./pages/login/login-page.component").then((m) => m.LoginPageComponent),
 	},
 	{
+		// Unguarded: sets the OIDC session token (from the URL fragment) before
+		// the authGuard on the rest of /app runs. Must precede the "app" route.
+		path: "app/oidc",
+		loadComponent: () =>
+			import("./pages/oidc/oidc-callback.component").then((m) => m.OidcCallbackComponent),
+	},
+	{
 		path: "app",
 		component: ShellComponent,
 		canActivate: [authGuard],
