@@ -21,14 +21,14 @@ export async function loginAsAdmin(
 		localStorage.clear();
 		sessionStorage.clear();
 		if (locale) {
-			localStorage.setItem("swarmboty.lang", locale);
+			localStorage.setItem("swarmbot.lang", locale);
 		}
 	}, options?.locale ?? null);
 	await expect(page).toHaveURL(/\/login/);
 	await page.waitForSelector("sb-login-page, .login-card", { timeout: 90_000 });
 	const inputs = page.locator(".login-card input.input");
 	await inputs.nth(0).fill("admin");
-	await inputs.nth(1).fill("swarmboty");
+	await inputs.nth(1).fill("swarmbot");
 	await page.locator('.login-card button[type="submit"]').click();
 	await expect(page).toHaveURL(/\/app\/dashboard/, { timeout: 30_000 });
 }

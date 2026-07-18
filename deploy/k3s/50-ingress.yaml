@@ -13,7 +13,7 @@ apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
     name: internal-only
-    namespace: swarmboty
+    namespace: swarmbot
 spec:
     ipAllowList:
         sourceRange:
@@ -24,14 +24,14 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-    name: swarmboty
-    namespace: swarmboty
+    name: swarmbot
+    namespace: swarmbot
     annotations:
         # The k3s Traefik install redirects web → websecure globally, so the
         # router must be bound to both entrypoints (TLS uses Traefik's default
         # certificate; add a cert-manager/issuer block for a proper cert).
         traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
-        traefik.ingress.kubernetes.io/router.middlewares: swarmboty-internal-only@kubernetescrd
+        traefik.ingress.kubernetes.io/router.middlewares: swarmbot-internal-only@kubernetescrd
 spec:
     ingressClassName: traefik
     rules:
@@ -42,6 +42,6 @@ spec:
                     pathType: Prefix
                     backend:
                         service:
-                            name: swarmboty
+                            name: swarmbot
                             port:
                                 number: 8080

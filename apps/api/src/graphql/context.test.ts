@@ -20,7 +20,7 @@ describe("buildContext", () => {
 		const cfg = { ...loadConfig(), mock: true };
 		const docker = createDocker(cfg);
 		const claims = {
-			iss: "swarmboty",
+			iss: "swarmbot",
 			iat: 1,
 			jti: "x",
 			usr: { username: "admin" },

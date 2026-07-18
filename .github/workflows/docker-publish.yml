@@ -17,18 +17,18 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_USER: swarmboty
-          POSTGRES_PASSWORD: swarmboty
-          POSTGRES_DB: swarmboty_test
+          POSTGRES_USER: swarmbot
+          POSTGRES_PASSWORD: swarmbot
+          POSTGRES_DB: swarmbot_test
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U swarmboty"
+          --health-cmd "pg_isready -U swarmbot"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
     env:
-      SWARMBOTY_TEST_DB: postgres://swarmboty:swarmboty@localhost:5432/swarmboty_test
+      SWARMBOT_TEST_DB: postgres://swarmbot:swarmbot@localhost:5432/swarmbot_test
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -39,7 +39,7 @@ jobs:
       - run: npm run lint
       # API tests run against the Postgres service container. Web unit tests
       # (ng test) need a browser runner and are covered by the repo's own CI.
-      - run: npm test -w @swarmboty/api
+      - run: npm test -w @swarmbot/api
 
   build-and-push:
     needs: test

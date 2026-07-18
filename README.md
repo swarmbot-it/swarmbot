@@ -42,15 +42,15 @@ fabricated) until the agent is available.
 
 ## Development
 
-Run the API (loads `apps/api/.env.development` with `SWARMBOTY_MOCK=true` — no Postgres/Docker required):
+Run the API (loads `apps/api/.env.development` with `SWARMBOT_MOCK=true` — no Postgres/Docker required):
 
 ```sh
 npm run dev:api
 ```
 
-You should see `Swarmboty listening on http://0.0.0.0:8081`. Demo login: `admin` / `swarmboty`.
+You should see `Swarmbot listening on http://0.0.0.0:8081`. Demo login: `admin` / `swarmbot`.
 
-To use a real Postgres instead, unset mock mode (e.g. remove `SWARMBOTY_MOCK` from `.env.development` or set `SWARMBOTY_MOCK=false` and ensure `SWARMBOTY_DB` points at Postgres).
+To use a real Postgres instead, unset mock mode (e.g. remove `SWARMBOT_MOCK` from `.env.development` or set `SWARMBOT_MOCK=false` and ensure `SWARMBOT_DB` points at Postgres).
 
 Run the web app:
 
@@ -58,7 +58,7 @@ Run the web app:
 npm run dev:web
 ```
 
-Local `npm run dev:api` uses port **8081** (`apps/api/.env.development`). The Angular dev proxy (`apps/web/proxy.conf.json`) targets the same port. Production and Docker Compose still use **8080** unless overridden with `SWARMBOTY_PORT`.
+Local `npm run dev:api` uses port **8081** (`apps/api/.env.development`). The Angular dev proxy (`apps/web/proxy.conf.json`) targets the same port. Production and Docker Compose still use **8080** unless overridden with `SWARMBOT_PORT`.
 
 ## Build
 
@@ -78,7 +78,7 @@ npm run test:all         # Vitest + Playwright
 npm run lint
 ```
 
-API tests use **Vitest** against a real Postgres instance (see `apps/api/src/test/db-setup.ts`), with an in-memory Docker mock. Web UI tests use **Playwright** against `ng serve` with `SWARMBOTY_MOCK=true` on the API. Karma was removed.
+API tests use **Vitest** against a real Postgres instance (see `apps/api/src/test/db-setup.ts`), with an in-memory Docker mock. Web UI tests use **Playwright** against `ng serve` with `SWARMBOT_MOCK=true` on the API. Karma was removed.
 
 The dev proxy does not forward `GET /login` to the API (that path is the Angular login screen). GraphQL login uses `/graphql`.
 
@@ -90,7 +90,7 @@ The web UI uses **Transloco** with runtime-loaded JSON dictionaries:
 - `apps/web/public/assets/i18n/en.json`
 - ...
 
-The active language is stored in `localStorage` under `swarmboty.lang`. On first visit, Polish is preferred when the browser language starts with `pl`; otherwise English is used.
+The active language is stored in `localStorage` under `swarmbot.lang`. On first visit, Polish is preferred when the browser language starts with `pl`; otherwise English is used.
 
 Switch language from the user menu in the top bar. PrimeNG table labels (paginator, etc.) are synchronized via `PrimeNGConfig.setTranslation`.
 
@@ -98,19 +98,19 @@ Every HTTP and GraphQL request sends `Accept-Language`. The API returns localize
 
 ## Demo / mock mode
 
-For a quick demo without Docker, Postgres, or InfluxDB, set `SWARMBOTY_MOCK=true`:
+For a quick demo without Docker, Postgres, or InfluxDB, set `SWARMBOT_MOCK=true`:
 
 ```sh
 # Windows PowerShell
-$env:SWARMBOTY_MOCK="true"; npm run dev:api
+$env:SWARMBOT_MOCK="true"; npm run dev:api
 ```
 
 ```sh
 # macOS / Linux
-SWARMBOTY_MOCK=true npm run dev:api
+SWARMBOT_MOCK=true npm run dev:api
 ```
 
-In mock mode the API uses an in-memory SQLite database (via Kysely) and a mocked Docker engine with sample services and nodes. A demo admin user `admin / swarmboty` is created automatically.
+In mock mode the API uses an in-memory SQLite database (via Kysely) and a mocked Docker engine with sample services and nodes. A demo admin user `admin / swarmbot` is created automatically.
 
 Run the Angular dev server in another terminal:
 
@@ -118,7 +118,7 @@ Run the Angular dev server in another terminal:
 npm run dev:web
 ```
 
-Then open http://localhost:4200 and sign in as `admin` / `swarmboty`.
+Then open http://localhost:4200 and sign in as `admin` / `swarmbot`.
 
 ## Docker Compose — development
 
@@ -138,7 +138,7 @@ docker compose -f docker-compose.dev.yml up
 | Postgres           | localhost:5432                | psql/pgAdmin (no bundled admin UI) |
 | InfluxDB           | http://localhost:8086         | HTTP API         |
 
-Sign in as `admin` / `swarmboty`.
+Sign in as `admin` / `swarmbot`.
 
 The API and Angular containers mount the source tree — saving a `.ts` or `.html` file restarts the API or triggers Angular's live-reload automatically.
 
@@ -146,10 +146,10 @@ The API and Angular containers mount the source tree — saving a `.ts` or `.htm
 
 ```sh
 # Windows PowerShell
-$env:SWARMBOTY_MOCK="true"; docker compose -f docker-compose.dev.yml up api web
+$env:SWARMBOT_MOCK="true"; docker compose -f docker-compose.dev.yml up api web
 
 # macOS / Linux
-SWARMBOTY_MOCK=true docker compose -f docker-compose.dev.yml up api web
+SWARMBOT_MOCK=true docker compose -f docker-compose.dev.yml up api web
 ```
 
 ### The Rust agent
@@ -247,7 +247,7 @@ docker exec swarm-manager docker service ls
 npm run swarm:deploy
 ```
 
-When finished, open **http://localhost:888** (port `888` is published from the `swarm-manager` DinD container to your host). Login: **admin** / **swarmboty**.
+When finished, open **http://localhost:888** (port `888` is published from the `swarm-manager` DinD container to your host). Login: **admin** / **swarmbot**.
 
 > Do not use bare `http://172.18.0.2/` — that is the manager container’s internal Docker bridge IP. On Windows it is often unreachable from the browser, and the app listens on port **888**, not 80.
 
@@ -270,19 +270,19 @@ The manager exposes the Docker API over TCP on port `2375` (no TLS — the start
 **macOS / Linux:**
 ```sh
 MANAGER_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' swarm-manager)
-SWARMBOTY_DOCKER_SOCK=tcp://$MANAGER_IP:2375 npm run dev:api
+SWARMBOT_DOCKER_SOCK=tcp://$MANAGER_IP:2375 npm run dev:api
 ```
 
 **Windows PowerShell:**
 ```powershell
 $MANAGER_IP = docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' swarm-manager
-$env:SWARMBOTY_DOCKER_SOCK = "tcp://${MANAGER_IP}:2375"
+$env:SWARMBOT_DOCKER_SOCK = "tcp://${MANAGER_IP}:2375"
 npm run dev:api
 ```
 
-Then open http://localhost:4200 (after `npm run dev:web`) and sign in as `admin` / `swarmboty`. The UI will show resources from the test cluster.
+Then open http://localhost:4200 (after `npm run dev:web`) and sign in as `admin` / `swarmbot`. The UI will show resources from the test cluster.
 
-> **Note:** if `SWARMBOTY_DOCKER_SOCK` is unset, the API uses the local socket `/var/run/docker.sock` (default).
+> **Note:** if `SWARMBOT_DOCKER_SOCK` is unset, the API uses the local socket `/var/run/docker.sock` (default).
 
 ---
 
@@ -302,16 +302,16 @@ http://localhost:888
 
 ## Configuration
 
-The API supports `SWARMBOTY_*` environment variables.
+The API supports `SWARMBOT_*` environment variables.
 
 Common variables:
 
-- `SWARMBOTY_PORT` - API port, defaults to `8080`.
-- `SWARMBOTY_DB` - Postgres connection string, defaults to `postgres://localhost:5432/swarmboty`.
-- `SWARMBOTY_INFLUXDB` - optional InfluxDB URL.
-- `SWARMBOTY_DOCKER_SOCK` - Docker socket path, defaults to `/var/run/docker.sock`.
-- `SWARMBOTY_DOCKER_API` - Docker API version, defaults to `1.44`.
-- `SWARMBOTY_WORK_DIR` - working directory, defaults to `/tmp`.
+- `SWARMBOT_PORT` - API port, defaults to `8080`.
+- `SWARMBOT_DB` - Postgres connection string, defaults to `postgres://localhost:5432/swarmbot`.
+- `SWARMBOT_INFLUXDB` - optional InfluxDB URL.
+- `SWARMBOT_DOCKER_SOCK` - Docker socket path, defaults to `/var/run/docker.sock`.
+- `SWARMBOT_DOCKER_API` - Docker API version, defaults to `1.44`.
+- `SWARMBOT_WORK_DIR` - working directory, defaults to `/tmp`.
 
 ## Project Layout
 

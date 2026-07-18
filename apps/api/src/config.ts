@@ -12,12 +12,12 @@ function envInt(key: string): number | undefined {
 	return Number.isFinite(n) ? n : undefined;
 }
 
-export type SwarmbotyConfig = {
+export type SwarmbotConfig = {
 	dockerSock: string;
 	dockerApi: string;
 	dockerHttpTimeoutMs: number;
 	logLevel: string;
-	/** Postgres connection string (e.g. `postgres://user:pass@host:5432/swarmboty`). */
+	/** Postgres connection string (e.g. `postgres://user:pass@host:5432/swarmbot`). */
 	dbUrl: string;
 	influxdbUrl: string | undefined;
 	influxdbToken: string | undefined;
@@ -41,12 +41,12 @@ export type SwarmbotyConfig = {
 	mockOrchestrator: "swarm" | "kubernetes";
 };
 
-const defaults: SwarmbotyConfig = {
+const defaults: SwarmbotConfig = {
 	dockerSock: "/var/run/docker.sock",
 	dockerApi: "1.44",
 	dockerHttpTimeoutMs: 5000,
 	logLevel: "info",
-	dbUrl: "postgres://localhost:5432/swarmboty",
+	dbUrl: "postgres://localhost:5432/swarmbot",
 	influxdbUrl: undefined,
 	influxdbToken: undefined,
 	agentUrl: undefined,
@@ -76,7 +76,7 @@ export function setNegotiatedDockerApi(version: string): void {
 }
 
 export function resolvedDockerApi(fallback: string): string {
-	return dynamicDockerApi ?? envStr("SWARMBOTY_DOCKER_API") ?? fallback;
+	return dynamicDockerApi ?? envStr("SWARMBOT_DOCKER_API") ?? fallback;
 }
 
 function envBool(key: string): boolean | undefined {
@@ -88,33 +88,33 @@ function envBool(key: string): boolean | undefined {
 	return undefined;
 }
 
-export function loadConfig(): SwarmbotyConfig {
-	const port = envInt("SWARMBOTY_PORT") ?? envInt("PORT") ?? defaults.port;
+export function loadConfig(): SwarmbotConfig {
+	const port = envInt("SWARMBOT_PORT") ?? envInt("PORT") ?? defaults.port;
 	return {
-		dockerSock: envStr("SWARMBOTY_DOCKER_SOCK") ?? defaults.dockerSock,
+		dockerSock: envStr("SWARMBOT_DOCKER_SOCK") ?? defaults.dockerSock,
 		dockerApi: resolvedDockerApi(defaults.dockerApi),
 		dockerHttpTimeoutMs:
-			envInt("SWARMBOTY_DOCKER_HTTP_TIMEOUT") ?? defaults.dockerHttpTimeoutMs,
-		logLevel: envStr("SWARMBOTY_LOG_LEVEL") ?? defaults.logLevel,
-		dbUrl: envStr("SWARMBOTY_DB") ?? defaults.dbUrl,
-		influxdbUrl: envStr("SWARMBOTY_INFLUXDB"),
-		influxdbToken: envStr("SWARMBOTY_INFLUXDB_TOKEN"),
-		agentUrl: envStr("SWARMBOTY_AGENT_URL"),
-		workDir: envStr("SWARMBOTY_WORK_DIR") ?? defaults.workDir,
-		instanceName: envStr("SWARMBOTY_INSTANCE_NAME"),
-		apiTokenExpiryDays: envInt("SWARMBOTY_API_TOKEN_EXPIRY_DAYS"),
+			envInt("SWARMBOT_DOCKER_HTTP_TIMEOUT") ?? defaults.dockerHttpTimeoutMs,
+		logLevel: envStr("SWARMBOT_LOG_LEVEL") ?? defaults.logLevel,
+		dbUrl: envStr("SWARMBOT_DB") ?? defaults.dbUrl,
+		influxdbUrl: envStr("SWARMBOT_INFLUXDB"),
+		influxdbToken: envStr("SWARMBOT_INFLUXDB_TOKEN"),
+		agentUrl: envStr("SWARMBOT_AGENT_URL"),
+		workDir: envStr("SWARMBOT_WORK_DIR") ?? defaults.workDir,
+		instanceName: envStr("SWARMBOT_INSTANCE_NAME"),
+		apiTokenExpiryDays: envInt("SWARMBOT_API_TOKEN_EXPIRY_DAYS"),
 		port,
-		mock: envBool("SWARMBOTY_MOCK") ?? defaults.mock,
-		allowedOrigins: envStr("SWARMBOTY_ALLOWED_ORIGINS")
+		mock: envBool("SWARMBOT_MOCK") ?? defaults.mock,
+		allowedOrigins: envStr("SWARMBOT_ALLOWED_ORIGINS")
 			?.split(",")
 			.map((s) => s.trim())
 			.filter(Boolean),
 		agentSharedSecret: envStr("SWARMAGENT_SHARED_SECRET"),
-		orchestrator: envOrchestratorMode("SWARMBOTY_ORCHESTRATOR") ?? defaults.orchestrator,
-		kubeconfig: envStr("SWARMBOTY_KUBECONFIG"),
-		k8sNamespace: envStr("SWARMBOTY_K8S_NAMESPACE"),
+		orchestrator: envOrchestratorMode("SWARMBOT_ORCHESTRATOR") ?? defaults.orchestrator,
+		kubeconfig: envStr("SWARMBOT_KUBECONFIG"),
+		k8sNamespace: envStr("SWARMBOT_K8S_NAMESPACE"),
 		mockOrchestrator:
-			envStr("SWARMBOTY_MOCK_ORCHESTRATOR")?.toLowerCase() === "kubernetes"
+			envStr("SWARMBOT_MOCK_ORCHESTRATOR")?.toLowerCase() === "kubernetes"
 				? "kubernetes"
 				: defaults.mockOrchestrator,
 	};

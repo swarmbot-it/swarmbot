@@ -57,7 +57,7 @@ describe("AuthService", () => {
 	});
 
 	it("restores a previously persisted profile on construction", () => {
-		localStorage.setItem("swarmboty.profile", JSON.stringify({ username: "bob", role: "admin" }));
+		localStorage.setItem("swarmbot.profile", JSON.stringify({ username: "bob", role: "admin" }));
 		const auth = TestBed.inject(AuthService);
 		expect(auth.profile()?.username).toBe("bob");
 		expect(auth.isAdmin()).toBe(true);

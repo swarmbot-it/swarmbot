@@ -1,14 +1,14 @@
 ﻿import Dockerode from "dockerode";
-import type { SwarmbotyConfig } from "../config.js";
+import type { SwarmbotConfig } from "../config.js";
 import { setNegotiatedDockerApi } from "../config.js";
 import { createMockDocker } from "./mock.js";
 
 export type DockerCtx = {
 	docker: Dockerode;
-	cfg: SwarmbotyConfig;
+	cfg: SwarmbotConfig;
 };
 
-export function createDocker(cfg: SwarmbotyConfig): Dockerode {
+export function createDocker(cfg: SwarmbotConfig): Dockerode {
 	if (cfg.mock) {
 		return createMockDocker();
 	}
@@ -30,8 +30,8 @@ export function negotiateApiVersion(daemonMax: string | undefined, ourMax = "1.4
 	return chosen.toFixed(2);
 }
 
-export async function setupDockerApi(_cfg: SwarmbotyConfig, docker: Dockerode): Promise<void> {
-	const envOverride = process.env.SWARMBOTY_DOCKER_API;
+export async function setupDockerApi(_cfg: SwarmbotConfig, docker: Dockerode): Promise<void> {
+	const envOverride = process.env.SWARMBOT_DOCKER_API;
 	if (envOverride) {
 		setNegotiatedDockerApi(envOverride);
 		return;

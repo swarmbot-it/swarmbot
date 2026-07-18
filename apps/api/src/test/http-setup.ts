@@ -5,7 +5,7 @@ import { randomUUID } from "crypto";
 import type { Kysely } from "kysely";
 import { createTestDb } from "./db-setup.js";
 import type { Database } from "../db.js";
-import { loadConfig, type SwarmbotyConfig } from "../config.js";
+import { loadConfig, type SwarmbotConfig } from "../config.js";
 import { derivePassword } from "../auth/password.js";
 import { createHttpServer } from "../server.js";
 import { createDocker } from "../docker/engine.js";
@@ -18,28 +18,28 @@ import type Dockerode from "dockerode";
 export type TestHttp = {
 	httpServer: Server;
 	baseUrl: string;
-	cfg: SwarmbotyConfig;
+	cfg: SwarmbotConfig;
 	db: Kysely<Database>;
 	docker: Dockerode;
 	orchestrator: Orchestrator;
 	cleanup: () => Promise<void>;
 };
 
-export async function startTestHttp(opts?: Partial<SwarmbotyConfig>): Promise<TestHttp> {
+export async function startTestHttp(opts?: Partial<SwarmbotConfig>): Promise<TestHttp> {
 	const db = await createTestDb();
 	await db
 		.insertInto("users")
 		.values({
 			id: randomUUID(),
 			username: "admin",
-			password: derivePassword("swarmboty"),
+			password: derivePassword("swarmbot"),
 			role: "admin",
 			email: "admin@test.local",
 			createdAt: new Date().toISOString(),
 		})
 		.execute();
 
-	const cfg: SwarmbotyConfig = {
+	const cfg: SwarmbotConfig = {
 		...loadConfig(),
 		mock: true,
 		port: 0,

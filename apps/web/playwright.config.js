@@ -2,8 +2,8 @@ const path = require("path");
 const { defineConfig, devices } = require("@playwright/test");
 
 const monorepoRoot = path.resolve(__dirname, "../..");
-const apiPort = process.env.SWARMBOTY_E2E_API_PORT ?? "8081";
-const webPort = process.env.SWARMBOTY_E2E_WEB_PORT ?? "4200";
+const apiPort = process.env.SWARMBOT_E2E_API_PORT ?? "8081";
+const webPort = process.env.SWARMBOT_E2E_WEB_PORT ?? "4200";
 
 module.exports = defineConfig({
 	testDir: "./e2e",
@@ -20,16 +20,16 @@ module.exports = defineConfig({
 	projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
 	webServer: [
 		{
-			command: "npm run dev -w @swarmboty/api",
+			command: "npm run dev -w @swarmbot/api",
 			cwd: monorepoRoot,
 			url: `http://127.0.0.1:${apiPort}/health`,
 			reuseExistingServer: true,
 			timeout: 120_000,
 			env: {
 				...process.env,
-				SWARMBOTY_MOCK: "true",
+				SWARMBOT_MOCK: "true",
 				PORT: apiPort,
-				SWARMBOTY_PORT: apiPort,
+				SWARMBOT_PORT: apiPort,
 			},
 		},
 		{

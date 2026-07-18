@@ -22,7 +22,7 @@ const RECENT_ACTIVITY_QUERY = gql`
 	}
 `;
 
-const LAST_SEEN_KEY = "swarmboty.notifications.lastSeen";
+const LAST_SEEN_KEY = "swarmbot.notifications.lastSeen";
 const POLL_MS = 20000;
 
 interface ActivityItem {

@@ -11,7 +11,7 @@ import {
 	KubernetesObjectApi,
 	type KubernetesObject,
 } from "@kubernetes/client-node";
-import type { SwarmbotyConfig } from "../../config.js";
+import type { SwarmbotConfig } from "../../config.js";
 import type { KubeApi } from "./kube-api.js";
 
 /** Accept both client-node 1.x (`res.items`) and 0.x (`res.body.items`) shapes. */
@@ -26,7 +26,7 @@ function isConflict(e: unknown): boolean {
 	return status === 409;
 }
 
-export function loadKubeConfig(cfg: SwarmbotyConfig): KubeConfig {
+export function loadKubeConfig(cfg: SwarmbotConfig): KubeConfig {
 	const kc = new KubeConfig();
 	const inCluster =
 		Boolean(process.env.KUBERNETES_SERVICE_HOST) && !cfg.kubeconfig && !process.env.KUBECONFIG;
@@ -41,7 +41,7 @@ export function loadKubeConfig(cfg: SwarmbotyConfig): KubeConfig {
 	return kc;
 }
 
-export function createKubeClient(cfg: SwarmbotyConfig): KubeApi {
+export function createKubeClient(cfg: SwarmbotConfig): KubeApi {
 	const kc = loadKubeConfig(cfg);
 	const core = kc.makeApiClient(CoreV1Api);
 	const apps = kc.makeApiClient(AppsV1Api);

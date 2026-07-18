@@ -2,16 +2,16 @@
 import { loadConfig, setNegotiatedDockerApi } from "./config.js";
 
 const KEYS = [
-	"SWARMBOTY_PORT",
+	"SWARMBOT_PORT",
 	"PORT",
-	"SWARMBOTY_DOCKER_SOCK",
-	"SWARMBOTY_DOCKER_API",
-	"SWARMBOTY_DB",
-	"SWARMBOTY_INFLUXDB",
-	"SWARMBOTY_WORK_DIR",
-	"SWARMBOTY_INSTANCE_NAME",
-	"SWARMBOTY_API_TOKEN_EXPIRY_DAYS",
-	"SWARMBOTY_MOCK",
+	"SWARMBOT_DOCKER_SOCK",
+	"SWARMBOT_DOCKER_API",
+	"SWARMBOT_DB",
+	"SWARMBOT_INFLUXDB",
+	"SWARMBOT_WORK_DIR",
+	"SWARMBOT_INSTANCE_NAME",
+	"SWARMBOT_API_TOKEN_EXPIRY_DAYS",
+	"SWARMBOT_MOCK",
 ];
 
 let saved: Record<string, string | undefined>;
@@ -36,25 +36,25 @@ describe("loadConfig", () => {
 	it("returns sensible defaults", () => {
 		const cfg = loadConfig();
 		expect(cfg.port).toBe(8080);
-		expect(cfg.dbUrl).toBe("postgres://localhost:5432/swarmboty");
+		expect(cfg.dbUrl).toBe("postgres://localhost:5432/swarmbot");
 		expect(cfg.dockerSock).toBe("/var/run/docker.sock");
 		expect(cfg.mock).toBe(false);
 	});
 
-	it("reads SWARMBOTY_* env vars", () => {
-		process.env.SWARMBOTY_PORT = "9090";
-		process.env.SWARMBOTY_DB = "postgres://db:5432/swarmboty";
-		process.env.SWARMBOTY_INSTANCE_NAME = "demo";
-		process.env.SWARMBOTY_MOCK = "true";
+	it("reads SWARMBOT_* env vars", () => {
+		process.env.SWARMBOT_PORT = "9090";
+		process.env.SWARMBOT_DB = "postgres://db:5432/swarmbot";
+		process.env.SWARMBOT_INSTANCE_NAME = "demo";
+		process.env.SWARMBOT_MOCK = "true";
 		const cfg = loadConfig();
 		expect(cfg.port).toBe(9090);
-		expect(cfg.dbUrl).toBe("postgres://db:5432/swarmboty");
+		expect(cfg.dbUrl).toBe("postgres://db:5432/swarmbot");
 		expect(cfg.instanceName).toBe("demo");
 		expect(cfg.mock).toBe(true);
 	});
 
-	it("treats invalid SWARMBOTY_MOCK as default false", () => {
-		process.env.SWARMBOTY_MOCK = "maybe";
+	it("treats invalid SWARMBOT_MOCK as default false", () => {
+		process.env.SWARMBOT_MOCK = "maybe";
 		expect(loadConfig().mock).toBe(false);
 	});
 });

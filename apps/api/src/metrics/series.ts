@@ -1,4 +1,4 @@
-﻿import type { SwarmbotyConfig } from "../config.js";
+﻿import type { SwarmbotConfig } from "../config.js";
 import { influxQuery } from "../influx.js";
 
 /**
@@ -159,7 +159,7 @@ function assembleSeries(
  * with a `percent` field aggregated cluster-wide.
  */
 export async function influxClusterSeries(
-	cfg: SwarmbotyConfig,
+	cfg: SwarmbotConfig,
 	range: Range,
 	resolution: Resolution
 ): Promise<MetricsSeries | null> {
@@ -188,7 +188,7 @@ export async function influxClusterSeries(
 
 /** Per-node metrics query, same measurements as {@link influxClusterSeries} but scoped to one node. */
 export async function influxNodeSeries(
-	cfg: SwarmbotyConfig,
+	cfg: SwarmbotConfig,
 	nodeId: string,
 	range: Range,
 	resolution: Resolution

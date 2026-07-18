@@ -23,7 +23,7 @@ async function main(): Promise<void> {
 	const cfg0 = loadConfig();
 	logger.info(
 		{ mock: cfg0.mock, db: redactCredentials(cfg0.dbUrl), port: cfg0.port },
-		"Starting Swarmboty"
+		"Starting Swarmbot"
 	);
 	const db = createDb(cfg0);
 	await initDb(cfg0, db);
@@ -40,7 +40,7 @@ async function main(): Promise<void> {
 		httpServer.once("error", reject);
 		httpServer.listen(cfg.port, () => {
 			httpServer.off("error", reject);
-			logger.info({ port: cfg.port }, "Swarmboty listening");
+			logger.info({ port: cfg.port }, "Swarmbot listening");
 			resolve();
 		});
 	});
@@ -53,6 +53,6 @@ async function main(): Promise<void> {
 }
 
 main().catch((e) => {
-	logger.error({ err: e }, "Swarmboty failed to start");
+	logger.error({ err: e }, "Swarmbot failed to start");
 	process.exit(1);
 });

@@ -3,7 +3,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
     name: postgres-data
-    namespace: swarmboty
+    namespace: swarmbot
 spec:
     accessModes: ["ReadWriteOnce"]
     storageClassName: local-path
@@ -15,7 +15,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
     name: postgres
-    namespace: swarmboty
+    namespace: swarmbot
     labels:
         app: postgres
 spec:
@@ -47,7 +47,7 @@ spec:
                         mountPath: /var/lib/postgresql/data
                   readinessProbe:
                       exec:
-                          command: ["pg_isready", "-U", "swarmboty", "-d", "swarmboty"]
+                          command: ["pg_isready", "-U", "swarmbot", "-d", "swarmbot"]
                       initialDelaySeconds: 5
                       periodSeconds: 10
                   resources:
@@ -65,7 +65,7 @@ apiVersion: v1
 kind: Service
 metadata:
     name: db
-    namespace: swarmboty
+    namespace: swarmbot
 spec:
     selector:
         app: postgres

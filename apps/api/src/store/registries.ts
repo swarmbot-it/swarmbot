@@ -134,7 +134,7 @@ export async function seedDefaultRegistries(db: Kysely<Database>): Promise<void>
 	}> = [
 		{
 			name: "GitHub Container Registry",
-			url: "ghcr.io/swarmboty",
+			url: "ghcr.io/swarmbot",
 			type: "GHCR",
 			user: "deploy-bot",
 			default: true,
@@ -143,7 +143,7 @@ export async function seedDefaultRegistries(db: Kysely<Database>): Promise<void>
 			name: "Docker Hub",
 			url: "registry-1.docker.io",
 			type: "Docker Hub",
-			user: "swarmboty-ci",
+			user: "swarmbot-ci",
 			default: false,
 		},
 		{
@@ -155,14 +155,14 @@ export async function seedDefaultRegistries(db: Kysely<Database>): Promise<void>
 		},
 		{
 			name: "Internal Harbor",
-			url: "harbor.internal.swarmboty.io",
+			url: "harbor.internal.swarmbot.io",
 			type: "Harbor",
 			user: "harbor-svc",
 			default: false,
 		},
 		{
 			name: "Quay.io",
-			url: "quay.io/swarmboty",
+			url: "quay.io/swarmbot",
 			type: "Quay",
 			user: "quay-robot",
 			default: false,

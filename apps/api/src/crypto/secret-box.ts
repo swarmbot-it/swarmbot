@@ -13,7 +13,7 @@ const PREFIX = "enc:";
 
 async function deriveKey(db: Kysely<Database>): Promise<Buffer> {
 	const secret = await getAppSecret(db);
-	return scryptSync(secret, "swarmboty-secret-box", 32);
+	return scryptSync(secret, "swarmbot-secret-box", 32);
 }
 
 /** Encrypts `plain`; returns "" unchanged so optional/empty passwords don't round-trip through crypto. */

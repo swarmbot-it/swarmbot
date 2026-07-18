@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Builds swarmboty:local and swarmagent:local on the host Docker daemon,
+ * Builds swarmbot:local and swarmagent:local on the host Docker daemon,
  * loads them into every DinD cluster node, then deploys the Swarm stack
  * defined in docker-compose.local.yml via TCP to the DinD manager.
  *
@@ -20,7 +20,7 @@ const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const NETWORK = "swarm-net";
 const MANAGER = "swarm-manager";
 const WORKERS = ["swarm-worker-1", "swarm-worker-2"];
-const STACK = "swarmboty";
+const STACK = "swarmbot";
 const COMPOSE_FILE = "docker-compose.local.yml";
 const AGENT_DIR = resolve(SCRIPT_DIR, "..", "swarmagent"); // git submodule, see .gitmodules
 
@@ -129,8 +129,8 @@ console.log(`\nCluster nodes: ${allNodes.join(", ")}`);
 
 // ── Build images ──────────────────────────────────────────────────────────────
 
-console.log("\n>>> Building swarmboty:local");
-run(`docker build -t swarmboty:local .`);
+console.log("\n>>> Building swarmbot:local");
+run(`docker build -t swarmbot:local .`);
 
 const hasAgent = existsSync(join(AGENT_DIR, "Dockerfile"));
 if (hasAgent) {
@@ -144,8 +144,8 @@ if (hasAgent) {
 
 console.log("\n>>> Loading images into DinD nodes");
 
-// app/db/influxdb are pinned to manager — only manager needs swarmboty:local
-loadImageIntoNodes("swarmboty:local", [MANAGER]);
+// app/db/influxdb are pinned to manager — only manager needs swarmbot:local
+loadImageIntoNodes("swarmbot:local", [MANAGER]);
 
 // agent runs in global mode — all active nodes need swarmagent:local
 if (hasAgent) {
@@ -155,7 +155,7 @@ if (hasAgent) {
 // ── Deploy stack ──────────────────────────────────────────────────────────────
 
 const ip = managerIp();
-const composeInManager = "/tmp/swarmboty-stack.yml";
+const composeInManager = "/tmp/swarmbot-stack.yml";
 const composeBody = readFileSync(COMPOSE_FILE, "utf8");
 
 console.log(`\n>>> Deploying stack '${STACK}' to DinD Swarm (manager ${ip})`);
@@ -174,7 +174,7 @@ run(`docker exec ${MANAGER} docker stack deploy -c ${composeInManager} ${STACK}`
 console.log("\n=== Stack deployed ===");
 console.log(`\n  UI:       http://localhost:888`);
 console.log(`  (inside DinD manager: http://${ip}:888 — often unreachable from Windows host)`);
-console.log(`  Login:    admin / swarmboty`);
+console.log(`  Login:    admin / swarmbot`);
 console.log(`\nServices may take 30–60 s to become healthy.`);
 console.log(`\n  npm run swarm:status     — node & service list`);
 console.log(`  npm run swarm:undeploy   — remove the stack`);

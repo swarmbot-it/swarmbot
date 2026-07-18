@@ -127,7 +127,7 @@ run(`docker exec ${MANAGER} docker node ls`);
 console.log(`\nManager: ${MANAGER}`);
 console.log(`Workers: ${WORKERS.join(", ")}`);
 console.log(
-	`\nAfter 'npm run swarm:deploy', open http://localhost:${APP_PUBLISHED_PORT} (login: admin / swarmboty).`
+	`\nAfter 'npm run swarm:deploy', open http://localhost:${APP_PUBLISHED_PORT} (login: admin / swarmbot).`
 );
 console.log(
 	`Port ${APP_PUBLISHED_PORT} is forwarded from the host into the manager DinD container.`

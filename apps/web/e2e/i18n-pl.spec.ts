@@ -146,7 +146,7 @@ const test = base.extend({
 	page: async ({ page }, use) => {
 		// Set locale only — do not clear storage on navigation (would drop the auth token).
 		await page.addInitScript(() => {
-			localStorage.setItem("swarmboty.lang", "pl");
+			localStorage.setItem("swarmbot.lang", "pl");
 		});
 		await use(page);
 	},

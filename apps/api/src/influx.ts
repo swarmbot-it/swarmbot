@@ -1,6 +1,6 @@
-﻿import type { SwarmbotyConfig } from "./config.js";
+﻿import type { SwarmbotConfig } from "./config.js";
 
-export function authHeaders(cfg: SwarmbotyConfig): Record<string, string> {
+export function authHeaders(cfg: SwarmbotConfig): Record<string, string> {
 	return cfg.influxdbToken ? { Authorization: `Token ${cfg.influxdbToken}` } : {};
 }
 
@@ -14,9 +14,9 @@ export async function influxPing(url: string): Promise<boolean> {
 }
 
 export async function influxQuery(
-	cfg: SwarmbotyConfig,
+	cfg: SwarmbotConfig,
 	influxql: string,
-	db = "swarmboty"
+	db = "swarmbot"
 ): Promise<unknown> {
 	const base = cfg.influxdbUrl?.replace(/\/$/, "");
 	if (!base) throw new Error("influx_not_configured");
@@ -28,7 +28,7 @@ export async function influxQuery(
 	return r.json();
 }
 
-export async function createDatabase(cfg: SwarmbotyConfig, name = "swarmboty"): Promise<void> {
+export async function createDatabase(cfg: SwarmbotConfig, name = "swarmbot"): Promise<void> {
 	const base = cfg.influxdbUrl?.replace(/\/$/, "");
 	if (!base) return;
 	const r = await fetch(`${base}/query`, {

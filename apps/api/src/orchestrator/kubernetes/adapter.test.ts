@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { loadConfig, type SwarmbotyConfig } from "../../config.js";
+import { loadConfig, type SwarmbotConfig } from "../../config.js";
 import {
 	evaluateKubeClusterHealth,
 	KubernetesOrchestrator,
@@ -17,11 +17,11 @@ import {
 import { createMockKube } from "./mock.js";
 import type { KubeNode, KubePod } from "./kube-api.js";
 
-function cfg(overrides: Partial<SwarmbotyConfig> = {}): SwarmbotyConfig {
+function cfg(overrides: Partial<SwarmbotConfig> = {}): SwarmbotConfig {
 	return { ...loadConfig(), mock: true, mockOrchestrator: "kubernetes", ...overrides };
 }
 
-function orch(overrides: Partial<SwarmbotyConfig> = {}): KubernetesOrchestrator {
+function orch(overrides: Partial<SwarmbotConfig> = {}): KubernetesOrchestrator {
 	return new KubernetesOrchestrator(cfg(overrides), createMockKube());
 }
 

@@ -4,11 +4,11 @@
             context: .
             dockerfile: Dockerfile
         environment:
-            - SWARMBOTY_DB=postgres://${POSTGRES_USER:?POSTGRES_USER must be set for production deploys}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set for production deploys}@db:5432/${POSTGRES_DB:?POSTGRES_DB must be set for production deploys}
-            - SWARMBOTY_INFLUXDB=http://influxdb:8086
-            - SWARMBOTY_INFLUXDB_TOKEN=${INFLUXDB_TOKEN:?INFLUXDB_TOKEN must be set for production deploys}
-            - SWARMBOTY_PORT=8080
-            - SWARMBOTY_WORK_DIR=/tmp
+            - SWARMBOT_DB=postgres://${POSTGRES_USER:?POSTGRES_USER must be set for production deploys}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set for production deploys}@db:5432/${POSTGRES_DB:?POSTGRES_DB must be set for production deploys}
+            - SWARMBOT_INFLUXDB=http://influxdb:8086
+            - SWARMBOT_INFLUXDB_TOKEN=${INFLUXDB_TOKEN:?INFLUXDB_TOKEN must be set for production deploys}
+            - SWARMBOT_PORT=8080
+            - SWARMBOT_WORK_DIR=/tmp
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock:ro
         ports:
@@ -47,8 +47,8 @@
             DOCKER_INFLUXDB_INIT_MODE: setup
             DOCKER_INFLUXDB_INIT_USERNAME: ${INFLUXDB_USER:?INFLUXDB_USER must be set for production deploys}
             DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUXDB_PASSWORD:?INFLUXDB_PASSWORD must be set for production deploys}
-            DOCKER_INFLUXDB_INIT_ORG: swarmboty
-            DOCKER_INFLUXDB_INIT_BUCKET: swarmboty
+            DOCKER_INFLUXDB_INIT_ORG: swarmbot
+            DOCKER_INFLUXDB_INIT_BUCKET: swarmbot
             DOCKER_INFLUXDB_INIT_RETENTION: 0
             DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB_TOKEN:?INFLUXDB_TOKEN must be set for production deploys}
         volumes:

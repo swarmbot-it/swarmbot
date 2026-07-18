@@ -1,17 +1,17 @@
-# Swarmboty application (API + UI in one container) — pinned to node k3s-a1,
+# Swarmbot application (API + UI in one container) — pinned to node k3s-a1,
 # image pulled from GHCR. In kubernetes mode the API reads cluster resources
 # (nodes/workloads/pods/PVCs/ConfigMaps/Secrets) for the dashboard and applies
 # manifests for the "deploy stack" mutation — hence the ServiceAccount + RBAC.
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-    name: swarmboty
-    namespace: swarmboty
+    name: swarmbot
+    namespace: swarmbot
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-    name: swarmboty
+    name: swarmbot
 rules:
     - apiGroups: [""]
       resources:
@@ -38,73 +38,73 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-    name: swarmboty
+    name: swarmbot
 roleRef:
     apiGroup: rbac.authorization.k8s.io
     kind: ClusterRole
-    name: swarmboty
+    name: swarmbot
 subjects:
     - kind: ServiceAccount
-      name: swarmboty
-      namespace: swarmboty
+      name: swarmbot
+      namespace: swarmbot
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-    name: swarmboty
-    namespace: swarmboty
+    name: swarmbot
+    namespace: swarmbot
     labels:
-        app: swarmboty
+        app: swarmbot
 spec:
     replicas: 1
     selector:
         matchLabels:
-            app: swarmboty
+            app: swarmbot
     template:
         metadata:
             labels:
-                app: swarmboty
+                app: swarmbot
         spec:
-            serviceAccountName: swarmboty
+            serviceAccountName: swarmbot
             nodeSelector:
                 kubernetes.io/hostname: k3s-a1.infra.no-human.tech
             imagePullSecrets:
                 # Required while the GHCR package is private; see README.md.
                 - name: ghcr-pull
             containers:
-                - name: swarmboty
+                - name: swarmbot
                   image: ghcr.io/swarmbot-it/swarmbot:latest
                   imagePullPolicy: Always
                   env:
                       # In-cluster ServiceAccount is auto-detected → kubernetes
                       # mode; keep it explicit for clarity.
-                      - name: SWARMBOTY_ORCHESTRATOR
+                      - name: SWARMBOT_ORCHESTRATOR
                         value: kubernetes
-                      - name: SWARMBOTY_PORT
+                      - name: SWARMBOT_PORT
                         value: "8080"
-                      - name: SWARMBOTY_DB
+                      - name: SWARMBOT_DB
                         valueFrom:
                             secretKeyRef:
                                 name: postgres-credentials
-                                key: SWARMBOTY_DB
-                      - name: SWARMBOTY_INFLUXDB
+                                key: SWARMBOT_DB
+                      - name: SWARMBOT_INFLUXDB
                         value: http://influxdb:8086
-                      - name: SWARMBOTY_INFLUXDB_TOKEN
+                      - name: SWARMBOT_INFLUXDB_TOKEN
                         valueFrom:
                             secretKeyRef:
                                 name: influxdb-credentials
-                                key: SWARMBOTY_INFLUXDB_TOKEN
+                                key: SWARMBOT_INFLUXDB_TOKEN
                       # Uncomment once the agent supports the shared secret
                       # (swarmagent PR "agent-shared-secret-auth"); the agent
                       # must send the same value in the x-agent-token header.
                       # - name: SWARMAGENT_SHARED_SECRET
                       #   valueFrom:
                       #       secretKeyRef:
-                      #           name: swarmboty-agent
+                      #           name: swarmbot-agent
                       #           key: SWARMAGENT_SHARED_SECRET
                   envFrom:
                       - secretRef:
-                            name: swarmboty-bootstrap
+                            name: swarmbot-bootstrap
                   ports:
                       - containerPort: 8080
                   readinessProbe:
@@ -129,12 +129,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-    name: swarmboty
-    namespace: swarmboty
+    name: swarmbot
+    namespace: swarmbot
 spec:
     type: ClusterIP
     selector:
-        app: swarmboty
+        app: swarmbot
     ports:
         - port: 8080
           targetPort: 8080

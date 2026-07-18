@@ -1,6 +1,6 @@
 import type { AuthedRequest } from "../http/optional-jwt.js";
 import type { JwtClaims } from "../auth/jwt.js";
-import type { SwarmbotyConfig } from "../config.js";
+import type { SwarmbotConfig } from "../config.js";
 import type Dockerode from "dockerode";
 import type { Kysely } from "kysely";
 import type { Database } from "../db.js";
@@ -8,7 +8,7 @@ import type { Orchestrator } from "../orchestrator/types.js";
 import { parseAcceptLanguage, type SupportedLocale } from "../i18n/locale.js";
 
 export type GraphQLContext = {
-	cfg: SwarmbotyConfig;
+	cfg: SwarmbotConfig;
 	db: Kysely<Database>;
 	/** Active backend (Swarm or Kubernetes) — all resource reads go through it. */
 	orchestrator: Orchestrator;
@@ -21,7 +21,7 @@ export type GraphQLContext = {
 
 export function buildContext(
 	req: AuthedRequest,
-	cfg: SwarmbotyConfig,
+	cfg: SwarmbotConfig,
 	db: Kysely<Database>,
 	orchestrator: Orchestrator,
 	docker: Dockerode

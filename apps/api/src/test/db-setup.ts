@@ -3,11 +3,11 @@ import { createDb, initDb, type Database } from "../db.js";
 
 /**
  * Real Postgres, not SQLite — see db.ts's module doc for why. Defaults to the
- * local dev Postgres container's `swarmboty_test` database; override with
- * SWARMBOTY_TEST_DB for CI or a different environment.
+ * local dev Postgres container's `swarmbot_test` database; override with
+ * SWARMBOT_TEST_DB for CI or a different environment.
  */
 const TEST_DB_URL =
-	process.env.SWARMBOTY_TEST_DB ?? "postgres://swarmboty:swarmboty@swarmbot-rc1-pg-1:5432/swarmboty_test";
+	process.env.SWARMBOT_TEST_DB ?? "postgres://swarmbot:swarmbot@swarmbot-rc1-pg-1:5432/swarmbot_test";
 
 let migrated = false;
 
