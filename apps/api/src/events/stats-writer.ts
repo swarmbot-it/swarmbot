@@ -4,7 +4,7 @@ import { logger } from "../logger.js";
 
 /**
  * Shape of the periodic "stats" event posted by swarmagent to `/events`
- * (see github.com/no-human-tech/sw4rm.agent, src/models.rs::Status).
+ * (see github.com/swarmbot-it/swarmagent, src/models.rs::Status).
  */
 type ContainerStat = {
 	name: string;

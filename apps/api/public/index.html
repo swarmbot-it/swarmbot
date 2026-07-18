@@ -6,7 +6,7 @@
 <title>swarmbot.it — Intelligent Docker Swarm Manager</title>
 <script>
 (function(){
-  var KEY = 'swarmboty.theme';
+  var KEY = 'swarmbot.theme';
   var saved = localStorage.getItem(KEY);
   var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
   document.documentElement.setAttribute('data-theme', theme);
@@ -634,7 +634,7 @@ function applyI18n() {
    attribute as the swarmbot.it dashboard, so a
    choice made here or in the app carries over.
 ════════════════════════════════════════════ */
-const THEME_KEY = 'swarmboty.theme';
+const THEME_KEY = 'swarmbot.theme';
 
 function setTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
@@ -697,9 +697,9 @@ function renderHowSteps() {
 let activeDocTab = 0;
 
 const DOC_CODES = [
-  `$ ./swarmagent\n\nINFO Starting Swarmboty\nINFO Waiting for Swarmboty…\nINFO Swarmboty OK\nINFO Event collector started.\nINFO Stats collector started.`,
-  `# Zaloguj się i zapytaj GraphQL API\n$ curl -X POST http://localhost:8080/login -u admin:swarmboty\n{"token":"eyJhbGciOiJIUzI1NiIs..."}\n\n$ curl -X POST http://localhost:8080/graphql \\\n    -H "Authorization: Bearer <token>" \\\n    -d '{"query":"{ nodes { hostname cpu mem } }"}'\n\n[OK] { "data": { "nodes": [...] } }`,
-  `# Uruchom PostgreSQL\ndocker run -d --name swarmbot-pg \\\n  -e POSTGRES_USER=swarmboty \\\n  -e POSTGRES_PASSWORD=swarmboty \\\n  -e POSTGRES_DB=swarmboty \\\n  -p 5432:5432 postgres:16\n\n# Sklonuj i uruchom\ngit clone https://github.com/swarmbot-it/swarmbot\ncd swarmbot && npm install\nnpm run dev:api`,
+  `$ ./swarmagent\n\nINFO Starting Swarmbot\nINFO Waiting for Swarmbot…\nINFO Swarmbot OK\nINFO Event collector started.\nINFO Stats collector started.`,
+  `# Zaloguj się i zapytaj GraphQL API\n$ curl -X POST http://localhost:8080/login -u admin:swarmbot\n{"token":"eyJhbGciOiJIUzI1NiIs..."}\n\n$ curl -X POST http://localhost:8080/graphql \\\n    -H "Authorization: Bearer <token>" \\\n    -d '{"query":"{ nodes { hostname cpu mem } }"}'\n\n[OK] { "data": { "nodes": [...] } }`,
+  `# Uruchom PostgreSQL\ndocker run -d --name swarmbot-pg \\\n  -e POSTGRES_USER=swarmbot \\\n  -e POSTGRES_PASSWORD=swarmbot \\\n  -e POSTGRES_DB=swarmbot \\\n  -p 5432:5432 postgres:16\n\n# Sklonuj i uruchom\ngit clone https://github.com/swarmbot-it/swarmbot\ncd swarmbot && npm install\nnpm run dev:api`,
 ];
 
 function renderDocTabs() {

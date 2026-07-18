@@ -26,7 +26,7 @@ npm install
 
 The Rust telemetry agent (`swarmagent/`, real host CPU/Memory/Disk +
 per-container stats) is vendored as a **git submodule** pointing at
-[`sw4rm.agent`](https://github.com/no-human-tech/sw4rm.agent). Clone with
+[`swarmagent`](https://github.com/swarmbot-it/swarmagent). Clone with
 submodules so `docker compose` can build it:
 
 ```sh
