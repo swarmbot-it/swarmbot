@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>swarmbot.it — Intelligent Docker Swarm Manager</title>
+<script>
+(function(){
+  var KEY = 'swarmboty.theme';
+  var saved = localStorage.getItem(KEY);
+  var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  document.documentElement.setAttribute('data-theme', theme);
+})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+
+/* ── THEME (same tokens/behavior as the swarmbot.it dashboard) ── */
+:root{
+  --bg:#060a14;--text:#f1f5f9;--text-2:#cbd5e1;--muted:#94a3b8;--muted-2:#64748b;
+  --border-strong:#232d49;--nav-bg:rgba(6,10,20,.85);
+  --surface-tint:rgba(255,255,255,.02);--surface-tint-hover:rgba(255,255,255,.04);--surface-tint-strong:rgba(255,255,255,.05);
+}
+:root[data-theme="light"]{
+  --bg:#f5f6fa;--text:#0f172a;--text-2:#334155;--muted:#64748b;--muted-2:#94a3b8;
+  --border-strong:#d4d8e2;--nav-bg:rgba(255,255,255,.85);
+  --surface-tint:rgba(15,23,42,.03);--surface-tint-hover:rgba(15,23,42,.05);--surface-tint-strong:rgba(15,23,42,.08);
+}
+
+body{
+  font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  background:var(--bg);color:var(--text);line-height:1.5;overflow-x:hidden;
+}
+a{color:#fb923c}a:hover{color:#f97316}
+
+/* ── KEYFRAMES ── */
+@keyframes pulse-glow{0%,100%{opacity:.6}50%{opacity:1}}
+@keyframes terminal-blink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes fade-in-up{0%{opacity:0;transform:translateY(32px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes node-pulse-o{0%,100%{box-shadow:0 0 20px rgba(249,115,22,.15),inset 0 0 20px rgba(249,115,22,.05)}50%{box-shadow:0 0 32px rgba(249,115,22,.3),inset 0 0 30px rgba(249,115,22,.1)}}
+@keyframes node-pulse-g{0%,100%{box-shadow:0 0 20px rgba(16,185,129,.15),inset 0 0 20px rgba(16,185,129,.05)}50%{box-shadow:0 0 32px rgba(16,185,129,.3),inset 0 0 30px rgba(16,185,129,.1)}}
+@keyframes node-die{0%{box-shadow:0 0 32px rgba(239,68,68,.5)}100%{box-shadow:0 0 0 rgba(239,68,68,0);opacity:.4}}
+@keyframes hero-gradient{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.001ms!important;transition-duration:.001ms!important}}
+
+/* ── LAYOUT ── */
+.container{max-width:1280px;margin:0 auto;padding:0 48px}
+@media(max-width:860px){.container{padding:0 20px}}
+
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;height:72px;
+  background:var(--nav-bg);backdrop-filter:blur(16px);
+  border-bottom:1px solid rgba(249,115,22,.08);
+}
+nav .container{height:100%;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{display:flex;align-items:center;gap:14px;text-decoration:none;flex-shrink:0}
+.brand-name{font-size:17px;font-weight:800;letter-spacing:-.02em;color:var(--text)}
+.brand-name span{color:#fb923c}
+.nav-links{display:flex;gap:2px;list-style:none}
+.nav-links a{
+  display:block;padding:7px 14px;color:var(--muted);text-decoration:none;
+  font-size:13px;font-weight:500;border-radius:8px;
+  transition:color .15s,background .15s;white-space:nowrap;
+}
+.nav-links a:hover{color:var(--text);background:var(--surface-tint-hover)}
+.nav-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
+
+/* Language switcher */
+.lang-sw{
+  display:flex;align-items:center;border-radius:8px;
+  border:1px solid rgba(249,115,22,.15);background:rgba(249,115,22,.04);
+  overflow:hidden;font-family:'JetBrains Mono',monospace;font-size:11px;
+  letter-spacing:.06em;font-weight:600;
+}
+.lang-btn{
+  padding:6px 12px;border:none;cursor:pointer;transition:all .2s;
+  background:transparent;color:var(--muted-2);display:flex;align-items:center;gap:5px;
+}
+.lang-btn.active{background:rgba(249,115,22,.15);color:#f97316}
+.lang-sep{width:1px;height:16px;background:rgba(249,115,22,.12)}
+
+/* Theme switcher — same slider used in the swarmbot.it dashboard topbar */
+.theme-slider{display:flex;align-items:center;gap:2px;padding:3px;border-radius:999px;background:var(--surface-tint);border:1px solid rgba(249,115,22,.12)}
+.theme-slider__btn{
+  width:26px;height:26px;border-radius:50%;border:none;background:transparent;
+  color:var(--muted-2);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .2s;
+}
+.theme-slider__btn--active{background:var(--surface-tint-strong);color:#f97316;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+
+.btn-login{
+  font-size:13px;font-weight:500;color:var(--text-2);cursor:pointer;white-space:nowrap;
+  text-decoration:none;padding:7px 14px;border-radius:8px;border:none;background:transparent;
+  transition:color .15s;
+}
+.btn-login:hover{color:var(--text)}
+.btn-cta{
+  padding:8px 18px;background:linear-gradient(135deg,#f97316,#ea580c);
+  border-radius:10px;font-size:13px;font-weight:700;color:white;cursor:pointer;
+  text-decoration:none;border:none;display:inline-flex;align-items:center;gap:8px;
+  transition:transform .2s,box-shadow .2s;white-space:nowrap;
+}
+.btn-cta:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(249,115,22,.35);color:white}
+
+/* ── HERO ── */
+.hero{
+  min-height:100vh;padding:140px 0 80px;position:relative;overflow:hidden;
+}
+.hero-orb{position:absolute;border-radius:50%;pointer-events:none}
+.hero-orb-1{top:-200px;left:-200px;width:700px;height:700px;background:radial-gradient(circle,rgba(249,115,22,.05) 0%,transparent 65%)}
+.hero-orb-2{bottom:-100px;right:-100px;width:600px;height:600px;background:radial-gradient(circle,rgba(251,146,60,.04) 0%,transparent 65%)}
+.hero .container{
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:48px;align-items:center;
+  position:relative;z-index:1;
+}
+@media(max-width:860px){.hero .container{grid-template-columns:1fr}}
+
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;padding:6px 16px;
+  border-radius:999px;border:1px solid rgba(249,115,22,.2);background:rgba(249,115,22,.06);
+  margin-bottom:28px;
+}
+.badge-dot{
+  width:7px;height:7px;border-radius:50%;background:#10b981;
+  box-shadow:0 0 8px rgba(16,185,129,.5);animation:pulse-glow 2s infinite;
+}
+.badge-txt{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.1em;color:#f97316;text-transform:uppercase}
+
+h1{font-size:clamp(34px,4vw,52px);font-weight:800;letter-spacing:-.035em;line-height:1.1;margin-bottom:24px}
+.h1-white{
+  background:linear-gradient(135deg,var(--text) 0%,var(--text-2) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:block;
+}
+.h1-orange{
+  background:linear-gradient(135deg,#fdba74 0%,#f97316 40%,#ea580c 100%);
+  background-size:200% 200%;animation:hero-gradient 6s ease infinite;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:block;
+}
+.hero-desc{font-size:17px;color:var(--muted);line-height:1.65;max-width:480px;margin-bottom:36px}
+.hero-btns{display:flex;gap:16px;align-items:center;margin-bottom:32px;flex-wrap:wrap}
+.btn-primary{
+  padding:14px 32px;background:linear-gradient(135deg,#f97316,#ea580c);
+  border-radius:12px;font-size:16px;font-weight:700;color:white;cursor:pointer;
+  text-decoration:none;border:none;display:inline-flex;align-items:center;gap:10px;
+  transition:transform .2s,box-shadow .2s;
+}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(249,115,22,.4);color:white}
+.btn-secondary{
+  padding:14px 32px;border:1px solid var(--border-strong);border-radius:12px;
+  font-size:16px;font-weight:600;color:var(--text-2);cursor:pointer;
+  text-decoration:none;background:var(--surface-tint);
+  display:inline-flex;align-items:center;gap:10px;
+  transition:border-color .2s,color .2s,background .2s;
+}
+.btn-secondary:hover{border-color:#f97316;color:var(--text);background:rgba(249,115,22,.05)}
+.hero-checks{display:flex;gap:28px;font-size:13px;color:var(--muted-2);flex-wrap:wrap}
+.hero-check{display:flex;align-items:center;gap:8px}
+.check-ok{color:#10b981;font-size:14px}
+
+/* ── DEMO WIDGET ── */
+.demo-widget{
+  background:var(--surface-tint);border:1px solid rgba(249,115,22,.12);
+  border-radius:20px;padding:20px;overflow:hidden;
+  box-shadow:0 0 60px rgba(249,115,22,.03),0 0 1px rgba(249,115,22,.15);
+}
+.demo-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.demo-title-row{display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;color:var(--muted-2);text-transform:uppercase}
+.demo-status{display:flex;align-items:center;gap:6px;font-size:12px;font-family:'JetBrains Mono',monospace}
+
+.nodes-row{display:flex;gap:10px;margin-bottom:14px}
+.node-card{
+  flex:1;min-width:0;padding:16px 12px;border-radius:14px;
+  border:1px solid rgba(249,115,22,.2);background:rgba(249,115,22,.08);
+  transition:all .4s ease;animation:node-pulse-o 2.5s ease infinite;
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+}
+.node-card.dead{background:rgba(239,68,68,.06);border-color:rgba(239,68,68,.2);animation:node-die .8s ease forwards;opacity:.4}
+.node-card.boosted{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.4);animation:node-pulse-g 1.5s ease infinite}
+.node-icon{width:36px;height:36px;border-radius:10px;background:rgba(249,115,22,.12);display:flex;align-items:center;justify-content:center;font-size:16px}
+.node-card.dead .node-icon{background:rgba(239,68,68,.15)}
+.node-card.boosted .node-icon{background:rgba(16,185,129,.15)}
+.node-lbl{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:#f97316}
+.node-card.dead .node-lbl{color:#ef4444}
+.node-card.boosted .node-lbl{color:#10b981}
+.node-load{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted-2)}
+.node-badge{font-size:10px;font-family:'JetBrains Mono',monospace;color:#10b981;background:rgba(16,185,129,.1);padding:2px 8px;border-radius:6px;display:flex;align-items:center;gap:4px}
+
+.demo-btns{display:flex;gap:6px;margin-bottom:16px}
+.kill-btn{
+  flex:1;padding:9px 8px;border-radius:10px;border:1px solid rgba(239,68,68,.3);
+  background:rgba(239,68,68,.08);color:#ef4444;font-family:'JetBrains Mono',monospace;
+  font-size:10px;font-weight:600;cursor:pointer;transition:all .2s;letter-spacing:.03em;
+}
+.kill-btn:disabled{border-color:rgba(100,116,139,.15);background:rgba(100,116,139,.05);color:#334155;cursor:not-allowed}
+.kill-btn:not(:disabled):hover{background:rgba(239,68,68,.14)}
+.reset-btn{
+  padding:9px 12px;border-radius:10px;border:1px solid rgba(249,115,22,.25);
+  background:rgba(249,115,22,.08);color:#f97316;font-family:'JetBrains Mono',monospace;
+  font-size:10px;font-weight:600;cursor:pointer;transition:all .2s;letter-spacing:.03em;
+}
+.reset-btn:disabled{opacity:.45;cursor:not-allowed}
+.reset-btn:not(:disabled):hover{background:rgba(249,115,22,.14)}
+
+.terminal{background:#0a0e1a;border:1px solid rgba(249,115,22,.08);border-radius:12px;overflow:hidden}
+.term-head{padding:10px 14px;background:#0e1224;border-bottom:1px solid rgba(249,115,22,.06);display:flex;align-items:center;gap:10px}
+.term-dots{display:flex;gap:6px}
+.tdot{width:10px;height:10px;border-radius:50%}
+.term-name{font-family:'JetBrains Mono',monospace;font-size:11px;color:#475569;margin-left:4px}
+.term-body{padding:12px 14px;max-height:150px;overflow-y:auto;display:flex;flex-direction:column;gap:2px}
+.term-body::-webkit-scrollbar{width:3px}
+.term-body::-webkit-scrollbar-thumb{background:rgba(249,115,22,.2);border-radius:2px}
+.ll{font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.7;animation:fade-in-up .3s ease}
+.ll-info{color:#3b82f6}.ll-ok{color:#10b981}.ll-warn{color:#f59e0b}.ll-err{color:#ef4444}
+.term-cursor{font-family:'JetBrains Mono',monospace;font-size:11px;color:#f97316;display:flex;align-items:center;gap:4px;margin-top:2px}
+.cursor-block{width:7px;height:14px;background:#f97316;animation:terminal-blink 1s step-end infinite;display:inline-block}
+
+/* ── DIVIDER ── */
+.section-divider{height:1px;max-width:800px;margin:0 auto;background:linear-gradient(90deg,transparent 0%,rgba(249,115,22,.2) 50%,transparent 100%)}
+
+/* ── FEATURES ── */
+.features{padding:120px 0}
+.sec-head{text-align:center;margin-bottom:64px}
+.sec-label{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.15em;color:#f97316;text-transform:uppercase;margin-bottom:16px}
+.sec-title{font-size:clamp(28px,3.5vw,44px);font-weight:800;letter-spacing:-.03em;margin-bottom:16px;color:var(--text);text-wrap:balance}
+.sec-desc{font-size:17px;color:var(--muted-2);max-width:560px;margin:0 auto;line-height:1.6}
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+@media(max-width:900px){.feat-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:580px){.feat-grid{grid-template-columns:1fr}}
+.feat-card{
+  padding:32px 28px;border-radius:16px;
+  background:var(--surface-tint);border:1px solid var(--surface-tint-strong);
+  transition:transform .2s,background .25s,border-color .25s,box-shadow .25s;
+  cursor:default;position:relative;overflow:hidden;
+}
+.feat-card:hover{transform:translateY(-2px);background:var(--surface-tint-hover);box-shadow:0 20px 48px rgba(0,0,0,.35)}
+.feat-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:20px}
+.feat-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:10px;letter-spacing:-.01em}
+.feat-desc{font-size:14px;color:var(--muted-2);line-height:1.6}
+
+/* ── HOW IT WORKS ── */
+.how{padding:120px 0}
+.how-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid rgba(249,115,22,.08);border-radius:20px;overflow:hidden;margin-top:64px}
+@media(max-width:768px){.how-steps{grid-template-columns:1fr}}
+.how-step{padding:40px 34px;position:relative}
+.how-step:not(:last-child){border-right:1px solid rgba(249,115,22,.08)}
+@media(max-width:768px){.how-step:not(:last-child){border-right:none;border-bottom:1px solid rgba(249,115,22,.08)}}
+.how-num{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.12em;color:#f97316;margin-bottom:16px}
+.how-icon{width:52px;height:52px;border-radius:14px;border:1px solid rgba(249,115,22,.12);background:rgba(249,115,22,.06);display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:18px}
+.how-title{font-size:19px;font-weight:700;color:var(--text);margin-bottom:11px}
+.how-desc{font-size:14px;color:var(--muted);line-height:1.65}
+
+/* ── DOCS SECTION ── */
+.docs-sec{padding:120px 0}
+.doc-tabs{display:flex;gap:4px;margin-bottom:36px;background:var(--surface-tint);border-radius:14px;padding:4px;border:1px solid rgba(249,115,22,.08)}
+.doc-tab{
+  flex:1;padding:14px 20px;border-radius:10px;border:none;
+  background:transparent;color:var(--muted-2);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;
+  transition:all .25s;
+}
+.doc-tab.active{background:rgba(249,115,22,.1);color:#f97316;box-shadow:0 0 20px rgba(249,115,22,.08)}
+.doc-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start}
+@media(max-width:768px){.doc-grid{grid-template-columns:1fr}}
+.doc-heading{font-size:28px;font-weight:700;color:var(--text);margin-bottom:20px;letter-spacing:-.02em}
+.doc-text{font-size:15px;color:var(--muted);line-height:1.7;margin-bottom:16px}
+.code-block{background:#0a0e1a;border:1px solid rgba(249,115,22,.08);border-radius:14px;overflow:hidden;position:relative}
+.code-head{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:#0e1224;border-bottom:1px solid rgba(249,115,22,.06)}
+.code-lang{font-family:'JetBrains Mono',monospace;font-size:11px;color:#475569}
+.copy-btn{
+  display:flex;align-items:center;gap:6px;padding:4px 12px;border-radius:6px;
+  border:1px solid rgba(249,115,22,.2);background:rgba(249,115,22,.06);color:#f97316;
+  font-family:'JetBrains Mono',monospace;font-size:11px;cursor:pointer;transition:all .2s;
+}
+.copy-btn.copied{border-color:rgba(16,185,129,.3);background:rgba(16,185,129,.1);color:#10b981}
+.code-body{padding:16px;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:var(--muted);overflow-x:auto;white-space:pre}
+.doc-cta-row{text-align:center;margin-top:48px}
+.doc-cta-note{font-size:15px;color:var(--muted-2);margin-bottom:20px}
+
+/* ── CTA ── */
+.cta{padding:120px 0;position:relative;overflow:hidden}
+.cta-bg{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 0%,rgba(249,115,22,.06) 0%,transparent 60%)}
+.cta-inner{max-width:720px;margin:0 auto;text-align:center;position:relative;z-index:1}
+.cta-title{font-size:clamp(32px,4vw,48px);font-weight:800;letter-spacing:-.03em;margin-bottom:20px;color:var(--text);text-wrap:balance}
+.cta-desc{font-size:18px;color:var(--muted-2);line-height:1.6;margin-bottom:40px}
+.cta-btns{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.btn-cta-lg{padding:16px 40px;border-radius:12px;font-size:17px;font-weight:700;display:inline-flex;align-items:center;gap:10px;text-decoration:none;cursor:pointer;border:none;transition:all .2s}
+.btn-cta-orange{background:linear-gradient(135deg,#f97316,#ea580c);color:white}
+.btn-cta-orange:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(249,115,22,.4);color:white}
+.btn-cta-ghost{background:var(--surface-tint);border:1px solid var(--border-strong);color:var(--text-2)}
+.btn-cta-ghost:hover{border-color:#f97316;color:var(--text)}
+
+/* ── FOOTER ── */
+footer{border-top:1px solid rgba(249,115,22,.08);padding:48px 0}
+footer .container{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
+.foot-brand{display:flex;align-items:center;gap:12px}
+.foot-name{font-weight:800;font-size:14px;letter-spacing:-.02em;color:var(--muted)}
+.foot-name span{color:#fb923c}
+.foot-copy{font-family:'JetBrains Mono',monospace;font-size:12px;color:#334155}
+</style>
+</head>
+<body>
+
+<!-- ══ NAVBAR ══ -->
+<nav>
+  <div class="container">
+    <a href="/" class="brand">
+      <svg width="28" height="28" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <line x1="12" y1="16" x2="15.7" y2="9.4" stroke="#FB923C" stroke-width="1.2" stroke-linecap="round" opacity=".7"/>
+        <line x1="12" y1="16" x2="15.7" y2="22.6" stroke="#FB923C" stroke-width="1.2" stroke-linecap="round" opacity=".7"/>
+        <line x1="20.3" y1="9.4" x2="23" y2="14" stroke="#FB923C" stroke-width="1.2" stroke-linecap="round" opacity=".7"/>
+        <line x1="20.3" y1="22.6" x2="23" y2="18" stroke="#FB923C" stroke-width="1.2" stroke-linecap="round" opacity=".7"/>
+        <circle cx="9" cy="16" r="3.4" fill="#FB923C"/>
+        <circle cx="18" cy="9" r="2.4" fill="#FDBA74"/>
+        <circle cx="18" cy="23" r="2.4" fill="#FDBA74"/>
+        <circle cx="25" cy="16" r="2.8" fill="#F97316"/>
+      </svg>
+      <span class="brand-name">swarmbot<span>.it</span></span>
+    </a>
+
+    <ul class="nav-links" id="nav-links">
+      <li><a href="#features" data-i18n="navFeatures"></a></li>
+      <li><a href="#how" data-i18n="navHow"></a></li>
+      <li><a href="/docs" data-i18n="navDocs"></a></li>
+    </ul>
+
+    <div class="nav-right">
+      <!-- PL / EN switcher -->
+      <div class="lang-sw" role="group" aria-label="Language">
+        <button class="lang-btn active" id="lang-pl" onclick="setLang('pl')" aria-pressed="true">
+          <i class="fa-solid fa-globe" style="font-size:10px"></i> PL
+        </button>
+        <div class="lang-sep"></div>
+        <button class="lang-btn" id="lang-en" onclick="setLang('en')" aria-pressed="false">EN</button>
+      </div>
+      <!-- Light / dark switcher — same slider + icons as the swarmbot.it dashboard topbar -->
+      <div class="theme-slider" role="group" aria-label="Theme">
+        <button class="theme-slider__btn" id="theme-light" title="Light" onclick="setTheme('light')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        </button>
+        <button class="theme-slider__btn" id="theme-dark" title="Dark" onclick="setTheme('dark')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+      </div>
+      <a href="/app" class="btn-login" id="nav-login" data-i18n="navLogin"></a>
+      <a href="#demo" class="btn-cta" id="nav-cta" data-i18n="navCta"></a>
+    </div>
+  </div>
+</nav>
+
+<!-- ══ HERO ══ -->
+<section class="hero">
+  <div class="hero-orb hero-orb-1"></div>
+  <div class="hero-orb hero-orb-2"></div>
+  <div class="container">
+
+    <!-- Left -->
+    <div>
+      <div class="hero-badge">
+        <div class="badge-dot"></div>
+        <span class="badge-txt" data-i18n="heroBadge"></span>
+      </div>
+      <h1>
+        <span class="h1-white" data-i18n="heroLine1"></span>
+        <span class="h1-orange">Zero Downtime.</span>
+      </h1>
+      <p class="hero-desc" data-i18n="heroDesc"></p>
+      <div class="hero-btns">
+        <a href="/app" class="btn-primary">
+          <span data-i18n="heroCtaLogin"></span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </a>
+        <a href="#demo" class="btn-secondary">
+          <i class="fa-solid fa-play" style="font-size:14px"></i>
+          <span data-i18n="heroCtaDemo"></span>
+        </a>
+      </div>
+      <div class="hero-checks">
+        <div class="hero-check">
+          <i class="fa-solid fa-check check-ok"></i>
+          <span data-i18n="heroCheck1"></span>
+        </div>
+        <div class="hero-check">
+          <i class="fa-solid fa-check check-ok"></i>
+          <span>Open Source</span>
+        </div>
+        <div class="hero-check">
+          <i class="fa-solid fa-check check-ok"></i>
+          <span data-i18n="heroCheck3"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: demo widget -->
+    <div id="hero-widget"></div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ══ FEATURES ══ -->
+<section class="features" id="features">
+  <div class="container">
+    <div class="sec-head">
+      <div class="sec-label" data-i18n="featLabel"></div>
+      <h2 class="sec-title" data-i18n="featTitle"></h2>
+      <p class="sec-desc" data-i18n="featDesc"></p>
+    </div>
+    <div class="feat-grid" id="feat-grid"></div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ══ HOW IT WORKS ══ -->
+<section class="how" id="how">
+  <div class="container">
+    <div class="sec-head">
+      <div class="sec-label" data-i18n="howLabel"></div>
+      <h2 class="sec-title" data-i18n="howTitle"></h2>
+      <p class="sec-desc" data-i18n="howDesc"></p>
+    </div>
+    <div class="how-steps" id="how-steps"></div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ══ DOCS QUICK-START ══ -->
+<section class="docs-sec" id="demo">
+  <div class="container">
+    <div class="sec-head">
+      <div class="sec-label" data-i18n="docsLabel"></div>
+      <h2 class="sec-title" data-i18n="docsTitle"></h2>
+      <p class="sec-desc" data-i18n="docsDesc"></p>
+    </div>
+
+    <div class="doc-tabs" id="doc-tabs"></div>
+
+    <div class="doc-grid" id="doc-content"></div>
+
+    <div class="doc-cta-row">
+      <p class="doc-cta-note" data-i18n="docsMore"></p>
+      <a href="/docs" class="btn-primary">
+        <i class="fa-solid fa-book"></i>
+        <span data-i18n="docsCta"></span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ══ DEMO SECTION ══ -->
+<section style="padding:80px 0 120px" id="demo-full">
+  <div class="container">
+    <div class="sec-head">
+      <div class="sec-label" data-i18n="demoLabel"></div>
+      <h2 class="sec-title" data-i18n="demoTitle"></h2>
+      <p class="sec-desc" data-i18n="demoDesc"></p>
+    </div>
+    <div style="max-width:720px;margin:0 auto" id="full-widget"></div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ══ CTA ══ -->
+<section class="cta">
+  <div class="cta-bg"></div>
+  <div class="cta-inner">
+    <h2 class="cta-title" data-i18n="ctaTitle"></h2>
+    <p class="cta-desc" data-i18n="ctaDesc"></p>
+    <div class="cta-btns">
+      <a href="/app" class="btn-cta-lg btn-cta-orange" data-i18n="ctaLogin"></a>
+      <a href="/docs" class="btn-cta-lg btn-cta-ghost" data-i18n="ctaDocs"></a>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <div class="container">
+    <div class="foot-brand">
+      <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <line x1="12" y1="16" x2="15.7" y2="9.4" stroke="#FB923C" stroke-width="1.2" stroke-linecap="round" opacity=".55"/>
+        <line x1="12" y1="16" x2="15.7" y2="22.6" stroke="#FB923C" stroke-width="1.2" stroke-linecap="round" opacity=".55"/>
+        <line x1="20.3" y1="9.4" x2="23" y2="14" stroke="#FB923C" stroke-width="1.2" stroke-linecap="round" opacity=".55"/>
+        <line x1="20.3" y1="22.6" x2="23" y2="18" stroke="#FB923C" stroke-width="1.2" stroke-linecap="round" opacity=".55"/>
+        <circle cx="9" cy="16" r="3.4" fill="#F97316"/>
+        <circle cx="18" cy="9" r="2.4" fill="#FB923C"/>
+        <circle cx="18" cy="23" r="2.4" fill="#FB923C"/>
+        <circle cx="25" cy="16" r="2.8" fill="#EA580C"/>
+      </svg>
+      <span class="foot-name">swarmbot<span>.it</span></span>
+    </div>
+    <div class="foot-copy" data-i18n="footerCopy"></div>
+  </div>
+</footer>
+
+<script>
+/* ════════════════════════════════════════════
+   i18n
+════════════════════════════════════════════ */
+const STRINGS = {
+  navFeatures:   { pl:'Możliwości',          en:'Features' },
+  navHow:        { pl:'Jak to działa',        en:'How it works' },
+  navDocs:       { pl:'Dokumentacja',         en:'Documentation' },
+  navLogin:      { pl:'Zaloguj się',          en:'Sign in' },
+  navCta:        { pl:'Wypróbuj demo',        en:'Try demo' },
+  heroBadge:     { pl:'Inteligentne zarządzanie klastrami', en:'Intelligent cluster management' },
+  heroLine1:     { pl:'Twój klaster.',        en:'Your cluster.' },
+  heroDesc:      { pl:'swarmbot.it to inteligentny agent, który monitoruje Twoje węzły Docker Swarm, automatycznie wykrywa awarie i natychmiast rebalansuje zadania — bez przestojów, bez ingerencji.', en:'swarmbot.it is an intelligent agent that monitors your Docker Swarm nodes, detects failures automatically and instantly rebalances tasks — zero downtime, zero intervention.' },
+  heroCtaLogin:  { pl:'Zaloguj do panelu',    en:'Sign in to panel' },
+  heroCtaDemo:   { pl:'Obejrzyj demo',        en:'Watch demo' },
+  heroCheck1:    { pl:'Bez rejestracji',      en:'No sign-up' },
+  heroCheck3:    { pl:'Monitoring 24/7',      en:'24/7 Monitoring' },
+  featLabel:     { pl:'Możliwości',           en:'Features' },
+  featTitle:     { pl:'Dlaczego swarmbot.it?', en:'Why swarmbot.it?' },
+  featDesc:      { pl:'Inteligentna automatyzacja, która pilnuje Twojej infrastruktury — nawet gdy śpisz.', en:'Intelligent automation that watches your infrastructure — even while you sleep.' },
+  howLabel:      { pl:'Jak to działa',        en:'How it works' },
+  howTitle:      { pl:'Dwa komponenty. Jeden niezawodny klaster.', en:'Two components. One reliable cluster.' },
+  howDesc:       { pl:'Swarmagent działa na każdym węźle. Swarmbot API przetwarza zdarzenia. Ty oglądasz to na dashboardzie.', en:'Swarmagent runs on every node. Swarmbot API processes events. You watch it on the dashboard.' },
+  docsLabel:     { pl:'Dokumentacja',         en:'Documentation' },
+  docsTitle:     { pl:'Zacznij w 3 minuty',   en:'Get started in 3 minutes' },
+  docsDesc:      { pl:'Wszystko czego potrzebujesz, żeby uruchomić swarmbot.it w swoim środowisku.', en:'Everything you need to run swarmbot.it in your environment.' },
+  docsMore:      { pl:'Pełna dokumentacja — instalacja, konfiguracja, API i rozwiązywanie problemów.', en:'Full documentation — installation, configuration, API and troubleshooting.' },
+  docsCta:       { pl:'Otwórz pełną dokumentację',  en:'Open full documentation' },
+  demoLabel:     { pl:'Interaktywne demo',    en:'Interactive demo' },
+  demoTitle:     { pl:'Zabij węzeł. Patrz jak się regeneruje.', en:'Kill a node. Watch it recover.' },
+  demoDesc:      { pl:'Kliknij Kill pod dowolnym węzłem — swarmbot.it natychmiast przerzuca zadania na pozostałe węzły.', en:'Click Kill on any node — swarmbot.it instantly redistributes tasks to the remaining nodes.' },
+  ctaTitle:      { pl:'Gotowy na Zero Downtime?',   en:'Ready for Zero Downtime?' },
+  ctaDesc:       { pl:'Zainstaluj swarmbot.it i zapomnij o nocnych alertach. Twój klaster zasługuje na inteligentną opiekę.', en:'Install swarmbot.it and forget about late-night alerts. Your cluster deserves intelligent care.' },
+  ctaLogin:      { pl:'Zaloguj się',           en:'Sign in' },
+  ctaDocs:       { pl:'Czytaj dokumentację',   en:'Read documentation' },
+  footerCopy:    { pl:'© 2026 no-human.tech · Wszelkie prawa zastrzeżone', en:'© 2026 no-human.tech · All rights reserved' },
+
+  // features
+  feat0title: { pl:'Zero Downtime',   en:'Zero Downtime' },
+  feat0desc:  { pl:'Docker Swarm automatycznie przenosi zadania z martwego węzła — Twoi użytkownicy tego nie odczuwają.',        en:'Docker Swarm automatically reschedules tasks off a dead node — your users don\'t feel a thing.' },
+  feat1title: { pl:'Metryki live', en:'Live Metrics' },
+  feat1desc:  { pl:'CPU, RAM i dysk każdego węzła i kontenera, odświeżane na żywo z InfluxDB.',    en:'CPU, memory, and disk for every node and container, refreshed live from InfluxDB.' },
+  feat2title: { pl:'Docker Swarm + Kubernetes', en:'Docker Swarm + Kubernetes' },
+  feat2desc:  { pl:'Ten sam dashboard działa na Docker Swarm i na klastrach Kubernetes/k3s.',           en:'The same dashboard works on Docker Swarm and on Kubernetes/k3s clusters.' },
+  feat3title: { pl:'Bezpieczeństwo',  en:'Security' },
+  feat3desc:  { pl:'Role użytkowników (Admin/Editor/Read-only), tokeny API i hasła rejestrów szyfrowane AES-256-GCM.',                  en:'Role-based access (Admin/Editor/Read-only), API tokens, and registry passwords encrypted with AES-256-GCM.' },
+  feat4title: { pl:'Dashboard',       en:'Dashboard' },
+  feat4desc:  { pl:'Wizualizacja stanu całego klastra w czasie rzeczywistym.',           en:'Real-time visualization of your entire cluster.' },
+  feat5title: { pl:'GraphQL API',  en:'GraphQL API' },
+  feat5desc:  { pl:'Pełne GraphQL API do zarządzania stackami, serwisami, węzłami i rejestrami.',                    en:'A full GraphQL API for managing stacks, services, nodes, and registries.' },
+
+  // how steps
+  how0num:   { pl:'01 — OBSERWUJ',    en:'01 — OBSERVE' },
+  how0title: { pl:'Swarmagent monitoruje', en:'Swarmagent monitors' },
+  how0desc:  { pl:'Napisany w Rust agent działa na każdym węźle Docker, odczytując API Dockera — zdarzenia kontenerów i metryki hosta (CPU, RAM, dysk) w regularnych, konfigurowalnych odstępach.', en:'The Rust-based agent runs on each Docker node, reading the Docker API for container events and host metrics (CPU, RAM, disk) on a regular, configurable interval.' },
+  how1num:   { pl:'02 — WYKRYJ',      en:'02 — DETECT' },
+  how1title: { pl:'Swarmbot wykrywa awarię', en:'Swarmbot detects failure' },
+  how1desc:  { pl:'Gdy węzeł znika z klastra, sam Docker Swarm przenosi jego zadania na pozostałe węzły — bez ingerencji człowieka.', en:'When a node drops out of the cluster, Docker Swarm itself reschedules its tasks onto the remaining nodes — no human intervention required.' },
+  how2num:   { pl:'03 — ODBUDUJ',     en:'03 — RECOVER' },
+  how2title: { pl:'Zadania rebalansują automatycznie', en:'Tasks rebalance automatically' },
+  how2desc:  { pl:'Docker Swarm ponownie planuje zadania na ocalałych węzłach. Swarmbot odczytuje nowe rozmieszczenie live przez GraphQL i aktualizuje dashboard w czasie rzeczywistym.', en:'Docker Swarm reschedules tasks on surviving nodes. Swarmbot reads the new placement live via GraphQL and updates the dashboard in real time.' },
+
+  // docs tabs
+  docTab0: { pl:'Jak to działa?',     en:'How it works' },
+  docTab1: { pl:'Jak obsługiwać?',    en:'How to use' },
+  docTab2: { pl:'Jak zainstalować?',  en:'How to install' },
+  // doc content
+  docH0: { pl:'Architektura agenta', en:'Agent architecture' },
+  docP0a: { pl:'swarmbot.it działa jako lekki agent (Rust) obok Twojego Docker Swarm managera. Agent zbiera metryki i zdarzenia Dockera co kilkadziesiąt sekund (konfigurowalne) i wysyła je do centralnego API.', en:'swarmbot.it runs as a lightweight Rust agent alongside your Docker Swarm manager. The agent collects Docker metrics and events on a configurable interval and pushes them to the central API.' },
+  docP0b: { pl:'Gdy węzeł znika z klastra, Docker Swarm samodzielnie przenosi jego zadania na pozostałe węzły — Swarmbot to wykrywa i pokazuje w panelu oraz w kanale aktywności.', en:'When a node drops out of the cluster, Docker Swarm itself reschedules its tasks onto the remaining nodes — Swarmbot detects this and surfaces it on the dashboard and activity feed.' },
+  docH1: { pl:'Konfiguracja i obsługa', en:'Configuration & usage' },
+  docP1a: { pl:'Po instalacji swarmbot.it automatycznie wykrywa konfigurację Docker Swarm i zaczyna monitoring. Domyślna konfiguracja jest optymalna dla większości środowisk.', en:'After installation swarmbot.it auto-detects your Docker Swarm config and starts monitoring. The default config is optimal for most environments.' },
+  docP1b: { pl:'Panel webowy dostępny jest pod /app. Możesz zarządzać stackami, serwisami i węzłami, przeglądać metryki na żywo i kontrolować dostęp przez role użytkowników.', en:'The web panel is available at /app. Manage stacks, services, and nodes, review live metrics, and control access through user roles.' },
+  docH2: { pl:'Instalacja w 60 sekund', en:'Install in 60 seconds' },
+  docP2a: { pl:'swarmbot.it wymaga Docker Engine 20.10+ i aktywnego Docker Swarm. Instalacja jest jednokomendowa i nie wymaga restartu istniejących usług.', en:'swarmbot.it requires Docker Engine 20.10+ and an active Docker Swarm. Installation is a single command and requires no restart of existing services.' },
+  docP2b: { pl:'Po instalacji agent automatycznie dołącza do klastra i rozpoczyna monitoring.', en:'After installation the agent automatically joins the cluster and begins monitoring.' },
+  // terminal copy
+  copyBtn:    { pl:'Kopiuj', en:'Copy' },
+  copiedBtn:  { pl:'Skopiowano', en:'Copied' },
+  // demo terminal
+  demoLog0: { pl:'[INFO] swarmbot.it v2.4.1 zainicjalizowany', en:'[INFO] swarmbot.it v2.4.1 initialized' },
+  demoLog1: { pl:'[OK] Wszystkie 3 węzły zdrowe — klaster stabilny', en:'[OK] All 3 nodes healthy — cluster stable' },
+  demoLog2: { pl:'[INFO] Metryki na żywo z InfluxDB', en:'[INFO] Live metrics streaming from InfluxDB' },
+  demoWarn:  { pl:'[WARN] Węzeł {n} — utracono połączenie', en:'[WARN] Node {n} — connection lost' },
+  demoCrit:  { pl:'[CRIT] Węzeł {n} offline — failover zainicjowany', en:'[CRIT] Node {n} offline — failover initiated' },
+  demoReb:   { pl:'[INFO] Rebalansowanie zadań z Węzła {n}…', en:'[INFO] Rebalancing tasks from Node {n}…' },
+  demoOk:    { pl:'[OK] Zadania przeniesione na Węzeł {t} — klaster stabilny', en:'[OK] Tasks migrated to Node {t} — cluster stable' },
+  demoReset: { pl:'[INFO] Resetowanie klastra…', en:'[INFO] Resetting cluster…' },
+  healthy:   { pl:'ZDROWY', en:'HEALTHY' },
+  degraded:  { pl:'ZDEGRADOWANY', en:'DEGRADED' },
+  offline:   { pl:'OFFLINE', en:'OFFLINE' },
+  rebalanced:{ pl:'PRZEBALANSOWANY', en:'REBALANCED' },
+  killLabel: { pl:'Zabij {n}', en:'Kill {n}' },
+  resetLabel:{ pl:'Reset', en:'Reset' },
+};
+
+let LANG = 'pl';
+
+function t(key, vars) {
+  const entry = STRINGS[key];
+  if (!entry) return key;
+  let s = entry[LANG] || entry['en'] || key;
+  if (vars) Object.keys(vars).forEach(k => s = s.replace(new RegExp('{'+k+'}','g'), vars[k]));
+  return s;
+}
+
+function setLang(lang) {
+  LANG = lang;
+  document.documentElement.lang = lang;
+  document.getElementById('lang-pl').classList.toggle('active', lang === 'pl');
+  document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+  document.getElementById('lang-pl').setAttribute('aria-pressed', lang === 'pl');
+  document.getElementById('lang-en').setAttribute('aria-pressed', lang === 'en');
+  applyI18n();
+  renderFeatures();
+  renderHowSteps();
+  renderDocTabs();
+  renderDocContent(activeDocTab);
+  renderWidgets();
+}
+
+function applyI18n() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.textContent = t(el.getAttribute('data-i18n'));
+  });
+}
+
+/* ════════════════════════════════════════════
+   THEME — same localStorage key + data-theme
+   attribute as the swarmbot.it dashboard, so a
+   choice made here or in the app carries over.
+════════════════════════════════════════════ */
+const THEME_KEY = 'swarmboty.theme';
+
+function setTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem(THEME_KEY, theme);
+  syncThemeButtons(theme);
+}
+
+function syncThemeButtons(theme) {
+  document.getElementById('theme-light').classList.toggle('theme-slider__btn--active', theme === 'light');
+  document.getElementById('theme-dark').classList.toggle('theme-slider__btn--active', theme === 'dark');
+}
+
+/* ════════════════════════════════════════════
+   FEATURES
+════════════════════════════════════════════ */
+const FEAT_ICONS = [
+  { icon:'fa-solid fa-bolt',          color:'#f97316' },
+  { icon:'fa-solid fa-heart-pulse',   color:'#fb923c' },
+  { icon:'fa-solid fa-arrows-rotate', color:'#10b981' },
+  { icon:'fa-solid fa-shield-halved', color:'#ea580c' },
+  { icon:'fa-solid fa-chart-line',    color:'#f59e0b' },
+  { icon:'fa-solid fa-plug',          color:'#fdba74' },
+];
+
+function renderFeatures() {
+  const grid = document.getElementById('feat-grid');
+  grid.innerHTML = FEAT_ICONS.map((f, i) => `
+    <div class="feat-card">
+      <div class="feat-icon" style="background:${f.color}18;color:${f.color}">
+        <i class="${f.icon}"></i>
+      </div>
+      <div class="feat-title">${t('feat'+i+'title')}</div>
+      <p class="feat-desc">${t('feat'+i+'desc')}</p>
+    </div>`).join('');
+}
+
+/* ════════════════════════════════════════════
+   HOW IT WORKS
+════════════════════════════════════════════ */
+const HOW_ICONS = [
+  'fa-solid fa-magnifying-glass',
+  'fa-solid fa-triangle-exclamation',
+  'fa-solid fa-arrows-rotate',
+];
+
+function renderHowSteps() {
+  const el = document.getElementById('how-steps');
+  el.innerHTML = [0,1,2].map(i => `
+    <div class="how-step">
+      <div class="how-num">${t('how'+i+'num')}</div>
+      <div class="how-icon"><i class="${HOW_ICONS[i]}" style="color:#f97316"></i></div>
+      <div class="how-title">${t('how'+i+'title')}</div>
+      <p class="how-desc">${t('how'+i+'desc')}</p>
+    </div>`).join('');
+}
+
+/* ════════════════════════════════════════════
+   DOCS TABS
+════════════════════════════════════════════ */
+let activeDocTab = 0;
+
+const DOC_CODES = [
+  `$ ./swarmagent\n\nINFO Starting Swarmboty\nINFO Waiting for Swarmboty…\nINFO Swarmboty OK\nINFO Event collector started.\nINFO Stats collector started.`,
+  `# Zaloguj się i zapytaj GraphQL API\n$ curl -X POST http://localhost:8080/login -u admin:swarmboty\n{"token":"eyJhbGciOiJIUzI1NiIs..."}\n\n$ curl -X POST http://localhost:8080/graphql \\\n    -H "Authorization: Bearer <token>" \\\n    -d '{"query":"{ nodes { hostname cpu mem } }"}'\n\n[OK] { "data": { "nodes": [...] } }`,
+  `# Uruchom PostgreSQL\ndocker run -d --name swarmbot-pg \\\n  -e POSTGRES_USER=swarmboty \\\n  -e POSTGRES_PASSWORD=swarmboty \\\n  -e POSTGRES_DB=swarmboty \\\n  -p 5432:5432 postgres:16\n\n# Sklonuj i uruchom\ngit clone https://github.com/swarmbot-it/swarmbot\ncd swarmbot && npm install\nnpm run dev:api`,
+];
+
+function renderDocTabs() {
+  const tabs = document.getElementById('doc-tabs');
+  tabs.innerHTML = [0,1,2].map(i => `
+    <button class="doc-tab${activeDocTab===i?' active':''}" onclick="switchDocTab(${i})">${t('docTab'+i)}</button>`
+  ).join('');
+}
+
+function switchDocTab(idx) {
+  activeDocTab = idx;
+  renderDocTabs();
+  renderDocContent(idx);
+}
+
+function renderDocContent(idx) {
+  const el = document.getElementById('doc-content');
+  const code = DOC_CODES[idx];
+  el.innerHTML = `
+    <div>
+      <h3 class="doc-heading">${t('docH'+idx)}</h3>
+      <p class="doc-text">${t('docP'+idx+'a')}</p>
+      <p class="doc-text">${t('docP'+idx+'b')}</p>
+    </div>
+    <div class="code-block">
+      <div class="code-head">
+        <span class="code-lang">terminal</span>
+        <button class="copy-btn" id="copy-btn-${idx}" onclick="copyCode(this, ${JSON.stringify(code)})">
+          <i class="fa-regular fa-copy"></i> ${t('copyBtn')}
+        </button>
+      </div>
+      <div class="code-body">${escHtml(code)}</div>
+    </div>`;
+}
+
+function copyCode(btn, text) {
+  navigator.clipboard && navigator.clipboard.writeText(text);
+  btn.innerHTML = `<i class="fa-solid fa-check"></i> ${t('copiedBtn')}`;
+  btn.classList.add('copied');
+  setTimeout(() => {
+    btn.innerHTML = `<i class="fa-regular fa-copy"></i> ${t('copyBtn')}`;
+    btn.classList.remove('copied');
+  }, 2000);
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ════════════════════════════════════════════
+   CLUSTER DEMO
+════════════════════════════════════════════ */
+function makeState() {
+  return {
+    nodes:[
+      {id:1,alive:true,load:33,boosted:false,tasks:['nginx.1','redis.1']},
+      {id:2,alive:true,load:33,boosted:false,tasks:['app.1','worker.1']},
+      {id:3,alive:true,load:34,boosted:false,tasks:['app.2','worker.2']},
+    ],
+    logs:null, // filled after LANG is set
+  };
+}
+
+function freshLogs() {
+  return [
+    {type:'info', text:t('demoLog0')},
+    {type:'ok',   text:t('demoLog1')},
+    {type:'info', text:t('demoLog2')},
+  ];
+}
+
+/* --- build widget HTML ---- */
+function buildWidget(id) {
+  return `
+    <div class="demo-widget">
+      <div class="demo-head">
+        <div class="demo-title-row">
+          <svg width="20" height="20" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+            <line x1="12" y1="16" x2="15.7" y2="9.4" stroke="#F97316" stroke-width="1.2" stroke-linecap="round" opacity=".55"/>
+            <line x1="12" y1="16" x2="15.7" y2="22.6" stroke="#F97316" stroke-width="1.2" stroke-linecap="round" opacity=".55"/>
+            <line x1="20.3" y1="9.4" x2="23" y2="14" stroke="#F97316" stroke-width="1.2" stroke-linecap="round" opacity=".55"/>
+            <line x1="20.3" y1="22.6" x2="23" y2="18" stroke="#F97316" stroke-width="1.2" stroke-linecap="round" opacity=".55"/>
+            <circle cx="9" cy="16" r="3.4" fill="#F97316"/>
+            <circle cx="18" cy="9" r="2.4" fill="#FB923C"/>
+            <circle cx="18" cy="23" r="2.4" fill="#FB923C"/>
+            <circle cx="25" cy="16" r="2.8" fill="#EA580C"/>
+          </svg>
+          Docker Swarm Cluster
+        </div>
+        <div class="demo-status" id="${id}-status"></div>
+      </div>
+      <div class="nodes-row" id="${id}-nodes"></div>
+      <div class="demo-btns" id="${id}-btns"></div>
+      <div class="terminal">
+        <div class="term-head">
+          <div class="term-dots">
+            <div class="tdot" style="background:#ef4444;opacity:.7"></div>
+            <div class="tdot" style="background:#f59e0b;opacity:.7"></div>
+            <div class="tdot" style="background:#10b981;opacity:.7"></div>
+          </div>
+          <span class="term-name">swarmbot@cluster — logs</span>
+        </div>
+        <div class="term-body" id="${id}-logs"></div>
+      </div>
+    </div>`;
+}
+
+/* --- widget state store ---- */
+const widgetStates = {};
+
+function initWidget(containerId) {
+  const st = makeState();
+  st.logs = freshLogs();
+  widgetStates[containerId] = st;
+  renderWidget(containerId);
+}
+
+function renderWidget(id) {
+  const st = widgetStates[id];
+  const allAlive = st.nodes.every(n => n.alive);
+  const statusColor = allAlive ? '#10b981' : '#f59e0b';
+  const statusLabel = allAlive ? t('healthy') : t('degraded');
+
+  // status
+  const statusEl = document.getElementById(id+'-status');
+  if (statusEl) statusEl.innerHTML = `
+    <div style="width:6px;height:6px;border-radius:50%;background:${statusColor};box-shadow:0 0 8px ${statusColor}80;animation:pulse-glow 2s infinite"></div>
+    <span style="color:${statusColor}">${statusLabel}</span>`;
+
+  // nodes
+  const nodesEl = document.getElementById(id+'-nodes');
+  if (nodesEl) nodesEl.innerHTML = st.nodes.map(n => {
+    let cls = 'node-card'; if (!n.alive) cls+=' dead'; else if (n.boosted) cls+=' boosted';
+    const ico = n.alive
+      ? '<i class="fa-brands fa-docker" style="color:'+(n.boosted?'#10b981':'#f97316')+'"></i>'
+      : '<i class="fa-solid fa-xmark" style="color:#ef4444"></i>';
+    const loadTxt = n.alive ? n.load+'% load' : t('offline');
+    const badge = n.boosted ? `<div class="node-badge"><i class="fa-solid fa-arrow-up"></i>${t('rebalanced')}</div>` : '';
+    return `<div class="${cls}"><div class="node-icon">${ico}</div><div class="node-lbl">Node ${n.id}</div><div class="node-load">${loadTxt}</div>${badge}</div>`;
+  }).join('');
+
+  // buttons
+  const btnsEl = document.getElementById(id+'-btns');
+  if (btnsEl) {
+    const anyDead = st.nodes.some(n => !n.alive);
+    btnsEl.innerHTML = st.nodes.map(n => `
+      <button class="kill-btn" onclick="killNode('${id}',${n.id})" ${!n.alive?'disabled':''}>
+        <i class="fa-solid fa-skull-crossbones"></i> ${t('killLabel',{n:n.id})}
+      </button>`).join('') +
+      `<button class="reset-btn" onclick="resetWidget('${id}')" ${!anyDead?'disabled':''}>
+        <i class="fa-solid fa-arrows-rotate"></i> ${t('resetLabel')}
+      </button>`;
+  }
+
+  // logs
+  renderLogs(id);
+}
+
+function renderLogs(id) {
+  const st = widgetStates[id];
+  const logsEl = document.getElementById(id+'-logs');
+  if (!logsEl) return;
+  const colorMap = {info:'ll-info',ok:'ll-ok',warn:'ll-warn',err:'ll-err'};
+  logsEl.innerHTML = st.logs.map(l =>
+    `<div class="ll ${colorMap[l.type]||'ll-info'}">${escHtml(l.text)}</div>`
+  ).join('') + `<div class="term-cursor">$ <span class="cursor-block"></span></div>`;
+  logsEl.scrollTop = logsEl.scrollHeight;
+}
+
+function addLog(id, type, text) {
+  const st = widgetStates[id];
+  st.logs.push({type, text});
+  if (st.logs.length > 12) st.logs.shift();
+  renderLogs(id);
+}
+
+function killNode(id, nodeId) {
+  const st = widgetStates[id];
+  const node = st.nodes.find(n => n.id === nodeId);
+  if (!node || !node.alive) return;
+  const alive = st.nodes.filter(n => n.alive && n.id !== nodeId);
+  if (!alive.length) return;
+  const share = Math.floor(node.load / alive.length);
+  const tasks = [...node.tasks];
+  st.nodes = st.nodes.map(n => {
+    if (n.id === nodeId) return {...n, alive:false, load:0, tasks:[]};
+    if (alive.find(a => a.id === n.id)) {
+      const grab = tasks.splice(0, Math.ceil(tasks.length / alive.length));
+      return {...n, load:n.load+share, boosted:true, tasks:[...n.tasks,...grab]};
+    }
+    return n;
+  });
+  addLog(id,'warn', t('demoWarn',{n:nodeId}));
+  addLog(id,'err',  t('demoCrit',{n:nodeId}));
+  renderWidget(id);
+  setTimeout(() => { addLog(id,'info', t('demoReb',{n:nodeId})); }, 600);
+  setTimeout(() => {
+    const targets = alive.map(n => n.id).join(' & ');
+    addLog(id,'ok', t('demoOk',{t:targets}));
+    st.nodes = st.nodes.map(n => ({...n, boosted:false}));
+    renderWidget(id);
+  }, 1500);
+}
+
+function resetWidget(id) {
+  const st = widgetStates[id];
+  addLog(id,'info', t('demoReset'));
+  setTimeout(() => {
+    const fresh = makeState();
+    fresh.logs = freshLogs();
+    widgetStates[id] = fresh;
+    renderWidget(id);
+  }, 400);
+}
+
+function renderWidgets() {
+  // re-render all widgets (for language change)
+  Object.keys(widgetStates).forEach(id => {
+    const st = widgetStates[id];
+    st.logs = freshLogs();
+    renderWidget(id);
+  });
+}
+
+/* ════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  syncThemeButtons(document.documentElement.getAttribute('data-theme'));
+  applyI18n();
+  renderFeatures();
+  renderHowSteps();
+  renderDocTabs();
+  renderDocContent(0);
+
+  // mount hero widget
+  const heroW = document.getElementById('hero-widget');
+  heroW.innerHTML = buildWidget('w-hero');
+  initWidget('w-hero');
+
+  // mount full demo widget
+  const fullW = document.getElementById('full-widget');
+  fullW.innerHTML = buildWidget('w-full');
+  initWidget('w-full');
+});
+</script>
+</body>
+</html>

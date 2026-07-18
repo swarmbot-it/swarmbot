@@ -11,8 +11,8 @@ COPY apps ./apps
 
 RUN npm run build -w @swarmbot/api && npm run build -w web
 
-RUN mkdir -p /app/apps/api/public \
-  && cp -R /app/apps/web/dist/web/browser/* /app/apps/api/public/
+RUN mkdir -p /app/apps/api/public/app \
+  && cp -R /app/apps/web/dist/web/browser/* /app/apps/api/public/app/
 
 FROM node:26-alpine AS runtime
 
