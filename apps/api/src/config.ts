@@ -39,6 +39,14 @@ export type SwarmbotConfig = {
 	k8sNamespace: string | undefined;
 	/** Which backend mock mode imitates: swarm (default) or kubernetes. */
 	mockOrchestrator: "swarm" | "kubernetes";
+	/** OIDC (Dex) login — active only when issuer+clientId+secret+redirectUri are all set. */
+	oidcIssuer: string | undefined;
+	oidcClientId: string | undefined;
+	oidcClientSecret: string | undefined;
+	oidcRedirectUri: string | undefined;
+	oidcScopes: string;
+	oidcAdminGroups: string[];
+	oidcEditorGroups: string[];
 };
 
 const defaults: SwarmbotConfig = {
@@ -61,6 +69,13 @@ const defaults: SwarmbotConfig = {
 	kubeconfig: undefined,
 	k8sNamespace: undefined,
 	mockOrchestrator: "swarm",
+	oidcIssuer: undefined,
+	oidcClientId: undefined,
+	oidcClientSecret: undefined,
+	oidcRedirectUri: undefined,
+	oidcScopes: "openid profile email groups",
+	oidcAdminGroups: [],
+	oidcEditorGroups: [],
 };
 
 function envOrchestratorMode(key: string): "swarm" | "kubernetes" | "auto" | undefined {
@@ -77,6 +92,10 @@ export function setNegotiatedDockerApi(version: string): void {
 
 export function resolvedDockerApi(fallback: string): string {
 	return dynamicDockerApi ?? envStr("SWARMBOT_DOCKER_API") ?? fallback;
+}
+
+function envList(key: string): string[] {
+	return envStr(key)?.split(",").map((s) => s.trim()).filter(Boolean) ?? [];
 }
 
 function envBool(key: string): boolean | undefined {
@@ -117,5 +136,12 @@ export function loadConfig(): SwarmbotConfig {
 			envStr("SWARMBOT_MOCK_ORCHESTRATOR")?.toLowerCase() === "kubernetes"
 				? "kubernetes"
 				: defaults.mockOrchestrator,
+		oidcIssuer: envStr("SWARMBOT_OIDC_ISSUER"),
+		oidcClientId: envStr("SWARMBOT_OIDC_CLIENT_ID"),
+		oidcClientSecret: envStr("SWARMBOT_OIDC_CLIENT_SECRET"),
+		oidcRedirectUri: envStr("SWARMBOT_OIDC_REDIRECT_URI"),
+		oidcScopes: envStr("SWARMBOT_OIDC_SCOPES") ?? defaults.oidcScopes,
+		oidcAdminGroups: envList("SWARMBOT_OIDC_ADMIN_GROUPS"),
+		oidcEditorGroups: envList("SWARMBOT_OIDC_EDITOR_GROUPS"),
 	};
 }

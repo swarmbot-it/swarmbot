@@ -144,6 +144,74 @@ export async function findAuthUser(
 	return row ?? null;
 }
 
+/**
+ * Provision or link a user from a verified OIDC (Dex) identity. Matches by
+ * (provider, sub), then by username (links an existing account), otherwise
+ * creates a new user with an unusable random password — OIDC users never log
+ * in by password. Role (derived from Dex groups) is re-applied on every login.
+ */
+export async function upsertOidcUser(
+	db: Kysely<Database>,
+	id: {
+		sub: string;
+		provider: string;
+		username: string;
+		email: string | null;
+		name: string | null;
+		role: string;
+	}
+): Promise<{ username: string; email: string | null; role: string }> {
+	const nowIso = new Date().toISOString();
+	const emailPatch = id.email ? { email: id.email } : {};
+
+	const byOidc = await db
+		.selectFrom("users")
+		.select(["username"])
+		.where("oidcProvider", "=", id.provider)
+		.where("oidcSub", "=", id.sub)
+		.executeTakeFirst();
+	if (byOidc) {
+		await db
+			.updateTable("users")
+			.set({ role: id.role, lastLoginAt: nowIso, ...emailPatch })
+			.where("username", "=", byOidc.username)
+			.execute();
+		return { username: byOidc.username, email: id.email, role: id.role };
+	}
+
+	const byName = await db
+		.selectFrom("users")
+		.select(["username"])
+		.where("username", "=", id.username)
+		.executeTakeFirst();
+	if (byName) {
+		await db
+			.updateTable("users")
+			.set({ oidcProvider: id.provider, oidcSub: id.sub, role: id.role, lastLoginAt: nowIso, ...emailPatch })
+			.where("username", "=", id.username)
+			.execute();
+		return { username: id.username, email: id.email, role: id.role };
+	}
+
+	await db
+		.insertInto("users")
+		.values({
+			id: randomUUID(),
+			username: id.username,
+			name: id.name ?? id.username,
+			email: id.email ?? "",
+			phone: "",
+			role: id.role,
+			password: derivePassword(`${randomUUID()}${randomUUID()}`),
+			oidcProvider: id.provider,
+			oidcSub: id.sub,
+			createdAt: nowIso,
+			lastLoginAt: nowIso,
+		})
+		.execute();
+	return { username: id.username, email: id.email, role: id.role };
+}
+
 export async function touchLastLogin(db: Kysely<Database>, username: string): Promise<void> {
 	await db
 		.updateTable("users")
