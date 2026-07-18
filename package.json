@@ -20,7 +20,12 @@
         "swarm:stop": "node scripts/swarm-stop.mjs",
         "swarm:status": "node scripts/swarm-status.mjs",
         "swarm:deploy": "node scripts/swarm-deploy.mjs",
-        "swarm:undeploy": "node scripts/swarm-undeploy.mjs"
+        "swarm:undeploy": "node scripts/swarm-undeploy.mjs",
+        "k8s:start": "node scripts/k8s-start.mjs",
+        "k8s:stop": "node scripts/k8s-stop.mjs",
+        "k8s:status": "node scripts/k8s-status.mjs",
+        "k8s:deploy": "node scripts/k8s-deploy.mjs",
+        "k8s:undeploy": "node scripts/k8s-undeploy.mjs"
     },
     "devDependencies": {
         "prettier": "^3.5.3"

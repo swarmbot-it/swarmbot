@@ -1,0 +1,8 @@
+# Local dev namespace (k3d). Mirrors deploy/k3s but simplified for a laptop
+# cluster: local images, no node pinning, no ipAllowList, dev-only secrets.
+apiVersion: v1
+kind: Namespace
+metadata:
+    name: swarmbot
+    labels:
+        app.kubernetes.io/part-of: swarmbot
