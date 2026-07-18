@@ -1,4 +1,4 @@
-import { createHash, createPublicKey, randomBytes } from "crypto";
+import { createHash, createPublicKey, randomBytes, type JsonWebKey } from "crypto";
 import jwt, { type JwtPayload } from "jsonwebtoken";
 import type { Kysely } from "kysely";
 import type { Database } from "../db.js";
@@ -56,7 +56,7 @@ async function fetchKeys(jwksUri: string): Promise<Map<string, string>> {
 	const body = (await res.json()) as { keys?: JsonWebKey[] };
 	const map = new Map<string, string>();
 	for (const jwk of body.keys ?? []) {
-		const kid = (jwk as { kid?: string }).kid;
+		const kid = typeof jwk.kid === "string" ? jwk.kid : undefined;
 		if (!kid || jwk.kty !== "RSA") continue;
 		try {
 			const pem = createPublicKey({ key: jwk, format: "jwk" }).export({ type: "spki", format: "pem" });
