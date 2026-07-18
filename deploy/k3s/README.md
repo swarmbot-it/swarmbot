@@ -36,6 +36,41 @@ tag git `vX.Y.Z` → tagi semver.
   Swarm — na k3s będą puste/nieaktywne. Wsparcie orchestratora Kubernetes dla
   API/UI istnieje w linii `rc-1` i czeka na scalenie z linią PostgreSQL.
 
+## Warianty warstwy danych: lokalny (wbudowany) vs centralny (współdzielony)
+
+PostgreSQL i InfluxDB można wdrożyć na dwa sposoby. Wybór dotyczy wyłącznie tego,
+skąd aplikacja bierze dane — kontrakt env (`SWARMBOT_DB`, `SWARMBOT_INFLUXDB`,
+`SWARMBOT_INFLUXDB_TOKEN`) jest wspólny dla obu. Agent (`swarmagent`) nic nie wie
+o bazach — wysyła push-only do API, więc jego manifest się nie zmienia w żadnym
+wariancie.
+
+### Wariant lokalny (wbudowany, domyślny)
+
+- Postgres i InfluxDB jako manifesty w namespace instancji: `10-postgres.yaml`,
+  `20-influxdb.yaml`; dane w PVC przypiętych do `k3s-a1` (`nodeSelector`).
+- `SWARMBOT_DB` → `postgres://…@db:5432/swarmbot`, `SWARMBOT_INFLUXDB` →
+  `http://influxdb:8086` (Service'y w namespace).
+- **Kiedy:** pojedyncza instancja, pełna izolacja, najprostszy start; backup
+  i skalowanie per instancja.
+- To jest domyślne zachowanie `kubectl apply -k deploy/k3s` (Krok 3).
+
+### Wariant centralny (współdzielony)
+
+- Jeden zewnętrzny PostgreSQL i jeden InfluxDB obsługują wiele instancji swarbota.
+- Usuń `10-postgres.yaml` i `20-influxdb.yaml` z `kustomization.yaml` (nie wdrażaj
+  lokalnych baz) i skieruj env na centralne endpointy:
+  - `SWARMBOT_DB` → `postgres://<user>:<hasło>@<centralny-host>:5432/<baza-instancji>`
+  - `SWARMBOT_INFLUXDB` → `http://<centralny-host>:8086`,
+    `SWARMBOT_INFLUXDB_TOKEN` → `user:hasło` konta danej instancji.
+- **Izolacja najemców na wspólnym silniku:** osobna **baza + rola** per instancja
+  (Postgres) oraz osobna **baza InfluxQL** per instancja (InfluxDB). Naturalny
+  klucz nazewniczy: `SWARMBOT_INSTANCE_NAME`.
+- **Sekrety:** sól secret-box (`swarmbot-secret-box`) i klucz bazowy w tabeli
+  `app_secrets` są per-baza — trzymaj `app_secrets` każdej instancji w JEJ bazie,
+  żeby szyfrowanie haseł rejestrów pozostało odseparowane między instancjami.
+- Porty bez zmian (5432/8086) — „centralny" znaczy wspólny host, nie inny port.
+- **Kiedy:** flota instancji, wspólny backup/ops, jedna domena awarii do pilnowania.
+
 ## Krok 1 — obrazy w GHCR
 
 Workflow uruchamia się na push do `main`/`ci/**`. Po pierwszym buildzie pakiety
@@ -70,6 +105,11 @@ kubectl apply -k deploy/k3s
 kubectl -n swarmbot get pods -o wide
 # swarmbot/postgres/influxdb na k3s-a1, agenci na pozostałych węzłach
 ```
+
+Powyższe wdraża **wariant lokalny** (wbudowane bazy). Dla **wariantu centralnego**
+najpierw usuń `10-postgres.yaml`/`20-influxdb.yaml` z `kustomization.yaml`
+i ustaw `SWARMBOT_DB`/`SWARMBOT_INFLUXDB` na centralne endpointy — patrz sekcja
+[Warianty warstwy danych](#warianty-warstwy-danych-lokalny-wbudowany-vs-centralny-współdzielony).
 
 ## Krok 4 — DNS
 
