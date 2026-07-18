@@ -20,7 +20,7 @@ import { buildContext, localeFromHeader, type GraphQLContext } from "./graphql/c
 import { localizedMessage } from "./i18n/errors.js";
 import type { AuthedRequest } from "./http/optional-jwt.js";
 import { optionalJwtMiddleware } from "./http/optional-jwt.js";
-import { findAuthUser, upgradePasswordHash } from "./store/users.js";
+import { findAuthUser, upgradePasswordHash, upsertOidcUser } from "./store/users.js";
 import { decodeBasic, generateJwt, verifyJwt } from "./auth/jwt.js";
 import { allowAttempt } from "./auth/rate-limit.js";
 import { verifyPassword, derivePassword, isSha256Digest } from "./auth/password.js";
@@ -30,6 +30,17 @@ import { createOrchestrator } from "./orchestrator/factory.js";
 import { NoRunningTaskError, SwarmOrchestrator } from "./orchestrator/swarm/adapter.js";
 import { logger } from "./logger.js";
 import { consumeSlt, createSlt } from "./auth/slt.js";
+import {
+	oidcConfig,
+	authorizationUrl,
+	exchangeAndVerify,
+	roleForGroups,
+	saveFlow,
+	consumeFlow,
+	newVerifier,
+	challenge,
+	randomOpaque,
+} from "./auth/oidc.js";
 import { publishEvent, subscribeEvents } from "./events/hub.js";
 import { startStatsWriter } from "./events/stats-writer.js";
 
@@ -207,6 +218,62 @@ export async function createHttpServer(
 		res.json({});
 	});
 
+	// --- OIDC (Dex) login for the internal console -------------------------
+	// The app is a confidential OIDC client: /login redirects to Dex, /callback
+	// verifies the ID token, maps the identity to a user, and issues a native
+	// session JWT (same as password login). Enabled only when SWARMBOT_OIDC_* is set.
+	app.get("/api/auth/oidc/login", async (req, res) => {
+		const oidc = oidcConfig(cfg);
+		if (!oidc) {
+			res.status(404).json({ error: "oidc_not_configured" });
+			return;
+		}
+		const state = randomOpaque();
+		const nonce = randomOpaque();
+		const verifier = newVerifier();
+		const redirectTo =
+			typeof req.query.redirect === "string" && req.query.redirect.startsWith("/app")
+				? req.query.redirect
+				: "/app/dashboard";
+		await saveFlow(db, { state, nonce, codeVerifier: verifier, redirectTo });
+		const url = await authorizationUrl(oidc, { state, nonce, codeChallenge: challenge(verifier) });
+		res.redirect(url);
+	});
+
+	app.get("/api/auth/oidc/callback", async (req, res) => {
+		const oidc = oidcConfig(cfg);
+		if (!oidc) {
+			res.status(404).send("oidc_not_configured");
+			return;
+		}
+		try {
+			const code = typeof req.query.code === "string" ? req.query.code : undefined;
+			const state = typeof req.query.state === "string" ? req.query.state : undefined;
+			if (!code) throw new Error("missing code");
+			const flow = await consumeFlow(db, state);
+			if (!flow) throw new Error("invalid or expired state");
+			const identity = await exchangeAndVerify(oidc, code, flow.codeVerifier, flow.nonce);
+			const role = roleForGroups(oidc, identity.groups);
+			const u = await upsertOidcUser(db, {
+				sub: identity.sub,
+				provider: "dex",
+				username: identity.username,
+				email: identity.email,
+				name: identity.name,
+				role,
+			});
+			const secret = await getAppSecret(db);
+			const token = generateJwt(secret, { username: u.username, email: u.email, role: u.role });
+			const raw = token.replace(/^Bearer\s+/i, "");
+			const dest = flow.redirectTo ?? "/app/dashboard";
+			// Hand the session token to the SPA via URL fragment (never sent to the server / logs).
+			res.redirect(`/app/oidc#token=${encodeURIComponent(raw)}&to=${encodeURIComponent(dest)}`);
+		} catch (e) {
+			logger.warn({ err: String(e) }, "OIDC callback failed");
+			res.redirect("/login?error=oidc");
+		}
+	});
+
 	app.get("/slt", async (req: AuthedRequest, res) => {
 		const locale = localeFromHeader(req.headers["accept-language"]);
 		if (!req.swarmUser) {
@@ -278,6 +345,18 @@ export async function createHttpServer(
 	// staticDir/index.html and staticDir/docs.html are the marketing landing
 	// page and docs, served at the domain root. The real dashboard (Angular
 	// build output) lives under staticDir/app and is served at /app.
+	// On the internal console host(s) (SWARMBOT_CONSOLE_HOSTS, e.g. swarmbot.infra),
+	// "/" skips the marketing landing and goes straight to the Dex login. Public
+	// hosts (swarmbot.it) fall through to the static landing below.
+	app.get("/", (req, res, next) => {
+		const host = (req.headers.host ?? "").split(":")[0]!.toLowerCase();
+		if (oidcConfig(cfg) && cfg.consoleHosts.includes(host)) {
+			res.redirect("/api/auth/oidc/login");
+			return;
+		}
+		next();
+	});
+
 	const staticDir = path.join(process.cwd(), "public");
 	app.use(express.static(staticDir));
 	// The Angular build's own assets (fonts, i18n) are referenced by root-absolute

@@ -16,6 +16,9 @@ export type UserTable = {
 	apiTokenJti: string | null;
 	apiTokenMask: string | null;
 	apiTokenExpiresAt: Timestamp | null;
+	/** External identity (OIDC/Dex) — insertable-optional so password users omit it. */
+	oidcSub: ColumnType<string | null, string | null | undefined, string | null>;
+	oidcProvider: ColumnType<string | null, string | null | undefined, string | null>;
 };
 
 export type RegistryTable = {
@@ -47,6 +50,15 @@ export type SltTable = {
 	expiresAt: Timestamp;
 };
 
+/** Short-lived OIDC authorization-code flow state (natural key: the state param). */
+export type OidcFlowTable = {
+	state: string;
+	nonce: string;
+	codeVerifier: string;
+	redirectTo: string | null;
+	expiresAt: Timestamp;
+};
+
 /** Natural key: calendar day, preserving the "one snapshot per day" upsert guard. */
 export type MetricsSnapshotTable = {
 	day: ColumnType<string, string, never>;
@@ -62,5 +74,6 @@ export type Database = {
 	appSecrets: AppSecretTable;
 	revokedJti: RevokedJtiTable;
 	slt: SltTable;
+	oidcFlow: OidcFlowTable;
 	metricsSnapshots: MetricsSnapshotTable;
 };
