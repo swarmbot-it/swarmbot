@@ -110,7 +110,7 @@ $env:SWARMBOT_MOCK="true"; npm run dev:api
 SWARMBOT_MOCK=true npm run dev:api
 ```
 
-In mock mode the API uses an in-memory SQLite database (via Kysely) and a mocked Docker engine with sample services and nodes. A demo admin user `admin / swarmbot` is created automatically.
+In mock mode the API uses an in-memory SQLite database (via Kysely) and a mocked Docker engine with sample services and nodes. A demo admin user `admin / swarmbot` is created automatically. Set `SWARMBOT_MOCK_ORCHESTRATOR=kubernetes` to make the mock imitate a Kubernetes cluster (namespaces/pods) instead of Swarm — useful for previewing the k8s dashboard without a real cluster.
 
 Run the Angular dev server in another terminal:
 
@@ -283,6 +283,39 @@ npm run dev:api
 Then open http://localhost:4200 (after `npm run dev:web`) and sign in as `admin` / `swarmbot`. The UI will show resources from the test cluster.
 
 > **Note:** if `SWARMBOT_DOCKER_SOCK` is unset, the API uses the local socket `/var/run/docker.sock` (default).
+
+---
+
+## Local Kubernetes / k3s test cluster (k3d)
+
+Swarmbot auto-detects its orchestrator (Docker Swarm vs Kubernetes) at startup,
+so the same image runs on both. To exercise the **Kubernetes** path end-to-end
+locally, run the stack on a throwaway [k3d](https://k3d.io) cluster:
+
+```sh
+npm run k8s:start      # create the k3d cluster 'swarmbot-dev'
+npm run k8s:deploy     # build local images, import them, apply examples/k8s
+npm run k8s:status     # nodes + workloads + pods
+# open http://swarmbot.localhost:8088   (login: admin / swarmbot)
+npm run k8s:undeploy   # remove the stack (keep the cluster)
+npm run k8s:stop       # delete the cluster
+```
+
+Requires `k3d`, `kubectl`, and Docker. The manifests live in
+[`examples/k8s`](examples/k8s) — a dev-simplified copy of the production
+[`deploy/k3s`](deploy/k3s) overlay (local images, no node pinning, no
+`ipAllowList`, dev-only secrets). In this mode the API talks to the real k3d
+API server, so the dashboard shows Namespaces/Pods instead of Stacks/Tasks.
+
+Model matrix (Swarm vs Kubernetes):
+
+| | Docker Swarm | Kubernetes / k3s |
+| --- | --- | --- |
+| Cluster unit | Stack | Namespace |
+| Workload unit | Task | Pod |
+| Node metrics | agent via `docker stats` | agent via kubelet Summary API |
+| Detection | Docker socket present | in-cluster ServiceAccount / `SWARMBOT_KUBECONFIG` |
+| Force mode | `SWARMBOT_ORCHESTRATOR=swarm` | `SWARMBOT_ORCHESTRATOR=kubernetes` |
 
 ---
 

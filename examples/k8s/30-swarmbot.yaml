@@ -1,0 +1,123 @@
+# Swarmbot app (API + UI) for local dev. Uses a locally-built image loaded into
+# k3d (swarmbot:local), no GHCR pull secret, no node pinning. RBAC is identical
+# to production — the kubernetes dashboard reads cluster resources through it.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+    name: swarmbot
+    namespace: swarmbot
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+    name: swarmbot
+rules:
+    - apiGroups: [""]
+      resources:
+          - nodes
+          - namespaces
+          - pods
+          - pods/log
+          - services
+          - persistentvolumeclaims
+          - configmaps
+          - secrets
+      verbs: ["get", "list", "watch"]
+    - apiGroups: ["apps"]
+      resources: ["deployments", "statefulsets", "daemonsets", "replicasets"]
+      verbs: ["get", "list", "watch"]
+    - apiGroups: [""]
+      resources: ["namespaces", "services", "configmaps", "secrets", "persistentvolumeclaims"]
+      verbs: ["create", "patch", "update"]
+    - apiGroups: ["apps"]
+      resources: ["deployments", "statefulsets", "daemonsets"]
+      verbs: ["create", "patch", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+    name: swarmbot
+roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: swarmbot
+subjects:
+    - kind: ServiceAccount
+      name: swarmbot
+      namespace: swarmbot
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: swarmbot
+    namespace: swarmbot
+    labels:
+        app: swarmbot
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: swarmbot
+    template:
+        metadata:
+            labels:
+                app: swarmbot
+        spec:
+            serviceAccountName: swarmbot
+            containers:
+                - name: swarmbot
+                  image: swarmbot:local
+                  imagePullPolicy: IfNotPresent
+                  env:
+                      - name: SWARMBOT_ORCHESTRATOR
+                        value: kubernetes
+                      - name: SWARMBOT_PORT
+                        value: "8080"
+                      - name: SWARMBOT_DB
+                        valueFrom:
+                            secretKeyRef:
+                                name: postgres-credentials
+                                key: SWARMBOT_DB
+                      - name: SWARMBOT_INFLUXDB
+                        value: http://influxdb:8086
+                      - name: SWARMBOT_INFLUXDB_TOKEN
+                        valueFrom:
+                            secretKeyRef:
+                                name: influxdb-credentials
+                                key: SWARMBOT_INFLUXDB_TOKEN
+                  envFrom:
+                      - secretRef:
+                            name: swarmbot-bootstrap
+                  ports:
+                      - containerPort: 8080
+                  readinessProbe:
+                      httpGet:
+                          path: /health
+                          port: 8080
+                      initialDelaySeconds: 5
+                      periodSeconds: 10
+                  livenessProbe:
+                      httpGet:
+                          path: /health
+                          port: 8080
+                      initialDelaySeconds: 30
+                      periodSeconds: 30
+                  resources:
+                      requests:
+                          cpu: 100m
+                          memory: 256Mi
+                      limits:
+                          memory: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: swarmbot
+    namespace: swarmbot
+spec:
+    type: ClusterIP
+    selector:
+        app: swarmbot
+    ports:
+        - port: 8080
+          targetPort: 8080

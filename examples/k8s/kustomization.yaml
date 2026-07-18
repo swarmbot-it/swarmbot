@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Local dev overlay for a k3d cluster. Apply with:
+#   npm run k8s:deploy         (builds images, imports into k3d, applies this)
+# or directly:
+#   kubectl apply -k examples/k8s
+resources:
+    - 00-namespace.yaml
+    - 05-secrets.yaml
+    - 10-postgres.yaml
+    - 20-influxdb.yaml
+    - 30-swarmbot.yaml
+    - 40-swarmagent.yaml
+    - 50-ingress.yaml
