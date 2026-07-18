@@ -1,0 +1,26 @@
+# Local dev ingress — NO ipAllowList (that guard is for the public-IP prod
+# nodes). k3d ships Traefik; expose it by mapping a host port to the
+# loadbalancer when creating the cluster, e.g.:
+#   k3d cluster create swarmbot-dev -p "8088:80@loadbalancer"
+# Then open http://swarmbot.localhost:8088 (the .localhost TLD resolves to
+# 127.0.0.1 on most systems; otherwise add it to your hosts file).
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+    name: swarmbot
+    namespace: swarmbot
+    annotations:
+        traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+    ingressClassName: traefik
+    rules:
+        - host: swarmbot.localhost
+          http:
+              paths:
+                  - path: /
+                    pathType: Prefix
+                    backend:
+                        service:
+                            name: swarmbot
+                            port:
+                                number: 8080
