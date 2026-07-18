@@ -95,7 +95,7 @@ spec:
                   env:
                       # In-cluster Service of the Swarmbot API on k3s-a1.
                       # The agent derives /events and /version from this base URL.
-                      - name: SW4RM_BOT_URL
+                      - name: SWARMBOT_URL
                         value: "http://swarmbot.swarmbot.svc.cluster.local:8080"
                       - name: AGENT_MODE
                         value: "kubernetes"
