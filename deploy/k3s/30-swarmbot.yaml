@@ -106,11 +106,13 @@ spec:
                             secretKeyRef:
                                 name: swarmbot-oidc
                                 key: client_secret
-                      # GitHub team slugs (Dex emits "no-human-tech:<team>") -> role. ADJUST to real teams.
+                      # GitHub team slugs (Dex emits "no-human-tech:<team>") -> role.
+                      # The "utrzymanie" team gets full admin; everyone else in the
+                      # org is read-only (role "user" — no editor tier).
                       - name: SWARMBOT_OIDC_ADMIN_GROUPS
-                        value: "no-human-tech:admins"
+                        value: "no-human-tech:utrzymanie"
                       - name: SWARMBOT_OIDC_EDITOR_GROUPS
-                        value: "no-human-tech:editors"
+                        value: ""
                       # "/" on this host redirects straight to Dex (skip the public landing).
                       - name: SWARMBOT_CONSOLE_HOSTS
                         value: swarmbot.infra
