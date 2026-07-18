@@ -21,7 +21,6 @@ export type SwarmbotConfig = {
 	dbUrl: string;
 	influxdbUrl: string | undefined;
 	influxdbToken: string | undefined;
-	agentUrl: string | undefined;
 	workDir: string;
 	instanceName: string | undefined;
 	apiTokenExpiryDays: number | undefined;
@@ -49,7 +48,6 @@ const defaults: SwarmbotConfig = {
 	dbUrl: "postgres://localhost:5432/swarmbot",
 	influxdbUrl: undefined,
 	influxdbToken: undefined,
-	agentUrl: undefined,
 	workDir: "/tmp",
 	instanceName: undefined,
 	apiTokenExpiryDays: undefined,
@@ -99,7 +97,6 @@ export function loadConfig(): SwarmbotConfig {
 		dbUrl: envStr("SWARMBOT_DB") ?? defaults.dbUrl,
 		influxdbUrl: envStr("SWARMBOT_INFLUXDB"),
 		influxdbToken: envStr("SWARMBOT_INFLUXDB_TOKEN"),
-		agentUrl: envStr("SWARMBOT_AGENT_URL"),
 		workDir: envStr("SWARMBOT_WORK_DIR") ?? defaults.workDir,
 		instanceName: envStr("SWARMBOT_INSTANCE_NAME"),
 		apiTokenExpiryDays: envInt("SWARMBOT_API_TOKEN_EXPIRY_DAYS"),
