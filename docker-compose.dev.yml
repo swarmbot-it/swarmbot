@@ -6,7 +6,7 @@
 #     docker compose -f docker-compose.dev.yml up
 #
 #   Mock mode (no real Docker socket or databases needed):
-#     SWARMBOTY_MOCK=true docker compose -f docker-compose.dev.yml up api web
+#     SWARMBOT_MOCK=true docker compose -f docker-compose.dev.yml up api web
 #
 #   The Rust agent (built from source) starts automatically with the full
 #   stack and pushes host CPU/Memory/Disk telemetry to the API.
@@ -21,7 +21,7 @@
 #
 # ── Default credentials (bootstrap / mock) ────────────────────────────────
 #
-#   user: admin   password: swarmboty
+#   user: admin   password: swarmbot
 #
 # ── Windows tip ───────────────────────────────────────────────────────────
 #
@@ -42,8 +42,8 @@ services:
         image: postgres:16-alpine
         environment:
             POSTGRES_USER: ${POSTGRES_USER:-admin}
-            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-swarmboty}
-            POSTGRES_DB: ${POSTGRES_DB:-swarmboty}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-swarmbot}
+            POSTGRES_DB: ${POSTGRES_DB:-swarmbot}
         ports:
             - "5432:5432"
         volumes:
@@ -65,11 +65,11 @@ services:
         environment:
             DOCKER_INFLUXDB_INIT_MODE: setup
             DOCKER_INFLUXDB_INIT_USERNAME: ${INFLUXDB_USER:-admin}
-            DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUXDB_PASSWORD:-swarmboty}
-            DOCKER_INFLUXDB_INIT_ORG: swarmboty
-            DOCKER_INFLUXDB_INIT_BUCKET: swarmboty
+            DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUXDB_PASSWORD:-swarmbot}
+            DOCKER_INFLUXDB_INIT_ORG: swarmbot
+            DOCKER_INFLUXDB_INIT_BUCKET: swarmbot
             DOCKER_INFLUXDB_INIT_RETENTION: 0
-            DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB_TOKEN:-swarmboty-influx-dev-token}
+            DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB_TOKEN:-swarmbot-influx-dev-token}
         ports:
             - "8086:8086" # HTTP API
         volumes:
@@ -90,27 +90,27 @@ services:
     # restarts the process on every .ts change.
     #
     # depends_on uses required: false so that running
-    #   SWARMBOTY_MOCK=true docker compose up api web
+    #   SWARMBOT_MOCK=true docker compose up api web
     # skips the database health checks and starts immediately.
 
     api:
         image: node:24-alpine
         working_dir: /app
-        command: ["sh", "-c", "apk add --no-cache docker-cli && npm install --prefer-offline --no-progress --no-audit && npm run dev -w @swarmboty/api"]
+        command: ["sh", "-c", "apk add --no-cache docker-cli && npm install --prefer-offline --no-progress --no-audit && npm run dev -w @swarmbot/api"]
         environment:
             NODE_ENV: development
             # tsx watch uses chokidar under the hood; native fs events are unreliable over
             # Windows-hosted bind mounts, so force polling (mirrors the web service's --poll 500).
             CHOKIDAR_USEPOLLING: "true"
             CHOKIDAR_INTERVAL: "500"
-            SWARMBOTY_DB: postgres://${POSTGRES_USER:-admin}:${POSTGRES_PASSWORD:-swarmboty}@db:5432/${POSTGRES_DB:-swarmboty}
-            SWARMBOTY_INFLUXDB: http://influxdb:8086
-            SWARMBOTY_INFLUXDB_TOKEN: ${INFLUXDB_TOKEN:-swarmboty-influx-dev-token}
-            SWARMBOTY_PORT: "8080"
-            SWARMBOTY_WORK_DIR: /tmp
-            SWARMBOTY_MOCK: ${SWARMBOTY_MOCK:-false}
-            SWARMBOTY_BOOTSTRAP_ADMIN: ${SWARMBOTY_BOOTSTRAP_ADMIN:-admin}
-            SWARMBOTY_BOOTSTRAP_PASSWORD: ${SWARMBOTY_BOOTSTRAP_PASSWORD:-swarmboty}
+            SWARMBOT_DB: postgres://${POSTGRES_USER:-admin}:${POSTGRES_PASSWORD:-swarmbot}@db:5432/${POSTGRES_DB:-swarmbot}
+            SWARMBOT_INFLUXDB: http://influxdb:8086
+            SWARMBOT_INFLUXDB_TOKEN: ${INFLUXDB_TOKEN:-swarmbot-influx-dev-token}
+            SWARMBOT_PORT: "8080"
+            SWARMBOT_WORK_DIR: /tmp
+            SWARMBOT_MOCK: ${SWARMBOT_MOCK:-false}
+            SWARMBOT_BOOTSTRAP_ADMIN: ${SWARMBOT_BOOTSTRAP_ADMIN:-admin}
+            SWARMBOT_BOOTSTRAP_PASSWORD: ${SWARMBOT_BOOTSTRAP_PASSWORD:-swarmbot}
         volumes:
             - .:/app # full workspace — enables hot-reload
             - /var/run/docker.sock:/var/run/docker.sock:ro

@@ -17,12 +17,12 @@ export function optionalJwtMiddleware(db: Kysely<Database>) {
 			}
 			const secret = await getAppSecret(db);
 			const claims = verifyJwt(secret, auth);
-			if (claims.iss === "swarmboty-api") {
+			if (claims.iss === "swarmbot-api") {
 				const u = await findAuthUser(db, claims.usr.username);
 				if (u?.apiTokenJti !== claims.jti) {
 					return next();
 				}
-			} else if (claims.iss === "swarmboty") {
+			} else if (claims.iss === "swarmbot") {
 				if (await isRevoked(db, claims.jti)) {
 					return next();
 				}

@@ -10,7 +10,7 @@
 # ── Dostęp ───────────────────────────────────────────────────────────────────
 #
 #   http://localhost:888   (host port forwarded into DinD manager)
-#   Login:  admin / swarmboty
+#   Login:  admin / swarmbot
 #
 # ── Uwaga ─────────────────────────────────────────────────────────────────────
 #
@@ -24,15 +24,15 @@ services:
     # Obraz lokalny; skrypt swarm-deploy.mjs buduje go i ładuje do managera.
 
     app:
-        image: swarmboty:local
+        image: swarmbot:local
         environment:
-            - SWARMBOTY_DB=postgres://${POSTGRES_USER:-admin}:${POSTGRES_PASSWORD:-swarmboty}@db:5432/${POSTGRES_DB:-swarmboty}
-            - SWARMBOTY_INFLUXDB=http://influxdb:8086
-            - SWARMBOTY_INFLUXDB_TOKEN=${INFLUXDB_TOKEN:-swarmboty-influx-dev-token}
-            - SWARMBOTY_PORT=8080
-            - SWARMBOTY_WORK_DIR=/tmp
-            - SWARMBOTY_BOOTSTRAP_ADMIN=${SWARMBOTY_BOOTSTRAP_ADMIN:-admin}
-            - SWARMBOTY_BOOTSTRAP_PASSWORD=${SWARMBOTY_BOOTSTRAP_PASSWORD:-swarmboty}
+            - SWARMBOT_DB=postgres://${POSTGRES_USER:-admin}:${POSTGRES_PASSWORD:-swarmbot}@db:5432/${POSTGRES_DB:-swarmbot}
+            - SWARMBOT_INFLUXDB=http://influxdb:8086
+            - SWARMBOT_INFLUXDB_TOKEN=${INFLUXDB_TOKEN:-swarmbot-influx-dev-token}
+            - SWARMBOT_PORT=8080
+            - SWARMBOT_WORK_DIR=/tmp
+            - SWARMBOT_BOOTSTRAP_ADMIN=${SWARMBOT_BOOTSTRAP_ADMIN:-admin}
+            - SWARMBOT_BOOTSTRAP_PASSWORD=${SWARMBOT_BOOTSTRAP_PASSWORD:-swarmbot}
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock:ro
         ports:
@@ -68,8 +68,8 @@ services:
         image: postgres:16-alpine
         environment:
             POSTGRES_USER: ${POSTGRES_USER:-admin}
-            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-swarmboty}
-            POSTGRES_DB: ${POSTGRES_DB:-swarmboty}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-swarmbot}
+            POSTGRES_DB: ${POSTGRES_DB:-swarmbot}
         volumes:
             - db-data:/var/lib/postgresql/data
         healthcheck:
@@ -95,11 +95,11 @@ services:
         environment:
             DOCKER_INFLUXDB_INIT_MODE: setup
             DOCKER_INFLUXDB_INIT_USERNAME: ${INFLUXDB_USER:-admin}
-            DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUXDB_PASSWORD:-swarmboty}
-            DOCKER_INFLUXDB_INIT_ORG: swarmboty
-            DOCKER_INFLUXDB_INIT_BUCKET: swarmboty
+            DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUXDB_PASSWORD:-swarmbot}
+            DOCKER_INFLUXDB_INIT_ORG: swarmbot
+            DOCKER_INFLUXDB_INIT_BUCKET: swarmbot
             DOCKER_INFLUXDB_INIT_RETENTION: 0
-            DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB_TOKEN:-swarmboty-influx-dev-token}
+            DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB_TOKEN:-swarmbot-influx-dev-token}
         volumes:
             - influx-data:/var/lib/influxdb2
         networks:
@@ -119,7 +119,7 @@ services:
     agent:
         image: swarmagent:local
         environment:
-            - SWARMBOTY_URL=http://app:8080
+            - SWARMBOT_URL=http://app:8080
             - DOCKER_API_VERSION=1.44
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock:ro

@@ -4,7 +4,7 @@
  * previous direct Dockerode usage in the resolvers 1:1.
  */
 import type Dockerode from "dockerode";
-import type { SwarmbotyConfig } from "../../config.js";
+import type { SwarmbotConfig } from "../../config.js";
 import {
 	aggregateStacks,
 	countRunningTasksByService,
@@ -49,7 +49,7 @@ export class SwarmOrchestrator implements Orchestrator {
 	readonly docker: Dockerode;
 
 	constructor(
-		private readonly cfg: SwarmbotyConfig,
+		private readonly cfg: SwarmbotConfig,
 		docker?: Dockerode
 	) {
 		this.docker = docker ?? createDocker(cfg);

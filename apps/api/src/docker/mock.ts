@@ -80,14 +80,14 @@ const SERVICES: MockService[] = [
 		{ target: 8080, published: 80 },
 		{ target: 8443, published: 443 },
 	]),
-	svc("svc_frontend_app", "frontend_app", "ghcr.io/swarmboty/web:2.14.0", 4, "frontend", [
+	svc("svc_frontend_app", "frontend_app", "ghcr.io/swarmbot/web:2.14.0", 4, "frontend", [
 		{ target: 3000, published: 3000 },
 	]),
 	svc("svc_traefik", "api-gateway_traefik", "traefik:v3.0", 2, "api-gateway", [
 		{ target: 80, published: 80 },
 		{ target: 443, published: 443 },
 	]),
-	svc("svc_auth", "api-gateway_auth", "ghcr.io/swarmboty/auth:1.8.3", 2, "auth", [
+	svc("svc_auth", "api-gateway_auth", "ghcr.io/swarmbot/auth:1.8.3", 2, "auth", [
 		{ target: 8000, published: 8000 },
 	]),
 	svc("svc_postgres", "databases_postgres", "postgres:16.3-alpine", 1, "databases", [
@@ -135,11 +135,11 @@ const SERVICES: MockService[] = [
 		"analytics",
 		[{ target: 8123, published: 8123 }]
 	),
-	svc("svc_billing", "billing_worker", "ghcr.io/swarmboty/billing:1.2.0", 3, "billing", []),
+	svc("svc_billing", "billing_worker", "ghcr.io/swarmbot/billing:1.2.0", 3, "billing", []),
 	svc(
 		"svc_transcoder",
 		"media-proc_ffmpeg",
-		"ghcr.io/swarmboty/transcoder:0.9.1",
+		"ghcr.io/swarmbot/transcoder:0.9.1",
 		2,
 		"media-proc",
 		[]

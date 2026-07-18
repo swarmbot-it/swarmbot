@@ -20,12 +20,12 @@ pipeline {
 
     environment {
         INTERNAL_REGISTRY = 'registry.debian.dc4.pl'
-        IMAGE_NAMESPACE = 'swarmboty'
+        IMAGE_NAMESPACE = 'swarmbot'
         REGISTRY_CREDENTIALS_ID = 'swarm-jenkins'
         SWARM_MANAGER = 'debian@debian.dc4.pl'
-        SWARM_DEV_STACK = 'swarmboty-dev'
-        SWARM_TST_STACK = 'swarmboty-tst'
-        SWARM_PROD_STACK = 'swarmboty-prod'
+        SWARM_DEV_STACK = 'swarmbot-dev'
+        SWARM_TST_STACK = 'swarmbot-tst'
+        SWARM_PROD_STACK = 'swarmbot-prod'
     }
 
     stages {

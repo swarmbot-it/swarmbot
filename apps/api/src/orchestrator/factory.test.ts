@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from "vitest";
-import { loadConfig, type SwarmbotyConfig } from "../config.js";
+import { loadConfig, type SwarmbotConfig } from "../config.js";
 import {
 	createOrchestrator,
 	detectOrchestrator,
@@ -10,7 +10,7 @@ import {
 import { SwarmOrchestrator } from "./swarm/adapter.js";
 import { KubernetesOrchestrator } from "./kubernetes/adapter.js";
 
-function cfg(overrides: Partial<SwarmbotyConfig> = {}): SwarmbotyConfig {
+function cfg(overrides: Partial<SwarmbotConfig> = {}): SwarmbotConfig {
 	return { ...loadConfig(), mock: false, orchestrator: "auto", ...overrides };
 }
 
@@ -20,7 +20,7 @@ function probes(env: Record<string, string>, files: string[]): DetectionProbes {
 }
 
 describe("detectOrchestrator", () => {
-	it("honours explicit SWARMBOTY_ORCHESTRATOR=swarm even with kube env present", () => {
+	it("honours explicit SWARMBOT_ORCHESTRATOR=swarm even with kube env present", () => {
 		const d = detectOrchestrator(
 			cfg({ orchestrator: "swarm" }),
 			probes({ KUBERNETES_SERVICE_HOST: "10.0.0.1" }, [SERVICE_ACCOUNT_TOKEN_PATH])
@@ -28,7 +28,7 @@ describe("detectOrchestrator", () => {
 		expect(d.kind).toBe("swarm");
 	});
 
-	it("honours explicit SWARMBOTY_ORCHESTRATOR=kubernetes without any probe hit", () => {
+	it("honours explicit SWARMBOT_ORCHESTRATOR=kubernetes without any probe hit", () => {
 		const d = detectOrchestrator(cfg({ orchestrator: "kubernetes" }), probes({}, []));
 		expect(d.kind).toBe("kubernetes");
 	});
@@ -50,7 +50,7 @@ describe("detectOrchestrator", () => {
 		expect(d.kind).toBe("swarm");
 	});
 
-	it("auto: picks kubernetes for SWARMBOTY_KUBECONFIG", () => {
+	it("auto: picks kubernetes for SWARMBOT_KUBECONFIG", () => {
 		const d = detectOrchestrator(
 			cfg({ kubeconfig: "/home/x/kubeconfig.yaml" }),
 			probes({}, ["/home/x/kubeconfig.yaml"])
@@ -95,8 +95,8 @@ describe("detectOrchestrator", () => {
 		try {
 			detectOrchestrator(cfg({ dockerSock: "/no/sock" }), probes({}, []));
 		} catch (e) {
-			expect(String(e)).toMatch(/SWARMBOTY_ORCHESTRATOR/);
-			expect(String(e)).toMatch(/SWARMBOTY_DOCKER_SOCK|\/no\/sock/);
+			expect(String(e)).toMatch(/SWARMBOT_ORCHESTRATOR/);
+			expect(String(e)).toMatch(/SWARMBOT_DOCKER_SOCK|\/no\/sock/);
 		}
 	});
 });
@@ -109,7 +109,7 @@ describe("createOrchestrator (mock mode)", () => {
 		expect(detection.reason).toMatch(/mock/);
 	});
 
-	it("returns the kubernetes mock for SWARMBOTY_MOCK_ORCHESTRATOR=kubernetes", async () => {
+	it("returns the kubernetes mock for SWARMBOT_MOCK_ORCHESTRATOR=kubernetes", async () => {
 		const { orchestrator } = await createOrchestrator(
 			cfg({ mock: true, mockOrchestrator: "kubernetes" })
 		);
@@ -126,11 +126,11 @@ describe("loadConfig orchestrator envs", () => {
 		process.env = { ...saved };
 	});
 
-	it("parses SWARMBOTY_ORCHESTRATOR and kube settings", () => {
-		process.env.SWARMBOTY_ORCHESTRATOR = "kubernetes";
-		process.env.SWARMBOTY_KUBECONFIG = "/tmp/kc.yaml";
-		process.env.SWARMBOTY_K8S_NAMESPACE = "prod";
-		process.env.SWARMBOTY_MOCK_ORCHESTRATOR = "kubernetes";
+	it("parses SWARMBOT_ORCHESTRATOR and kube settings", () => {
+		process.env.SWARMBOT_ORCHESTRATOR = "kubernetes";
+		process.env.SWARMBOT_KUBECONFIG = "/tmp/kc.yaml";
+		process.env.SWARMBOT_K8S_NAMESPACE = "prod";
+		process.env.SWARMBOT_MOCK_ORCHESTRATOR = "kubernetes";
 		const c = loadConfig();
 		expect(c.orchestrator).toBe("kubernetes");
 		expect(c.kubeconfig).toBe("/tmp/kc.yaml");
@@ -139,9 +139,9 @@ describe("loadConfig orchestrator envs", () => {
 	});
 
 	it("defaults to auto and falls back on invalid values", () => {
-		delete process.env.SWARMBOTY_ORCHESTRATOR;
+		delete process.env.SWARMBOT_ORCHESTRATOR;
 		expect(loadConfig().orchestrator).toBe("auto");
-		process.env.SWARMBOTY_ORCHESTRATOR = "nomad";
+		process.env.SWARMBOT_ORCHESTRATOR = "nomad";
 		expect(loadConfig().orchestrator).toBe("auto");
 	});
 });

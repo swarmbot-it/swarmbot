@@ -5,7 +5,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
     name: influxdb-data
-    namespace: swarmboty
+    namespace: swarmbot
 spec:
     accessModes: ["ReadWriteOnce"]
     storageClassName: local-path
@@ -17,7 +17,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
     name: influxdb
-    namespace: swarmboty
+    namespace: swarmbot
     labels:
         app: influxdb
 spec:
@@ -76,7 +76,7 @@ apiVersion: v1
 kind: Service
 metadata:
     name: influxdb
-    namespace: swarmboty
+    namespace: swarmbot
 spec:
     selector:
         app: influxdb

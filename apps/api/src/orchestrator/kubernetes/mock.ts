@@ -1,7 +1,7 @@
 /**
  * Mock Kubernetes apiserver (KubeApi implementation).
  *
- * Enabled with SWARMBOTY_MOCK=true + SWARMBOTY_MOCK_ORCHESTRATOR=kubernetes.
+ * Enabled with SWARMBOT_MOCK=true + SWARMBOT_MOCK_ORCHESTRATOR=kubernetes.
  * Rich enough for the Angular UI to be demoed and e2e-tested end-to-end
  * without a real k3s cluster.
  */
@@ -141,7 +141,7 @@ const WORKLOADS: WorkloadSeed[] = [
 	},
 	{
 		kind: "DaemonSet",
-		namespace: "swarmboty",
+		namespace: "swarmbot",
 		name: "swarmagent",
 		image: "ghcr.io/swarmbot-it/swarmagent:0.4.0",
 		replicas: NODES.length,
@@ -149,11 +149,11 @@ const WORKLOADS: WorkloadSeed[] = [
 	},
 	{
 		kind: "Deployment",
-		namespace: "swarmboty",
-		name: "swarmboty",
-		image: "ghcr.io/swarmbot-it/swarmboty:0.1.4",
+		namespace: "swarmbot",
+		name: "swarmbot",
+		image: "ghcr.io/swarmbot-it/swarmbot:0.1.4",
 		replicas: 1,
-		labels: { app: "swarmboty" },
+		labels: { app: "swarmbot" },
 		ports: [{ port: 8080, targetPort: 8080, nodePort: 30880, type: "NodePort" }],
 	},
 ];
@@ -253,7 +253,7 @@ const NAMESPACES: KubeNamespace[] = [
 	"api",
 	"databases",
 	"monitoring",
-	"swarmboty",
+	"swarmbot",
 	"kube-system",
 ].map((name) => ({
 	metadata: { name, creationTimestamp: CREATED },
@@ -269,8 +269,8 @@ const PVCS: KubePvc[] = [
 	pvc("databases", "data-redis-2", "local-path", "12Gi"),
 	pvc("monitoring", "prometheus-data", "local-path", "90Gi"),
 	pvc("monitoring", "grafana-data", "local-path", "2Gi"),
-	pvc("swarmboty", "postgres-data", "local-path", "8Gi"),
-	pvc("swarmboty", "influxdb-data", "local-path", "32Gi"),
+	pvc("swarmbot", "postgres-data", "local-path", "8Gi"),
+	pvc("swarmbot", "influxdb-data", "local-path", "32Gi"),
 ];
 
 function pvc(namespace: string, name: string, sc: string, storage: string): KubePvc {
@@ -305,14 +305,14 @@ const CONFIGMAPS: KubeStamped[] = [
 	stamped("monitoring", "prometheus-config"),
 	stamped("monitoring", "grafana-datasources"),
 	stamped("databases", "postgres-init"),
-	stamped("swarmboty", "swarmboty-env"),
+	stamped("swarmbot", "swarmbot-env"),
 ];
 
 const SECRETS: KubeStamped[] = [
 	stamped("databases", "postgres-password", "Opaque"),
 	stamped("api", "jwt-signing-key", "Opaque"),
 	stamped("api", "tls-wildcard", "kubernetes.io/tls"),
-	stamped("swarmboty", "postgres-credentials", "Opaque"),
+	stamped("swarmbot", "postgres-credentials", "Opaque"),
 	stamped("kube-system", "default-token-x1y2z", "kubernetes.io/service-account-token"),
 ];
 
@@ -338,7 +338,7 @@ export function createMockKube(): KubeApi {
 			ns
 		);
 	return {
-		contextName: () => "k3d-swarmboty-mock",
+		contextName: () => "k3d-swarmbot-mock",
 		listNodes: async () => NODES,
 		listNamespaces: async () => NAMESPACES,
 		listPods: async (ns?: string) => inNs(PODS, ns),

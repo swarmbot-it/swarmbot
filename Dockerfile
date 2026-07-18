@@ -9,7 +9,7 @@ RUN npm ci
 
 COPY apps ./apps
 
-RUN npm run build -w @swarmboty/api && npm run build -w web
+RUN npm run build -w @swarmbot/api && npm run build -w web
 
 RUN mkdir -p /app/apps/api/public \
   && cp -R /app/apps/web/dist/web/browser/* /app/apps/api/public/

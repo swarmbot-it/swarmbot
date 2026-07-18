@@ -1,5 +1,5 @@
 import { setTimeout as delay } from "timers/promises";
-import type { SwarmbotyConfig } from "./config.js";
+import type { SwarmbotConfig } from "./config.js";
 import { influxPing, createDatabase } from "./influx.js";
 import { logger } from "./logger.js";
 
@@ -21,7 +21,7 @@ async function waitFor(name: string, maxSec: number, fn: () => Promise<boolean>)
 	throw new Error(`${name} connection timeout after ${maxSec}s`);
 }
 
-export async function initInflux(cfg: SwarmbotyConfig): Promise<void> {
+export async function initInflux(cfg: SwarmbotConfig): Promise<void> {
 	if (!cfg.influxdbUrl) {
 		logger.info("InfluxDB not configured, stats disabled");
 		return;

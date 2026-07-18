@@ -4,8 +4,8 @@ import { Router } from "@angular/router";
 const ADMIN_ROLES = new Set(["admin", "administrator"]);
 const EDITOR_ROLES = new Set(["admin", "administrator", "editor"]);
 
-const TOKEN_KEY = "swarmboty.token";
-const PROFILE_KEY = "swarmboty.profile";
+const TOKEN_KEY = "swarmbot.token";
+const PROFILE_KEY = "swarmbot.profile";
 
 /** Cached user profile shown in the top bar and profile page. */
 export type Profile = {
@@ -48,7 +48,7 @@ export class AuthService {
 		return stored;
 	}
 
-	/** JWT from `swarmboty.token`, or `null` when logged out. */
+	/** JWT from `swarmbot.token`, or `null` when logged out. */
 	token(): string | null {
 		return localStorage.getItem(TOKEN_KEY);
 	}
@@ -63,7 +63,7 @@ export class AuthService {
 		this._authed.set(true);
 	}
 
-	/** Updates the cached profile and persists it to `swarmboty.profile`. */
+	/** Updates the cached profile and persists it to `swarmbot.profile`. */
 	setProfile(profile: Profile): void {
 		this._profile.set(profile);
 		try {

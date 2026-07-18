@@ -31,12 +31,12 @@ describe("influx helpers", () => {
 		const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 200 });
 		vi.stubGlobal("fetch", fetchMock);
 		const cfg = { ...loadConfig(), influxdbUrl: "http://influx:8086/" };
-		await createDatabase(cfg, "swarmboty");
+		await createDatabase(cfg, "swarmbot");
 		expect(fetchMock).toHaveBeenCalled();
 		const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
 		expect(url).toContain("/query");
 		const body = decodeURIComponent(String(init.body).replace(/\+/g, " "));
 		expect(body).toContain("CREATE DATABASE");
-		expect(body).toContain("swarmboty");
+		expect(body).toContain("swarmbot");
 	});
 });

@@ -23,13 +23,13 @@ describe.sequential("HTTP server", () => {
 		test = await startTestHttp();
 		const res = await fetch(`${test.baseUrl}/version`);
 		const body = (await res.json()) as { name: string; initialized: boolean };
-		expect(body.name).toBe("swarmboty");
+		expect(body.name).toBe("swarmbot");
 		expect(body.initialized).toBe(true);
 	});
 
 	it("POST /login with basic auth", async () => {
 		test = await startTestHttp();
-		const creds = Buffer.from("admin:swarmboty", "utf8").toString("base64");
+		const creds = Buffer.from("admin:swarmbot", "utf8").toString("base64");
 		const res = await fetch(`${test.baseUrl}/login`, {
 			method: "POST",
 			headers: { authorization: `Basic ${creds}` },
@@ -84,7 +84,7 @@ describe.sequential("HTTP server", () => {
 			`mutation($username: String!, $password: String!) {
         login(username: $username, password: $password) { token }
       }`,
-			{ username: "admin", password: "swarmboty" }
+			{ username: "admin", password: "swarmbot" }
 		);
 		expect(data.login.token).toMatch(/^Bearer /);
 	});

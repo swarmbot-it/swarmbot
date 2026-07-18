@@ -357,7 +357,7 @@ export const resolvers = {
 		health: () => "ok",
 		version: async (_: unknown, __: unknown, ctx: GraphQLContext) => ({
 			name: "swarmbot.it",
-			version: process.env.SWARMBOTY_VERSION ?? "0.1.0",
+			version: process.env.SWARMBOT_VERSION ?? "0.1.0",
 			dockerApi: ctx.cfg.dockerApi,
 			instanceName: ctx.cfg.instanceName ?? null,
 			orchestrator: ctx.orchestrator.kind,
@@ -799,7 +799,7 @@ export const resolvers = {
 		},
 		logout: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
 			if (!ctx.user) return true;
-			if (ctx.user.iss === "swarmboty") {
+			if (ctx.user.iss === "swarmbot") {
 				await revokeJti(ctx.db, ctx.user.jti);
 			}
 			return true;
@@ -824,7 +824,7 @@ export const resolvers = {
 					"SERVER_MISCONFIGURED"
 				);
 			}
-			const token = generateJwt(secret, u, { iss: "swarmboty-api", jti, exp });
+			const token = generateJwt(secret, u, { iss: "swarmbot-api", jti, exp });
 			const expiresAt = exp ? new Date(exp * 1000).toISOString() : null;
 			await setApiToken(ctx.db, u.username, {
 				jti,

@@ -1,18 +1,18 @@
 /**
  * Orchestrator backend selection.
  *
- * Priority (SWARMBOTY_ORCHESTRATOR=auto):
+ * Priority (SWARMBOT_ORCHESTRATOR=auto):
  *   1. in-cluster ServiceAccount (KUBERNETES_SERVICE_HOST + token file) → kubernetes
- *   2. kubeconfig (SWARMBOTY_KUBECONFIG, then KUBECONFIG)               → kubernetes
- *   3. reachable Docker socket (SWARMBOTY_DOCKER_SOCK)                  → swarm
+ *   2. kubeconfig (SWARMBOT_KUBECONFIG, then KUBECONFIG)               → kubernetes
+ *   3. reachable Docker socket (SWARMBOT_DOCKER_SOCK)                  → swarm
  *   4. none → startup error with configuration hints
  *
- * SWARMBOTY_MOCK=true short-circuits to the mock backend picked by
- * SWARMBOTY_MOCK_ORCHESTRATOR (default swarm).
+ * SWARMBOT_MOCK=true short-circuits to the mock backend picked by
+ * SWARMBOT_MOCK_ORCHESTRATOR (default swarm).
  */
 import { existsSync } from "fs";
 import path from "path";
-import type { SwarmbotyConfig } from "../config.js";
+import type { SwarmbotConfig } from "../config.js";
 import type { Orchestrator, OrchestratorKind } from "./types.js";
 import { SwarmOrchestrator } from "./swarm/adapter.js";
 import { KubernetesOrchestrator } from "./kubernetes/adapter.js";
@@ -44,17 +44,17 @@ export class OrchestratorDetectionError extends Error {
 	constructor(dockerSock: string) {
 		super(
 			"Unable to detect the orchestrator backend. Checked: in-cluster ServiceAccount " +
-				`(${SERVICE_ACCOUNT_TOKEN_PATH}), kubeconfig (SWARMBOTY_KUBECONFIG / KUBECONFIG) ` +
+				`(${SERVICE_ACCOUNT_TOKEN_PATH}), kubeconfig (SWARMBOT_KUBECONFIG / KUBECONFIG) ` +
 				`and the Docker socket (${dockerSock}). ` +
 				"Fix one of: run inside Kubernetes with a ServiceAccount, point " +
-				"SWARMBOTY_KUBECONFIG at a kubeconfig file, mount the Docker socket " +
-				"(SWARMBOTY_DOCKER_SOCK), or set SWARMBOTY_ORCHESTRATOR=swarm|kubernetes explicitly."
+				"SWARMBOT_KUBECONFIG at a kubeconfig file, mount the Docker socket " +
+				"(SWARMBOT_DOCKER_SOCK), or set SWARMBOT_ORCHESTRATOR=swarm|kubernetes explicitly."
 		);
 		this.name = "OrchestratorDetectionError";
 	}
 }
 
-function kubeconfigCandidate(cfg: SwarmbotyConfig, probes: DetectionProbes): string | null {
+function kubeconfigCandidate(cfg: SwarmbotConfig, probes: DetectionProbes): string | null {
 	if (cfg.kubeconfig && probes.fileExists(cfg.kubeconfig)) return cfg.kubeconfig;
 	const envKc = probes.env["KUBECONFIG"];
 	if (envKc) {
@@ -68,11 +68,11 @@ function kubeconfigCandidate(cfg: SwarmbotyConfig, probes: DetectionProbes): str
 }
 
 export function detectOrchestrator(
-	cfg: SwarmbotyConfig,
+	cfg: SwarmbotConfig,
 	probes: DetectionProbes = defaultProbes()
 ): OrchestratorDetection {
 	if (cfg.orchestrator === "swarm" || cfg.orchestrator === "kubernetes") {
-		return { kind: cfg.orchestrator, reason: `SWARMBOTY_ORCHESTRATOR=${cfg.orchestrator}` };
+		return { kind: cfg.orchestrator, reason: `SWARMBOT_ORCHESTRATOR=${cfg.orchestrator}` };
 	}
 
 	if (probes.env["KUBERNETES_SERVICE_HOST"] && probes.fileExists(SERVICE_ACCOUNT_TOKEN_PATH)) {
@@ -93,7 +93,7 @@ export function detectOrchestrator(
 }
 
 export async function createOrchestrator(
-	cfg: SwarmbotyConfig,
+	cfg: SwarmbotConfig,
 	probes: DetectionProbes = defaultProbes()
 ): Promise<{ orchestrator: Orchestrator; detection: OrchestratorDetection }> {
 	if (cfg.mock) {
@@ -102,7 +102,7 @@ export async function createOrchestrator(
 				orchestrator: new KubernetesOrchestrator(cfg, createMockKube()),
 				detection: {
 					kind: "kubernetes",
-					reason: "mock mode (SWARMBOTY_MOCK_ORCHESTRATOR=kubernetes)",
+					reason: "mock mode (SWARMBOT_MOCK_ORCHESTRATOR=kubernetes)",
 				},
 			};
 		}

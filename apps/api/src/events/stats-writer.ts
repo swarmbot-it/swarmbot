@@ -1,4 +1,4 @@
-import type { SwarmbotyConfig } from "../config.js";
+import type { SwarmbotConfig } from "../config.js";
 import { authHeaders } from "../influx.js";
 import { logger } from "../logger.js";
 
@@ -36,11 +36,11 @@ type StatsPayload = {
  *   - `container_stats`, tagged by `node` and `container`, fields
  *     `cpu_percent` / `mem_percent` (see stackStats() in graphql/resolvers.ts)
  */
-export function startStatsWriter(cfg: SwarmbotyConfig): (event: Record<string, unknown>) => void {
+export function startStatsWriter(cfg: SwarmbotConfig): (event: Record<string, unknown>) => void {
 	const influxUrl = cfg.influxdbUrl?.replace(/\/$/, "");
 	if (!influxUrl) return () => {};
 
-	const writeUrl = `${influxUrl}/write?db=swarmboty&precision=s`;
+	const writeUrl = `${influxUrl}/write?db=swarmbot&precision=s`;
 
 	return (event) => {
 		if (event.type !== "stats" || !event.message) return;

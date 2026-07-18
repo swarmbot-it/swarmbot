@@ -11,7 +11,7 @@ import { WebSocketServer } from "ws";
 import { useServer } from "graphql-ws/lib/use/ws";
 import { execute, subscribe } from "graphql";
 import type { Kysely } from "kysely";
-import type { SwarmbotyConfig } from "./config.js";
+import type { SwarmbotConfig } from "./config.js";
 import type { Database } from "./db.js";
 import { getAppSecret } from "./db.js";
 import { typeDefs } from "./graphql/schema.js";
@@ -34,7 +34,7 @@ import { publishEvent, subscribeEvents } from "./events/hub.js";
 import { startStatsWriter } from "./events/stats-writer.js";
 
 export async function createHttpServer(
-	cfg: SwarmbotyConfig,
+	cfg: SwarmbotConfig,
 	db: Kysely<Database>
 ): Promise<{
 	httpServer: http.Server;
@@ -115,7 +115,7 @@ export async function createHttpServer(
 
 	// Reflecting any Origin with credentials:true (the old behavior) lets any
 	// third-party page call this API using a victim's browser session. Restrict
-	// to an explicit allowlist; SWARMBOTY_ALLOWED_ORIGINS overrides the dev defaults.
+	// to an explicit allowlist; SWARMBOT_ALLOWED_ORIGINS overrides the dev defaults.
 	const DEV_DEFAULT_ORIGINS = [
 		"http://localhost:4200",
 		"http://localhost:8080",
@@ -143,8 +143,8 @@ export async function createHttpServer(
 
 	app.get("/version", (_req, res) => {
 		res.json({
-			name: "swarmboty",
-			version: process.env.SWARMBOTY_VERSION ?? "0.1.0",
+			name: "swarmbot",
+			version: process.env.SWARMBOT_VERSION ?? "0.1.0",
 			docker: { api: cfg.dockerApi },
 			orchestrator: orchestrator.kind,
 			initialized: true,
@@ -197,7 +197,7 @@ export async function createHttpServer(
 			try {
 				const secret = await getAppSecret(db);
 				const claims = verifyJwt(secret, auth);
-				if (claims.iss === "swarmboty") {
+				if (claims.iss === "swarmbot") {
 					await revokeJti(db, claims.jti);
 				}
 			} catch {

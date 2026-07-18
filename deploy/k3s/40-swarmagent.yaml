@@ -5,7 +5,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
     name: swarmagent
-    namespace: swarmboty
+    namespace: swarmbot
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -36,16 +36,16 @@ roleRef:
 subjects:
     - kind: ServiceAccount
       name: swarmagent
-      namespace: swarmboty
+      namespace: swarmbot
 ---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
     name: swarmagent
-    namespace: swarmboty
+    namespace: swarmbot
     labels:
         app.kubernetes.io/name: swarmagent
-        app.kubernetes.io/part-of: swarmboty
+        app.kubernetes.io/part-of: swarmbot
 spec:
     selector:
         matchLabels:
@@ -93,10 +93,10 @@ spec:
                   image: ghcr.io/swarmbot-it/swarmagent:latest
                   imagePullPolicy: Always
                   env:
-                      # In-cluster Service of the Swarmboty API on k3s-a1.
+                      # In-cluster Service of the Swarmbot API on k3s-a1.
                       # The agent derives /events and /version from this base URL.
                       - name: SW4RM_BOT_URL
-                        value: "http://swarmboty.swarmboty.svc.cluster.local:8080"
+                        value: "http://swarmbot.swarmbot.svc.cluster.local:8080"
                       - name: AGENT_MODE
                         value: "kubernetes"
                       - name: NODE_NAME

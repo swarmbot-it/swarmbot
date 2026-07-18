@@ -6,7 +6,7 @@ resources:
     - 05-secrets.yaml
     - 10-postgres.yaml
     - 20-influxdb.yaml
-    - 30-swarmboty.yaml
+    - 30-swarmbot.yaml
     - 40-swarmagent.yaml
     - 50-ingress.yaml
 

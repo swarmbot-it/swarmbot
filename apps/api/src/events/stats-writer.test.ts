@@ -30,7 +30,7 @@ describe("startStatsWriter", () => {
 		});
 		await vi.waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1));
 		const [url, opts] = fetchSpy.mock.calls[0];
-		expect(url).toContain("/write?db=swarmboty");
+		expect(url).toContain("/write?db=swarmbot");
 		expect(opts.body).toContain("cpu,node=node1 percent=12.5");
 		expect(opts.body).toContain("memory,node=node1 percent=40");
 		expect(opts.body).toContain("disk,node=node1 percent=60");

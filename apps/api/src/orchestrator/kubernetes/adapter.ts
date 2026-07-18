@@ -1,13 +1,13 @@
 /**
  * Kubernetes/k3s adapter.
  *
- * Maps Kubernetes concepts onto the Swarmboty domain model:
+ * Maps Kubernetes concepts onto the Swarmbot domain model:
  *   workloads (Deployment/StatefulSet/DaemonSet) → services,
  *   pods → tasks, namespaces → stacks, PVCs → volumes,
  *   ConfigMaps/Secrets → configs/secrets. Networks have no equivalent.
  */
 import yaml from "js-yaml";
-import type { SwarmbotyConfig } from "../../config.js";
+import type { SwarmbotConfig } from "../../config.js";
 import type { ClusterHealth } from "../../cluster-health.js";
 import { quorumSize } from "../../cluster-health.js";
 import type {
@@ -390,7 +390,7 @@ export class KubernetesOrchestrator implements Orchestrator {
 	};
 
 	constructor(
-		private readonly cfg: SwarmbotyConfig,
+		private readonly cfg: SwarmbotConfig,
 		readonly kube: KubeApi
 	) {}
 

@@ -1,5 +1,5 @@
 {
-    "name": "@swarmboty/api",
+    "name": "@swarmbot/api",
     "version": "0.1.0",
     "private": true,
     "type": "module",

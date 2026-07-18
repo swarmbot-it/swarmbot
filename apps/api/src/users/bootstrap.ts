@@ -7,7 +7,7 @@ import yaml from "js-yaml";
 import { logger } from "../logger.js";
 
 export async function initUsersFromConfig(db: Kysely<Database>): Promise<void> {
-	const path = process.env.SWARMBOTY_USERS_CONFIG ?? "/run/configs/users.yaml";
+	const path = process.env.SWARMBOT_USERS_CONFIG ?? "/run/configs/users.yaml";
 	try {
 		const raw = await readFile(path, "utf8");
 		const doc = yaml.load(raw) as { users?: Array<Record<string, unknown>> };
@@ -56,11 +56,11 @@ export async function bootstrapAdminIfEmpty(
 	const existing = await db.selectFrom("users").select("id").executeTakeFirst();
 	if (existing) return;
 	const mock = Boolean(opts?.mock);
-	const u = process.env.SWARMBOTY_BOOTSTRAP_ADMIN ?? (mock ? "admin" : undefined);
-	const p = process.env.SWARMBOTY_BOOTSTRAP_PASSWORD ?? (mock ? "swarmboty" : undefined);
+	const u = process.env.SWARMBOT_BOOTSTRAP_ADMIN ?? (mock ? "admin" : undefined);
+	const p = process.env.SWARMBOT_BOOTSTRAP_PASSWORD ?? (mock ? "swarmbot" : undefined);
 	if (!u || !p) {
 		logger.warn(
-			"No users in database. Set SWARMBOTY_BOOTSTRAP_ADMIN and SWARMBOTY_BOOTSTRAP_PASSWORD or mount users.yaml."
+			"No users in database. Set SWARMBOT_BOOTSTRAP_ADMIN and SWARMBOT_BOOTSTRAP_PASSWORD or mount users.yaml."
 		);
 		return;
 	}
@@ -70,7 +70,7 @@ export async function bootstrapAdminIfEmpty(
 			id: randomUUID(),
 			username: u,
 			password: derivePassword(p),
-			email: mock ? "admin@swarmboty.local" : "",
+			email: mock ? "admin@swarmbot.local" : "",
 			role: "admin",
 			createdAt: new Date().toISOString(),
 		})

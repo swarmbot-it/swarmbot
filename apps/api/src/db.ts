@@ -6,7 +6,7 @@ import { CamelCasePlugin, Kysely, PostgresDialect, SqliteDialect, sql } from "ky
 import { FileMigrationProvider, Migrator } from "kysely/migration";
 import { Pool } from "pg";
 import SqliteDatabase from "better-sqlite3";
-import type { SwarmbotyConfig } from "./config.js";
+import type { SwarmbotConfig } from "./config.js";
 import type { Database } from "./db/schema.js";
 import { SqliteBooleanPlugin } from "./db/sqlite-boolean-plugin.js";
 import { logger } from "./logger.js";
@@ -18,12 +18,12 @@ const migrationFolder = path.join(__dirname, "db", "migrations");
 
 /**
  * Real Postgres in production; an in-memory SQLite database when
- * `SWARMBOTY_MOCK=true` so the app's documented "no Postgres/Docker required"
+ * `SWARMBOT_MOCK=true` so the app's documented "no Postgres/Docker required"
  * demo mode keeps working with zero external infrastructure. Not used for
  * the test suite — tests run against real Postgres (see test/db-setup.ts) so
  * SQLite/Postgres type-affinity differences never mask a real bug.
  */
-export function createDb(cfg: Pick<SwarmbotyConfig, "dbUrl" | "mock">): Kysely<Database> {
+export function createDb(cfg: Pick<SwarmbotConfig, "dbUrl" | "mock">): Kysely<Database> {
 	const dialect = cfg.mock
 		? new SqliteDialect({ database: new SqliteDatabase(":memory:") })
 		: new PostgresDialect({ pool: new Pool({ connectionString: cfg.dbUrl }) });
@@ -81,7 +81,7 @@ async function ensureAppSecret(db: Kysely<Database>): Promise<void> {
 
 /** Waits for Postgres, runs pending migrations, and seeds the JWT secret. SQLite (mock mode) skips the wait. */
 export async function initDb(
-	cfg: Pick<SwarmbotyConfig, "dbUrl" | "mock">,
+	cfg: Pick<SwarmbotConfig, "dbUrl" | "mock">,
 	db: Kysely<Database>
 ): Promise<void> {
 	if (!cfg.mock) {
