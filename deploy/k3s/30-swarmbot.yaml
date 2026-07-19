@@ -113,9 +113,14 @@ spec:
                         value: "no-human-tech:utrzymanie"
                       - name: SWARMBOT_OIDC_EDITOR_GROUPS
                         value: ""
-                      # "/" on this host redirects straight to Dex (skip the public landing).
+                      # "/" on this host redirects straight to Dex (skip the public landing);
+                      # the SPA login page also auto-redirects there (escape hatch: /app/login?password).
                       - name: SWARMBOT_CONSOLE_HOSTS
                         value: swarmbot.infra
+                      # CORS: the console's own origin(s). Required — without it the browser
+                      # SPA's module/font/GraphQL requests are rejected (500).
+                      - name: SWARMBOT_ALLOWED_ORIGINS
+                        value: "https://swarmbot.infra,https://swarmbot.it"
                       # Uncomment once the agent supports the shared secret
                       # (swarmagent PR "agent-shared-secret-auth"); the agent
                       # must send the same value in the x-agent-token header.

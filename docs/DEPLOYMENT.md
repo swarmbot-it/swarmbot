@@ -193,3 +193,8 @@ session). Set on the **swarmbot** workload:
 Register the redirect URI with your IdP. The feature is inert until
 `ISSUER`+`CLIENT_ID`+`CLIENT_SECRET`+`REDIRECT_URI` are all set; password login
 keeps working alongside it.
+
+On a host listed in `SWARMBOT_CONSOLE_HOSTS`, the console **auto-redirects to the
+IdP** — both the `/` entry point (server-side) and the SPA login page, which
+never shows the password form there. To reach the local password login on such a
+host anyway, append `?password` (e.g. `https://swarmbot.example/app/login?password`).

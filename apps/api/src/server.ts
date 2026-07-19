@@ -345,6 +345,15 @@ export async function createHttpServer(
 	// staticDir/index.html and staticDir/docs.html are the marketing landing
 	// page and docs, served at the domain root. The real dashboard (Angular
 	// build output) lives under staticDir/app and is served at /app.
+	// Public: lets the SPA login page decide whether to auto-redirect to OIDC.
+	// autoLogin is true on console hosts with OIDC configured — the login page
+	// then goes straight to the provider instead of showing the password form.
+	app.get("/api/auth/config", (req, res) => {
+		const oidc = Boolean(oidcConfig(cfg));
+		const host = (req.headers.host ?? "").split(":")[0]!.toLowerCase();
+		res.json({ oidc, autoLogin: oidc && cfg.consoleHosts.includes(host) });
+	});
+
 	// On the internal console host(s) (SWARMBOT_CONSOLE_HOSTS, e.g. swarmbot.infra),
 	// "/" skips the marketing landing and goes straight to the Dex login. Public
 	// hosts (swarmbot.it) fall through to the static landing below.
