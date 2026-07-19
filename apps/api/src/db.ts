@@ -1,9 +1,9 @@
 import { promises as fsPromises } from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { setTimeout as delay } from "node:timers/promises";
 import { CamelCasePlugin, Kysely, PostgresDialect, SqliteDialect, sql } from "kysely";
-import { FileMigrationProvider, Migrator } from "kysely/migration";
+import { Migrator, type Migration } from "kysely/migration";
 import { Pool } from "pg";
 import SqliteDatabase from "better-sqlite3";
 import type { SwarmbotConfig } from "./config.js";
@@ -51,11 +51,24 @@ async function waitForDb(db: Kysely<Database>, maxSec: number): Promise<void> {
 async function runMigrations(db: Kysely<Database>): Promise<void> {
 	const migrator = new Migrator({
 		db,
-		provider: new FileMigrationProvider({
-			fs: fsPromises,
-			path,
-			migrationFolder,
-		}),
+		// Custom provider instead of Kysely's FileMigrationProvider: it imports
+		// each migration via a file:// URL. A raw absolute Windows path ("C:\…")
+		// is not a valid ESM specifier ("Received protocol 'c:'"), which breaks
+		// `npm test` on Windows dev machines; pathToFileURL is correct on POSIX too.
+		provider: {
+			async getMigrations() {
+				const files = await fsPromises.readdir(migrationFolder);
+				const migrations: Record<string, Migration> = {};
+				for (const file of files.sort()) {
+					if (!/\.(js|mjs|ts)$/.test(file) || file.endsWith(".d.ts") || file.endsWith(".test.ts")) {
+						continue;
+					}
+					const url = pathToFileURL(path.join(migrationFolder, file)).href;
+					migrations[file.replace(/\.(js|mjs|ts)$/, "")] = (await import(url)) as Migration;
+				}
+				return migrations;
+			},
+		},
 	});
 	const { error, results } = await migrator.migrateToLatest();
 	for (const r of results ?? []) {
