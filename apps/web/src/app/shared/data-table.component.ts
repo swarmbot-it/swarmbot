@@ -78,7 +78,6 @@ export type ColumnDef<R = Record<string, unknown>> = {
 				[customSort]="true"
 				[globalFilterFields]="searchKeysAsStrings"
 				sortMode="single"
-				[responsiveLayout]="'scroll'"
 				styleClass="sb-table"
 			>
 				<ng-template pTemplate="header">
@@ -90,7 +89,7 @@ export type ColumnDef<R = Record<string, unknown>> = {
 							[style.width]="widthOf(c)"
 						>
 							{{ c.label }}
-							<p-sortIcon *ngIf="c.sortable !== false" [field]="c.key"></p-sortIcon>
+							<p-sort-icon *ngIf="c.sortable !== false" [field]="c.key"></p-sort-icon>
 						</th>
 					</tr>
 				</ng-template>
