@@ -763,7 +763,9 @@ export const resolvers = {
 			{ username, password }: { username: string; password: string },
 			ctx: GraphQLContext
 		) => {
-			if (!allowAttempt(`${ctx.ip}:${username.toLowerCase()}`)) {
+			// Mock mode (demo/e2e) does many per-test logins; lift the low login
+			// limit there so it never trips, while keeping it in production.
+			if (!allowAttempt(`${ctx.ip}:${username.toLowerCase()}`, ctx.cfg.mock ? 1_000_000 : undefined)) {
 				throw localizedError(ctx.locale, "errors.tooManyAttempts", "TOO_MANY_ATTEMPTS");
 			}
 			const u = await findAuthUser(ctx.db, username);

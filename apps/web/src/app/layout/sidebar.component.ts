@@ -149,7 +149,7 @@ const GROUPS: NavItem["group"][] = ["overview", "workloads", "infra", "store", "
 					[routerLink]="['/', item.path]"
 				>
 					<sb-icon [name]="item.icon" [size]="17"></sb-icon>
-					<span>{{ navLabelKey(item) | transloco }}</span>
+					<span class="sidebar__item-text">{{ navLabelKey(item) | transloco }}</span>
 					<span class="sidebar__count" *ngIf="item.countKey && counts">{{
 						counts[item.countKey]
 					}}</span>

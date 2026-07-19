@@ -36,6 +36,9 @@ module.exports = defineConfig({
 			},
 		},
 		{
+			// Serves under /app/ (baseHref in angular.json) so dev routing matches
+			// production — otherwise the empty-path shell would live at "/" in dev
+			// but "/app/" in prod, diverging the e2e URLs.
 			command: `npx ng serve --port ${webPort} --host 127.0.0.1`,
 			url: `http://127.0.0.1:${webPort}`,
 			reuseExistingServer: !process.env.CI,

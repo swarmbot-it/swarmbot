@@ -131,6 +131,11 @@ export async function createHttpServer(
 		"http://localhost:4200",
 		"http://localhost:8080",
 		"http://localhost:8081",
+		// 127.0.0.1 is a distinct origin from localhost; the e2e harness serves on
+		// it (ng serve --host 127.0.0.1), so the dev defaults must cover both.
+		"http://127.0.0.1:4200",
+		"http://127.0.0.1:8080",
+		"http://127.0.0.1:8081",
 	];
 	const allowedOrigins = cfg.allowedOrigins ?? DEV_DEFAULT_ORIGINS;
 	app.use(
@@ -172,7 +177,9 @@ export async function createHttpServer(
 				return;
 			}
 			const { username, password } = decodeBasic(auth);
-			if (!allowAttempt(`${req.ip}:${username.toLowerCase()}`)) {
+			// Mock mode is the demo/e2e backend; its per-test logins would trip the
+			// low login limit, so effectively lift it there (never in production).
+			if (!allowAttempt(`${req.ip}:${username.toLowerCase()}`, cfg.mock ? 1_000_000 : undefined)) {
 				res.status(429).json({ error: localizedMessage(locale, "errors.tooManyAttempts") });
 				return;
 			}
