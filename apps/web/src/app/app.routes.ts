@@ -16,8 +16,10 @@ export const routes: Routes = [
 	},
 	{
 		// Unguarded: sets the OIDC session token (from the URL fragment) before
-		// the authGuard on the rest of /app runs. Must precede the "app" route.
-		path: "app/oidc",
+		// the authGuard on the rest of /app runs. base-href is "/app/", so the
+		// server's redirect to "/app/oidc" is stripped to the router path "oidc"
+		// here (NOT "app/oidc" — that would live at "/app/app/oidc" and never match).
+		path: "oidc",
 		loadComponent: () =>
 			import("./pages/oidc/oidc-callback.component").then((m) => m.OidcCallbackComponent),
 	},
