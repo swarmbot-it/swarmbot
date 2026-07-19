@@ -354,6 +354,14 @@ export async function createHttpServer(
 		res.json({ oidc, autoLogin: oidc && cfg.consoleHosts.includes(host) });
 	});
 
+	// Public: the SPA fetches this before bootstrap to register the PrimeNG
+	// (PrimeUI) license key, so the component library runs without the "invalid
+	// license" banner. The key is client-visible by design — PrimeUI verifies
+	// offline, so it ships in the browser bundle regardless.
+	app.get("/api/ui-config", (_req, res) => {
+		res.json({ primengLicense: cfg.primengLicense ?? "" });
+	});
+
 	// On the internal console host(s) (SWARMBOT_CONSOLE_HOSTS, e.g. swarmbot.infra),
 	// "/" skips the marketing landing and goes straight to the Dex login. Public
 	// hosts (swarmbot.it) fall through to the static landing below.

@@ -48,6 +48,10 @@ export type SwarmbotConfig = {
 	oidcEditorGroups: string[];
 	/** Hosts whose "/" skips the marketing landing and goes straight to OIDC login (e.g. swarmbot.infra). */
 	consoleHosts: string[];
+	/** PrimeNG (PrimeUI) license key. Served to the SPA so it registers the key at
+	 * bootstrap and runs without the "invalid license" banner. Client-visible by
+	 * design — PrimeUI verifies offline, so the key ships in the browser bundle. */
+	primengLicense: string | undefined;
 };
 
 const defaults: SwarmbotConfig = {
@@ -77,6 +81,7 @@ const defaults: SwarmbotConfig = {
 	oidcAdminGroups: [],
 	oidcEditorGroups: [],
 	consoleHosts: [],
+	primengLicense: undefined,
 };
 
 function envOrchestratorMode(key: string): "swarm" | "kubernetes" | "auto" | undefined {
@@ -144,5 +149,6 @@ export function loadConfig(): SwarmbotConfig {
 		oidcAdminGroups: envList("SWARMBOT_OIDC_ADMIN_GROUPS"),
 		oidcEditorGroups: envList("SWARMBOT_OIDC_EDITOR_GROUPS"),
 		consoleHosts: envList("SWARMBOT_CONSOLE_HOSTS"),
+		primengLicense: envStr("SWARMBOT_PRIMENG_LICENSE"),
 	};
 }
