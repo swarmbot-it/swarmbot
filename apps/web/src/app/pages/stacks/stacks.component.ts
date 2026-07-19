@@ -91,7 +91,7 @@ export class StacksPageComponent {
 	readonly orch = inject(OrchestratorStateService);
 
 	open(name: string): void {
-		this.router.navigate(["/app/stacks", name]);
+		this.router.navigate(["/stacks", name]);
 	}
 
 	private readonly baseCols = translatedColumns<Stack>(this.transloco, this.i18n.activeLang, [

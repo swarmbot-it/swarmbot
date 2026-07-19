@@ -231,10 +231,15 @@ export async function createHttpServer(
 		const state = randomOpaque();
 		const nonce = randomOpaque();
 		const verifier = newVerifier();
+		// `redirectTo` is the SPA router target (base-href adds the /app/ prefix),
+		// so it is a single-segment path like "/dashboard". Accept only same-site
+		// relative paths ("/x", never "//host") to avoid open redirects.
 		const redirectTo =
-			typeof req.query.redirect === "string" && req.query.redirect.startsWith("/app")
+			typeof req.query.redirect === "string" &&
+			req.query.redirect.startsWith("/") &&
+			!req.query.redirect.startsWith("//")
 				? req.query.redirect
-				: "/app/dashboard";
+				: "/dashboard";
 		await saveFlow(db, { state, nonce, codeVerifier: verifier, redirectTo });
 		const url = await authorizationUrl(oidc, { state, nonce, codeChallenge: challenge(verifier) });
 		res.redirect(url);
@@ -265,12 +270,13 @@ export async function createHttpServer(
 			const secret = await getAppSecret(db);
 			const token = generateJwt(secret, { username: u.username, email: u.email, role: u.role });
 			const raw = token.replace(/^Bearer\s+/i, "");
-			const dest = flow.redirectTo ?? "/app/dashboard";
+			const dest = flow.redirectTo ?? "/dashboard";
 			// Hand the session token to the SPA via URL fragment (never sent to the server / logs).
+			// "/app/oidc" is the browser URL (base-href "/app/" + router path "oidc").
 			res.redirect(`/app/oidc#token=${encodeURIComponent(raw)}&to=${encodeURIComponent(dest)}`);
 		} catch (e) {
 			logger.warn({ err: String(e) }, "OIDC callback failed");
-			res.redirect("/login?error=oidc");
+			res.redirect("/app/login?error=oidc");
 		}
 	});
 

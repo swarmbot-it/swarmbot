@@ -125,7 +125,7 @@ export class LoginPageComponent implements OnInit {
 	 */
 	async ngOnInit(): Promise<void> {
 		if (this.auth.isAuthed()) {
-			void this.router.navigateByUrl("/app/dashboard");
+			void this.router.navigateByUrl("/dashboard");
 			return;
 		}
 		const forcePassword = new URLSearchParams(window.location.search).has("password");
@@ -190,9 +190,9 @@ export class LoginPageComponent implements OnInit {
 						.subscribe({
 							next: (profileRes) => {
 								if (profileRes.data?.me) this.auth.setProfile(profileRes.data.me);
-								void this.router.navigateByUrl("/app/dashboard");
+								void this.router.navigateByUrl("/dashboard");
 							},
-							error: () => void this.router.navigateByUrl("/app/dashboard"),
+							error: () => void this.router.navigateByUrl("/dashboard"),
 						});
 				},
 				error: () => {

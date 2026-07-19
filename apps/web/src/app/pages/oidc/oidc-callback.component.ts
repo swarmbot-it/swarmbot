@@ -23,12 +23,14 @@ export class OidcCallbackComponent {
 			: window.location.hash;
 		const params = new URLSearchParams(raw);
 		const token = params.get("token");
-		const to = params.get("to") ?? "/app/dashboard";
+		const to = params.get("to") ?? "/dashboard";
 		// Drop the token from the URL/history immediately.
 		history.replaceState(null, "", "/app/oidc");
 		if (token) {
 			this.auth.setToken(token);
-			void this.router.navigateByUrl(to.startsWith("/app") ? to : "/app/dashboard");
+			void this.router.navigateByUrl(
+				to.startsWith("/") && !to.startsWith("//") ? to : "/dashboard"
+			);
 		} else {
 			void this.router.navigateByUrl("/login?error=oidc");
 		}
