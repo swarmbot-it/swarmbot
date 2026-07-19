@@ -121,6 +121,15 @@ spec:
                       # SPA's module/font/GraphQL requests are rejected (500).
                       - name: SWARMBOT_ALLOWED_ORIGINS
                         value: "https://swarmbot.infra,https://swarmbot.it"
+                      # PrimeNG (PrimeUI) license — PrimeNG >= 22 is proprietary and
+                      # shows an "invalid license" banner without a key. Bring your
+                      # OWN free Community key (https://primeui.dev); it is served to
+                      # the SPA at /api/ui-config and registered at bootstrap.
+                      - name: SWARMBOT_PRIMENG_LICENSE
+                        valueFrom:
+                            secretKeyRef:
+                                name: swarmbot-oidc
+                                key: primeng_license
                       # Uncomment once the agent supports the shared secret
                       # (swarmagent PR "agent-shared-secret-auth"); the agent
                       # must send the same value in the x-agent-token header.

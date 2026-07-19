@@ -33,6 +33,7 @@ The important ones:
 | `SWARMBOT_ORCHESTRATOR` | `swarm` \| `kubernetes` \| `auto` (default: auto-detect) |
 | `SWARMBOT_KUBECONFIG` | kubeconfig path for Kubernetes mode outside a cluster (in-cluster uses the ServiceAccount) |
 | `SWARMBOT_ALLOWED_ORIGINS` | **Comma-separated origins allowed by CORS. MUST include the console's own URL** (e.g. `https://swarmbot.example`) or the browser SPA's module/font/GraphQL requests are blocked (500). |
+| `SWARMBOT_PRIMENG_LICENSE` | PrimeUI license key for the UI's component library (PrimeNG ≥ 22 is proprietary). Served to the SPA at `/api/ui-config`; without it the UI shows an "invalid license" banner. See [PrimeNG / PrimeUI license](#primeng--primeui-license). |
 | `SWARMBOT_BOOTSTRAP_ADMIN` / `SWARMBOT_BOOTSTRAP_PASSWORD` | first-run admin account (created only when the users table is empty) |
 | `SWARMBOT_MOCK` | `true` runs with an in-memory DB + mocked engine (demo; no Postgres/Docker needed) |
 | `SWARMAGENT_SHARED_SECRET` | optional shared secret the agent must send as `x-agent-token` on `/events` (opt-in) |
@@ -198,3 +199,26 @@ On a host listed in `SWARMBOT_CONSOLE_HOSTS`, the console **auto-redirects to th
 IdP** — both the `/` entry point (server-side) and the SPA login page, which
 never shows the password form there. To reach the local password login on such a
 host anyway, append `?password` (e.g. `https://swarmbot.example/app/login?password`).
+
+---
+
+## PrimeNG / PrimeUI license
+
+The web console is built with **PrimeNG**, which as of **v22 is proprietary**
+(the "PrimeUI License") and **requires a license key**. Without one it still
+runs, but every page renders an *"Invalid PrimeUI License"* banner. Verification
+is offline — no telemetry, no remote call.
+
+**Each deployment must supply its own key** — do not reuse someone else's:
+
+1. Get a key at **https://primeui.dev**. A **Community** license is free for
+   eligible use (see their terms); otherwise buy a **Commercial** one.
+2. Set it as `SWARMBOT_PRIMENG_LICENSE` on the **swarmbot** workload. The API
+   serves it to the SPA at `/api/ui-config`, which registers it before the app
+   boots — so the key lives only in server-side config, not in the image.
+
+The key is **client-visible by design** (the browser bundle registers it), so
+treat it as low-sensitivity config rather than a secret. On the reference k3s
+overlay it is delivered via the `swarmbot-oidc` ExternalSecret
+(`deploy/k3s/35-oidc-externalsecret.yaml`, Vault property `primeng_license`) and
+referenced in `deploy/k3s/30-swarmbot.yaml`.
