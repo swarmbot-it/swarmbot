@@ -5,6 +5,12 @@ swarmbot.it is a Node.js monorepo for managing Docker Swarm resources. It contai
 - `apps/api` - Express and Apollo GraphQL API for authentication, Docker access, events, and persistence.
 - `apps/web` - Angular web UI built with Apollo Angular and PrimeNG.
 
+## Deployment
+
+To run Swarmbot on your own **Docker Swarm** or **Kubernetes** (k3s or generic
+k8s) cluster, see the deployment guide: **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)**.
+The sections below cover local development and test clusters.
+
 ## Requirements
 
 - Node.js 20 or newer
