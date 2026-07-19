@@ -72,6 +72,13 @@ const NAV: NavItem[] = [
 		countKey: "nodes",
 	},
 	{
+		id: "node-map",
+		labelKey: "nav.nodeMap",
+		icon: "grid",
+		group: "infra",
+		path: "node-map",
+	},
+	{
 		id: "networks",
 		labelKey: "nav.networks",
 		icon: "networks",

@@ -6,6 +6,7 @@
         "services": "Services",
         "tasks": "Tâches",
         "nodes": "Nœuds",
+        "nodeMap": "Carte des nœuds et ressources",
         "networks": "Réseaux",
         "volumes": "Volumes",
         "secrets": "Secrets",
@@ -269,6 +270,72 @@
                 "toastDrained": "\"{{name}}\" est en cours de vidage — aucune nouvelle tâche n'y sera planifiée.",
                 "toastActivated": "\"{{name}}\" est de nouveau actif et accepte des tâches.",
                 "failed": "Impossible de modifier la disponibilité du nœud."
+            }
+        },
+        "nodeMap": {
+            "countSummary": "{{total}} nœuds — {{services}} services placés",
+            "empty": "Aucun service planifié sur ce nœud.",
+            "pills": {
+                "ready": "{{ready}} / {{total}} nœuds prêts",
+                "tasks": "{{count}} tâches en cours",
+                "caption": "CPU/Mém % · actualisé toutes les 30 s"
+            },
+            "categories": {
+                "data": "Données",
+                "identity": "Identité",
+                "network": "Réseau",
+                "ops": "Ops",
+                "app": "App"
+            },
+            "groups": {
+                "managers": "Managers",
+                "workers": "Workers"
+            },
+            "legend": {
+                "roles": "Rôles",
+                "categories": "Catégorie",
+                "manager": "Manager",
+                "worker": "Worker",
+                "status": "Statut",
+                "running": "en cours",
+                "attention": "à surveiller"
+            },
+            "summary": {
+                "title": "Résumé des ressources par service",
+                "service": "Service",
+                "nodes": "Nœuds",
+                "tasks": "Tâches",
+                "cpuAvg": "CPU moy.",
+                "memAvg": "Mémoire moy."
+            },
+            "totals": {
+                "title": "Totaux du cluster",
+                "nodes": "Nœuds",
+                "services": "Services",
+                "tasks": "Tâches",
+                "avgCpu": "CPU moy.",
+                "avgMem": "Mémoire moy.",
+                "busiest": "Nœud le plus chargé",
+                "note": "Les managers portent le plan de contrôle et les services — charge maximale sur {{host}} ({{cpu}}%)."
+            },
+            "masthead": {
+                "eyebrow": "Carte des nœuds et ressources · v2",
+                "title": "carte des nœuds et ressources",
+                "subtitle": "{{total}} nœuds · Docker Swarm · placement des services + CPU/RAM en direct"
+            },
+            "flows": {
+                "title": "Flux clés",
+                "f1l": "Public",
+                "f1t": "navigateur → Angular UI → proxy → GraphQL API",
+                "f2l": "Orchestration",
+                "f2t": "API → socket Docker → Swarm / Kubernetes",
+                "f3l": "Télémétrie",
+                "f3t": "swarmagent → /events → InfluxDB → graphiques",
+                "f4l": "Persistance",
+                "f4t": "API → PostgreSQL · utilisateurs · registres · jetons"
+            },
+            "footer": {
+                "caption": "Carte des nœuds et ressources ({{total}} nœuds, Docker Swarm). Placement et CPU/Mém actualisés en direct toutes les 30 s."
             }
         },
         "networks": {

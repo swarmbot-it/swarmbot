@@ -26,6 +26,7 @@ export const typeDefs = `#graphql
     taskStats(id: ID!, range: String): StackMetrics!
 
     nodes: [NodeSummary!]!
+    nodeMap: [NodeMapEntry!]!
     networks: [NetworkInfo!]!
     volumes: [VolumeInfo!]!
 
@@ -228,6 +229,22 @@ export const typeDefs = `#graphql
     cpuHistory: [Float!]
     memHistory: [Float!]
     diskHistory: [Float!]
+  }
+
+  """Task-level slice of a service running on a node, for the Node Map view. Category is a heuristic guess from the image name, not a guarantee."""
+  type NodeMapService {
+    taskId: ID!
+    serviceName: String!
+    image: String!
+    category: String!
+    cpu: Int!
+    mem: Int!
+    status: String!
+  }
+
+  type NodeMapEntry {
+    node: NodeSummary!
+    services: [NodeMapService!]!
   }
 
   type NetworkInfo {

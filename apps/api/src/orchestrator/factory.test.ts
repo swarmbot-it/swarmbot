@@ -88,6 +88,11 @@ describe("detectOrchestrator", () => {
 		expect(d.kind).toBe("swarm");
 	});
 
+	it("auto: picks swarm for a tcp docker endpoint (the swarm:start DinD cluster)", () => {
+		const d = detectOrchestrator(cfg({ dockerSock: "tcp://172.21.0.2:2375" }), probes({}, []));
+		expect(d.kind).toBe("swarm");
+	});
+
 	it("auto: throws a readable error when nothing is available", () => {
 		expect(() => detectOrchestrator(cfg({ dockerSock: "/no/sock" }), probes({}, []))).toThrow(
 			OrchestratorDetectionError

@@ -6,6 +6,7 @@
         "services": "Servicios",
         "tasks": "Tareas",
         "nodes": "Nodos",
+        "nodeMap": "Mapa de nodos y recursos",
         "networks": "Redes",
         "volumes": "Volúmenes",
         "secrets": "Secretos",
@@ -269,6 +270,72 @@
                 "toastDrained": "\"{{name}}\" se está drenando — no se programarán nuevas tareas allí.",
                 "toastActivated": "\"{{name}}\" está activo de nuevo y acepta tareas.",
                 "failed": "No se pudo actualizar la disponibilidad del nodo."
+            }
+        },
+        "nodeMap": {
+            "countSummary": "{{total}} nodos — {{services}} servicios ubicados",
+            "empty": "No hay servicios programados en este nodo.",
+            "pills": {
+                "ready": "{{ready}} / {{total}} nodos listos",
+                "tasks": "{{count}} tareas en ejecución",
+                "caption": "CPU/Mem % · se actualiza cada 30 s"
+            },
+            "categories": {
+                "data": "Datos",
+                "identity": "Identidad",
+                "network": "Red",
+                "ops": "Ops",
+                "app": "App"
+            },
+            "groups": {
+                "managers": "Managers",
+                "workers": "Workers"
+            },
+            "legend": {
+                "roles": "Roles",
+                "categories": "Categoría",
+                "manager": "Manager",
+                "worker": "Worker",
+                "status": "Estado",
+                "running": "en ejecución",
+                "attention": "requiere atención"
+            },
+            "summary": {
+                "title": "Resumen de recursos por servicio",
+                "service": "Servicio",
+                "nodes": "Nodos",
+                "tasks": "Tareas",
+                "cpuAvg": "CPU media",
+                "memAvg": "Memoria media"
+            },
+            "totals": {
+                "title": "Totales del clúster",
+                "nodes": "Nodos",
+                "services": "Servicios",
+                "tasks": "Tareas",
+                "avgCpu": "CPU media",
+                "avgMem": "Memoria media",
+                "busiest": "Nodo más ocupado",
+                "note": "Los managers llevan el plano de control y los servicios — mayor carga en {{host}} ({{cpu}}%)."
+            },
+            "masthead": {
+                "eyebrow": "Mapa de nodos y recursos · v2",
+                "title": "mapa de nodos y recursos",
+                "subtitle": "{{total}} nodos · Docker Swarm · ubicación de servicios + CPU/RAM en vivo"
+            },
+            "flows": {
+                "title": "Flujos clave",
+                "f1l": "Público",
+                "f1t": "navegador → Angular UI → proxy → GraphQL API",
+                "f2l": "Orquestación",
+                "f2t": "API → socket de Docker → Swarm / Kubernetes",
+                "f3l": "Telemetría",
+                "f3t": "swarmagent → /events → InfluxDB → gráficas",
+                "f4l": "Persistencia",
+                "f4t": "API → PostgreSQL · usuarios · registros · tokens"
+            },
+            "footer": {
+                "caption": "Mapa de nodos y recursos ({{total}} nodos, Docker Swarm). Ubicación y CPU/Mem actualizados en vivo cada 30 s."
             }
         },
         "networks": {

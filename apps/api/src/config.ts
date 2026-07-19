@@ -90,6 +90,7 @@ function envBool(key: string): boolean | undefined {
 
 export function loadConfig(): SwarmbotConfig {
 	const port = envInt("SWARMBOT_PORT") ?? envInt("PORT") ?? defaults.port;
+	const mock = envBool("SWARMBOT_MOCK") ?? defaults.mock;
 	return {
 		dockerSock: envStr("SWARMBOT_DOCKER_SOCK") ?? defaults.dockerSock,
 		dockerApi: resolvedDockerApi(defaults.dockerApi),
@@ -97,14 +98,17 @@ export function loadConfig(): SwarmbotConfig {
 			envInt("SWARMBOT_DOCKER_HTTP_TIMEOUT") ?? defaults.dockerHttpTimeoutMs,
 		logLevel: envStr("SWARMBOT_LOG_LEVEL") ?? defaults.logLevel,
 		dbUrl: envStr("SWARMBOT_DB") ?? defaults.dbUrl,
-		influxdbUrl: envStr("SWARMBOT_INFLUXDB"),
+		// Mock mode imitates the Docker engine, so no agent ever feeds Influx —
+		// a configured URL would only turn every stat into a permanent 0. Ignore
+		// it and let the deterministic demo placeholders kick in instead.
+		influxdbUrl: mock ? undefined : envStr("SWARMBOT_INFLUXDB"),
 		influxdbToken: envStr("SWARMBOT_INFLUXDB_TOKEN"),
 		agentUrl: envStr("SWARMBOT_AGENT_URL"),
 		workDir: envStr("SWARMBOT_WORK_DIR") ?? defaults.workDir,
 		instanceName: envStr("SWARMBOT_INSTANCE_NAME"),
 		apiTokenExpiryDays: envInt("SWARMBOT_API_TOKEN_EXPIRY_DAYS"),
 		port,
-		mock: envBool("SWARMBOT_MOCK") ?? defaults.mock,
+		mock,
 		allowedOrigins: envStr("SWARMBOT_ALLOWED_ORIGINS")
 			?.split(",")
 			.map((s) => s.trim())

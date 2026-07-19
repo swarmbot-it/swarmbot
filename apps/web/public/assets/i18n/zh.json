@@ -6,6 +6,7 @@
         "services": "服务",
         "tasks": "任务",
         "nodes": "节点",
+        "nodeMap": "节点与资源地图",
         "networks": "网络",
         "volumes": "卷",
         "secrets": "凭据",
@@ -269,6 +270,72 @@
                 "toastDrained": "“{{name}}” 正在腾空 — 不会再向其调度新任务。",
                 "toastActivated": "“{{name}}” 已重新激活并可接受任务。",
                 "failed": "无法更新节点可用性。"
+            }
+        },
+        "nodeMap": {
+            "countSummary": "{{total}} 个节点 — 已部署 {{services}} 个服务",
+            "empty": "此节点上没有已调度的服务。",
+            "pills": {
+                "ready": "{{ready}} / {{total}} 个节点就绪",
+                "tasks": "{{count}} 个任务运行中",
+                "caption": "CPU/内存 % · 每30秒刷新"
+            },
+            "categories": {
+                "data": "数据",
+                "identity": "身份",
+                "network": "网络",
+                "ops": "Ops",
+                "app": "应用"
+            },
+            "groups": {
+                "managers": "管理节点",
+                "workers": "工作节点"
+            },
+            "legend": {
+                "roles": "角色",
+                "categories": "类别",
+                "manager": "管理节点",
+                "worker": "工作节点",
+                "status": "状态",
+                "running": "运行中",
+                "attention": "需要关注"
+            },
+            "summary": {
+                "title": "按服务的资源汇总",
+                "service": "服务",
+                "nodes": "节点",
+                "tasks": "任务",
+                "cpuAvg": "平均CPU",
+                "memAvg": "平均内存"
+            },
+            "totals": {
+                "title": "集群总计",
+                "nodes": "节点",
+                "services": "服务",
+                "tasks": "任务",
+                "avgCpu": "平均CPU",
+                "avgMem": "平均内存",
+                "busiest": "负载最高的节点",
+                "note": "管理节点承载控制平面和服务 — 最高负载在 {{host}}（{{cpu}}%）。"
+            },
+            "masthead": {
+                "eyebrow": "节点与资源地图 · v2",
+                "title": "节点与资源地图",
+                "subtitle": "{{total}} 个节点 · Docker Swarm · 服务部署 + 实时CPU/RAM"
+            },
+            "flows": {
+                "title": "关键流程",
+                "f1l": "公开",
+                "f1t": "浏览器 → Angular UI → 代理 → GraphQL API",
+                "f2l": "编排",
+                "f2t": "API → Docker 套接字 → Swarm / Kubernetes",
+                "f3l": "遥测",
+                "f3t": "swarmagent → /events → InfluxDB → 图表",
+                "f4l": "持久化",
+                "f4t": "API → PostgreSQL · 用户 · 镜像仓库 · 令牌"
+            },
+            "footer": {
+                "caption": "节点与资源地图（{{total}} 个节点，Docker Swarm）。部署与CPU/内存每30秒实时刷新。"
             }
         },
         "networks": {

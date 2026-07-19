@@ -1,6 +1,6 @@
 import { promises as fsPromises } from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { setTimeout as delay } from "node:timers/promises";
 import { CamelCasePlugin, Kysely, PostgresDialect, SqliteDialect, sql } from "kysely";
 import { FileMigrationProvider, Migrator } from "kysely/migration";
@@ -55,6 +55,9 @@ async function runMigrations(db: Kysely<Database>): Promise<void> {
 			fs: fsPromises,
 			path,
 			migrationFolder,
+			// Windows: dynamic import() rejects raw "C:\..." paths (they parse as
+			// a "c:" URL scheme), so route through a proper file:// URL.
+			import: (p) => import(pathToFileURL(p).href),
 		}),
 	});
 	const { error, results } = await migrator.migrateToLatest();

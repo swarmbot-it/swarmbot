@@ -6,6 +6,7 @@
         "services": "Dienste",
         "tasks": "Aufgaben",
         "nodes": "Knoten",
+        "nodeMap": "Knoten- & Ressourcenkarte",
         "networks": "Netzwerke",
         "volumes": "Volumes",
         "secrets": "Geheimnisse",
@@ -269,6 +270,72 @@
                 "toastDrained": "\"{{name}}\" wird entleert — dort werden keine neuen Aufgaben geplant.",
                 "toastActivated": "\"{{name}}\" ist wieder aktiv und nimmt Aufgaben an.",
                 "failed": "Verfügbarkeit des Knotens konnte nicht geändert werden."
+            }
+        },
+        "nodeMap": {
+            "countSummary": "{{total}} Knoten — {{services}} platzierte Dienste",
+            "empty": "Auf diesem Knoten sind keine Dienste geplant.",
+            "pills": {
+                "ready": "{{ready}} / {{total}} Knoten bereit",
+                "tasks": "{{count}} Aufgaben laufen",
+                "caption": "CPU/Speicher % · Aktualisierung alle 30 s"
+            },
+            "categories": {
+                "data": "Daten",
+                "identity": "Identität",
+                "network": "Netzwerk",
+                "ops": "Ops",
+                "app": "App"
+            },
+            "groups": {
+                "managers": "Manager",
+                "workers": "Worker"
+            },
+            "legend": {
+                "roles": "Rollen",
+                "categories": "Kategorie",
+                "manager": "Manager",
+                "worker": "Worker",
+                "status": "Status",
+                "running": "läuft",
+                "attention": "braucht Aufmerksamkeit"
+            },
+            "summary": {
+                "title": "Ressourcenübersicht pro Dienst",
+                "service": "Dienst",
+                "nodes": "Knoten",
+                "tasks": "Aufgaben",
+                "cpuAvg": "Ø CPU",
+                "memAvg": "Ø Speicher"
+            },
+            "totals": {
+                "title": "Cluster-Summe",
+                "nodes": "Knoten",
+                "services": "Dienste",
+                "tasks": "Aufgaben",
+                "avgCpu": "Ø CPU",
+                "avgMem": "Ø Speicher",
+                "busiest": "Ausgelastetster Knoten",
+                "note": "Manager tragen die Steuerungsebene und Dienste — höchste Last auf {{host}} ({{cpu}}%)."
+            },
+            "masthead": {
+                "eyebrow": "Knoten- & Ressourcenkarte · v2",
+                "title": "Knoten- & Ressourcenkarte",
+                "subtitle": "{{total}} Knoten · Docker Swarm · Dienstplatzierung + Live-CPU/RAM"
+            },
+            "flows": {
+                "title": "Zentrale Flüsse",
+                "f1l": "Öffentlich",
+                "f1t": "Browser → Angular UI → Proxy → GraphQL API",
+                "f2l": "Orchestrierung",
+                "f2t": "API → Docker-Socket → Swarm / Kubernetes",
+                "f3l": "Telemetrie",
+                "f3t": "swarmagent → /events → InfluxDB → Diagramme",
+                "f4l": "Persistenz",
+                "f4t": "API → PostgreSQL · Benutzer · Registries · Tokens"
+            },
+            "footer": {
+                "caption": "Knoten- & Ressourcenkarte ({{total}} Knoten, Docker Swarm). Platzierung und CPU/Speicher live alle 30 s aktualisiert."
             }
         },
         "networks": {

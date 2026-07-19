@@ -78,7 +78,7 @@ services:
             - net
         restart: unless-stopped
         healthcheck:
-            test: ["CMD", "wget", "-qO-", "http://localhost:8086/health"]
+            test: ["CMD", "curl", "-sf", "http://localhost:8086/health"]
             interval: 8s
             timeout: 5s
             retries: 15
@@ -111,6 +111,9 @@ services:
             SWARMBOT_MOCK: ${SWARMBOT_MOCK:-false}
             SWARMBOT_BOOTSTRAP_ADMIN: ${SWARMBOT_BOOTSTRAP_ADMIN:-admin}
             SWARMBOT_BOOTSTRAP_PASSWORD: ${SWARMBOT_BOOTSTRAP_PASSWORD:-swarmbot}
+            # Point at the `npm run swarm:start` DinD test cluster's manager instead of the
+            # host socket by exporting SWARMBOT_DOCKER_SOCK=tcp://<manager-ip>:2375 before `up`.
+            SWARMBOT_DOCKER_SOCK: ${SWARMBOT_DOCKER_SOCK:-/var/run/docker.sock}
         volumes:
             - .:/app # full workspace — enables hot-reload
             - /var/run/docker.sock:/var/run/docker.sock:ro

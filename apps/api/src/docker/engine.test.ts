@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
 	aggregateStacks,
+	createDocker,
 	formatPorts,
 	mapNetworkSummary,
 	mapNodeSummary,
@@ -10,6 +11,42 @@ import {
 	mapVolumeSummary,
 	negotiateApiVersion,
 } from "./engine.js";
+import type { SwarmbotConfig } from "../config.js";
+
+function cfg(overrides: Partial<SwarmbotConfig> = {}): SwarmbotConfig {
+	return {
+		dockerSock: "/var/run/docker.sock",
+		dockerApi: "1.45",
+		dockerHttpTimeoutMs: 5000,
+		logLevel: "info",
+		dbUrl: "postgres://localhost:5432/swarmbot",
+		influxdbUrl: undefined,
+		influxdbToken: undefined,
+		agentUrl: undefined,
+		workDir: "/tmp",
+		instanceName: undefined,
+		apiTokenExpiryDays: undefined,
+		port: 8080,
+		mock: false,
+		allowedOrigins: undefined,
+		agentSharedSecret: undefined,
+		orchestrator: "auto",
+		kubeconfig: undefined,
+		k8sNamespace: undefined,
+		mockOrchestrator: "swarm",
+		...overrides,
+	};
+}
+
+describe("createDocker", () => {
+	it("parses a tcp:// endpoint into host/port (the swarm:start DinD cluster)", () => {
+		const docker = createDocker(cfg({ dockerSock: "tcp://172.21.0.2:2375" }));
+		const modem = docker.modem as unknown as { host?: string; port?: number; protocol?: string };
+		expect(modem.host).toBe("172.21.0.2");
+		expect(modem.port).toBe(2375);
+		expect(modem.protocol).toBe("http");
+	});
+});
 
 describe("negotiateApiVersion", () => {
 	it("clamps to daemon max", () => {

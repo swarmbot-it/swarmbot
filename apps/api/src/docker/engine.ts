@@ -13,8 +13,15 @@ export function createDocker(cfg: SwarmbotConfig): Dockerode {
 		return createMockDocker();
 	}
 	const socketPath = cfg.dockerSock;
-	if (socketPath.startsWith("http://") || socketPath.startsWith("https://")) {
+	if (
+		socketPath.startsWith("http://") ||
+		socketPath.startsWith("https://") ||
+		socketPath.startsWith("tcp://")
+	) {
 		const u = new URL(socketPath);
+		// tcp:// is Docker's own convention for an unencrypted remote engine (e.g. the
+		// `npm run swarm:start` DinD cluster, which sets DOCKER_TLS_CERTDIR="") — treat
+		// it like http, not as a certificate-bearing https endpoint.
 		const protocol: "http" | "https" = u.protocol === "https:" ? "https" : "http";
 		const port = u.port ? parseInt(u.port, 10) : protocol === "https" ? 443 : 80;
 		return new Dockerode({ host: u.hostname, port, protocol });

@@ -220,6 +220,35 @@ function classifyService(_s: ServiceSummary): string {
 	return _s.replicasRunning >= _s.replicasTotal ? "RUNNING" : "UPDATING";
 }
 
+/** Shared task fetch+map used by both `Query.tasks` and `Query.nodeMap` so they never drift. */
+async function loadTaskInfos(ctx: GraphQLContext): Promise<ReturnType<typeof mapTaskInfo>[]> {
+	const [tasks, services, nodes, containerStats] = await Promise.all([
+		ctx.orchestrator.listTasks(),
+		ctx.orchestrator.listServices(),
+		ctx.orchestrator.listNodes(),
+		fetchTaskContainerStats(ctx),
+	]);
+	const nodeMap = new Map(nodes.map((n) => [n.id as string | undefined, n]));
+	const svcMap = new Map(services.map((s) => [s.id as string | undefined, s]));
+	const hasInflux = Boolean(ctx.cfg.influxdbUrl);
+	const kind = ctx.orchestrator.kind;
+	return tasks.map((t, idx) => mapTaskInfo(t, idx, kind, svcMap, nodeMap, containerStats, hasInflux));
+}
+
+/**
+ * Coarse, best-effort guess at what a service "is" from its image name, for
+ * Node Map's chip coloring. An approximation, not a guarantee — a custom
+ * image built on postgres won't necessarily match, and that's fine for v1.
+ */
+export function categorizeImage(image: string): string {
+	const name = image.toLowerCase();
+	if (/postgres|mysql|redis|mongo/.test(name)) return "data";
+	if (/keycloak|dex|vault/.test(name)) return "identity";
+	if (/traefik|nginx|haproxy/.test(name)) return "network";
+	if (/prometheus|grafana/.test(name)) return "ops";
+	return "app";
+}
+
 type ContainerSeries = { cpu: number[]; mem: number[] };
 
 /**
@@ -473,19 +502,7 @@ export const resolvers = {
 		},
 		tasks: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
 			requireUser(ctx);
-			const [tasks, services, nodes, containerStats] = await Promise.all([
-				ctx.orchestrator.listTasks(),
-				ctx.orchestrator.listServices(),
-				ctx.orchestrator.listNodes(),
-				fetchTaskContainerStats(ctx),
-			]);
-			const nodeMap = new Map(nodes.map((n) => [n.id as string | undefined, n]));
-			const svcMap = new Map(services.map((s) => [s.id as string | undefined, s]));
-			const hasInflux = Boolean(ctx.cfg.influxdbUrl);
-			const kind = ctx.orchestrator.kind;
-			return tasks.map((t, idx) =>
-				mapTaskInfo(t, idx, kind, svcMap, nodeMap, containerStats, hasInflux)
-			);
+			return loadTaskInfos(ctx);
 		},
 		task: async (_: unknown, { id }: { id: string }, ctx: GraphQLContext) => {
 			requireUser(ctx);
@@ -591,6 +608,32 @@ export const resolvers = {
 		nodes: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
 			requireUser(ctx);
 			return decorateNodes(ctx, await ctx.orchestrator.listNodes());
+		},
+		nodeMap: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
+			requireUser(ctx);
+			const [nodes, taskInfos] = await Promise.all([
+				decorateNodes(ctx, await ctx.orchestrator.listNodes()),
+				loadTaskInfos(ctx),
+			]);
+			const byHostname = new Map<string, typeof taskInfos>();
+			for (const t of taskInfos) {
+				if (!t.nodeHostname) continue;
+				const bucket = byHostname.get(t.nodeHostname);
+				if (bucket) bucket.push(t);
+				else byHostname.set(t.nodeHostname, [t]);
+			}
+			return nodes.map((node) => ({
+				node,
+				services: (byHostname.get(node.hostname) ?? []).map((t) => ({
+					taskId: t.id,
+					serviceName: t.serviceName ?? t.name,
+					image: t.image,
+					category: categorizeImage(t.image),
+					cpu: t.cpu,
+					mem: t.mem,
+					status: t.status,
+				})),
+			}));
 		},
 		networks: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
 			requireUser(ctx);

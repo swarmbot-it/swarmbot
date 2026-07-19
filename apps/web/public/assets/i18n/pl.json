@@ -7,6 +7,7 @@
         "services": "Usługi",
         "tasks": "Zadania",
         "nodes": "Węzły",
+        "nodeMap": "Mapa węzłów i zasobów",
         "networks": "Sieci",
         "volumes": "Wolumeny",
         "secrets": "Poświadczenia",
@@ -302,6 +303,72 @@
                 "toastDrained": "\"{{name}}\" jest drenowany — nowe zadania nie będą tam planowane.",
                 "toastActivated": "\"{{name}}\" jest znów aktywny i przyjmuje zadania.",
                 "failed": "Nie udało się zmienić dostępności węzła."
+            }
+        },
+        "nodeMap": {
+            "countSummary": "{{total}} węzłów — {{services}} usług rozmieszczonych",
+            "empty": "Brak usług zaplanowanych na tym węźle.",
+            "pills": {
+                "ready": "{{ready}} / {{total}} węzłów gotowych",
+                "tasks": "{{count}} zadań uruchomionych",
+                "caption": "CPU/Pamięć % · odświeżanie co 30 s"
+            },
+            "categories": {
+                "data": "Dane",
+                "identity": "Tożsamość",
+                "network": "Sieć",
+                "ops": "Ops",
+                "app": "Aplikacja"
+            },
+            "groups": {
+                "managers": "Managery",
+                "workers": "Workery"
+            },
+            "legend": {
+                "roles": "Role",
+                "categories": "Kategoria",
+                "manager": "Manager",
+                "worker": "Worker",
+                "status": "Status",
+                "running": "działa",
+                "attention": "wymaga uwagi"
+            },
+            "summary": {
+                "title": "Podsumowanie zasobów per usługa",
+                "service": "Usługa",
+                "nodes": "Węzły",
+                "tasks": "Zadania",
+                "cpuAvg": "Śr. CPU",
+                "memAvg": "Śr. Pamięć"
+            },
+            "totals": {
+                "title": "Podsumowanie klastra",
+                "nodes": "Węzły",
+                "services": "Usługi",
+                "tasks": "Zadania",
+                "avgCpu": "Śr. CPU",
+                "avgMem": "Śr. Pamięć",
+                "busiest": "Najbardziej obciążony węzeł",
+                "note": "Managery niosą warstwę sterowania oraz usługi — najwyższe obciążenie na {{host}} ({{cpu}}%)."
+            },
+            "masthead": {
+                "eyebrow": "Mapa węzłów i zasobów · v2",
+                "title": "mapa węzłów i zasobów",
+                "subtitle": "{{total}} węzłów · Docker Swarm · rozmieszczenie usług + żywe CPU/RAM"
+            },
+            "flows": {
+                "title": "Kluczowe przepływy",
+                "f1l": "Publiczny",
+                "f1t": "przeglądarka → Angular UI → proxy → GraphQL API",
+                "f2l": "Orkiestracja",
+                "f2t": "API → Docker socket → Swarm / Kubernetes",
+                "f3l": "Telemetria",
+                "f3t": "swarmagent → /events → InfluxDB → wykresy",
+                "f4l": "Trwałość danych",
+                "f4t": "API → PostgreSQL · użytkownicy · rejestry · tokeny"
+            },
+            "footer": {
+                "caption": "Mapa węzłów i zasobów ({{total}} węzłów, Docker Swarm). Rozmieszczenie i CPU/Pamięć odświeżane na żywo co 30 s."
             }
         },
         "networks": {

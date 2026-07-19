@@ -7,6 +7,7 @@
         "services": "Services",
         "tasks": "Tasks",
         "nodes": "Nodes",
+        "nodeMap": "Node & Resource Map",
         "networks": "Networks",
         "volumes": "Volumes",
         "secrets": "Secrets",
@@ -302,6 +303,72 @@
                 "toastDrained": "\"{{name}}\" is draining — no new tasks will be scheduled there.",
                 "toastActivated": "\"{{name}}\" is active again and accepting tasks.",
                 "failed": "Couldn't update node availability."
+            }
+        },
+        "nodeMap": {
+            "countSummary": "{{total}} nodes — {{services}} services placed",
+            "empty": "No services scheduled on this node.",
+            "pills": {
+                "ready": "{{ready}} / {{total}} nodes ready",
+                "tasks": "{{count}} tasks running",
+                "caption": "CPU/Mem % · refreshed every 30 s"
+            },
+            "categories": {
+                "data": "Data",
+                "identity": "Identity",
+                "network": "Network",
+                "ops": "Ops",
+                "app": "App"
+            },
+            "groups": {
+                "managers": "Managers",
+                "workers": "Workers"
+            },
+            "legend": {
+                "roles": "Roles",
+                "categories": "Category",
+                "manager": "Manager",
+                "worker": "Worker",
+                "status": "Status",
+                "running": "running",
+                "attention": "needs attention"
+            },
+            "summary": {
+                "title": "Per-service resource summary",
+                "service": "Service",
+                "nodes": "Nodes",
+                "tasks": "Tasks",
+                "cpuAvg": "Avg CPU",
+                "memAvg": "Avg Mem"
+            },
+            "totals": {
+                "title": "Cluster totals",
+                "nodes": "Nodes",
+                "services": "Services",
+                "tasks": "Tasks",
+                "avgCpu": "Avg CPU",
+                "avgMem": "Avg Mem",
+                "busiest": "Busiest node",
+                "note": "Managers carry the control plane plus scheduled services — highest load on {{host}} ({{cpu}}%)."
+            },
+            "masthead": {
+                "eyebrow": "Node & resource map · v2",
+                "title": "node & resource map",
+                "subtitle": "{{total}} nodes · Docker Swarm · service placement + live CPU/RAM"
+            },
+            "flows": {
+                "title": "Key flows",
+                "f1l": "Public",
+                "f1t": "browser → Angular UI → proxy → GraphQL API",
+                "f2l": "Orchestration",
+                "f2t": "API → Docker socket → Swarm / Kubernetes",
+                "f3l": "Telemetry",
+                "f3t": "swarmagent → /events → InfluxDB → charts",
+                "f4l": "Persistence",
+                "f4t": "API → PostgreSQL · users · registries · tokens"
+            },
+            "footer": {
+                "caption": "Node & resource map ({{total}} nodes, Docker Swarm). Placement and CPU/Mem refreshed live every 30 s."
             }
         },
         "networks": {
