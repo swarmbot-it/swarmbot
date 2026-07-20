@@ -104,7 +104,7 @@ export class StacksPageComponent {
 		{ key: "status", labelKey: "columns.status" },
 	]);
 
-	/** Mode-dependent "name" column header: "Stack" becomes "Namespace" on Kubernetes. */
+	/** "name" column header uses the unified "Pod" label (same across backends). */
 	readonly cols = computed(() => {
 		const columnKey = this.orch.stackColumnKey();
 		return this.baseCols().map((c) =>

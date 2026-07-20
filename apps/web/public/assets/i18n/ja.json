@@ -1,7 +1,7 @@
 {
     "nav": {
         "dashboard": "ダッシュボード",
-        "stacks": "環境",
+        "stacks": "ポッド",
         "namespaces": "ネームスペース",
         "services": "サービス",
         "tasks": "タスク",
@@ -114,7 +114,7 @@
         "type": "タイプ",
         "authUser": "認証ユーザー",
         "registry": "レジストリ",
-        "stack": "環境",
+        "stack": "ポッド",
         "service": "サービス",
         "task": "タスク",
         "node": "ノード",
@@ -139,10 +139,10 @@
     },
     "pages": {
         "stacks": {
-            "countSuffix": "環境をデプロイ済み",
-            "add": "新しい環境",
+            "countSuffix": "ポッドをデプロイ済み",
+            "add": "新しいポッド",
             "columns": {
-                "stack": "環境",
+                "stack": "ポッド",
                 "namespace": "ネームスペース",
                 "services": "サービス",
                 "networks": "ネットワーク",
@@ -154,7 +154,7 @@
                 "countsSummary": "サービス {{services}} · ネットワーク {{networks}} · ボリューム {{volumes}} · 設定 {{configs}} · シークレット {{secrets}}",
                 "working": "処理中…",
                 "edit": "編集",
-                "editUnsupported": "環境をその場で編集することはまだサポートされていません — 下の Redeploy/Rollback/Deactivate を使うか、削除して新しい Compose ファイルをデプロイしてください。",
+                "editUnsupported": "ポッドをその場で編集することはまだサポートされていません — 下の Redeploy/Rollback/Deactivate を使うか、削除して新しい Compose ファイルをデプロイしてください。",
                 "redeploy": "Redeploy",
                 "redeployHint": "ローリング",
                 "rollback": "Rollback",
@@ -164,26 +164,26 @@
                 "reactivate": "再有効化",
                 "reactivateHint": "1にスケール",
                 "delete": "削除",
-                "utilization": "環境の使用率",
+                "utilization": "ポッドの使用率",
                 "utilizationHint": "コンテナのCPUとメモリの集計 · InfluxDBより",
                 "noMetrics": "まだメトリクスがありません — エージェントは30秒ごとに統計を報告します。",
                 "diskHint": "コンテナ単位のディスク使用量はエージェントで収集されません（CPUとメモリのみ）",
-                "diskNotTracked": "環境単位では追跡されません",
-                "notFound": "環境が見つかりません。",
-                "noServices": "この環境にサービスはありません。",
+                "diskNotTracked": "ポッド単位では追跡されません",
+                "notFound": "ポッドが見つかりません。",
+                "noServices": "このポッドにサービスはありません。",
                 "noNetworks": "接続されたネットワークはありません。",
                 "noVolumes": "接続されたボリュームはありません。",
                 "noConfigs": "マウントされた設定はありません。",
                 "noSecrets": "付与されたシークレットはありません。",
                 "stopped": "停止",
                 "stopping": "停止中…",
-                "confirmRemove": "環境「{{name}}」を削除しますか？すべてのサービス、ネットワーク、その他のリソースが削除されます。",
+                "confirmRemove": "ポッド「{{name}}」を削除しますか？すべてのサービス、ネットワーク、その他のリソースが削除されます。",
                 "toastNothingToRedeploy": "「{{name}}」はレプリカが0です — redeployするものがありません。先に「再有効化」を使用してください。",
                 "toastRedeploying": "「{{name}}」をredeployしています…タスクは数秒後に再起動します。",
                 "toastRolledBack": "「{{name}}」を前のspecにロールバックしました。",
-                "toastDeactivated": "環境「{{name}}」を無効化しました。",
-                "toastReactivated": "環境「{{name}}」を再有効化しました（レプリカ1にスケール）。",
-                "toastRemoved": "環境「{{name}}」を削除しました。",
+                "toastDeactivated": "ポッド「{{name}}」を無効化しました。",
+                "toastReactivated": "ポッド「{{name}}」を再有効化しました（レプリカ1にスケール）。",
+                "toastRemoved": "ポッド「{{name}}」を削除しました。",
                 "redeployFailed": "Redeployに失敗しました。",
                 "rollbackFailed": "Rollbackに失敗しました。",
                 "deactivateFailed": "無効化に失敗しました。",
@@ -220,7 +220,7 @@
                 "mountTarget": "ターゲット",
                 "mountMode": "モード",
                 "notFound": "サービスが見つかりません。",
-                "editUnsupported": "サービスをその場で編集することはまだサポートされていません — 下の Redeploy/Rollback/Scale を使うか、削除してそのスタックから再デプロイしてください。",
+                "editUnsupported": "サービスをその場で編集することはまだサポートされていません — 下の Redeploy/Rollback/Scale を使うか、削除してそのポッドから再デプロイしてください。",
                 "confirmRemove": "サービス「{{name}}」を削除しますか？",
                 "toastNothingToRedeploy": "「{{name}}」はレプリカが0です — redeployするものがありません。先に「スケール」で起動してください。",
                 "toastRedeploying": "「{{name}}」をredeployしています…タスクは数秒後に再起動します。",
@@ -339,10 +339,10 @@
     },
     "forms": {
         "stack": {
-            "title": "環境をデプロイ",
-            "subtitle": "Compose ファイルまたは環境定義を貼り付けてください。",
-            "name": "環境名",
-            "content": "環境ファイル",
+            "title": "ポッドをデプロイ",
+            "subtitle": "Compose ファイルまたはポッド定義を貼り付けてください。",
+            "name": "ポッド名",
+            "content": "ポッドファイル",
             "contentManifest": "Kubernetes マニフェスト (YAML)"
         },
         "service": {
@@ -414,7 +414,7 @@
                 "readOnly": "読み取り専用",
                 "readOnlyDesc": "ダッシュボード、サービス、ログを表示。",
                 "editor": "編集者",
-                "editorDesc": "環境とサービスのデプロイと編集。",
+                "editorDesc": "ポッドとサービスのデプロイと編集。",
                 "administrator": "管理者",
                 "administratorDesc": "完全な制御、ユーザー、シークレット。"
             }
@@ -527,7 +527,7 @@
         "steps": {
             "connecting": "Swarm マネージャーに接続中…",
             "nodes": "ノードのインベントリを取得中…",
-            "stacksServices": "スタックとサービスを読み込み中…",
+            "stacksServices": "ポッドとサービスを読み込み中…",
             "timeSeries": "負荷の時系列データを取得中…",
             "almostThere": "もうすぐ完了…"
         }
