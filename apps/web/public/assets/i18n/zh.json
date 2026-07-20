@@ -1,7 +1,7 @@
 {
     "nav": {
         "dashboard": "仪表板",
-        "stacks": "环境",
+        "stacks": "Pod",
         "namespaces": "命名空间",
         "services": "服务",
         "tasks": "任务",
@@ -114,7 +114,7 @@
         "type": "类型",
         "authUser": "认证用户",
         "registry": "镜像仓库",
-        "stack": "环境",
+        "stack": "Pod",
         "service": "服务",
         "task": "任务",
         "node": "节点",
@@ -139,10 +139,10 @@
     },
     "pages": {
         "stacks": {
-            "countSuffix": "个环境已部署",
-            "add": "新建环境",
+            "countSuffix": "个 Pod 已部署",
+            "add": "新建 Pod",
             "columns": {
-                "stack": "环境",
+                "stack": "Pod",
                 "namespace": "命名空间",
                 "services": "服务",
                 "networks": "网络",
@@ -154,7 +154,7 @@
                 "countsSummary": "{{services}} 个服务 · {{networks}} 个网络 · {{volumes}} 个卷 · {{configs}} 个配置 · {{secrets}} 个凭据",
                 "working": "处理中…",
                 "edit": "编辑",
-                "editUnsupported": "暂不支持就地编辑环境 — 请使用下方的 Redeploy/Rollback/Deactivate，或删除后部署新的 Compose 文件。",
+                "editUnsupported": "暂不支持就地编辑 Pod — 请使用下方的 Redeploy/Rollback/Deactivate，或删除后部署新的 Compose 文件。",
                 "redeploy": "Redeploy",
                 "redeployHint": "滚动更新",
                 "rollback": "Rollback",
@@ -164,26 +164,26 @@
                 "reactivate": "重新启用",
                 "reactivateHint": "扩容至 1",
                 "delete": "删除",
-                "utilization": "环境使用率",
+                "utilization": "Pod 使用率",
                 "utilizationHint": "容器 CPU 与内存汇总 · 来自 InfluxDB",
                 "noMetrics": "暂无指标 — 代理每 30 秒上报一次统计信息。",
                 "diskHint": "代理不采集每个容器的磁盘使用情况（仅采集 CPU 与内存）",
-                "diskNotTracked": "不按环境统计",
-                "notFound": "未找到该环境。",
-                "noServices": "此环境中没有服务。",
+                "diskNotTracked": "不按 Pod 统计",
+                "notFound": "未找到该 Pod。",
+                "noServices": "此 Pod 中没有服务。",
                 "noNetworks": "未连接任何网络。",
                 "noVolumes": "未连接任何卷。",
                 "noConfigs": "未挂载任何配置。",
                 "noSecrets": "未授予任何凭据。",
                 "stopped": "已停止",
                 "stopping": "正在停止…",
-                "confirmRemove": "删除环境 \"{{name}}\"？这将删除其所有服务、网络及其他资源。",
+                "confirmRemove": "删除 Pod \"{{name}}\"？这将删除其所有服务、网络及其他资源。",
                 "toastNothingToRedeploy": "\"{{name}}\" 的副本数为 0 — 没有可以 redeploy 的内容。请先使用\"重新启用\"。",
                 "toastRedeploying": "正在 redeploy \"{{name}}\"…任务将在几秒内重启。",
                 "toastRolledBack": "\"{{name}}\" 已回滚到上一版本。",
-                "toastDeactivated": "环境 \"{{name}}\" 已停用。",
-                "toastReactivated": "环境 \"{{name}}\" 已重新启用（副本数扩容至 1）。",
-                "toastRemoved": "环境 \"{{name}}\" 已删除。",
+                "toastDeactivated": "Pod \"{{name}}\" 已停用。",
+                "toastReactivated": "Pod \"{{name}}\" 已重新启用（副本数扩容至 1）。",
+                "toastRemoved": "Pod \"{{name}}\" 已删除。",
                 "redeployFailed": "Redeploy 失败。",
                 "rollbackFailed": "Rollback 失败。",
                 "deactivateFailed": "停用失败。",
@@ -220,7 +220,7 @@
                 "mountTarget": "目标",
                 "mountMode": "模式",
                 "notFound": "未找到该服务。",
-                "editUnsupported": "暂不支持就地编辑服务 — 请使用下方的 Redeploy/Rollback/Scale，或删除后通过其所属环境重新部署。",
+                "editUnsupported": "暂不支持就地编辑服务 — 请使用下方的 Redeploy/Rollback/Scale，或删除后通过其所属 Pod 重新部署。",
                 "confirmRemove": "删除服务 \"{{name}}\"？",
                 "toastNothingToRedeploy": "\"{{name}}\" 的副本数为 0 — 没有可以 redeploy 的内容。请先使用\"扩缩容\"将其启动。",
                 "toastRedeploying": "正在 redeploy \"{{name}}\"…任务将在几秒内重启。",
@@ -339,10 +339,10 @@
     },
     "forms": {
         "stack": {
-            "title": "部署环境",
-            "subtitle": "粘贴 Compose 文件或环境定义。",
-            "name": "环境名称",
-            "content": "环境文件",
+            "title": "部署 Pod",
+            "subtitle": "粘贴 Compose 文件或 Pod 定义。",
+            "name": "Pod 名称",
+            "content": "Pod 文件",
             "contentManifest": "Kubernetes 清单 (YAML)"
         },
         "service": {
@@ -414,7 +414,7 @@
                 "readOnly": "只读",
                 "readOnlyDesc": "查看仪表板、服务和日志。",
                 "editor": "编辑者",
-                "editorDesc": "部署和编辑环境与服务。",
+                "editorDesc": "部署和编辑 Pod 与服务。",
                 "administrator": "管理员",
                 "administratorDesc": "完全控制、用户与凭据。"
             }
@@ -527,7 +527,7 @@
         "steps": {
             "connecting": "正在连接 Swarm 管理器…",
             "nodes": "正在获取节点清单…",
-            "stacksServices": "正在加载堆栈和服务…",
+            "stacksServices": "正在加载 Pod 和服务…",
             "timeSeries": "正在获取负载时序数据…",
             "almostThere": "即将完成…"
         }

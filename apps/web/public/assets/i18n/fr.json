@@ -1,7 +1,7 @@
 {
     "nav": {
         "dashboard": "Tableau de bord",
-        "stacks": "Environnements",
+        "stacks": "Pods",
         "namespaces": "Espaces de noms",
         "services": "Services",
         "tasks": "Tâches",
@@ -114,7 +114,7 @@
         "type": "Type",
         "authUser": "Utilisateur auth",
         "registry": "Registre",
-        "stack": "Environnement",
+        "stack": "Pod",
         "service": "Service",
         "task": "Tâche",
         "node": "Nœud",
@@ -139,10 +139,10 @@
     },
     "pages": {
         "stacks": {
-            "countSuffix": "environnements déployés",
-            "add": "Nouvel environnement",
+            "countSuffix": "pods déployés",
+            "add": "Nouveau pod",
             "columns": {
-                "stack": "Environnement",
+                "stack": "Pod",
                 "namespace": "Espace de noms",
                 "services": "Services",
                 "networks": "Réseaux",
@@ -154,7 +154,7 @@
                 "countsSummary": "{{services}} services · {{networks}} réseaux · {{volumes}} volumes · {{configs}} configurations · {{secrets}} secrets",
                 "working": "En cours…",
                 "edit": "Modifier",
-                "editUnsupported": "La modification d'un environnement sur place n'est pas encore prise en charge — utilisez Redeploy/Rollback/Deactivate ci-dessous, ou supprimez-le et déployez un nouveau fichier Compose.",
+                "editUnsupported": "La modification d'un pod sur place n'est pas encore prise en charge — utilisez Redeploy/Rollback/Deactivate ci-dessous, ou supprimez-le et déployez un nouveau fichier Compose.",
                 "redeploy": "Redeploy",
                 "redeployHint": "rolling",
                 "rollback": "Rollback",
@@ -164,26 +164,26 @@
                 "reactivate": "Réactiver",
                 "reactivateHint": "monter à 1",
                 "delete": "Supprimer",
-                "utilization": "Utilisation de l'environnement",
+                "utilization": "Utilisation du pod",
                 "utilizationHint": "CPU et mémoire des conteneurs agrégées · depuis InfluxDB",
                 "noMetrics": "Pas encore de métriques — l'agent rapporte les statistiques toutes les 30s.",
                 "diskHint": "L'utilisation du disque par conteneur n'est pas collectée par l'agent (seulement CPU et mémoire)",
-                "diskNotTracked": "Non suivi par environnement",
-                "notFound": "Environnement introuvable.",
-                "noServices": "Aucun service dans cet environnement.",
+                "diskNotTracked": "Non suivi par pod",
+                "notFound": "Pod introuvable.",
+                "noServices": "Aucun service dans ce pod.",
                 "noNetworks": "Aucun réseau associé.",
                 "noVolumes": "Aucun volume associé.",
                 "noConfigs": "Aucune configuration montée.",
                 "noSecrets": "Aucun secret accordé.",
                 "stopped": "Arrêté",
                 "stopping": "Arrêt en cours…",
-                "confirmRemove": "Supprimer l'environnement \"{{name}}\" ? Cela supprime tous ses services, réseaux et autres ressources.",
+                "confirmRemove": "Supprimer le pod \"{{name}}\" ? Cela supprime tous ses services, réseaux et autres ressources.",
                 "toastNothingToRedeploy": "\"{{name}}\" a 0 réplica — rien à redéployer. Utilisez d'abord \"Réactiver\".",
                 "toastRedeploying": "Redéploiement de \"{{name}}\"… les tâches redémarreront dans quelques secondes.",
                 "toastRolledBack": "\"{{name}}\" restauré à sa spec précédente.",
-                "toastDeactivated": "Environnement \"{{name}}\" désactivé.",
-                "toastReactivated": "Environnement \"{{name}}\" réactivé (mis à l'échelle à 1 réplica).",
-                "toastRemoved": "Environnement \"{{name}}\" supprimé.",
+                "toastDeactivated": "Pod \"{{name}}\" désactivé.",
+                "toastReactivated": "Pod \"{{name}}\" réactivé (mis à l'échelle à 1 réplica).",
+                "toastRemoved": "Pod \"{{name}}\" supprimé.",
                 "redeployFailed": "Le redeploy a échoué.",
                 "rollbackFailed": "Le rollback a échoué.",
                 "deactivateFailed": "La désactivation a échoué.",
@@ -220,7 +220,7 @@
                 "mountTarget": "Cible",
                 "mountMode": "Mode",
                 "notFound": "Service introuvable.",
-                "editUnsupported": "La modification d'un service sur place n'est pas encore prise en charge — utilisez Redeploy/Rollback/Scale ci-dessous, ou supprimez-le et redéployez-le via son environnement.",
+                "editUnsupported": "La modification d'un service sur place n'est pas encore prise en charge — utilisez Redeploy/Rollback/Scale ci-dessous, ou supprimez-le et redéployez-le via son pod.",
                 "confirmRemove": "Supprimer le service \"{{name}}\" ?",
                 "toastNothingToRedeploy": "\"{{name}}\" a 0 réplica — rien à redéployer. Utilisez d'abord \"Mettre à l'échelle\" pour le remonter.",
                 "toastRedeploying": "Redéploiement de \"{{name}}\"… les tâches redémarreront dans quelques secondes.",
@@ -339,10 +339,10 @@
     },
     "forms": {
         "stack": {
-            "title": "Déployer un environnement",
-            "subtitle": "Collez un fichier Compose ou une définition d'environnement.",
-            "name": "Nom de l'environnement",
-            "content": "Fichier d'environnement",
+            "title": "Déployer un pod",
+            "subtitle": "Collez un fichier Compose ou une définition de pod.",
+            "name": "Nom du pod",
+            "content": "Fichier de pod",
             "contentManifest": "Manifestes Kubernetes (YAML)"
         },
         "service": {
@@ -414,7 +414,7 @@
                 "readOnly": "Lecture seule",
                 "readOnlyDesc": "Consulter tableaux de bord, services et journaux.",
                 "editor": "Éditeur",
-                "editorDesc": "Déployer et modifier environnements et services.",
+                "editorDesc": "Déployer et modifier pods et services.",
                 "administrator": "Administrateur",
                 "administratorDesc": "Contrôle total, utilisateurs, secrets."
             }
@@ -527,7 +527,7 @@
         "steps": {
             "connecting": "Connexion au gestionnaire de swarm…",
             "nodes": "Récupération de l'inventaire des nœuds…",
-            "stacksServices": "Chargement des stacks et services…",
+            "stacksServices": "Chargement des pods et services…",
             "timeSeries": "Récupération des séries temporelles de charge…",
             "almostThere": "Presque terminé…"
         }

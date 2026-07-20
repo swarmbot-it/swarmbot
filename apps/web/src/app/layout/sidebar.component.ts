@@ -270,7 +270,7 @@ export class SidebarComponent {
 
 	readonly orch = inject(OrchestratorStateService);
 
-	/** Mode-dependent nav labels: "Stacks" becomes "Namespaces" on Kubernetes. */
+	/** Nav label for an item; the "stacks" family uses the unified "Pod" label. */
 	navLabelKey(item: NavItem): string {
 		if (item.id === "stacks") return this.orch.stacksNavKey();
 		return item.labelKey;

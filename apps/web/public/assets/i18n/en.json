@@ -2,7 +2,7 @@
     "nav": {
         "dashboard": "Dashboard",
         "load": "Load",
-        "stacks": "Stacks",
+        "stacks": "Pods",
         "namespaces": "Namespaces",
         "services": "Services",
         "tasks": "Tasks",
@@ -126,10 +126,10 @@
         }
     },
     "load": {
-        "title": "Stack load",
-        "subtitle": "CPU and memory utilization for the top {{count}} stacks by current usage",
-        "loading": "Loading stack metrics…",
-        "empty": "No stacks deployed yet. Deploy one with \"docker stack deploy\" to see load charts.",
+        "title": "Pod load",
+        "subtitle": "CPU and memory utilization for the top {{count}} pods by current usage",
+        "loading": "Loading pod metrics…",
+        "empty": "No pods deployed yet. Deploy one with \"docker stack deploy\" to see load charts.",
         "cpu": "CPU",
         "memory": "Memory",
         "peak": "Peak:"
@@ -147,7 +147,7 @@
         "type": "Type",
         "authUser": "Auth user",
         "registry": "Registry",
-        "stack": "Stack",
+        "stack": "Pod",
         "service": "Service",
         "task": "Task",
         "node": "Node",
@@ -172,10 +172,10 @@
     },
     "pages": {
         "stacks": {
-            "countSuffix": "stacks deployed",
-            "add": "New stack",
+            "countSuffix": "pods deployed",
+            "add": "New pod",
             "columns": {
-                "stack": "Stack",
+                "stack": "Pod",
                 "namespace": "Namespace",
                 "services": "Services",
                 "networks": "Networks",
@@ -187,7 +187,7 @@
                 "countsSummary": "{{services}} services · {{networks}} networks · {{volumes}} volumes · {{configs}} configs · {{secrets}} secrets",
                 "working": "Working…",
                 "edit": "Edit",
-                "editUnsupported": "Editing a stack in place isn't supported yet — use Redeploy/Rollback/Deactivate below, or delete and deploy a new Compose file.",
+                "editUnsupported": "Editing a pod in place isn't supported yet — use Redeploy/Rollback/Deactivate below, or delete and deploy a new Compose file.",
                 "redeploy": "Redeploy",
                 "redeployHint": "rolling",
                 "rollback": "Rollback",
@@ -197,26 +197,26 @@
                 "reactivate": "Reactivate",
                 "reactivateHint": "scale to 1",
                 "delete": "Delete",
-                "utilization": "Stack utilization",
+                "utilization": "Pod utilization",
                 "utilizationHint": "Aggregated container CPU & memory · from InfluxDB",
                 "noMetrics": "No metrics yet — the agent reports stats every 30s.",
                 "diskHint": "Per-container disk usage isn't collected by the agent (only CPU & memory are)",
-                "diskNotTracked": "Not tracked per stack",
-                "notFound": "Stack not found.",
-                "noServices": "No services in this stack.",
+                "diskNotTracked": "Not tracked per pod",
+                "notFound": "Pod not found.",
+                "noServices": "No services in this pod.",
                 "noNetworks": "No networks attached.",
                 "noVolumes": "No volumes attached.",
                 "noConfigs": "No configs mounted.",
                 "noSecrets": "No secrets granted.",
                 "stopped": "Stopped",
                 "stopping": "Stopping…",
-                "confirmRemove": "Remove stack \"{{name}}\"? This deletes all its services, networks and other resources.",
+                "confirmRemove": "Remove pod \"{{name}}\"? This deletes all its services, networks and other resources.",
                 "toastNothingToRedeploy": "\"{{name}}\" has 0 replicas — nothing to redeploy. Use \"Reactivate\" first.",
                 "toastRedeploying": "Redeploying \"{{name}}\"… tasks will restart in a few seconds.",
                 "toastRolledBack": "Rolled back \"{{name}}\" to its previous spec.",
-                "toastDeactivated": "Stack \"{{name}}\" deactivated.",
-                "toastReactivated": "Stack \"{{name}}\" reactivated (scaled to 1 replica).",
-                "toastRemoved": "Stack \"{{name}}\" removed.",
+                "toastDeactivated": "Pod \"{{name}}\" deactivated.",
+                "toastReactivated": "Pod \"{{name}}\" reactivated (scaled to 1 replica).",
+                "toastRemoved": "Pod \"{{name}}\" removed.",
                 "redeployFailed": "Redeploy failed.",
                 "rollbackFailed": "Rollback failed.",
                 "deactivateFailed": "Deactivate failed.",
@@ -253,7 +253,7 @@
                 "mountTarget": "Target",
                 "mountMode": "Mode",
                 "notFound": "Service not found.",
-                "editUnsupported": "Editing a service in place isn't supported yet — use Redeploy/Rollback/Scale below, or remove it and redeploy via its stack.",
+                "editUnsupported": "Editing a service in place isn't supported yet — use Redeploy/Rollback/Scale below, or remove it and redeploy via its pod.",
                 "confirmRemove": "Remove service \"{{name}}\"?",
                 "toastNothingToRedeploy": "\"{{name}}\" has 0 replicas — nothing to redeploy. Use \"Scale\" to bring it back up first.",
                 "toastRedeploying": "Redeploying \"{{name}}\"… tasks will restart in a few seconds.",
@@ -372,10 +372,10 @@
     },
     "forms": {
         "stack": {
-            "title": "Deploy stack",
-            "subtitle": "Paste a Compose file or stack definition.",
-            "name": "Stack name",
-            "content": "Stack file",
+            "title": "Deploy pod",
+            "subtitle": "Paste a Compose file or pod definition.",
+            "name": "Pod name",
+            "content": "Pod file",
             "contentManifest": "Kubernetes manifests (YAML)"
         },
         "service": {
@@ -447,7 +447,7 @@
                 "readOnly": "Read-only",
                 "readOnlyDesc": "View dashboards, services, logs.",
                 "editor": "Editor",
-                "editorDesc": "Deploy & edit stacks, services.",
+                "editorDesc": "Deploy & edit pods, services.",
                 "administrator": "Administrator",
                 "administratorDesc": "Full control, users, secrets."
             }
@@ -560,7 +560,7 @@
         "steps": {
             "connecting": "Connecting to swarm manager…",
             "nodes": "Fetching node inventory…",
-            "stacksServices": "Loading stacks & services…",
+            "stacksServices": "Loading pods & services…",
             "timeSeries": "Fetching workload time-series…",
             "almostThere": "Almost there…"
         }

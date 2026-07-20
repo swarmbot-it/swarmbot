@@ -2,7 +2,7 @@
     "nav": {
         "dashboard": "Panel",
         "load": "Obciążenie",
-        "stacks": "Stosy",
+        "stacks": "Pody",
         "namespaces": "Przestrzenie nazw",
         "services": "Usługi",
         "tasks": "Zadania",
@@ -126,10 +126,10 @@
         }
     },
     "load": {
-        "title": "Obciążenie stosów",
-        "subtitle": "Zużycie CPU i pamięci dla {{count}} najbardziej obciążonych stosów",
-        "loading": "Wczytywanie metryk stosów…",
-        "empty": "Brak wdrożonych stosów. Wdróż jeden przez \"docker stack deploy\", żeby zobaczyć wykresy obciążenia.",
+        "title": "Obciążenie podów",
+        "subtitle": "Zużycie CPU i pamięci dla {{count}} najbardziej obciążonych podów",
+        "loading": "Wczytywanie metryk podów…",
+        "empty": "Brak wdrożonych podów. Wdróż jeden przez \"docker stack deploy\", żeby zobaczyć wykresy obciążenia.",
         "cpu": "CPU",
         "memory": "Pamięć",
         "peak": "Szczyt:"
@@ -147,7 +147,7 @@
         "type": "Typ",
         "authUser": "Użytkownik auth",
         "registry": "Rejestr",
-        "stack": "Stos",
+        "stack": "Pod",
         "service": "Usługa",
         "task": "Zadanie",
         "node": "Węzeł",
@@ -172,10 +172,10 @@
     },
     "pages": {
         "stacks": {
-            "countSuffix": "stosów wdrożonych",
-            "add": "Nowy stos",
+            "countSuffix": "podów wdrożonych",
+            "add": "Nowy pod",
             "columns": {
-                "stack": "Stos",
+                "stack": "Pod",
                 "namespace": "Przestrzeń nazw",
                 "services": "Usługi",
                 "networks": "Sieci",
@@ -187,7 +187,7 @@
                 "countsSummary": "{{services}} usług · {{networks}} sieci · {{volumes}} wolumenów · {{configs}} konfiguracji · {{secrets}} poświadczeń",
                 "working": "Trwa…",
                 "edit": "Edytuj",
-                "editUnsupported": "Edycja stosu w miejscu nie jest jeszcze obsługiwana — użyj poniżej Redeploy/Rollback/Deactivate albo usuń stos i wdróż nowy plik Compose.",
+                "editUnsupported": "Edycja poda w miejscu nie jest jeszcze obsługiwana — użyj poniżej Redeploy/Rollback/Deactivate albo usuń pod i wdróż nowy plik Compose.",
                 "redeploy": "Redeploy",
                 "redeployHint": "rolling",
                 "rollback": "Rollback",
@@ -197,26 +197,26 @@
                 "reactivate": "Reaktywuj",
                 "reactivateHint": "skaluj do 1",
                 "delete": "Usuń",
-                "utilization": "Wykorzystanie stosu",
+                "utilization": "Wykorzystanie poda",
                 "utilizationHint": "Zagregowane CPU i pamięć kontenerów · z InfluxDB",
                 "noMetrics": "Brak metryk — agent raportuje statystyki co 30s.",
                 "diskHint": "Zużycie dysku per kontener nie jest zbierane przez agenta (tylko CPU i pamięć)",
-                "diskNotTracked": "Nie śledzone per stos",
-                "notFound": "Nie znaleziono stosu.",
-                "noServices": "Brak usług w tym stosie.",
+                "diskNotTracked": "Nie śledzone per pod",
+                "notFound": "Nie znaleziono poda.",
+                "noServices": "Brak usług w tym podzie.",
                 "noNetworks": "Brak podłączonych sieci.",
                 "noVolumes": "Brak podłączonych wolumenów.",
                 "noConfigs": "Brak zamontowanych konfiguracji.",
                 "noSecrets": "Brak przyznanych poświadczeń.",
                 "stopped": "Zatrzymane",
                 "stopping": "Zatrzymywanie…",
-                "confirmRemove": "Usunąć stos \"{{name}}\"? To usunie wszystkie jego usługi, sieci i pozostałe zasoby.",
+                "confirmRemove": "Usunąć pod \"{{name}}\"? To usunie wszystkie jego usługi, sieci i pozostałe zasoby.",
                 "toastNothingToRedeploy": "\"{{name}}\" ma 0 replik — nie ma czego redeployować. Najpierw użyj \"Reaktywuj\".",
                 "toastRedeploying": "Redeployowanie \"{{name}}\"… zadania zrestartują się za kilka sekund.",
                 "toastRolledBack": "Cofnięto \"{{name}}\" do poprzedniej specyfikacji.",
-                "toastDeactivated": "Stos \"{{name}}\" zdezaktywowany.",
-                "toastReactivated": "Stos \"{{name}}\" reaktywowany (skalowany do 1 repliki).",
-                "toastRemoved": "Stos \"{{name}}\" usunięty.",
+                "toastDeactivated": "Pod \"{{name}}\" zdezaktywowany.",
+                "toastReactivated": "Pod \"{{name}}\" reaktywowany (skalowany do 1 repliki).",
+                "toastRemoved": "Pod \"{{name}}\" usunięty.",
                 "redeployFailed": "Redeploy nie powiódł się.",
                 "rollbackFailed": "Rollback nie powiódł się.",
                 "deactivateFailed": "Deaktywacja nie powiodła się.",
@@ -253,7 +253,7 @@
                 "mountTarget": "Cel",
                 "mountMode": "Tryb",
                 "notFound": "Nie znaleziono usługi.",
-                "editUnsupported": "Edycja usługi w miejscu nie jest jeszcze obsługiwana — użyj poniżej Redeploy/Rollback/Scale, albo usuń ją i wdróż ponownie przez jej stos.",
+                "editUnsupported": "Edycja usługi w miejscu nie jest jeszcze obsługiwana — użyj poniżej Redeploy/Rollback/Scale, albo usuń ją i wdróż ponownie przez jej pod.",
                 "confirmRemove": "Usunąć usługę \"{{name}}\"?",
                 "toastNothingToRedeploy": "\"{{name}}\" ma 0 replik — nie ma czego redeployować. Najpierw użyj \"Skaluj\", żeby ją podnieść.",
                 "toastRedeploying": "Redeployowanie \"{{name}}\"… zadania zrestartują się za kilka sekund.",
@@ -372,10 +372,10 @@
     },
     "forms": {
         "stack": {
-            "title": "Wdróż stos",
-            "subtitle": "Wklej plik Compose lub definicję stosu.",
-            "name": "Nazwa stosu",
-            "content": "Plik stosu",
+            "title": "Wdróż pod",
+            "subtitle": "Wklej plik Compose lub definicję poda.",
+            "name": "Nazwa poda",
+            "content": "Plik poda",
             "contentManifest": "Manifesty Kubernetes (YAML)"
         },
         "service": {
@@ -447,7 +447,7 @@
                 "readOnly": "Tylko odczyt",
                 "readOnlyDesc": "Podgląd paneli, usług i logów.",
                 "editor": "Edytor",
-                "editorDesc": "Wdrażanie i edycja stosów i usług.",
+                "editorDesc": "Wdrażanie i edycja podów i usług.",
                 "administrator": "Administrator",
                 "administratorDesc": "Pełna kontrola, użytkownicy, poświadczenia."
             }
@@ -560,7 +560,7 @@
         "steps": {
             "connecting": "Łączenie z menedżerem roju…",
             "nodes": "Pobieranie spisu węzłów…",
-            "stacksServices": "Ładowanie stosów i usług…",
+            "stacksServices": "Ładowanie podów i usług…",
             "timeSeries": "Szereg czasowy obciążenia…",
             "almostThere": "Już prawie gotowe…"
         }
