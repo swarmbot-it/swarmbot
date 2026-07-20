@@ -24,7 +24,10 @@ export const routes: Routes = [
 			import("./pages/oidc/oidc-callback.component").then((m) => m.OidcCallbackComponent),
 	},
 	{
-		path: "app",
+		// base-href is "/app/", so this empty-path shell lives at the browser URL
+		// "/app/" and its children at "/app/<child>" (e.g. /app/dashboard). Router
+		// paths here are therefore single-segment ("dashboard", not "app/dashboard").
+		path: "",
 		component: ShellComponent,
 		canActivate: [authGuard],
 		children: [
@@ -121,6 +124,5 @@ export const routes: Routes = [
 			},
 		],
 	},
-	{ path: "", pathMatch: "full", redirectTo: "app/dashboard" },
-	{ path: "**", redirectTo: "app/dashboard" },
+	{ path: "**", redirectTo: "dashboard" },
 ];

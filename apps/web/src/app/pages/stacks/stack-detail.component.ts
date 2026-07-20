@@ -707,11 +707,11 @@ export class StackDetailPageComponent implements OnInit {
 	}
 
 	back(): void {
-		this.router.navigate(["/app/stacks"]);
+		this.router.navigate(["/stacks"]);
 	}
 
 	openService(id: string): void {
-		this.router.navigate(["/app/services", id]);
+		this.router.navigate(["/services", id]);
 	}
 
 	edit(): void {

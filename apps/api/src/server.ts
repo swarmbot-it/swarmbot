@@ -131,6 +131,11 @@ export async function createHttpServer(
 		"http://localhost:4200",
 		"http://localhost:8080",
 		"http://localhost:8081",
+		// 127.0.0.1 is a distinct origin from localhost; the e2e harness serves on
+		// it (ng serve --host 127.0.0.1), so the dev defaults must cover both.
+		"http://127.0.0.1:4200",
+		"http://127.0.0.1:8080",
+		"http://127.0.0.1:8081",
 	];
 	const allowedOrigins = cfg.allowedOrigins ?? DEV_DEFAULT_ORIGINS;
 	app.use(
@@ -172,7 +177,9 @@ export async function createHttpServer(
 				return;
 			}
 			const { username, password } = decodeBasic(auth);
-			if (!allowAttempt(`${req.ip}:${username.toLowerCase()}`)) {
+			// Mock mode is the demo/e2e backend; its per-test logins would trip the
+			// low login limit, so effectively lift it there (never in production).
+			if (!allowAttempt(`${req.ip}:${username.toLowerCase()}`, cfg.mock ? 1_000_000 : undefined)) {
 				res.status(429).json({ error: localizedMessage(locale, "errors.tooManyAttempts") });
 				return;
 			}
@@ -231,10 +238,15 @@ export async function createHttpServer(
 		const state = randomOpaque();
 		const nonce = randomOpaque();
 		const verifier = newVerifier();
+		// `redirectTo` is the SPA router target (base-href adds the /app/ prefix),
+		// so it is a single-segment path like "/dashboard". Accept only same-site
+		// relative paths ("/x", never "//host") to avoid open redirects.
 		const redirectTo =
-			typeof req.query.redirect === "string" && req.query.redirect.startsWith("/app")
+			typeof req.query.redirect === "string" &&
+			req.query.redirect.startsWith("/") &&
+			!req.query.redirect.startsWith("//")
 				? req.query.redirect
-				: "/app/dashboard";
+				: "/dashboard";
 		await saveFlow(db, { state, nonce, codeVerifier: verifier, redirectTo });
 		const url = await authorizationUrl(oidc, { state, nonce, codeChallenge: challenge(verifier) });
 		res.redirect(url);
@@ -265,12 +277,13 @@ export async function createHttpServer(
 			const secret = await getAppSecret(db);
 			const token = generateJwt(secret, { username: u.username, email: u.email, role: u.role });
 			const raw = token.replace(/^Bearer\s+/i, "");
-			const dest = flow.redirectTo ?? "/app/dashboard";
+			const dest = flow.redirectTo ?? "/dashboard";
 			// Hand the session token to the SPA via URL fragment (never sent to the server / logs).
+			// "/app/oidc" is the browser URL (base-href "/app/" + router path "oidc").
 			res.redirect(`/app/oidc#token=${encodeURIComponent(raw)}&to=${encodeURIComponent(dest)}`);
 		} catch (e) {
 			logger.warn({ err: String(e) }, "OIDC callback failed");
-			res.redirect("/login?error=oidc");
+			res.redirect("/app/login?error=oidc");
 		}
 	});
 

@@ -221,6 +221,6 @@ export class TaskDetailPageComponent implements OnInit {
 	}
 
 	back(): void {
-		this.router.navigate(["/app/tasks"]);
+		this.router.navigate(["/tasks"]);
 	}
 }
