@@ -24,7 +24,7 @@
         "@angular/compiler": "^22.0.0",
         "@angular/core": "^22.0.0",
         "@angular/forms": "^22.0.0",
-        "@angular/platform-browser": "^22.0.0",
+        "@angular/platform-browser": "^22.0.8",
         "@angular/router": "^22.0.0",
         "@apollo/client": "^4.1.9",
         "@jsverse/transloco": "^8.4.0",
