@@ -124,7 +124,7 @@ export class TasksPageComponent {
 	private readonly router = inject(Router);
 
 	open(id: string): void {
-		this.router.navigate(["/app/tasks", id]);
+		this.router.navigate(["/tasks", id]);
 	}
 
 	readonly cols = translatedColumns<TaskRow>(this.transloco, this.i18n.activeLang, [

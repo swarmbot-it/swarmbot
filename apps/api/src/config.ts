@@ -21,7 +21,6 @@ export type SwarmbotConfig = {
 	dbUrl: string;
 	influxdbUrl: string | undefined;
 	influxdbToken: string | undefined;
-	agentUrl: string | undefined;
 	workDir: string;
 	instanceName: string | undefined;
 	apiTokenExpiryDays: number | undefined;
@@ -39,6 +38,20 @@ export type SwarmbotConfig = {
 	k8sNamespace: string | undefined;
 	/** Which backend mock mode imitates: swarm (default) or kubernetes. */
 	mockOrchestrator: "swarm" | "kubernetes";
+	/** OIDC (Dex) login — active only when issuer+clientId+secret+redirectUri are all set. */
+	oidcIssuer: string | undefined;
+	oidcClientId: string | undefined;
+	oidcClientSecret: string | undefined;
+	oidcRedirectUri: string | undefined;
+	oidcScopes: string;
+	oidcAdminGroups: string[];
+	oidcEditorGroups: string[];
+	/** Hosts whose "/" skips the marketing landing and goes straight to OIDC login (e.g. swarmbot.infra). */
+	consoleHosts: string[];
+	/** PrimeNG (PrimeUI) license key. Served to the SPA so it registers the key at
+	 * bootstrap and runs without the "invalid license" banner. Client-visible by
+	 * design — PrimeUI verifies offline, so the key ships in the browser bundle. */
+	primengLicense: string | undefined;
 };
 
 const defaults: SwarmbotConfig = {
@@ -49,7 +62,6 @@ const defaults: SwarmbotConfig = {
 	dbUrl: "postgres://localhost:5432/swarmbot",
 	influxdbUrl: undefined,
 	influxdbToken: undefined,
-	agentUrl: undefined,
 	workDir: "/tmp",
 	instanceName: undefined,
 	apiTokenExpiryDays: undefined,
@@ -61,6 +73,15 @@ const defaults: SwarmbotConfig = {
 	kubeconfig: undefined,
 	k8sNamespace: undefined,
 	mockOrchestrator: "swarm",
+	oidcIssuer: undefined,
+	oidcClientId: undefined,
+	oidcClientSecret: undefined,
+	oidcRedirectUri: undefined,
+	oidcScopes: "openid profile email groups",
+	oidcAdminGroups: [],
+	oidcEditorGroups: [],
+	consoleHosts: [],
+	primengLicense: undefined,
 };
 
 function envOrchestratorMode(key: string): "swarm" | "kubernetes" | "auto" | undefined {
@@ -77,6 +98,10 @@ export function setNegotiatedDockerApi(version: string): void {
 
 export function resolvedDockerApi(fallback: string): string {
 	return dynamicDockerApi ?? envStr("SWARMBOT_DOCKER_API") ?? fallback;
+}
+
+function envList(key: string): string[] {
+	return envStr(key)?.split(",").map((s) => s.trim()).filter(Boolean) ?? [];
 }
 
 function envBool(key: string): boolean | undefined {
@@ -103,7 +128,6 @@ export function loadConfig(): SwarmbotConfig {
 		// it and let the deterministic demo placeholders kick in instead.
 		influxdbUrl: mock ? undefined : envStr("SWARMBOT_INFLUXDB"),
 		influxdbToken: envStr("SWARMBOT_INFLUXDB_TOKEN"),
-		agentUrl: envStr("SWARMBOT_AGENT_URL"),
 		workDir: envStr("SWARMBOT_WORK_DIR") ?? defaults.workDir,
 		instanceName: envStr("SWARMBOT_INSTANCE_NAME"),
 		apiTokenExpiryDays: envInt("SWARMBOT_API_TOKEN_EXPIRY_DAYS"),
@@ -121,5 +145,14 @@ export function loadConfig(): SwarmbotConfig {
 			envStr("SWARMBOT_MOCK_ORCHESTRATOR")?.toLowerCase() === "kubernetes"
 				? "kubernetes"
 				: defaults.mockOrchestrator,
+		oidcIssuer: envStr("SWARMBOT_OIDC_ISSUER"),
+		oidcClientId: envStr("SWARMBOT_OIDC_CLIENT_ID"),
+		oidcClientSecret: envStr("SWARMBOT_OIDC_CLIENT_SECRET"),
+		oidcRedirectUri: envStr("SWARMBOT_OIDC_REDIRECT_URI"),
+		oidcScopes: envStr("SWARMBOT_OIDC_SCOPES") ?? defaults.oidcScopes,
+		oidcAdminGroups: envList("SWARMBOT_OIDC_ADMIN_GROUPS"),
+		oidcEditorGroups: envList("SWARMBOT_OIDC_EDITOR_GROUPS"),
+		consoleHosts: envList("SWARMBOT_CONSOLE_HOSTS"),
+		primengLicense: envStr("SWARMBOT_PRIMENG_LICENSE"),
 	};
 }

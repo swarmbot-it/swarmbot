@@ -20,7 +20,7 @@ import { buildContext, localeFromHeader, type GraphQLContext } from "./graphql/c
 import { localizedMessage } from "./i18n/errors.js";
 import type { AuthedRequest } from "./http/optional-jwt.js";
 import { optionalJwtMiddleware } from "./http/optional-jwt.js";
-import { findAuthUser, upgradePasswordHash } from "./store/users.js";
+import { findAuthUser, upgradePasswordHash, upsertOidcUser } from "./store/users.js";
 import { decodeBasic, generateJwt, verifyJwt } from "./auth/jwt.js";
 import { allowAttempt } from "./auth/rate-limit.js";
 import { verifyPassword, derivePassword, isSha256Digest } from "./auth/password.js";
@@ -30,6 +30,17 @@ import { createOrchestrator } from "./orchestrator/factory.js";
 import { NoRunningTaskError, SwarmOrchestrator } from "./orchestrator/swarm/adapter.js";
 import { logger } from "./logger.js";
 import { consumeSlt, createSlt } from "./auth/slt.js";
+import {
+	oidcConfig,
+	authorizationUrl,
+	exchangeAndVerify,
+	roleForGroups,
+	saveFlow,
+	consumeFlow,
+	newVerifier,
+	challenge,
+	randomOpaque,
+} from "./auth/oidc.js";
 import { publishEvent, subscribeEvents } from "./events/hub.js";
 import { startStatsWriter } from "./events/stats-writer.js";
 
@@ -120,6 +131,11 @@ export async function createHttpServer(
 		"http://localhost:4200",
 		"http://localhost:8080",
 		"http://localhost:8081",
+		// 127.0.0.1 is a distinct origin from localhost; the e2e harness serves on
+		// it (ng serve --host 127.0.0.1), so the dev defaults must cover both.
+		"http://127.0.0.1:4200",
+		"http://127.0.0.1:8080",
+		"http://127.0.0.1:8081",
 	];
 	const allowedOrigins = cfg.allowedOrigins ?? DEV_DEFAULT_ORIGINS;
 	app.use(
@@ -161,7 +177,9 @@ export async function createHttpServer(
 				return;
 			}
 			const { username, password } = decodeBasic(auth);
-			if (!allowAttempt(`${req.ip}:${username.toLowerCase()}`)) {
+			// Mock mode is the demo/e2e backend; its per-test logins would trip the
+			// low login limit, so effectively lift it there (never in production).
+			if (!allowAttempt(`${req.ip}:${username.toLowerCase()}`, cfg.mock ? 1_000_000 : undefined)) {
 				res.status(429).json({ error: localizedMessage(locale, "errors.tooManyAttempts") });
 				return;
 			}
@@ -205,6 +223,68 @@ export async function createHttpServer(
 			}
 		}
 		res.json({});
+	});
+
+	// --- OIDC (Dex) login for the internal console -------------------------
+	// The app is a confidential OIDC client: /login redirects to Dex, /callback
+	// verifies the ID token, maps the identity to a user, and issues a native
+	// session JWT (same as password login). Enabled only when SWARMBOT_OIDC_* is set.
+	app.get("/api/auth/oidc/login", async (req, res) => {
+		const oidc = oidcConfig(cfg);
+		if (!oidc) {
+			res.status(404).json({ error: "oidc_not_configured" });
+			return;
+		}
+		const state = randomOpaque();
+		const nonce = randomOpaque();
+		const verifier = newVerifier();
+		// `redirectTo` is the SPA router target (base-href adds the /app/ prefix),
+		// so it is a single-segment path like "/dashboard". Accept only same-site
+		// relative paths ("/x", never "//host") to avoid open redirects.
+		const redirectTo =
+			typeof req.query.redirect === "string" &&
+			req.query.redirect.startsWith("/") &&
+			!req.query.redirect.startsWith("//")
+				? req.query.redirect
+				: "/dashboard";
+		await saveFlow(db, { state, nonce, codeVerifier: verifier, redirectTo });
+		const url = await authorizationUrl(oidc, { state, nonce, codeChallenge: challenge(verifier) });
+		res.redirect(url);
+	});
+
+	app.get("/api/auth/oidc/callback", async (req, res) => {
+		const oidc = oidcConfig(cfg);
+		if (!oidc) {
+			res.status(404).send("oidc_not_configured");
+			return;
+		}
+		try {
+			const code = typeof req.query.code === "string" ? req.query.code : undefined;
+			const state = typeof req.query.state === "string" ? req.query.state : undefined;
+			if (!code) throw new Error("missing code");
+			const flow = await consumeFlow(db, state);
+			if (!flow) throw new Error("invalid or expired state");
+			const identity = await exchangeAndVerify(oidc, code, flow.codeVerifier, flow.nonce);
+			const role = roleForGroups(oidc, identity.groups);
+			const u = await upsertOidcUser(db, {
+				sub: identity.sub,
+				provider: "dex",
+				username: identity.username,
+				email: identity.email,
+				name: identity.name,
+				role,
+			});
+			const secret = await getAppSecret(db);
+			const token = generateJwt(secret, { username: u.username, email: u.email, role: u.role });
+			const raw = token.replace(/^Bearer\s+/i, "");
+			const dest = flow.redirectTo ?? "/dashboard";
+			// Hand the session token to the SPA via URL fragment (never sent to the server / logs).
+			// "/app/oidc" is the browser URL (base-href "/app/" + router path "oidc").
+			res.redirect(`/app/oidc#token=${encodeURIComponent(raw)}&to=${encodeURIComponent(dest)}`);
+		} catch (e) {
+			logger.warn({ err: String(e) }, "OIDC callback failed");
+			res.redirect("/app/login?error=oidc");
+		}
 	});
 
 	app.get("/slt", async (req: AuthedRequest, res) => {
@@ -278,6 +358,35 @@ export async function createHttpServer(
 	// staticDir/index.html and staticDir/docs.html are the marketing landing
 	// page and docs, served at the domain root. The real dashboard (Angular
 	// build output) lives under staticDir/app and is served at /app.
+	// Public: lets the SPA login page decide whether to auto-redirect to OIDC.
+	// autoLogin is true on console hosts with OIDC configured — the login page
+	// then goes straight to the provider instead of showing the password form.
+	app.get("/api/auth/config", (req, res) => {
+		const oidc = Boolean(oidcConfig(cfg));
+		const host = (req.headers.host ?? "").split(":")[0]!.toLowerCase();
+		res.json({ oidc, autoLogin: oidc && cfg.consoleHosts.includes(host) });
+	});
+
+	// Public: the SPA fetches this before bootstrap to register the PrimeNG
+	// (PrimeUI) license key, so the component library runs without the "invalid
+	// license" banner. The key is client-visible by design — PrimeUI verifies
+	// offline, so it ships in the browser bundle regardless.
+	app.get("/api/ui-config", (_req, res) => {
+		res.json({ primengLicense: cfg.primengLicense ?? "" });
+	});
+
+	// On the internal console host(s) (SWARMBOT_CONSOLE_HOSTS, e.g. swarmbot.infra),
+	// "/" skips the marketing landing and goes straight to the Dex login. Public
+	// hosts (swarmbot.it) fall through to the static landing below.
+	app.get("/", (req, res, next) => {
+		const host = (req.headers.host ?? "").split(":")[0]!.toLowerCase();
+		if (oidcConfig(cfg) && cfg.consoleHosts.includes(host)) {
+			res.redirect("/api/auth/oidc/login");
+			return;
+		}
+		next();
+	});
+
 	const staticDir = path.join(process.cwd(), "public");
 	app.use(express.static(staticDir));
 	// The Angular build's own assets (fonts, i18n) are referenced by root-absolute

@@ -625,11 +625,11 @@ export class ServiceDetailPageComponent implements OnInit {
 	}
 
 	back(): void {
-		this.router.navigate(["/app/services"]);
+		this.router.navigate(["/services"]);
 	}
 
 	openTask(id: string): void {
-		this.router.navigate(["/app/tasks", id]);
+		this.router.navigate(["/tasks", id]);
 	}
 
 	edit(): void {

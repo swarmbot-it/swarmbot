@@ -94,6 +94,42 @@ spec:
                             secretKeyRef:
                                 name: influxdb-credentials
                                 key: SWARMBOT_INFLUXDB_TOKEN
+                      # --- OIDC (Dex) login for the internal console ---
+                      - name: SWARMBOT_OIDC_ISSUER
+                        value: https://dex.no-human.tech
+                      - name: SWARMBOT_OIDC_CLIENT_ID
+                        value: swarmbot
+                      - name: SWARMBOT_OIDC_REDIRECT_URI
+                        value: https://swarmbot.infra/api/auth/oidc/callback
+                      - name: SWARMBOT_OIDC_CLIENT_SECRET
+                        valueFrom:
+                            secretKeyRef:
+                                name: swarmbot-oidc
+                                key: client_secret
+                      # GitHub team slugs (Dex emits "no-human-tech:<team>") -> role.
+                      # The "utrzymanie" team gets full admin; everyone else in the
+                      # org is read-only (role "user" — no editor tier).
+                      - name: SWARMBOT_OIDC_ADMIN_GROUPS
+                        value: "no-human-tech:utrzymanie"
+                      - name: SWARMBOT_OIDC_EDITOR_GROUPS
+                        value: ""
+                      # "/" on this host redirects straight to Dex (skip the public landing);
+                      # the SPA login page also auto-redirects there (escape hatch: /app/login?password).
+                      - name: SWARMBOT_CONSOLE_HOSTS
+                        value: swarmbot.infra
+                      # CORS: the console's own origin(s). Required — without it the browser
+                      # SPA's module/font/GraphQL requests are rejected (500).
+                      - name: SWARMBOT_ALLOWED_ORIGINS
+                        value: "https://swarmbot.infra,https://swarmbot.it"
+                      # PrimeNG (PrimeUI) license — PrimeNG >= 22 is proprietary and
+                      # shows an "invalid license" banner without a key. Bring your
+                      # OWN free Community key (https://primeui.dev); it is served to
+                      # the SPA at /api/ui-config and registered at bootstrap.
+                      - name: SWARMBOT_PRIMENG_LICENSE
+                        valueFrom:
+                            secretKeyRef:
+                                name: swarmbot-oidc
+                                key: primeng_license
                       # Uncomment once the agent supports the shared secret
                       # (swarmagent PR "agent-shared-secret-auth"); the agent
                       # must send the same value in the x-agent-token header.

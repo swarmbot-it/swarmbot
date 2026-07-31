@@ -24,7 +24,7 @@ import { TranslocoPipe } from "@jsverse/transloco";
  *   - `searchKeys` enables a full-text filter over selected fields
  *
  * Per-cell rendering uses Angular templates: callers declare a
- * `<ng-template pTemplate="cell" let-row let-key="key">` once and switch
+ * `<ng-template #cell let-row let-key="key">` once and switch
  * on the column key inside. This mirrors the design's generic table API.
  */
 
@@ -78,10 +78,9 @@ export type ColumnDef<R = Record<string, unknown>> = {
 				[customSort]="true"
 				[globalFilterFields]="searchKeysAsStrings"
 				sortMode="single"
-				[responsiveLayout]="'scroll'"
 				styleClass="sb-table"
 			>
-				<ng-template pTemplate="header">
+				<ng-template #header>
 					<tr>
 						<th
 							*ngFor="let c of columns()"
@@ -90,11 +89,11 @@ export type ColumnDef<R = Record<string, unknown>> = {
 							[style.width]="widthOf(c)"
 						>
 							{{ c.label }}
-							<p-sortIcon *ngIf="c.sortable !== false" [field]="c.key"></p-sortIcon>
+							<p-sort-icon *ngIf="c.sortable !== false" [field]="c.key"></p-sort-icon>
 						</th>
 					</tr>
 				</ng-template>
-				<ng-template pTemplate="body" let-row>
+				<ng-template #body let-row>
 					<tr
 						[class.dt-row--clickable]="rowClick.observed"
 						[attr.tabindex]="rowClick.observed ? 0 : null"
@@ -113,7 +112,7 @@ export type ColumnDef<R = Record<string, unknown>> = {
 						</td>
 					</tr>
 				</ng-template>
-				<ng-template pTemplate="emptymessage">
+				<ng-template #emptymessage>
 					<tr>
 						<td [attr.colspan]="columns().length" class="dt-empty">
 							{{ emptyText || ("table.empty" | transloco) }}

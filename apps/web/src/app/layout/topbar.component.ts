@@ -516,7 +516,7 @@ export class TopbarComponent implements OnInit {
 	goToProfile(): void {
 		this.menuOpen = false;
 		this.langOpen = false;
-		void this.router.navigate(["/app/profile"]);
+		void this.router.navigate(["/profile"]);
 	}
 
 	user(): string {

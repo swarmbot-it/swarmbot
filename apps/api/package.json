@@ -48,7 +48,7 @@
         "@vitest/coverage-v8": "^4.1.6",
         "eslint": "^10.6.0",
         "tsx": "^4.19.2",
-        "typescript": "^5.7.2",
+        "typescript": "~6.0.0",
         "typescript-eslint": "^8.62.1",
         "vitest": "^4.1.6"
     }

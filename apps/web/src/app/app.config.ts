@@ -27,8 +27,20 @@ import { i18nInterceptor } from "./core/i18n/i18n.interceptor";
 import { i18nInitializer } from "./core/i18n/i18n.initializer";
 import { LANG_CODES } from "./core/i18n/i18n-languages";
 
-/** Application-wide dependency injection configuration. */
-export const appConfig: ApplicationConfig = {
+/** Runtime UI settings fetched from the server before bootstrap (see main.ts). */
+export type UiRuntimeConfig = {
+	/** PrimeNG (PrimeUI) license key; empty/undefined leaves PrimeNG unlicensed. */
+	primengLicense?: string;
+};
+
+/**
+ * Application-wide dependency injection configuration.
+ * Built as a factory so the PrimeNG license (served from the API at runtime)
+ * can be injected synchronously into providePrimeNG — Angular initializers run
+ * in parallel, so registering the key any later than this races the banner.
+ */
+export function appConfig(ui: UiRuntimeConfig = {}): ApplicationConfig {
+	return {
 	providers: [
 		provideZoneChangeDetection({ eventCoalescing: true }),
 		provideRouter(routes),
@@ -36,6 +48,7 @@ export const appConfig: ApplicationConfig = {
 		provideAnimationsAsync(),
 		providePrimeNG({
 			ripple: true,
+			license: ui.primengLicense || undefined,
 			theme: {
 				preset: Aura,
 				options: {
@@ -61,4 +74,5 @@ export const appConfig: ApplicationConfig = {
 			cache: new InMemoryCache(),
 		})),
 	],
-};
+	};
+}

@@ -145,7 +145,7 @@ export class ServicesPageComponent {
 	readonly auth = inject(AuthService);
 
 	open(id: string): void {
-		this.router.navigate(["/app/services", id]);
+		this.router.navigate(["/services", id]);
 	}
 
 	readonly cols = translatedColumns<ServiceRow>(this.transloco, this.i18n.activeLang, [

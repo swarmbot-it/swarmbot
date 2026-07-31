@@ -7,6 +7,9 @@ const webPort = process.env.SWARMBOT_E2E_WEB_PORT ?? "4200";
 
 module.exports = defineConfig({
 	testDir: "./e2e",
+	// The kubernetes orchestrator spec needs a k8s-mock API; it runs via
+	// playwright.k8s.config.js. Exclude it from the default (swarm-mock) run.
+	testIgnore: "**/orchestrator-k8s.spec.ts",
 	fullyParallel: false,
 	forbidOnly: Boolean(process.env.CI),
 	retries: 0,
@@ -33,6 +36,9 @@ module.exports = defineConfig({
 			},
 		},
 		{
+			// Serves under /app/ (baseHref in angular.json) so dev routing matches
+			// production — otherwise the empty-path shell would live at "/" in dev
+			// but "/app/" in prod, diverging the e2e URLs.
 			command: `npx ng serve --port ${webPort} --host 127.0.0.1`,
 			url: `http://127.0.0.1:${webPort}`,
 			reuseExistingServer: !process.env.CI,

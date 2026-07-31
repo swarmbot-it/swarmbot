@@ -11,31 +11,15 @@ import {
 	mapVolumeSummary,
 	negotiateApiVersion,
 } from "./engine.js";
-import type { SwarmbotConfig } from "../config.js";
+import { loadConfig, type SwarmbotConfig } from "../config.js";
 
+// Spread loadConfig() rather than hand-listing every field (same pattern as
+// factory.test.ts / kubernetes/adapter.test.ts) so this helper does not go
+// stale whenever SwarmbotConfig gains or loses a field. mock is pinned false:
+// createDocker returns the in-memory mock engine when it is true, which would
+// defeat the tcp:// assertions below.
 function cfg(overrides: Partial<SwarmbotConfig> = {}): SwarmbotConfig {
-	return {
-		dockerSock: "/var/run/docker.sock",
-		dockerApi: "1.45",
-		dockerHttpTimeoutMs: 5000,
-		logLevel: "info",
-		dbUrl: "postgres://localhost:5432/swarmbot",
-		influxdbUrl: undefined,
-		influxdbToken: undefined,
-		agentUrl: undefined,
-		workDir: "/tmp",
-		instanceName: undefined,
-		apiTokenExpiryDays: undefined,
-		port: 8080,
-		mock: false,
-		allowedOrigins: undefined,
-		agentSharedSecret: undefined,
-		orchestrator: "auto",
-		kubeconfig: undefined,
-		k8sNamespace: undefined,
-		mockOrchestrator: "swarm",
-		...overrides,
-	};
+	return { ...loadConfig(), mock: false, ...overrides };
 }
 
 describe("createDocker", () => {

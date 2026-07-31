@@ -15,7 +15,19 @@ export const routes: Routes = [
 			import("./pages/login/login-page.component").then((m) => m.LoginPageComponent),
 	},
 	{
-		path: "app",
+		// Unguarded: sets the OIDC session token (from the URL fragment) before
+		// the authGuard on the rest of /app runs. base-href is "/app/", so the
+		// server's redirect to "/app/oidc" is stripped to the router path "oidc"
+		// here (NOT "app/oidc" — that would live at "/app/app/oidc" and never match).
+		path: "oidc",
+		loadComponent: () =>
+			import("./pages/oidc/oidc-callback.component").then((m) => m.OidcCallbackComponent),
+	},
+	{
+		// base-href is "/app/", so this empty-path shell lives at the browser URL
+		// "/app/" and its children at "/app/<child>" (e.g. /app/dashboard). Router
+		// paths here are therefore single-segment ("dashboard", not "app/dashboard").
+		path: "",
 		component: ShellComponent,
 		canActivate: [authGuard],
 		children: [
@@ -117,6 +129,5 @@ export const routes: Routes = [
 			},
 		],
 	},
-	{ path: "", pathMatch: "full", redirectTo: "app/dashboard" },
-	{ path: "**", redirectTo: "app/dashboard" },
+	{ path: "**", redirectTo: "dashboard" },
 ];

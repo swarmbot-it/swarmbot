@@ -1,0 +1,57 @@
+# Public marketing landing at https://swarmbot.it.
+#
+# swarmbot.it resolves to the k3s gateway public IP; Traefik already listens
+# there (same path as dex.no-human.tech), so no firewall change is needed.
+# This route serves ONLY the landing — the console (/app), API (/api) and
+# GraphQL (/graphql) are NOT routed here and stay internal-only on
+# swarmbot.infra (behind ipAllowList + Dex login). TLS via Let's Encrypt.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+    name: swarmbot-it-tls
+    namespace: swarmbot
+    labels:
+        app.kubernetes.io/name: swarmbot
+        app.kubernetes.io/component: edge
+spec:
+    secretName: swarmbot-it-tls
+    issuerRef:
+        kind: ClusterIssuer
+        name: letsencrypt-ovh-dns01
+    commonName: swarmbot.it
+    dnsNames:
+        - swarmbot.it
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+    name: swarmbot-it-headers
+    namespace: swarmbot
+spec:
+    headers:
+        browserXssFilter: true
+        contentTypeNosniff: true
+        forceSTSHeader: true
+        stsIncludeSubdomains: true
+        stsSeconds: 31536000
+        referrerPolicy: no-referrer
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+    name: swarmbot-it
+    namespace: swarmbot
+spec:
+    entryPoints:
+        - websecure
+    routes:
+        # Landing (and its /docs, /assets) only — console/API paths are excluded.
+        - kind: Rule
+          match: Host(`swarmbot.it`) && !PathPrefix(`/app`) && !PathPrefix(`/api`) && !PathPrefix(`/graphql`)
+          middlewares:
+              - name: swarmbot-it-headers
+          services:
+              - name: swarmbot
+                port: 8080
+    tls:
+        secretName: swarmbot-it-tls

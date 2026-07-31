@@ -1,4 +1,4 @@
-﻿import { ChangeDetectionStrategy, Component, inject, signal } from "@angular/core";
+﻿import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from "@angular/core";
 import { Router } from "@angular/router";
 import { Apollo } from "apollo-angular";
 import { NgIf } from "@angular/common";
@@ -23,7 +23,7 @@ import { MUTATION_LOGIN, QUERY_PROFILE_ME } from "../../core/graphql.queries";
 				</div>
 				<h1 class="login-card__title">{{ "auth.login.title" | transloco }}</h1>
 				<p class="login-card__subtitle">{{ "auth.login.subtitle" | transloco }}</p>
-				<form (submit)="onSubmit($event)">
+				<form (submit)="onSubmit($event)" *ngIf="!redirecting()">
 					<div class="field">
 						<label class="field__label">{{ "auth.login.username" | transloco }}</label>
 						<input
@@ -53,6 +53,15 @@ import { MUTATION_LOGIN, QUERY_PROFILE_ME } from "../../core/graphql.queries";
 					</button>
 					<div class="login-error" *ngIf="error()">{{ error() }}</div>
 				</form>
+				<button
+					*ngIf="oidcEnabled() && !redirecting()"
+					type="button"
+					class="btn"
+					style="margin-top: 12px; width: 100%; height: 42px; justify-content: center;"
+					(click)="loginWithDex()"
+				>
+					Sign in with GitHub
+				</button>
 			</div>
 		</div>
 	`,
@@ -96,7 +105,7 @@ import { MUTATION_LOGIN, QUERY_PROFILE_ME } from "../../core/graphql.queries";
 	],
 	imports: [FormField, NgIf, LogoComponent, TranslocoPipe],
 })
-export class LoginPageComponent {
+export class LoginPageComponent implements OnInit {
 	private readonly apollo = inject(Apollo);
 	private readonly auth = inject(AuthService);
 	private readonly router = inject(Router);
@@ -104,6 +113,37 @@ export class LoginPageComponent {
 
 	readonly loading = signal(false);
 	readonly error = signal<string | null>(null);
+	/** Hides the form until we know whether to auto-redirect to OIDC (console hosts). */
+	readonly redirecting = signal(true);
+	/** Whether the "Sign in with GitHub" (OIDC) button should be shown. */
+	readonly oidcEnabled = signal(false);
+
+	/**
+	 * On a console host with OIDC enabled, go straight to the provider (Dex) —
+	 * never show the password form (the user asked for auto-redirect). The
+	 * `?password` query param is an escape hatch to the local password login.
+	 */
+	async ngOnInit(): Promise<void> {
+		if (this.auth.isAuthed()) {
+			void this.router.navigateByUrl("/dashboard");
+			return;
+		}
+		const forcePassword = new URLSearchParams(window.location.search).has("password");
+		try {
+			const cfg = (await (await fetch("/api/auth/config")).json()) as {
+				oidc?: boolean;
+				autoLogin?: boolean;
+			};
+			this.oidcEnabled.set(Boolean(cfg.oidc));
+			if (cfg.autoLogin && !forcePassword) {
+				window.location.href = "/api/auth/oidc/login";
+				return;
+			}
+		} catch {
+			/* config unavailable — fall back to the password form */
+		}
+		this.redirecting.set(false);
+	}
 
 	private readonly loginModel = signal({ username: "", password: "" });
 	readonly loginForm = form(this.loginModel, (f) => {
@@ -112,6 +152,11 @@ export class LoginPageComponent {
 		required(f.password);
 		minLength(f.password, 4);
 	});
+
+	/** Full-page redirect into the app-native OIDC (Dex) login. */
+	loginWithDex(): void {
+		window.location.href = "/api/auth/oidc/login";
+	}
 
 	/**
 	 * Submits credentials to the login mutation and navigates to the dashboard on success.
@@ -145,9 +190,9 @@ export class LoginPageComponent {
 						.subscribe({
 							next: (profileRes) => {
 								if (profileRes.data?.me) this.auth.setProfile(profileRes.data.me);
-								void this.router.navigateByUrl("/app/dashboard");
+								void this.router.navigateByUrl("/dashboard");
 							},
-							error: () => void this.router.navigateByUrl("/app/dashboard"),
+							error: () => void this.router.navigateByUrl("/dashboard"),
 						});
 				},
 				error: () => {

@@ -1,6 +1,7 @@
 import {
 	ChangeDetectionStrategy,
 	Component,
+	DestroyRef,
 	inject,
 	OnInit,
 	signal,
@@ -14,9 +15,10 @@ import { AsyncPipe } from "@angular/common";
 
 import { TopbarComponent } from "./topbar.component";
 import { SidebarComponent } from "./sidebar.component";
-import { QUERY_OVERVIEW } from "../core/graphql.queries";
+import { QUERY_OVERVIEW, QUERY_PROFILE_ME } from "../core/graphql.queries";
 import { BootService } from "../core/boot.service";
 import { BootLoaderComponent } from "../shared/boot-loader/boot-loader.component";
+import { AuthService, type Profile } from "../core/auth.service";
 
 type OverviewCounts = Record<string, number>;
 
@@ -57,6 +59,8 @@ type OverviewCounts = Record<string, number>;
 export class ShellComponent implements OnInit {
 	private readonly apollo = inject(Apollo);
 	private readonly bootService = inject(BootService);
+	private readonly auth = inject(AuthService);
+	private readonly destroyRef = inject(DestroyRef);
 
 	readonly showBoot = signal(!this.bootService.isBooted);
 
@@ -79,6 +83,19 @@ export class ShellComponent implements OnInit {
 
 		if (!this.bootService.isBooted) {
 			this.bootService.boot(this.apollo);
+		}
+
+		// Ensure the cached profile (name/role for the topbar + role-gated UI) is
+		// populated. The password login page fetches it, but OIDC sign-in only
+		// sets the token — without this the topbar falls back to "Administrator"
+		// instead of the signed-in user's name.
+		if (!this.auth.profile()) {
+			this.apollo
+				.query<{ me: Profile | null }>({ query: QUERY_PROFILE_ME, fetchPolicy: "network-only" })
+				.pipe(takeUntilDestroyed(this.destroyRef))
+				.subscribe((r) => {
+					if (r.data?.me) this.auth.setProfile(r.data.me);
+				});
 		}
 	}
 }

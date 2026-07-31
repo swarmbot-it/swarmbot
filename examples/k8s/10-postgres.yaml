@@ -1,0 +1,66 @@
+# PostgreSQL for local dev — no node pinning (single-node k3d schedules anywhere).
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+    name: postgres-data
+    namespace: swarmbot
+spec:
+    accessModes: ["ReadWriteOnce"]
+    storageClassName: local-path
+    resources:
+        requests:
+            storage: 2Gi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+    name: postgres
+    namespace: swarmbot
+    labels:
+        app: postgres
+spec:
+    serviceName: postgres
+    replicas: 1
+    selector:
+        matchLabels:
+            app: postgres
+    template:
+        metadata:
+            labels:
+                app: postgres
+        spec:
+            containers:
+                - name: postgres
+                  image: postgres:16-alpine
+                  envFrom:
+                      - secretRef:
+                            name: postgres-credentials
+                  env:
+                      - name: PGDATA
+                        value: /var/lib/postgresql/data/pgdata
+                  ports:
+                      - containerPort: 5432
+                  volumeMounts:
+                      - name: data
+                        mountPath: /var/lib/postgresql/data
+                  readinessProbe:
+                      exec:
+                          command: ["pg_isready", "-U", "swarmbot", "-d", "swarmbot"]
+                      initialDelaySeconds: 5
+                      periodSeconds: 10
+            volumes:
+                - name: data
+                  persistentVolumeClaim:
+                      claimName: postgres-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: db
+    namespace: swarmbot
+spec:
+    selector:
+        app: postgres
+    ports:
+        - port: 5432
+          targetPort: 5432

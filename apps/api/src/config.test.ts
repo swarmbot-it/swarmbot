@@ -12,6 +12,16 @@ const KEYS = [
 	"SWARMBOT_INSTANCE_NAME",
 	"SWARMBOT_API_TOKEN_EXPIRY_DAYS",
 	"SWARMBOT_MOCK",
+	"SWARMBOT_ALLOWED_ORIGINS",
+	"SWARMBOT_OIDC_ISSUER",
+	"SWARMBOT_OIDC_CLIENT_ID",
+	"SWARMBOT_OIDC_CLIENT_SECRET",
+	"SWARMBOT_OIDC_REDIRECT_URI",
+	"SWARMBOT_OIDC_SCOPES",
+	"SWARMBOT_OIDC_ADMIN_GROUPS",
+	"SWARMBOT_OIDC_EDITOR_GROUPS",
+	"SWARMBOT_CONSOLE_HOSTS",
+	"SWARMBOT_PRIMENG_LICENSE",
 ];
 
 let saved: Record<string, string | undefined>;
@@ -56,5 +66,42 @@ describe("loadConfig", () => {
 	it("treats invalid SWARMBOT_MOCK as default false", () => {
 		process.env.SWARMBOT_MOCK = "maybe";
 		expect(loadConfig().mock).toBe(false);
+	});
+
+	it("parses OIDC settings, splitting comma-separated group lists", () => {
+		process.env.SWARMBOT_OIDC_ISSUER = "https://dex.example";
+		process.env.SWARMBOT_OIDC_CLIENT_ID = "swarmbot";
+		process.env.SWARMBOT_OIDC_CLIENT_SECRET = "s3cret";
+		process.env.SWARMBOT_OIDC_REDIRECT_URI = "https://swarmbot.example/api/auth/oidc/callback";
+		process.env.SWARMBOT_OIDC_ADMIN_GROUPS = "org:admins, org:ops";
+		process.env.SWARMBOT_OIDC_EDITOR_GROUPS = "org:devs";
+		const cfg = loadConfig();
+		expect(cfg.oidcIssuer).toBe("https://dex.example");
+		expect(cfg.oidcClientId).toBe("swarmbot");
+		expect(cfg.oidcClientSecret).toBe("s3cret");
+		expect(cfg.oidcRedirectUri).toBe("https://swarmbot.example/api/auth/oidc/callback");
+		expect(cfg.oidcAdminGroups).toEqual(["org:admins", "org:ops"]);
+		expect(cfg.oidcEditorGroups).toEqual(["org:devs"]);
+		// Default scope stays when SWARMBOT_OIDC_SCOPES is unset.
+		expect(cfg.oidcScopes).toBe("openid profile email groups");
+	});
+
+	it("defaults OIDC/console/license to empty/undefined", () => {
+		const cfg = loadConfig();
+		expect(cfg.oidcIssuer).toBeUndefined();
+		expect(cfg.oidcAdminGroups).toEqual([]);
+		expect(cfg.consoleHosts).toEqual([]);
+		expect(cfg.primengLicense).toBeUndefined();
+		expect(cfg.allowedOrigins).toBeUndefined();
+	});
+
+	it("parses console hosts, allowed origins and the PrimeNG license", () => {
+		process.env.SWARMBOT_CONSOLE_HOSTS = "swarmbot.infra, swarmbot.local";
+		process.env.SWARMBOT_ALLOWED_ORIGINS = "https://swarmbot.infra,https://swarmbot.it";
+		process.env.SWARMBOT_PRIMENG_LICENSE = "LIC-123";
+		const cfg = loadConfig();
+		expect(cfg.consoleHosts).toEqual(["swarmbot.infra", "swarmbot.local"]);
+		expect(cfg.allowedOrigins).toEqual(["https://swarmbot.infra", "https://swarmbot.it"]);
+		expect(cfg.primengLicense).toBe("LIC-123");
 	});
 });
