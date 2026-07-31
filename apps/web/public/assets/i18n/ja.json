@@ -6,6 +6,7 @@
         "services": "サービス",
         "tasks": "タスク",
         "nodes": "ノード",
+        "nodeMap": "ノード＆リソースマップ",
         "networks": "ネットワーク",
         "volumes": "ボリューム",
         "secrets": "シークレット",
@@ -269,6 +270,72 @@
                 "toastDrained": "「{{name}}」はドレイン中です — 新しいタスクはそこにスケジュールされません。",
                 "toastActivated": "「{{name}}」は再びアクティブになり、タスクを受け付けています。",
                 "failed": "ノードの可用性を更新できませんでした。"
+            }
+        },
+        "nodeMap": {
+            "countSummary": "{{total}} ノード — {{services}} サービスを配置",
+            "empty": "このノードにはサービスがスケジュールされていません。",
+            "pills": {
+                "ready": "{{ready}} / {{total}} ノード稼働中",
+                "tasks": "{{count}} タスク実行中",
+                "caption": "CPU/メモリ % · 30秒ごとに更新"
+            },
+            "categories": {
+                "data": "データ",
+                "identity": "ID",
+                "network": "ネットワーク",
+                "ops": "Ops",
+                "app": "アプリ"
+            },
+            "groups": {
+                "managers": "マネージャー",
+                "workers": "ワーカー"
+            },
+            "legend": {
+                "roles": "役割",
+                "categories": "カテゴリ",
+                "manager": "マネージャー",
+                "worker": "ワーカー",
+                "status": "状態",
+                "running": "実行中",
+                "attention": "要注意"
+            },
+            "summary": {
+                "title": "サービス別リソース概要",
+                "service": "サービス",
+                "nodes": "ノード",
+                "tasks": "タスク",
+                "cpuAvg": "平均CPU",
+                "memAvg": "平均メモリ"
+            },
+            "totals": {
+                "title": "クラスター合計",
+                "nodes": "ノード",
+                "services": "サービス",
+                "tasks": "タスク",
+                "avgCpu": "平均CPU",
+                "avgMem": "平均メモリ",
+                "busiest": "最も負荷の高いノード",
+                "note": "マネージャーはコントロールプレーンとサービスを担う — 最高負荷は {{host}}（{{cpu}}%）。"
+            },
+            "masthead": {
+                "eyebrow": "ノード＆リソースマップ · v2",
+                "title": "ノード＆リソースマップ",
+                "subtitle": "{{total}} ノード · Docker Swarm · サービス配置 + ライブCPU/RAM"
+            },
+            "flows": {
+                "title": "主要フロー",
+                "f1l": "公開",
+                "f1t": "ブラウザ → Angular UI → プロキシ → GraphQL API",
+                "f2l": "オーケストレーション",
+                "f2t": "API → Dockerソケット → Swarm / Kubernetes",
+                "f3l": "テレメトリ",
+                "f3t": "swarmagent → /events → InfluxDB → グラフ",
+                "f4l": "永続化",
+                "f4t": "API → PostgreSQL · ユーザー · レジストリ · トークン"
+            },
+            "footer": {
+                "caption": "ノード＆リソースマップ（{{total}} ノード、Docker Swarm）。配置とCPU/メモリは30秒ごとにライブ更新。"
             }
         },
         "networks": {

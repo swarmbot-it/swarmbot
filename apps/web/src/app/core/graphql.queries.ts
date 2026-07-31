@@ -158,6 +158,38 @@ export const QUERY_NODES = gql`
 	}
 `;
 
+/** Cluster nodes with the services currently scheduled on each, for the Node Map view. */
+export const QUERY_NODE_MAP = gql`
+	query NodeMap {
+		nodeMap {
+			node {
+				id
+				hostname
+				role
+				availability
+				ip
+				dockerVersion
+				tags
+				cpu
+				mem
+				disk
+				cpuHistory
+				memHistory
+				diskHistory
+			}
+			services {
+				taskId
+				serviceName
+				image
+				category
+				cpu
+				mem
+				status
+			}
+		}
+	}
+`;
+
 /** Drain (evict) or reactivate scheduling on a node. */
 export const MUTATION_SET_NODE_AVAILABILITY = gql`
 	mutation SetNodeAvailability($id: ID!, $availability: String!) {

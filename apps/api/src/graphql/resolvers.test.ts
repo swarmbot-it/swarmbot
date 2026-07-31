@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { resolvers } from "./resolvers.js";
+import { resolvers, categorizeImage } from "./resolvers.js";
 import { startTestHttp, gqlContext } from "../test/http-setup.js";
 import { generateJwt } from "../auth/jwt.js";
 import { getAppSecret } from "../db.js";
@@ -151,6 +151,81 @@ describe.sequential("resolvers.Mutation", () => {
 		);
 		expect(svc.name).toBe("web");
 		expect(svc.replicasTotal).toBe(2);
+		await test.cleanup();
+	});
+});
+
+describe("categorizeImage", () => {
+	it.each([
+		["postgres:16.3-alpine", "data"],
+		["redis:7.2-alpine", "data"],
+		["mongo:7", "data"],
+		["mysql:8", "data"],
+		["ghcr.io/swarmbot/keycloak:24", "identity"],
+		["vault:1.16", "identity"],
+		["traefik:v3.0", "network"],
+		["nginx:1.27-alpine", "network"],
+		["haproxy:2.9", "network"],
+		["prom/prometheus:v2.52.0", "ops"],
+		["grafana/grafana:11.0.0", "ops"],
+		["ghcr.io/swarmbot/auth:1.8.3", "app"],
+		["ghcr.io/swarmbot/web:2.14.0", "app"],
+	])("categorizes %s as %s", (image, expected) => {
+		expect(categorizeImage(image)).toBe(expected);
+	});
+});
+
+describe.sequential("resolvers.Query.nodeMap", () => {
+	it("groups every task under its node and matches the tasks resolver 1:1", async () => {
+		const test = await startTestHttp();
+		const secret = await getAppSecret(test.db);
+		const token = generateJwt(secret, { username: "admin", role: "admin" });
+		const { verifyJwt } = await import("../auth/jwt.js");
+		const claims = verifyJwt(secret, token);
+		const ctx = gqlContext({ headers: {}, swarmUser: claims }, test);
+
+		const [tasks, entries] = await Promise.all([
+			resolvers.Query.tasks(null, null, ctx),
+			resolvers.Query.nodeMap(null, null, ctx),
+		]);
+
+		// Same underlying task set as Query.tasks, just regrouped by node — no
+		// separate fetch/mapping path to drift out of sync.
+		const totalGrouped = entries.reduce((sum, e) => sum + e.services.length, 0);
+		expect(totalGrouped).toBe(tasks.length);
+
+		for (const entry of entries) {
+			for (const svc of entry.services) {
+				expect(svc.category).toBeTruthy();
+				expect(typeof svc.cpu).toBe("number");
+				expect(typeof svc.mem).toBe("number");
+			}
+		}
+
+		const postgresService = entries
+			.flatMap((e) => e.services)
+			.find((s) => s.image.startsWith("postgres"));
+		expect(postgresService?.category).toBe("data");
+
+		await test.cleanup();
+	});
+
+	it("returns an empty services list for a node with no scheduled tasks", async () => {
+		const test = await startTestHttp();
+		const secret = await getAppSecret(test.db);
+		const token = generateJwt(secret, { username: "admin", role: "admin" });
+		const { verifyJwt } = await import("../auth/jwt.js");
+		const claims = verifyJwt(secret, token);
+		const ctx = gqlContext({ headers: {}, swarmUser: claims }, test);
+
+		// The mock fixture's one "drain" node is deliberately excluded from
+		// task placement (see docker/mock.ts's buildTasks) — it must show up
+		// with an honest empty list, not be dropped from the map entirely.
+		const entries = await resolvers.Query.nodeMap(null, null, ctx);
+		const drainNode = entries.find((e) => e.node.hostname === "swarm-wk-05");
+		expect(drainNode).toBeDefined();
+		expect(drainNode?.services).toEqual([]);
+
 		await test.cleanup();
 	});
 });

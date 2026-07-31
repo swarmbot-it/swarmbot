@@ -86,6 +86,11 @@ export const routes: Routes = [
 					import("./pages/nodes/nodes.component").then((m) => m.NodesPageComponent),
 			},
 			{
+				path: "node-map",
+				loadComponent: () =>
+					import("./pages/node-map/node-map.component").then((m) => m.NodeMapPageComponent),
+			},
+			{
 				path: "networks",
 				loadComponent: () =>
 					import("./app-table-host.component").then((m) => m.NetworksHostComponent),

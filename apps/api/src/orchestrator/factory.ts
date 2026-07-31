@@ -85,7 +85,12 @@ export function detectOrchestrator(
 	}
 
 	const sock = cfg.dockerSock;
-	if (sock.startsWith("http://") || sock.startsWith("https://") || probes.fileExists(sock)) {
+	if (
+		sock.startsWith("http://") ||
+		sock.startsWith("https://") ||
+		sock.startsWith("tcp://") ||
+		probes.fileExists(sock)
+	) {
 		return { kind: "swarm", reason: `Docker endpoint available at ${sock}` };
 	}
 

@@ -6,6 +6,7 @@
         "services": "서비스",
         "tasks": "작업",
         "nodes": "노드",
+        "nodeMap": "노드 & 리소스 맵",
         "networks": "네트워크",
         "volumes": "볼륨",
         "secrets": "비밀",
@@ -269,6 +270,72 @@
                 "toastDrained": "\"{{name}}\"이(가) 드레인 중입니다 — 새 작업이 예약되지 않습니다.",
                 "toastActivated": "\"{{name}}\"이(가) 다시 활성화되어 작업을 받습니다.",
                 "failed": "노드 가용성을 업데이트하지 못했습니다."
+            }
+        },
+        "nodeMap": {
+            "countSummary": "{{total}}개 노드 — {{services}}개 서비스 배치됨",
+            "empty": "이 노드에는 예약된 서비스가 없습니다.",
+            "pills": {
+                "ready": "{{ready}} / {{total}} 노드 준비됨",
+                "tasks": "{{count}} 작업 실행 중",
+                "caption": "CPU/메모리 % · 30초마다 갱신"
+            },
+            "categories": {
+                "data": "데이터",
+                "identity": "ID",
+                "network": "네트워크",
+                "ops": "Ops",
+                "app": "앱"
+            },
+            "groups": {
+                "managers": "매니저",
+                "workers": "워커"
+            },
+            "legend": {
+                "roles": "역할",
+                "categories": "카테고리",
+                "manager": "매니저",
+                "worker": "워커",
+                "status": "상태",
+                "running": "실행 중",
+                "attention": "주의 필요"
+            },
+            "summary": {
+                "title": "서비스별 리소스 요약",
+                "service": "서비스",
+                "nodes": "노드",
+                "tasks": "작업",
+                "cpuAvg": "평균 CPU",
+                "memAvg": "평균 메모리"
+            },
+            "totals": {
+                "title": "클러스터 총계",
+                "nodes": "노드",
+                "services": "서비스",
+                "tasks": "작업",
+                "avgCpu": "평균 CPU",
+                "avgMem": "평균 메모리",
+                "busiest": "가장 부하가 큰 노드",
+                "note": "매니저는 컨트롤 플레인과 서비스를 담당 — 최고 부하는 {{host}}({{cpu}}%)."
+            },
+            "masthead": {
+                "eyebrow": "노드 & 리소스 맵 · v2",
+                "title": "노드 & 리소스 맵",
+                "subtitle": "{{total}} 노드 · Docker Swarm · 서비스 배치 + 실시간 CPU/RAM"
+            },
+            "flows": {
+                "title": "주요 흐름",
+                "f1l": "공개",
+                "f1t": "브라우저 → Angular UI → 프록시 → GraphQL API",
+                "f2l": "오케스트레이션",
+                "f2t": "API → Docker 소켓 → Swarm / Kubernetes",
+                "f3l": "텔레메트리",
+                "f3t": "swarmagent → /events → InfluxDB → 차트",
+                "f4l": "영속성",
+                "f4t": "API → PostgreSQL · 사용자 · 레지스트리 · 토큰"
+            },
+            "footer": {
+                "caption": "노드 & 리소스 맵({{total}} 노드, Docker Swarm). 배치와 CPU/메모리는 30초마다 실시간 갱신."
             }
         },
         "networks": {

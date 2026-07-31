@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
 	aggregateStacks,
+	createDocker,
 	formatPorts,
 	mapNetworkSummary,
 	mapNodeSummary,
@@ -10,6 +11,26 @@ import {
 	mapVolumeSummary,
 	negotiateApiVersion,
 } from "./engine.js";
+import { loadConfig, type SwarmbotConfig } from "../config.js";
+
+// Spread loadConfig() rather than hand-listing every field (same pattern as
+// factory.test.ts / kubernetes/adapter.test.ts) so this helper does not go
+// stale whenever SwarmbotConfig gains or loses a field. mock is pinned false:
+// createDocker returns the in-memory mock engine when it is true, which would
+// defeat the tcp:// assertions below.
+function cfg(overrides: Partial<SwarmbotConfig> = {}): SwarmbotConfig {
+	return { ...loadConfig(), mock: false, ...overrides };
+}
+
+describe("createDocker", () => {
+	it("parses a tcp:// endpoint into host/port (the swarm:start DinD cluster)", () => {
+		const docker = createDocker(cfg({ dockerSock: "tcp://172.21.0.2:2375" }));
+		const modem = docker.modem as unknown as { host?: string; port?: number; protocol?: string };
+		expect(modem.host).toBe("172.21.0.2");
+		expect(modem.port).toBe(2375);
+		expect(modem.protocol).toBe("http");
+	});
+});
 
 describe("negotiateApiVersion", () => {
 	it("clamps to daemon max", () => {
