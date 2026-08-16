@@ -3,7 +3,8 @@
     "private": true,
     "workspaces": [
         "apps/api",
-        "apps/web"
+        "apps/web",
+        "design-qa"
     ],
     "scripts": {
         "build": "npm run build -w @swarmbot/api && npm run build -w web",
@@ -14,6 +15,8 @@
         "test": "npm run test -w @swarmbot/api && npm run test -w web",
         "test:e2e": "npm run test:e2e -w web",
         "test:e2e:k8s": "npm run test:e2e:k8s -w web",
+        "test:design": "npm run test -w @swarmbot/design-qa",
+        "test:design:update": "npm run update-snapshots -w @swarmbot/design-qa",
         "test:coverage": "npm run test:coverage -w @swarmbot/api",
         "test:all": "npm run test && npm run test:e2e",
         "lint": "npm run lint -w @swarmbot/api && npm run lint -w web",

@@ -1,0 +1,10 @@
+node_modules/
+test-results/
+playwright-report/
+blob-report/
+
+# Third-party asset cache (React/Babel from unpkg, webfonts from Google Fonts).
+# Not committed: the unpkg scripts are SRI-pinned so they cannot change, and the
+# fonts are ~100 KB that `npm run warm` refetches in seconds. Cache this directory
+# in CI if you want fully hermetic, offline-capable runs.
+.netcache/
