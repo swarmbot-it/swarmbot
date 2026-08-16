@@ -1,0 +1,25 @@
+{
+    "name": "@swarmbot/design-qa",
+    "version": "0.0.0",
+    "private": true,
+    "description": "Pixel-perfect Playwright suite for the swarmbot.it admin mockup",
+    "type": "module",
+    "scripts": {
+        "test": "playwright test",
+        "test:visual": "playwright test tests/visual",
+        "test:layout": "playwright test tests/layout",
+        "test:flows": "playwright test tests/flows",
+        "test:ui": "playwright test --ui",
+        "update-snapshots": "playwright test --update-snapshots",
+        "update-snapshots:docker": "docker run --rm -it -v \"$PWD/..:/w\" -w /w/design-qa mcr.microsoft.com/playwright:v1.62.1-jammy npx playwright test --update-snapshots",
+        "warm": "node scripts/warm-cache.mjs",
+        "serve": "node scripts/static-server.mjs",
+        "report": "playwright show-report",
+        "postinstall": "playwright install chromium"
+    },
+    "devDependencies": {
+        "@playwright/test": "^1.61.1",
+        "@types/node": "^26.2.0",
+        "typescript": "~6.0.0"
+    }
+}

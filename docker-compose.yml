@@ -9,6 +9,18 @@
             - SWARMBOT_INFLUXDB_TOKEN=${INFLUXDB_TOKEN:?INFLUXDB_TOKEN must be set for production deploys}
             - SWARMBOT_PORT=8080
             - SWARMBOT_WORK_DIR=/tmp
+            # CORS allowlist. The SPA fetches its own module scripts and fonts with an
+            # Origin header, so the console's own URL MUST be listed or every bundle
+            # comes back 500 ("Not allowed by CORS") and the UI renders blank. Required
+            # rather than defaulted: the correct value is deployment topology, not a
+            # constant. For this compose file as published, that is
+            # "http://localhost:888,http://127.0.0.1:888".
+            - SWARMBOT_ALLOWED_ORIGINS=${SWARMBOT_ALLOWED_ORIGINS:?SWARMBOT_ALLOWED_ORIGINS must be set - the console's own origin(s), e.g. http://localhost:888 for this compose file}
+            # First-run admin, created only while the users table is empty. Without it
+            # the stack starts with no users and nothing can log in. The username is a
+            # plain identifier so it defaults; the password never does.
+            - SWARMBOT_BOOTSTRAP_ADMIN=${SWARMBOT_BOOTSTRAP_ADMIN:-admin}
+            - SWARMBOT_BOOTSTRAP_PASSWORD=${SWARMBOT_BOOTSTRAP_PASSWORD:?SWARMBOT_BOOTSTRAP_PASSWORD must be set for production deploys}
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock:ro
         ports:

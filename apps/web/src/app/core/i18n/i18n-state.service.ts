@@ -1,19 +1,19 @@
 import { inject, Injectable, signal, computed } from "@angular/core";
 import { TranslocoService } from "@jsverse/transloco";
 import { firstValueFrom } from "rxjs";
-import { PrimeNG } from "primeng/config";
+import { Optimus } from "@openng/optimus-ui/config";
 import { httpLocaleFor, isLangCode, type LangCode } from "./i18n-languages";
 
 const STORAGE_KEY = "swarmbot.lang";
 
 /**
- * Coordinates UI language: Transloco dictionaries, PrimeNG labels,
+ * Coordinates UI language: Transloco dictionaries, Optimus UI labels,
  * `document.documentElement.lang`, and the `Accept-Language` header locale.
  */
 @Injectable({ providedIn: "root" })
 export class I18nStateService {
 	private readonly transloco = inject(TranslocoService);
-	private readonly primeNG = inject(PrimeNG);
+	private readonly primeNG = inject(Optimus);
 
 	/** Active language code. */
 	readonly activeLang = signal<LangCode>(this.readInitialLang());
@@ -22,7 +22,7 @@ export class I18nStateService {
 	readonly httpLocale = computed(() => httpLocaleFor(this.activeLang()));
 
 	/**
-	 * Loads dictionaries and applies PrimeNG + document language during bootstrap.
+	 * Loads dictionaries and applies Optimus UI + document language during bootstrap.
 	 * Invoked from {@link i18nInitializer}.
 	 */
 	async init(): Promise<void> {
@@ -30,7 +30,7 @@ export class I18nStateService {
 		this.transloco.setActiveLang(lang);
 		await firstValueFrom(this.transloco.load(lang));
 		this.applyDocumentLang(lang);
-		this.applyPrimeNgTranslations();
+		this.applyOptimusTranslations();
 	}
 
 	/**
@@ -50,11 +50,11 @@ export class I18nStateService {
 		await firstValueFrom(this.transloco.load(code));
 		this.activeLang.set(code);
 		this.applyDocumentLang(code);
-		this.applyPrimeNgTranslations();
+		this.applyOptimusTranslations();
 	}
 
-	private applyPrimeNgTranslations(): void {
-		const raw = this.transloco.getTranslation(this.activeLang())?.["primeng"];
+	private applyOptimusTranslations(): void {
+		const raw = this.transloco.getTranslation(this.activeLang())?.["optimus"];
 		if (raw && typeof raw === "object") {
 			this.primeNG.setTranslation(raw as Record<string, unknown>);
 		}

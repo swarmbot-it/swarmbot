@@ -7,3 +7,9 @@ playwright-report
 blob-report
 **/.angular
 apps/web/dist
+
+# Verbatim copy of the claude.ai/design mockup — must stay byte-identical to the
+# design source, so never reformat it.
+design-qa/mockup
+design-qa/tests/__screenshots__
+design-qa/.netcache

@@ -120,19 +120,6 @@ describe.sequential("public config endpoints", () => {
 		test = undefined;
 	});
 
-	it("GET /api/ui-config returns an empty PrimeNG license by default", async () => {
-		test = await startTestHttp();
-		const res = await fetch(`${test.baseUrl}/api/ui-config`);
-		expect(res.ok).toBe(true);
-		expect(await res.json()).toEqual({ primengLicense: "" });
-	});
-
-	it("GET /api/ui-config serves the configured PrimeNG license", async () => {
-		test = await startTestHttp({ primengLicense: "LIC-xyz" });
-		const res = await fetch(`${test.baseUrl}/api/ui-config`);
-		expect(await res.json()).toEqual({ primengLicense: "LIC-xyz" });
-	});
-
 	it("GET /api/auth/config reports OIDC disabled when unconfigured", async () => {
 		test = await startTestHttp();
 		const res = await fetch(`${test.baseUrl}/api/auth/config`);

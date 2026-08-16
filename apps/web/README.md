@@ -1,6 +1,6 @@
 # swarmbot.it Web UI
 
-Angular **21** single-page application for the swarmbot.it Docker Swarm admin console. It talks to the API through Apollo GraphQL (`/graphql`), uses PrimeNG for data tables and widgets, and Transloco for runtime i18n (9 languages).
+Angular **22** single-page application for the swarmbot.it Docker Swarm admin console. It talks to the API through Apollo GraphQL (`/graphql`), uses Optimus UI for data tables and widgets, and Transloco for runtime i18n (9 languages).
 
 ## Requirements
 
@@ -31,24 +31,24 @@ Open [http://localhost:4200](http://localhost:4200). The dev server proxies API 
 
 1. Start the API in **mock mode** (in-memory SQLite + sample Swarm data):
 
-   ```powershell
-   # Windows PowerShell
-   $env:SWARMBOT_MOCK="true"; npm run dev:api
-   ```
+    ```powershell
+    # Windows PowerShell
+    $env:SWARMBOT_MOCK="true"; npm run dev:api
+    ```
 
-   ```bash
-   # macOS / Linux
-   SWARMBOT_MOCK=true npm run dev:api
-   ```
+    ```bash
+    # macOS / Linux
+    SWARMBOT_MOCK=true npm run dev:api
+    ```
 
 2. Start the web app (`npm run dev:web` in another terminal).
 
 3. Open [http://localhost:4200/login](http://localhost:4200/login) and sign in with:
 
-   | Field    | Value       |
-   | -------- | ----------- |
-   | Username | `admin`     |
-   | Password | `swarmbot` |
+    | Field    | Value      |
+    | -------- | ---------- |
+    | Username | `admin`    |
+    | Password | `swarmbot` |
 
 Mock mode creates this demo admin automatically. Without mock mode you need a real Postgres-backed user (see root `README.md`).
 
@@ -112,15 +112,15 @@ Key modules: `src/app/core/` (auth, i18n, theme, GraphQL), `src/app/layout/`, `s
 
 ## Project layout
 
-| Path | Purpose |
-| ---- | ------- |
-| `src/app/core/` | Auth, theme, i18n, GraphQL operations |
-| `src/app/layout/` | Shell, sidebar, topbar |
-| `src/app/pages/` | Routed feature pages |
-| `src/app/forms/` | Create-resource modals |
-| `src/app/shared/` | Reusable UI primitives |
-| `e2e/` | Playwright tests |
-| `public/assets/` | i18n JSON, fonts |
+| Path              | Purpose                               |
+| ----------------- | ------------------------------------- |
+| `src/app/core/`   | Auth, theme, i18n, GraphQL operations |
+| `src/app/layout/` | Shell, sidebar, topbar                |
+| `src/app/pages/`  | Routed feature pages                  |
+| `src/app/forms/`  | Create-resource modals                |
+| `src/app/shared/` | Reusable UI primitives                |
+| `e2e/`            | Playwright tests                      |
+| `public/assets/`  | i18n JSON, fonts                      |
 
 ## Additional resources
 

@@ -4,7 +4,6 @@
    when the user toggles dark mode (handled by ThemeService).
    ============================================================ */
 @use "fonts";
-@import "primeicons/primeicons.css";
 
 :root {
 	--primary-50: #fff7ed;
@@ -522,7 +521,7 @@ select {
 	background: var(--muted-2);
 }
 
-/* PrimeNG overrides — drop default surface to align with our tokens */
+/* Optimus UI overrides — drop default surface to align with our tokens */
 .p-component {
 	font-family: var(--font-sans);
 }

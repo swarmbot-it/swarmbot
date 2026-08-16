@@ -21,7 +21,6 @@ const KEYS = [
 	"SWARMBOT_OIDC_ADMIN_GROUPS",
 	"SWARMBOT_OIDC_EDITOR_GROUPS",
 	"SWARMBOT_CONSOLE_HOSTS",
-	"SWARMBOT_PRIMENG_LICENSE",
 ];
 
 let saved: Record<string, string | undefined>;
@@ -86,22 +85,19 @@ describe("loadConfig", () => {
 		expect(cfg.oidcScopes).toBe("openid profile email groups");
 	});
 
-	it("defaults OIDC/console/license to empty/undefined", () => {
+	it("defaults OIDC/console settings to empty/undefined", () => {
 		const cfg = loadConfig();
 		expect(cfg.oidcIssuer).toBeUndefined();
 		expect(cfg.oidcAdminGroups).toEqual([]);
 		expect(cfg.consoleHosts).toEqual([]);
-		expect(cfg.primengLicense).toBeUndefined();
 		expect(cfg.allowedOrigins).toBeUndefined();
 	});
 
-	it("parses console hosts, allowed origins and the PrimeNG license", () => {
+	it("parses console hosts and allowed origins", () => {
 		process.env.SWARMBOT_CONSOLE_HOSTS = "swarmbot.infra, swarmbot.local";
 		process.env.SWARMBOT_ALLOWED_ORIGINS = "https://swarmbot.infra,https://swarmbot.it";
-		process.env.SWARMBOT_PRIMENG_LICENSE = "LIC-123";
 		const cfg = loadConfig();
 		expect(cfg.consoleHosts).toEqual(["swarmbot.infra", "swarmbot.local"]);
 		expect(cfg.allowedOrigins).toEqual(["https://swarmbot.infra", "https://swarmbot.it"]);
-		expect(cfg.primengLicense).toBe("LIC-123");
 	});
 });

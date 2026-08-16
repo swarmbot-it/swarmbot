@@ -493,7 +493,7 @@
             "remove": "Entfernen"
         }
     },
-    "primeng": {
+    "optimus": {
         "startsWith": "Beginnt mit",
         "contains": "Enthält",
         "notContains": "Enthält nicht",
@@ -533,24 +533,8 @@
             "Freitag",
             "Samstag"
         ],
-        "dayNamesShort": [
-            "So",
-            "Mo",
-            "Di",
-            "Mi",
-            "Do",
-            "Fr",
-            "Sa"
-        ],
-        "dayNamesMin": [
-            "So",
-            "Mo",
-            "Di",
-            "Mi",
-            "Do",
-            "Fr",
-            "Sa"
-        ],
+        "dayNamesShort": ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"],
+        "dayNamesMin": ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"],
         "monthNames": [
             "Januar",
             "Februar",

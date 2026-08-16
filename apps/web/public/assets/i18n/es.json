@@ -493,7 +493,7 @@
             "remove": "Eliminar"
         }
     },
-    "primeng": {
+    "optimus": {
         "startsWith": "Empieza por",
         "contains": "Contiene",
         "notContains": "No contiene",
@@ -524,33 +524,9 @@
         "choose": "Elegir",
         "upload": "Subir",
         "cancel": "Cancelar",
-        "dayNames": [
-            "Domingo",
-            "Lunes",
-            "Martes",
-            "Miércoles",
-            "Jueves",
-            "Viernes",
-            "Sábado"
-        ],
-        "dayNamesShort": [
-            "Dom",
-            "Lun",
-            "Mar",
-            "Mié",
-            "Jue",
-            "Vie",
-            "Sáb"
-        ],
-        "dayNamesMin": [
-            "Do",
-            "Lu",
-            "Ma",
-            "Mi",
-            "Ju",
-            "Vi",
-            "Sá"
-        ],
+        "dayNames": ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
+        "dayNamesShort": ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"],
+        "dayNamesMin": ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sá"],
         "monthNames": [
             "Enero",
             "Febrero",

@@ -1,5 +1,5 @@
 ﻿/**
- * Root application providers: routing, HTTP, Apollo GraphQL, PrimeNG, Transloco i18n.
+ * Root application providers: routing, HTTP, Apollo GraphQL, Optimus UI, Transloco i18n.
  * @module app.config
  */
 import {
@@ -10,8 +10,8 @@ import {
 } from "@angular/core";
 import { provideRouter } from "@angular/router";
 import { provideAnimationsAsync } from "@angular/platform-browser/animations/async";
-import { providePrimeNG } from "primeng/config";
-import Aura from "@primeuix/themes/aura";
+import { provideOptimus } from "@openng/optimus-ui/config";
+import Aura from "@openng/optimus-ui-themes/aura";
 import { provideApollo } from "apollo-angular";
 import { HttpLink } from "apollo-angular/http";
 import { InMemoryCache } from "@apollo/client/core";
@@ -27,52 +27,46 @@ import { i18nInterceptor } from "./core/i18n/i18n.interceptor";
 import { i18nInitializer } from "./core/i18n/i18n.initializer";
 import { LANG_CODES } from "./core/i18n/i18n-languages";
 
-/** Runtime UI settings fetched from the server before bootstrap (see main.ts). */
-export type UiRuntimeConfig = {
-	/** PrimeNG (PrimeUI) license key; empty/undefined leaves PrimeNG unlicensed. */
-	primengLicense?: string;
-};
-
 /**
  * Application-wide dependency injection configuration.
- * Built as a factory so the PrimeNG license (served from the API at runtime)
- * can be injected synchronously into providePrimeNG — Angular initializers run
- * in parallel, so registering the key any later than this races the banner.
+ *
+ * Kept as a factory (rather than a const) only so bootstrap stays a single call
+ * shape. It used to take a license key fetched from the API before bootstrap;
+ * Optimus UI is MIT and has no license gate, so that round-trip is gone.
  */
-export function appConfig(ui: UiRuntimeConfig = {}): ApplicationConfig {
+export function appConfig(): ApplicationConfig {
 	return {
-	providers: [
-		provideZoneChangeDetection({ eventCoalescing: true }),
-		provideRouter(routes),
-		provideHttpClient(withInterceptors([i18nInterceptor])),
-		provideAnimationsAsync(),
-		providePrimeNG({
-			ripple: true,
-			license: ui.primengLicense || undefined,
-			theme: {
-				preset: Aura,
-				options: {
-					darkModeSelector: ".app-dark",
+		providers: [
+			provideZoneChangeDetection({ eventCoalescing: true }),
+			provideRouter(routes),
+			provideHttpClient(withInterceptors([i18nInterceptor])),
+			provideAnimationsAsync(),
+			provideOptimus({
+				ripple: true,
+				theme: {
+					preset: Aura,
+					options: {
+						darkModeSelector: ".app-dark",
+					},
 				},
-			},
-		}),
-		provideTransloco({
-			config: {
-				availableLangs: [...LANG_CODES],
-				defaultLang: "en",
-				reRenderOnLangChange: true,
-				prodMode: !isDevMode(),
-			},
-			loader: TranslocoHttpLoader,
-		}),
-		provideAppInitializer(i18nInitializer),
-		provideApollo(() => ({
-			link: ApolloLink.from([
-				createApolloAuthLinks(),
-				inject(HttpLink).create({ uri: "/graphql" }),
-			]),
-			cache: new InMemoryCache(),
-		})),
-	],
+			}),
+			provideTransloco({
+				config: {
+					availableLangs: [...LANG_CODES],
+					defaultLang: "en",
+					reRenderOnLangChange: true,
+					prodMode: !isDevMode(),
+				},
+				loader: TranslocoHttpLoader,
+			}),
+			provideAppInitializer(i18nInitializer),
+			provideApollo(() => ({
+				link: ApolloLink.from([
+					createApolloAuthLinks(),
+					inject(HttpLink).create({ uri: "/graphql" }),
+				]),
+				cache: new InMemoryCache(),
+			})),
+		],
 	};
 }
