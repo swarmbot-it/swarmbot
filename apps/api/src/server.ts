@@ -53,7 +53,10 @@ export async function createHttpServer(
 	cleanup: () => Promise<void>;
 }> {
 	const { orchestrator, detection } = await createOrchestrator(cfg);
-	logger.info({ orchestrator: orchestrator.kind, reason: detection.reason }, "Orchestrator selected");
+	logger.info(
+		{ orchestrator: orchestrator.kind, reason: detection.reason },
+		"Orchestrator selected"
+	);
 	// Raw Dockerode handle for Swarm-only mutations; on Kubernetes it is never
 	// used (every such mutation is guarded by an orchestrator-kind check).
 	const docker =
@@ -179,7 +182,12 @@ export async function createHttpServer(
 			const { username, password } = decodeBasic(auth);
 			// Mock mode is the demo/e2e backend; its per-test logins would trip the
 			// low login limit, so effectively lift it there (never in production).
-			if (!allowAttempt(`${req.ip}:${username.toLowerCase()}`, cfg.mock ? 1_000_000 : undefined)) {
+			if (
+				!allowAttempt(
+					`${req.ip}:${username.toLowerCase()}`,
+					cfg.mock ? 1_000_000 : undefined
+				)
+			) {
 				res.status(429).json({ error: localizedMessage(locale, "errors.tooManyAttempts") });
 				return;
 			}
@@ -248,7 +256,11 @@ export async function createHttpServer(
 				? req.query.redirect
 				: "/dashboard";
 		await saveFlow(db, { state, nonce, codeVerifier: verifier, redirectTo });
-		const url = await authorizationUrl(oidc, { state, nonce, codeChallenge: challenge(verifier) });
+		const url = await authorizationUrl(oidc, {
+			state,
+			nonce,
+			codeChallenge: challenge(verifier),
+		});
 		res.redirect(url);
 	});
 
@@ -275,12 +287,18 @@ export async function createHttpServer(
 				role,
 			});
 			const secret = await getAppSecret(db);
-			const token = generateJwt(secret, { username: u.username, email: u.email, role: u.role });
+			const token = generateJwt(secret, {
+				username: u.username,
+				email: u.email,
+				role: u.role,
+			});
 			const raw = token.replace(/^Bearer\s+/i, "");
 			const dest = flow.redirectTo ?? "/dashboard";
 			// Hand the session token to the SPA via URL fragment (never sent to the server / logs).
 			// "/app/oidc" is the browser URL (base-href "/app/" + router path "oidc").
-			res.redirect(`/app/oidc#token=${encodeURIComponent(raw)}&to=${encodeURIComponent(dest)}`);
+			res.redirect(
+				`/app/oidc#token=${encodeURIComponent(raw)}&to=${encodeURIComponent(dest)}`
+			);
 		} catch (e) {
 			logger.warn({ err: String(e) }, "OIDC callback failed");
 			res.redirect("/app/login?error=oidc");
@@ -365,14 +383,6 @@ export async function createHttpServer(
 		const oidc = Boolean(oidcConfig(cfg));
 		const host = (req.headers.host ?? "").split(":")[0]!.toLowerCase();
 		res.json({ oidc, autoLogin: oidc && cfg.consoleHosts.includes(host) });
-	});
-
-	// Public: the SPA fetches this before bootstrap to register the PrimeNG
-	// (PrimeUI) license key, so the component library runs without the "invalid
-	// license" banner. The key is client-visible by design — PrimeUI verifies
-	// offline, so it ships in the browser bundle regardless.
-	app.get("/api/ui-config", (_req, res) => {
-		res.json({ primengLicense: cfg.primengLicense ?? "" });
 	});
 
 	// On the internal console host(s) (SWARMBOT_CONSOLE_HOSTS, e.g. swarmbot.infra),

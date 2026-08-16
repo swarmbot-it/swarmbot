@@ -48,10 +48,6 @@ export type SwarmbotConfig = {
 	oidcEditorGroups: string[];
 	/** Hosts whose "/" skips the marketing landing and goes straight to OIDC login (e.g. swarmbot.infra). */
 	consoleHosts: string[];
-	/** PrimeNG (PrimeUI) license key. Served to the SPA so it registers the key at
-	 * bootstrap and runs without the "invalid license" banner. Client-visible by
-	 * design — PrimeUI verifies offline, so the key ships in the browser bundle. */
-	primengLicense: string | undefined;
 };
 
 const defaults: SwarmbotConfig = {
@@ -81,7 +77,6 @@ const defaults: SwarmbotConfig = {
 	oidcAdminGroups: [],
 	oidcEditorGroups: [],
 	consoleHosts: [],
-	primengLicense: undefined,
 };
 
 function envOrchestratorMode(key: string): "swarm" | "kubernetes" | "auto" | undefined {
@@ -101,7 +96,12 @@ export function resolvedDockerApi(fallback: string): string {
 }
 
 function envList(key: string): string[] {
-	return envStr(key)?.split(",").map((s) => s.trim()).filter(Boolean) ?? [];
+	return (
+		envStr(key)
+			?.split(",")
+			.map((s) => s.trim())
+			.filter(Boolean) ?? []
+	);
 }
 
 function envBool(key: string): boolean | undefined {
@@ -119,8 +119,7 @@ export function loadConfig(): SwarmbotConfig {
 	return {
 		dockerSock: envStr("SWARMBOT_DOCKER_SOCK") ?? defaults.dockerSock,
 		dockerApi: resolvedDockerApi(defaults.dockerApi),
-		dockerHttpTimeoutMs:
-			envInt("SWARMBOT_DOCKER_HTTP_TIMEOUT") ?? defaults.dockerHttpTimeoutMs,
+		dockerHttpTimeoutMs: envInt("SWARMBOT_DOCKER_HTTP_TIMEOUT") ?? defaults.dockerHttpTimeoutMs,
 		logLevel: envStr("SWARMBOT_LOG_LEVEL") ?? defaults.logLevel,
 		dbUrl: envStr("SWARMBOT_DB") ?? defaults.dbUrl,
 		// Mock mode imitates the Docker engine, so no agent ever feeds Influx —
@@ -153,6 +152,5 @@ export function loadConfig(): SwarmbotConfig {
 		oidcAdminGroups: envList("SWARMBOT_OIDC_ADMIN_GROUPS"),
 		oidcEditorGroups: envList("SWARMBOT_OIDC_EDITOR_GROUPS"),
 		consoleHosts: envList("SWARMBOT_CONSOLE_HOSTS"),
-		primengLicense: envStr("SWARMBOT_PRIMENG_LICENSE"),
 	};
 }

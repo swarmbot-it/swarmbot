@@ -28,11 +28,10 @@
         "@angular/router": "^22.0.0",
         "@apollo/client": "^4.1.9",
         "@jsverse/transloco": "^8.4.0",
-        "@primeuix/themes": "^3.0.0",
+        "@openng/optimus-ui": "2.0.0-rc.0",
+        "@openng/optimus-ui-themes": "2.0.0-rc.0",
         "apollo-angular": "^14.1.0",
         "graphql": "^16.14.0",
-        "primeicons": "^7.0.0",
-        "primeng": "^22.0.0",
         "rxjs": "~7.8.0",
         "tslib": "^2.3.0",
         "zone.js": "~0.15.0"

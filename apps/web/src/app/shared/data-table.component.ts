@@ -12,13 +12,13 @@ import {
 } from "@angular/core";
 import { NgFor, NgIf, NgTemplateOutlet } from "@angular/common";
 import { FormsModule } from "@angular/forms";
-import { TableModule } from "primeng/table";
+import { TableModule } from "@openng/optimus-ui/table";
 import { TranslocoPipe } from "@jsverse/transloco";
 
 /**
  * Shared, design-system-styled data table.
  *
- * The component wraps PrimeNG's <p-table> but exposes a single shape:
+ * The component wraps Optimus UI's <p-table> but exposes a single shape:
  *   - `columns` describe how to display & sort each field
  *   - `rows`     are the data
  *   - `searchKeys` enables a full-text filter over selected fields
@@ -89,7 +89,7 @@ export type ColumnDef<R = Record<string, unknown>> = {
 							[style.width]="widthOf(c)"
 						>
 							{{ c.label }}
-							<p-sort-icon *ngIf="c.sortable !== false" [field]="c.key"></p-sort-icon>
+							<p-sortIcon *ngIf="c.sortable !== false" [field]="c.key"></p-sortIcon>
 						</th>
 					</tr>
 				</ng-template>
@@ -175,7 +175,7 @@ export type ColumnDef<R = Record<string, unknown>> = {
 				color: var(--muted);
 				font-size: 12.5px;
 			}
-			:host ::ng-deep .sb-table .p-paginator .p-paginator-page.p-highlight {
+			:host ::ng-deep .sb-table .p-paginator .p-paginator-page-selected {
 				background: var(--primary-500);
 				color: white;
 			}
