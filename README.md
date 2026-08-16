@@ -3,7 +3,7 @@
 swarmbot.it is a Node.js monorepo for managing Docker Swarm resources. It contains:
 
 - `apps/api` - Express and Apollo GraphQL API for authentication, Docker access, events, and persistence.
-- `apps/web` - Angular web UI built with Apollo Angular and PrimeNG.
+- `apps/web` - Angular web UI built with Apollo Angular and Optimus UI.
 
 ## Deployment
 
@@ -98,7 +98,7 @@ The web UI uses **Transloco** with runtime-loaded JSON dictionaries:
 
 The active language is stored in `localStorage` under `swarmbot.lang`. On first visit, Polish is preferred when the browser language starts with `pl`; otherwise English is used.
 
-Switch language from the user menu in the top bar. PrimeNG table labels (paginator, etc.) are synchronized via `PrimeNGConfig.setTranslation`.
+Switch language from the user menu in the top bar. Optimus UI table labels (paginator, etc.) are synchronized via `Optimus.setTranslation`.
 
 Every HTTP and GraphQL request sends `Accept-Language`. The API returns localized error messages from `apps/api/src/i18n/messages/`.
 
@@ -136,13 +136,13 @@ Then open http://localhost:4200 and sign in as `admin` / `swarmbot`.
 docker compose -f docker-compose.dev.yml up
 ```
 
-| Service            | URL                           | Description      |
-| ------------------ | ----------------------------- | ---------------- |
-| Angular dev server | http://localhost:4200         | Live-reload, HMR |
-| API (GraphQL)      | http://localhost:8080/graphql | tsx hot-reload   |
-| API health         | http://localhost:8080/health  |                  |
+| Service            | URL                           | Description                        |
+| ------------------ | ----------------------------- | ---------------------------------- |
+| Angular dev server | http://localhost:4200         | Live-reload, HMR                   |
+| API (GraphQL)      | http://localhost:8080/graphql | tsx hot-reload                     |
+| API health         | http://localhost:8080/health  |                                    |
 | Postgres           | localhost:5432                | psql/pgAdmin (no bundled admin UI) |
-| InfluxDB           | http://localhost:8086         | HTTP API         |
+| InfluxDB           | http://localhost:8086         | HTTP API                           |
 
 Sign in as `admin` / `swarmbot`.
 
@@ -274,12 +274,14 @@ npm run swarm:undeploy
 The manager exposes the Docker API over TCP on port `2375` (no TLS — the start script sets `DOCKER_TLS_CERTDIR=""`). To make swarmbot.it API talk to the test Swarm instead of the local daemon, resolve the manager IP and set:
 
 **macOS / Linux:**
+
 ```sh
 MANAGER_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' swarm-manager)
 SWARMBOT_DOCKER_SOCK=tcp://$MANAGER_IP:2375 npm run dev:api
 ```
 
 **Windows PowerShell:**
+
 ```powershell
 $MANAGER_IP = docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' swarm-manager
 $env:SWARMBOT_DOCKER_SOCK = "tcp://${MANAGER_IP}:2375"
@@ -315,19 +317,44 @@ API server, so the dashboard shows Namespaces/Pods instead of Stacks/Tasks.
 
 Model matrix (Swarm vs Kubernetes):
 
-| | Docker Swarm | Kubernetes / k3s |
-| --- | --- | --- |
-| Cluster unit | Stack | Namespace |
-| Workload unit | Task | Pod |
-| Node metrics | agent via `docker stats` | agent via kubelet Summary API |
-| Detection | Docker socket present | in-cluster ServiceAccount / `SWARMBOT_KUBECONFIG` |
-| Force mode | `SWARMBOT_ORCHESTRATOR=swarm` | `SWARMBOT_ORCHESTRATOR=kubernetes` |
+|               | Docker Swarm                  | Kubernetes / k3s                                  |
+| ------------- | ----------------------------- | ------------------------------------------------- |
+| Cluster unit  | Stack                         | Namespace                                         |
+| Workload unit | Task                          | Pod                                               |
+| Node metrics  | agent via `docker stats`      | agent via kubelet Summary API                     |
+| Detection     | Docker socket present         | in-cluster ServiceAccount / `SWARMBOT_KUBECONFIG` |
+| Force mode    | `SWARMBOT_ORCHESTRATOR=swarm` | `SWARMBOT_ORCHESTRATOR=kubernetes`                |
 
 ---
 
 ## Docker Compose — production
 
-Start the full production stack with Postgres, InfluxDB, the swarmbot.it app, and the Swarm agent:
+`docker-compose.yml` declares its credentials and topology as **required** variables
+(`${VAR:?...}`), so it refuses to start rather than booting with guessed defaults.
+Put them in a `.env` next to the compose file:
+
+```sh
+cat > .env <<'EOF'
+POSTGRES_USER=admin
+POSTGRES_PASSWORD=change-me
+POSTGRES_DB=swarmbot
+
+INFLUXDB_USER=admin
+INFLUXDB_PASSWORD=change-me
+INFLUXDB_TOKEN=change-me
+
+# The console's own origin(s). The SPA loads its own bundles with an Origin
+# header, so this MUST match how you reach the UI — otherwise every script
+# comes back 500 and the page renders blank.
+SWARMBOT_ALLOWED_ORIGINS=http://localhost:888,http://127.0.0.1:888
+
+# First-run admin, created only while the users table is empty.
+SWARMBOT_BOOTSTRAP_PASSWORD=change-me
+EOF
+```
+
+Then start the full production stack with Postgres, InfluxDB, the swarmbot.it app,
+and the Swarm agent:
 
 ```sh
 docker compose up --build
@@ -338,6 +365,10 @@ The compose file exposes the app on:
 ```text
 http://localhost:888
 ```
+
+Log in with `admin` (override the username with `SWARMBOT_BOOTSTRAP_ADMIN`) and the
+password you set above. Behind a real hostname, point `SWARMBOT_ALLOWED_ORIGINS` at
+that URL instead.
 
 ## Configuration
 
