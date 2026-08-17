@@ -31,7 +31,8 @@ import {
 } from "../docker/engine.js";
 import { stackRemove } from "../docker/cli.js";
 import { ManifestValidationError } from "../orchestrator/kubernetes/adapter.js";
-import yaml from "js-yaml";
+// js-yaml v5 dropped its default export; the named exports are the API now.
+import * as yaml from "js-yaml";
 import { pubsub, SWARM_TOPIC } from "./pubsub.js";
 import type Dockerode from "dockerode";
 import { randomUUID } from "crypto";
@@ -1318,7 +1319,8 @@ export const resolvers = {
 
 	Subscription: {
 		swarmEvent: {
-			subscribe: () => pubsub.asyncIterator([SWARM_TOPIC]),
+			// graphql-subscriptions v3 renamed asyncIterator -> asyncIterableIterator.
+			subscribe: () => pubsub.asyncIterableIterator([SWARM_TOPIC]),
 		},
 	},
 };

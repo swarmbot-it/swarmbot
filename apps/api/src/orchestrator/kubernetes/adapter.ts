@@ -6,7 +6,8 @@
  *   pods → tasks, namespaces → stacks, PVCs → volumes,
  *   ConfigMaps/Secrets → configs/secrets. Networks have no equivalent.
  */
-import yaml from "js-yaml";
+// js-yaml v5 dropped its default export; the named exports are the API now.
+import * as yaml from "js-yaml";
 import type { SwarmbotConfig } from "../../config.js";
 import type { ClusterHealth } from "../../cluster-health.js";
 import { quorumSize } from "../../cluster-health.js";
