@@ -3,7 +3,8 @@ import { randomUUID } from "crypto";
 import type { Kysely } from "kysely";
 import type { Database } from "../db.js";
 import { derivePassword } from "../auth/password.js";
-import yaml from "js-yaml";
+// js-yaml v5 dropped its default export; the named exports are the API now.
+import * as yaml from "js-yaml";
 import { logger } from "../logger.js";
 
 export async function initUsersFromConfig(db: Kysely<Database>): Promise<void> {
