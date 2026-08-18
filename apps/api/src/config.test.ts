@@ -81,8 +81,9 @@ describe("loadConfig", () => {
 		expect(cfg.oidcRedirectUri).toBe("https://swarmbot.example/api/auth/oidc/callback");
 		expect(cfg.oidcAdminGroups).toEqual(["org:admins", "org:ops"]);
 		expect(cfg.oidcEditorGroups).toEqual(["org:devs"]);
-		// Default scope stays when SWARMBOT_OIDC_SCOPES is unset.
-		expect(cfg.oidcScopes).toBe("openid profile email groups");
+		// Default scope stays when SWARMBOT_OIDC_SCOPES is unset. "groups" is
+		// intentionally absent — see the comment on the default in config.ts.
+		expect(cfg.oidcScopes).toBe("openid profile email");
 	});
 
 	it("defaults OIDC/console settings to empty/undefined", () => {

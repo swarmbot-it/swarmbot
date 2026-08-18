@@ -195,6 +195,16 @@ Register the redirect URI with your IdP. The feature is inert until
 `ISSUER`+`CLIENT_ID`+`CLIENT_SECRET`+`REDIRECT_URI` are all set; password login
 keeps working alongside it.
 
+The app never requests a `groups` OAuth scope (only `openid profile email`) —
+group membership must instead come from a claim the IdP includes
+unconditionally. On Keycloak, add a **dedicated** protocol mapper
+(`oidc-group-membership-mapper`, claim name `groups`, `full.path` matching
+however `SWARMBOT_OIDC_ADMIN_GROUPS`/`SWARMBOT_OIDC_EDITOR_GROUPS` are
+written) directly on the client, not via a client scope — a client-scope-based
+mapper only fires when that scope is requested, and requesting an
+unregistered scope name gets the whole authorization request rejected with
+`invalid_scope`.
+
 On a host listed in `SWARMBOT_CONSOLE_HOSTS`, the console **auto-redirects to the
 IdP** — both the `/` entry point (server-side) and the SPA login page, which
 never shows the password form there. To reach the local password login on such a
