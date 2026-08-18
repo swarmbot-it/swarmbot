@@ -1,4 +1,8 @@
 {
+    "chart.daysAgo": "{n}일 전",
+    "chart.hoursAgo": "{n}시간 전",
+    "chart.minutesAgo": "{n}분 전",
+    "chart.now": "현재",
     "errors.forbidden": "권한이 없습니다",
     "errors.invalidAuthorization": "인증 정보가 유효하지 않습니다",
     "errors.invalidCredentials": "사용자 이름 또는 비밀번호가 올바르지 않습니다.",

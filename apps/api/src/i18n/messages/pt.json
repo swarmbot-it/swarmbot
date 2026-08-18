@@ -1,4 +1,8 @@
 {
+    "chart.daysAgo": "há {n} d",
+    "chart.hoursAgo": "há {n} h",
+    "chart.minutesAgo": "há {n} min",
+    "chart.now": "agora",
     "errors.forbidden": "Acesso proibido",
     "errors.invalidAuthorization": "Autorização inválida",
     "errors.invalidCredentials": "O nome de utilizador ou a palavra-passe estão incorretos.",

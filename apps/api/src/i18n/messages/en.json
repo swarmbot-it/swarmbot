@@ -1,4 +1,8 @@
 {
+    "chart.daysAgo": "{n}d ago",
+    "chart.hoursAgo": "{n}h ago",
+    "chart.minutesAgo": "{n}m ago",
+    "chart.now": "now",
     "errors.forbidden": "Forbidden",
     "errors.invalidAuthorization": "Invalid authorization",
     "errors.invalidCredentials": "The username or password you entered is incorrect.",

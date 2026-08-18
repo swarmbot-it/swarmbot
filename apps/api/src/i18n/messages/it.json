@@ -1,4 +1,8 @@
 {
+    "chart.daysAgo": "{n} g fa",
+    "chart.hoursAgo": "{n} h fa",
+    "chart.minutesAgo": "{n} min fa",
+    "chart.now": "ora",
     "errors.forbidden": "Accesso negato",
     "errors.invalidAuthorization": "Autorizzazione non valida",
     "errors.invalidCredentials": "Il nome utente o la password non sono corretti.",

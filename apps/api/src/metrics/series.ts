@@ -1,5 +1,7 @@
 ﻿import type { SwarmbotConfig } from "../config.js";
 import { influxQuery } from "../influx.js";
+import type { SupportedLocale } from "../i18n/locale.js";
+import { t } from "../i18n/translate.js";
 
 /**
  * Telemetry series generator and InfluxDB query helpers.
@@ -25,32 +27,33 @@ const RANGE_POINTS: Record<Range, number> = {
 	"24h": 96,
 };
 
-const RANGE_LABEL = (r: Range, n: number, i: number): string => {
+// Axis labels are rendered server-side, so they have to be localized here —
+// the SPA shows whatever string the API returns.
+const RANGE_LABEL = (r: Range, n: number, i: number, locale: SupportedLocale): string => {
 	const remaining = n - i;
 	switch (r) {
 		case "15m":
-			return `${remaining}m ago`;
 		case "1h":
-			return `${remaining}m ago`;
+			return t(locale, "chart.minutesAgo", { n: remaining });
 		case "6h":
-			return `${remaining * 5}m ago`;
+			return t(locale, "chart.minutesAgo", { n: remaining * 5 });
 		case "24h":
-			return `${Math.max(1, Math.floor(remaining / 4))}h ago`;
+			return t(locale, "chart.hoursAgo", { n: Math.max(1, Math.floor(remaining / 4)) });
 	}
 };
 
 const RES_STRIDE: Record<Resolution, number> = { low: 4, medium: 2, high: 1 };
 
 /** Short "how long ago" label for a raw InfluxDB timestamp, e.g. "42m ago", "3h ago". */
-export function relativeLabel(iso: string): string {
+export function relativeLabel(iso: string, locale: SupportedLocale = "en"): string {
 	const diffMs = Date.now() - new Date(iso).getTime();
 	const minutes = Math.round(diffMs / 60000);
-	if (minutes <= 0) return "now";
-	if (minutes < 60) return `${minutes}m ago`;
+	if (minutes <= 0) return t(locale, "chart.now");
+	if (minutes < 60) return t(locale, "chart.minutesAgo", { n: minutes });
 	const hours = Math.round(minutes / 60);
-	if (hours < 24) return `${hours}h ago`;
+	if (hours < 24) return t(locale, "chart.hoursAgo", { n: hours });
 	const days = Math.round(hours / 24);
-	return `${days}d ago`;
+	return t(locale, "chart.daysAgo", { n: days });
 }
 
 export type MetricsSeries = {
@@ -82,13 +85,18 @@ function genSeries(
  * Deterministic mock series — same family of curves the design exports.
  * Phase offsets make CPU/MEM/DISK visually distinct.
  */
-export function mockSeries(range: Range, resolution: Resolution, seed = 0): MetricsSeries {
+export function mockSeries(
+	range: Range,
+	resolution: Resolution,
+	seed = 0,
+	locale: SupportedLocale = "en"
+): MetricsSeries {
 	const n = RANGE_POINTS[range];
 	const stride = RES_STRIDE[resolution];
 	const cpu = genSeries(n, 44 + seed, 22, 0.6 + seed * 0.13, 6);
 	const mem = genSeries(n, 56 + seed, 12, 1.5 + seed * 0.21, 4);
 	const disk = genSeries(n, 46 + seed, 6, 2.1 + seed * 0.07, 1);
-	const labels = Array.from({ length: n }, (_, i) => RANGE_LABEL(range, n, i));
+	const labels = Array.from({ length: n }, (_, i) => RANGE_LABEL(range, n, i, locale));
 	return {
 		labels: labels.filter((_, i) => i % stride === 0),
 		cpu: cpu.filter((_, i) => i % stride === 0),
@@ -120,7 +128,8 @@ function assembleSeries(
 	resolution: Resolution,
 	cpuRaw: Array<number | null>,
 	memRaw: Array<number | null>,
-	diskRaw: Array<number | null>
+	diskRaw: Array<number | null>,
+	locale: SupportedLocale = "en"
 ): MetricsSeries | null {
 	const len = cpuRaw.length;
 	let start = len;
@@ -144,7 +153,9 @@ function assembleSeries(
 	const disk = fillForward(diskRaw);
 
 	const stride = RES_STRIDE[resolution];
-	const labels = Array.from({ length: len }, (_, i) => RANGE_LABEL(range, len, i)).slice(start);
+	const labels = Array.from({ length: len }, (_, i) => RANGE_LABEL(range, len, i, locale)).slice(
+		start
+	);
 	return {
 		labels: labels.filter((_, i) => i % stride === 0),
 		cpu: cpu.filter((_, i) => i % stride === 0),
@@ -161,7 +172,8 @@ function assembleSeries(
 export async function influxClusterSeries(
 	cfg: SwarmbotConfig,
 	range: Range,
-	resolution: Resolution
+	resolution: Resolution,
+	locale: SupportedLocale = "en"
 ): Promise<MetricsSeries | null> {
 	if (!cfg.influxdbUrl) return null;
 	const window = { "15m": "30s", "1h": "1m", "6h": "5m", "24h": "15m" }[range];
@@ -179,7 +191,8 @@ export async function influxClusterSeries(
 			resolution,
 			extractField(cpuRows),
 			extractField(memRows),
-			extractField(diskRows)
+			extractField(diskRows),
+			locale
 		);
 	} catch {
 		return null;
@@ -191,7 +204,8 @@ export async function influxNodeSeries(
 	cfg: SwarmbotConfig,
 	nodeId: string,
 	range: Range,
-	resolution: Resolution
+	resolution: Resolution,
+	locale: SupportedLocale = "en"
 ): Promise<MetricsSeries | null> {
 	if (!cfg.influxdbUrl) return null;
 	const window = { "15m": "30s", "1h": "1m", "6h": "5m", "24h": "15m" }[range];
@@ -209,7 +223,8 @@ export async function influxNodeSeries(
 			resolution,
 			extractField(cpuRows),
 			extractField(memRows),
-			extractField(diskRows)
+			extractField(diskRows),
+			locale
 		);
 	} catch {
 		return null;

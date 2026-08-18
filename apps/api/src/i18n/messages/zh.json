@@ -1,4 +1,8 @@
 {
+    "chart.daysAgo": "{n} 天前",
+    "chart.hoursAgo": "{n} 小时前",
+    "chart.minutesAgo": "{n} 分钟前",
+    "chart.now": "现在",
     "errors.forbidden": "没有权限",
     "errors.invalidAuthorization": "授权无效",
     "errors.invalidCredentials": "用户名或密码不正确。",

@@ -612,7 +612,7 @@ export const resolvers = {
 						]);
 						if (cpuRows.length > 0) {
 							return {
-								labels: cpuRows.map((v) => relativeLabel(String(v[0]))),
+								labels: cpuRows.map((v) => relativeLabel(String(v[0]), ctx.locale)),
 								cpu: cpuRows.map((v) => v[1] ?? 0),
 								mem: memRows.map((v) => v[1] ?? 0),
 							};
@@ -628,7 +628,7 @@ export const resolvers = {
 				let seed = 0;
 				for (let i = 0; i < args.id.length; i++)
 					seed = (seed * 31 + args.id.charCodeAt(i)) >>> 0;
-				const mock = mockSeries(range, "medium", seed % 5);
+				const mock = mockSeries(range, "medium", seed % 5, ctx.locale);
 				return { labels: mock.labels, cpu: mock.cpu, mem: mock.mem };
 			}
 			return empty;
@@ -696,7 +696,13 @@ export const resolvers = {
 			const range = input.range;
 			const resolution = input.resolution ?? "medium";
 			if (input.nodeId) {
-				const nodeInflux = await influxNodeSeries(ctx.cfg, input.nodeId, range, resolution);
+				const nodeInflux = await influxNodeSeries(
+					ctx.cfg,
+					input.nodeId,
+					range,
+					resolution,
+					ctx.locale
+				);
 				if (nodeInflux) return nodeInflux;
 				if (ctx.cfg.mock) {
 					const hist = nodeMockHistory(
@@ -714,9 +720,9 @@ export const resolvers = {
 				}
 				return null;
 			}
-			const influx = await influxClusterSeries(ctx.cfg, range, resolution);
+			const influx = await influxClusterSeries(ctx.cfg, range, resolution, ctx.locale);
 			if (influx) return influx;
-			if (ctx.cfg.mock) return mockSeries(range, resolution);
+			if (ctx.cfg.mock) return mockSeries(range, resolution, 0, ctx.locale);
 			return null;
 		},
 		statsSeries: async (
@@ -805,7 +811,7 @@ export const resolvers = {
 						]);
 						if (cpuRows.length > 0) {
 							return {
-								labels: cpuRows.map((v) => relativeLabel(String(v[0]))),
+								labels: cpuRows.map((v) => relativeLabel(String(v[0]), ctx.locale)),
 								cpu: cpuRows.map((v) => v[1] ?? 0),
 								mem: memRows.map((v) => v[1] ?? 0),
 							};
@@ -825,7 +831,7 @@ export const resolvers = {
 			let seed = 0;
 			for (let i = 0; i < args.name.length; i++)
 				seed = (seed * 31 + args.name.charCodeAt(i)) >>> 0;
-			const mock = mockSeries(range, resolution, seed % 5);
+			const mock = mockSeries(range, resolution, seed % 5, ctx.locale);
 			return { labels: mock.labels, cpu: mock.cpu, mem: mock.mem };
 		},
 	},

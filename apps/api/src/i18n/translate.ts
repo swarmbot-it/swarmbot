@@ -25,6 +25,17 @@ const MESSAGES: Record<SupportedLocale, Record<string, string>> = {
 	zh: zh as Record<string, string>,
 };
 
-export function t(locale: SupportedLocale, key: MessageKey): string {
-	return MESSAGES[locale][key] ?? MESSAGES.en[key] ?? key;
+export function t(
+	locale: SupportedLocale,
+	key: MessageKey,
+	vars?: Record<string, string | number>
+): string {
+	const raw = MESSAGES[locale][key] ?? MESSAGES.en[key] ?? key;
+	if (!vars) return raw;
+	// `{n}`-style placeholders — locales put them in different positions
+	// ("vor {n} Min." vs "{n} 分钟前"), so substitution must not assume order.
+	return Object.entries(vars).reduce(
+		(acc, [name, value]) => acc.split(`{${name}}`).join(String(value)),
+		raw
+	);
 }
