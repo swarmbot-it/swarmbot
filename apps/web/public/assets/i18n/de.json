@@ -31,7 +31,8 @@
             "password": "Passwort",
             "submit": "Anmelden",
             "submitting": "Anmeldung…",
-            "failed": "Anmeldung fehlgeschlagen."
+            "failed": "Anmeldung fehlgeschlagen.",
+            "sso": "Anmelden mit {{provider}}"
         }
     },
     "topbar": {

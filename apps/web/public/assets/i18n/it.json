@@ -31,7 +31,8 @@
             "password": "Password",
             "submit": "Accedi",
             "submitting": "Accesso in corso…",
-            "failed": "Accesso non riuscito."
+            "failed": "Accesso non riuscito.",
+            "sso": "Accedi con {{provider}}"
         }
     },
     "topbar": {

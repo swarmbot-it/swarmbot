@@ -233,10 +233,11 @@ export async function createHttpServer(
 		res.json({});
 	});
 
-	// --- OIDC (Dex) login for the internal console -------------------------
-	// The app is a confidential OIDC client: /login redirects to Dex, /callback
-	// verifies the ID token, maps the identity to a user, and issues a native
-	// session JWT (same as password login). Enabled only when SWARMBOT_OIDC_* is set.
+	// --- OIDC login for the internal console --------------------------------
+	// The app is a confidential OIDC client: /login redirects to the configured
+	// IdP, /callback verifies the ID token, maps the identity to a user, and
+	// issues a native session JWT (same as password login). Enabled only when
+	// SWARMBOT_OIDC_* is set.
 	app.get("/api/auth/oidc/login", async (req, res) => {
 		const oidc = oidcConfig(cfg);
 		if (!oidc) {
@@ -382,12 +383,16 @@ export async function createHttpServer(
 	app.get("/api/auth/config", (req, res) => {
 		const oidc = Boolean(oidcConfig(cfg));
 		const host = (req.headers.host ?? "").split(":")[0]!.toLowerCase();
-		res.json({ oidc, autoLogin: oidc && cfg.consoleHosts.includes(host) });
+		res.json({
+			oidc,
+			autoLogin: oidc && cfg.consoleHosts.includes(host),
+			providerLabel: cfg.oidcProviderLabel ?? null,
+		});
 	});
 
-	// On the internal console host(s) (SWARMBOT_CONSOLE_HOSTS, e.g. swarmbot.infra),
-	// "/" skips the marketing landing and goes straight to the Dex login. Public
-	// hosts (swarmbot.it) fall through to the static landing below.
+	// On the internal console host(s) (SWARMBOT_CONSOLE_HOSTS, e.g. swarmbot.example),
+	// "/" skips the marketing landing and goes straight to the IdP login. Other
+	// hosts fall through to the static landing below.
 	app.get("/", (req, res, next) => {
 		const host = (req.headers.host ?? "").split(":")[0]!.toLowerCase();
 		if (oidcConfig(cfg) && cfg.consoleHosts.includes(host)) {

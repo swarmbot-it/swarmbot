@@ -18,7 +18,7 @@
 #      Dodatkowo InfluxDB: baza "swarmboty" migrowana backup/restore do
 #      bazy "swarmbot" (stats-writer pisze teraz db=swarmbot).
 #
-# Uruchamiać z WSL (kubeconfig: ~/.kube/no-human-k3s.yaml).
+# Ustaw KUBECONFIG na kubeconfig docelowego klastra przed uruchomieniem.
 # Wymagane narzędzia: kubectl, jq, curl, base64. Plik musi mieć końce linii LF.
 #
 # Kolejność faz:
@@ -37,17 +37,14 @@ APP_IMAGE="${APP_IMAGE:-ghcr.io/swarmbot-it/swarmbot:ci-k8s-orchestrator-postgre
 AGENT_IMAGE="${AGENT_IMAGE:-ghcr.io/swarmbot-it/swarmagent:ci-ghcr-actions}"
 # Nazwa starej bazy metryk w InfluxDB (domyślna sprzed zmiany nazewnictwa).
 OLD_INFLUX_DB="${OLD_INFLUX_DB:-swarmboty}"
-# IP, na które wskazuje swarmbot.infra (k3s-a1) — do testu ingressu po cutover.
-INGRESS_IP="${INGRESS_IP:-10.6.6.6}"
-INGRESS_HOST="${INGRESS_HOST:-swarmbot.infra}"
+# IP i host konsoli — do testu ingressu po cutover. Podmień na własne albo
+# ustaw jako zmienne środowiskowe przed uruchomieniem.
+INGRESS_IP="${INGRESS_IP:-CHANGE-ME}"
+INGRESS_HOST="${INGRESS_HOST:-swarmbot.example}"
 SKIP_INFLUX="${SKIP_INFLUX:-false}"
 PF_PORT="${PF_PORT:-18091}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-if [[ -z "${KUBECONFIG:-}" && -f "$HOME/.kube/no-human-k3s.yaml" ]]; then
-	export KUBECONFIG="$HOME/.kube/no-human-k3s.yaml"
-fi
 
 # ------------------------------------------------------------------- narzędzia
 

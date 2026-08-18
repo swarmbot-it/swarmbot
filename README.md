@@ -426,3 +426,5 @@ package.json
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+Maintained by NO-HUMAN PSA.

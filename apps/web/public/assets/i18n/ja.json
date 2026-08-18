@@ -31,7 +31,8 @@
             "password": "パスワード",
             "submit": "サインイン",
             "submitting": "サインイン中…",
-            "failed": "ログインに失敗しました。"
+            "failed": "ログインに失敗しました。",
+            "sso": "{{provider}} でサインイン"
         }
     },
     "topbar": {

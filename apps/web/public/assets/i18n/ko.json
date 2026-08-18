@@ -31,7 +31,8 @@
             "password": "비밀번호",
             "submit": "로그인",
             "submitting": "로그인 중…",
-            "failed": "로그인에 실패했습니다."
+            "failed": "로그인에 실패했습니다.",
+            "sso": "{{provider}}로 로그인"
         }
     },
     "topbar": {

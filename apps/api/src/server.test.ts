@@ -123,12 +123,12 @@ describe.sequential("public config endpoints", () => {
 	it("GET /api/auth/config reports OIDC disabled when unconfigured", async () => {
 		test = await startTestHttp();
 		const res = await fetch(`${test.baseUrl}/api/auth/config`);
-		expect(await res.json()).toEqual({ oidc: false, autoLogin: false });
+		expect(await res.json()).toEqual({ oidc: false, autoLogin: false, providerLabel: null });
 	});
 
 	it("GET /api/auth/config auto-logs-in on a configured console host", async () => {
 		test = await startTestHttp({
-			oidcIssuer: "https://dex.example",
+			oidcIssuer: "https://idp.example",
 			oidcClientId: "swarmbot",
 			oidcClientSecret: "s3cret",
 			oidcRedirectUri: "https://swarmbot.example/api/auth/oidc/callback",
@@ -137,6 +137,18 @@ describe.sequential("public config endpoints", () => {
 			consoleHosts: ["127.0.0.1"],
 		});
 		const res = await fetch(`${test.baseUrl}/api/auth/config`);
-		expect(await res.json()).toEqual({ oidc: true, autoLogin: true });
+		expect(await res.json()).toEqual({ oidc: true, autoLogin: true, providerLabel: null });
+	});
+
+	it("GET /api/auth/config reports the configured OIDC provider label", async () => {
+		test = await startTestHttp({
+			oidcIssuer: "https://idp.example",
+			oidcClientId: "swarmbot",
+			oidcClientSecret: "s3cret",
+			oidcRedirectUri: "https://swarmbot.example/api/auth/oidc/callback",
+			oidcProviderLabel: "Acme SSO",
+		});
+		const res = await fetch(`${test.baseUrl}/api/auth/config`);
+		expect(await res.json()).toEqual({ oidc: true, autoLogin: false, providerLabel: "Acme SSO" });
 	});
 });

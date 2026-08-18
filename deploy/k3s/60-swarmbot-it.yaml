@@ -1,7 +1,9 @@
 # Public marketing landing at https://swarmbot.it.
 #
 # swarmbot.it resolves to the k3s gateway public IP; Traefik already listens
-# there (same path as dex.no-human.tech), so no firewall change is needed.
+# there for the console host too, so no firewall change is needed. Replace
+# `swarmbot.it` throughout this file with your own public domain if you're
+# not deploying the official swarmbot.it site.
 # This route serves ONLY the landing — the console (/app), API (/api) and
 # GraphQL (/graphql) are NOT routed here and stay internal-only on
 # swarmbot.infra (behind ipAllowList + Dex login). TLS via Let's Encrypt.

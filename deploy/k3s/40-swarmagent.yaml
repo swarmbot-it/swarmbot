@@ -1,6 +1,7 @@
 # swarmagent — push-only per-node monitoring agent (DaemonSet).
-# Runs on every node EXCEPT k3s-a1 (the app node), per deployment requirement.
-# To also monitor k3s-a1, remove the nodeAffinity block below.
+# Runs on every node EXCEPT CHANGE-ME-node-hostname (the app node — see
+# 30-swarmbot.yaml), per deployment requirement. To also monitor that node,
+# remove the nodeAffinity block below.
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -67,7 +68,7 @@ spec:
                             - matchExpressions:
                                   - key: kubernetes.io/hostname
                                     operator: NotIn
-                                    values: ["k3s-a1.infra.no-human.tech"]
+                                    values: ["CHANGE-ME-node-hostname"]
             # Monitor control-plane nodes too (k3s servers are schedulable by
             # default, but keep the tolerations for hardened clusters).
             tolerations:
@@ -77,9 +78,10 @@ spec:
                 - key: node-role.kubernetes.io/master
                   operator: Exists
                   effect: NoSchedule
-                # Dedicated workload nodes (k3s-e*) carry this taint; the
-                # monitoring agent must still run there.
-                - key: infra.no-human.tech/dedicated
+                # If some of your nodes carry a custom "dedicated workload" taint,
+                # the monitoring agent must still run there — adjust the key below
+                # to match (or drop this toleration if you don't use one).
+                - key: CHANGE-ME/dedicated
                   operator: Exists
             securityContext:
                 runAsNonRoot: true
@@ -93,7 +95,7 @@ spec:
                   image: ghcr.io/swarmbot-it/swarmagent:latest
                   imagePullPolicy: Always
                   env:
-                      # In-cluster Service of the Swarmbot API on k3s-a1.
+                      # In-cluster Service of the Swarmbot API (see 30-swarmbot.yaml).
                       # The agent derives /events and /version from this base URL.
                       - name: SWARMBOT_URL
                         value: "http://swarmbot.swarmbot.svc.cluster.local:8080"

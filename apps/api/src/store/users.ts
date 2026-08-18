@@ -145,10 +145,10 @@ export async function findAuthUser(
 }
 
 /**
- * Provision or link a user from a verified OIDC (Dex) identity. Matches by
+ * Provision or link a user from a verified OIDC identity. Matches by
  * (provider, sub), then by username (links an existing account), otherwise
  * creates a new user with an unusable random password — OIDC users never log
- * in by password. Role (derived from Dex groups) is re-applied on every login.
+ * in by password. Role (derived from IdP groups) is re-applied on every login.
  */
 export async function upsertOidcUser(
 	db: Kysely<Database>,

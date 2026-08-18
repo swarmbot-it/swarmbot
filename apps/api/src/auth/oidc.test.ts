@@ -148,7 +148,8 @@ describe("authorizationUrl", () => {
 
 describe("exchangeAndVerify", () => {
 	// Generate an RSA keypair, publish it as a JWKS, and sign an ID token the way
-	// Dex would — the whole discovery -> token -> JWKS -> RS256 verify path.
+	// a real OIDC provider would — the whole discovery -> token -> JWKS -> RS256
+	// verify path.
 	function harness(issuer: string, claims: Record<string, unknown>) {
 		const { privateKey, publicKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
 		const jwk = { ...(publicKey.export({ format: "jwk" }) as object), kid: "k1" };
@@ -187,7 +188,7 @@ describe("exchangeAndVerify", () => {
 			aud: "swarmbot",
 			sub: "gh|42",
 			preferred_username: "Dominik",
-			email: "d@no-human.tech",
+			email: "d@example.com",
 			name: "Dominik S",
 			groups: ["org:admins"],
 			nonce: "nonce-1",
@@ -196,7 +197,7 @@ describe("exchangeAndVerify", () => {
 		const id = await exchangeAndVerify({ ...fullOidc, issuer }, "code", "verifier", "nonce-1");
 		expect(id.sub).toBe("gh|42");
 		expect(id.username).toBe("dominik"); // lowercased + sanitised
-		expect(id.email).toBe("d@no-human.tech");
+		expect(id.email).toBe("d@example.com");
 		expect(id.groups).toEqual(["org:admins"]);
 	});
 

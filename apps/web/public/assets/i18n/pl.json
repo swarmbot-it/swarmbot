@@ -32,7 +32,8 @@
             "password": "Hasło",
             "submit": "Zaloguj się",
             "submitting": "Logowanie…",
-            "failed": "Logowanie nie powiodło się."
+            "failed": "Logowanie nie powiodło się.",
+            "sso": "Zaloguj się przez {{provider}}"
         }
     },
     "topbar": {
