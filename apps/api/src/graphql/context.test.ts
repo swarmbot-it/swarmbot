@@ -9,8 +9,19 @@ describe("localeFromHeader", () => {
 	it("prefers Polish", () => {
 		expect(localeFromHeader("pl-PL,en;q=0.9")).toBe("pl");
 	});
-	it("falls back to English", () => {
-		expect(localeFromHeader("de-DE")).toBe("en");
+	it("falls back to English for a locale we do not ship", () => {
+		// Swedish is deliberately not in SUPPORTED_LOCALES. This case used to use
+		// de-DE, which stopped being a fallback example once German was added.
+		expect(localeFromHeader("sv-SE")).toBe("en");
+	});
+	it("resolves every shipped locale, matching on the primary subtag", () => {
+		expect(localeFromHeader("de-DE")).toBe("de");
+		expect(localeFromHeader("pt-BR")).toBe("pt");
+		expect(localeFromHeader("zh-Hans")).toBe("zh");
+		expect(localeFromHeader("ko")).toBe("ko");
+	});
+	it("honours q-weights over header order", () => {
+		expect(localeFromHeader("sv-SE;q=0.9,ja-JP;q=1.0")).toBe("ja");
 	});
 });
 
