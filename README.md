@@ -7,9 +7,38 @@ swarmbot.it is a Node.js monorepo for managing Docker Swarm resources. It contai
 
 ## Deployment
 
-To run Swarmbot on your own **Docker Swarm** or **Kubernetes** (k3s or generic
-k8s) cluster, see the deployment guide: **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)**.
-The sections below cover local development and test clusters.
+Prebuilt images are published to GHCR on every push to `main` — no local
+build required:
+
+```sh
+docker pull ghcr.io/swarmbot-it/swarmbot:latest
+```
+
+Try it standalone, no Postgres/InfluxDB/Docker socket needed (see
+[Demo / mock mode](#demo--mock-mode) for what this simulates):
+
+```sh
+docker run --rm -p 8080:8080 -e SWARMBOT_MOCK=true ghcr.io/swarmbot-it/swarmbot:latest
+```
+
+Open http://localhost:8080/app/ and sign in as `admin` / `swarmbot`.
+
+Available tags:
+
+| Tag                  | What it is                                                          |
+| -------------------- | ------------------------------------------------------------------- |
+| `latest`             | most recent build of `main` — moves on every merge                  |
+| `main`               | same image as `latest`, named after the branch                      |
+| `sha-<short-commit>` | immutable, pinned to one commit — use this for reproducible deploys |
+| `X.Y.Z` / `X.Y`      | cut when a `vX.Y.Z` git tag is pushed (semver-pinned release)       |
+
+`ghcr.io/swarmbot-it/swarmagent` (the per-node telemetry agent) is published the
+same way from its own repository.
+
+To run Swarmbot for real — with Postgres, InfluxDB, and on your own **Docker
+Swarm** or **Kubernetes** (k3s or generic k8s) cluster — see the deployment
+guide: **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)**. The sections below cover
+local development and test clusters.
 
 ## Requirements
 
