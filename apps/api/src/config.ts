@@ -73,7 +73,13 @@ const defaults: SwarmbotConfig = {
 	oidcClientId: undefined,
 	oidcClientSecret: undefined,
 	oidcRedirectUri: undefined,
-	oidcScopes: "openid profile email groups",
+	// "groups" is deliberately not requested here: Keycloak (and most IdPs)
+	// only accept scope names it has registered as client scopes, and the
+	// group claim is instead delivered via a dedicated per-client protocol
+	// mapper that applies unconditionally regardless of requested scope.
+	// Requesting "groups" explicitly gets the whole authorization request
+	// rejected with invalid_scope if no such client scope is registered.
+	oidcScopes: "openid profile email",
 	oidcAdminGroups: [],
 	oidcEditorGroups: [],
 	consoleHosts: [],
