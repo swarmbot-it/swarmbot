@@ -1,5 +1,10 @@
 FROM node:26-alpine AS build
 
+# better-sqlite3 has no prebuilt musl binary for every release, so `npm ci`
+# falls back to compiling it via node-gyp, which needs Python + a C++
+# toolchain. Alpine's base image ships neither.
+RUN apk add --no-cache python3 make g++
+
 WORKDIR /app
 COPY package.json package-lock.json tsconfig.base.json ./
 COPY apps/api/package.json apps/api/package.json
