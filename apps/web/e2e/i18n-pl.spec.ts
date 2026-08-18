@@ -71,7 +71,11 @@ const TABLE_PAGES: TablePageSpec[] = [
 		titleKey: "nav.stacks",
 		countSuffixKey: "pages.stacks.countSuffix",
 		addKey: "pages.stacks.add",
-		headerKeys: ["pages.stacks.columns.stack", "pages.stacks.columns.services", "columns.status"],
+		headerKeys: [
+			"pages.stacks.columns.stack",
+			"pages.stacks.columns.services",
+			"columns.status",
+		],
 	},
 	{
 		path: "/app/services",
@@ -134,11 +138,7 @@ const TABLE_PAGES: TablePageSpec[] = [
 		titleKey: "users.title",
 		countSuffixKey: "users.inWorkspace",
 		addKey: "users.addUser",
-		headerKeys: [
-			"users.columns.user",
-			"users.columns.role",
-			"users.columns.lastLogin",
-		],
+		headerKeys: ["users.columns.user", "users.columns.role", "users.columns.lastLogin"],
 	},
 ];
 
@@ -167,7 +167,9 @@ test.describe("Polish UI (pl)", () => {
 			await expect(page.locator(".page-header__count")).toContainText(t(spec.countSuffixKey));
 
 			if (spec.addKey) {
-				await expect(page.locator(".page-header .btn--primary")).toContainText(t(spec.addKey));
+				await expect(page.locator(".page-header .btn--primary")).toContainText(
+					t(spec.addKey)
+				);
 			}
 
 			await page.waitForSelector("table thead th", { timeout: 60_000 });
@@ -225,5 +227,4 @@ test.describe("Polish UI (pl)", () => {
 			page.locator(".node-mini__label", { hasText: t("pages.nodes.labels.disk") }).first()
 		).toBeVisible();
 	});
-
 });

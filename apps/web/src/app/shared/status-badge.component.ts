@@ -64,9 +64,7 @@ export class StatusBadgeComponent {
 		const key = `status.${upper}`;
 		const translated = this.transloco.translate(key);
 		const label =
-			translated !== key
-				? translated
-				: raw || this.transloco.translate("status.UNKNOWN");
+			translated !== key ? translated : raw || this.transloco.translate("status.UNKNOWN");
 		return { label, variant };
 	});
 }

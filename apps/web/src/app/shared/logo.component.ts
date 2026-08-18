@@ -11,7 +11,14 @@ import { NgIf } from "@angular/common";
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	template: `
 		<span class="sb-logo-wrap" aria-label="swarmbot.it">
-			<svg width="28" height="28" viewBox="0 0 32 32" class="sb-logo" fill="none" aria-hidden="true">
+			<svg
+				width="28"
+				height="28"
+				viewBox="0 0 32 32"
+				class="sb-logo"
+				fill="none"
+				aria-hidden="true"
+			>
 				<path
 					class="sb-logo__link sb-logo__link--1"
 					d="M12.5 16 L15.5 9.5"

@@ -7,7 +7,7 @@ Topologia:
   kontenerze) + centralna baza **PostgreSQL 16** + InfluxDB 1.8 (metryki agentów),
   przypięte przez `nodeSelector: kubernetes.io/hostname`.
 - **pozostałe węzły** — `swarmagent` jako DaemonSet z `nodeAffinity NotIn
-  [CHANGE-ME-node-hostname]`; agent jest push-only i wysyła staty/eventy na
+[CHANGE-ME-node-hostname]`; agent jest push-only i wysyła staty/eventy na
   `http://swarmbot.swarmbot.svc.cluster.local:8080/events`.
 - **UI/API** — Ingress (Traefik, wbudowany w k3s) pod `http://swarmbot.example`
   (podmień na własną domenę konsoli), ograniczony middleware'em `ipAllowList`
@@ -62,9 +62,9 @@ wariancie.
 - Jeden zewnętrzny PostgreSQL i jeden InfluxDB obsługują wiele instancji swarbota.
 - Usuń `10-postgres.yaml` i `20-influxdb.yaml` z `kustomization.yaml` (nie wdrażaj
   lokalnych baz) i skieruj env na centralne endpointy:
-  - `SWARMBOT_DB` → `postgres://<user>:<hasło>@<centralny-host>:5432/<baza-instancji>`
-  - `SWARMBOT_INFLUXDB` → `http://<centralny-host>:8086`,
-    `SWARMBOT_INFLUXDB_TOKEN` → `user:hasło` konta danej instancji.
+    - `SWARMBOT_DB` → `postgres://<user>:<hasło>@<centralny-host>:5432/<baza-instancji>`
+    - `SWARMBOT_INFLUXDB` → `http://<centralny-host>:8086`,
+      `SWARMBOT_INFLUXDB_TOKEN` → `user:hasło` konta danej instancji.
 - **Izolacja najemców na wspólnym silniku:** osobna **baza + rola** per instancja
   (Postgres) oraz osobna **baza InfluxQL** per instancja (InfluxDB). Naturalny
   klucz nazewniczy: `SWARMBOT_INSTANCE_NAME`.

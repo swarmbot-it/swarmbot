@@ -76,10 +76,15 @@ const CATEGORIES = ["data", "identity", "network", "ops", "app"] as const;
 			<header class="masthead">
 				<div class="masthead__brand">
 					<div>
-						<div class="masthead__eyebrow">{{ "pages.nodeMap.masthead.eyebrow" | transloco }}</div>
+						<div class="masthead__eyebrow">
+							{{ "pages.nodeMap.masthead.eyebrow" | transloco }}
+						</div>
 						<h1 class="masthead__title">{{ "nav.nodeMap" | transloco }}</h1>
 						<div class="masthead__subtitle">
-							{{ "pages.nodeMap.masthead.subtitle" | transloco: { total: entries.length } }}
+							{{
+								"pages.nodeMap.masthead.subtitle"
+									| transloco: { total: entries.length }
+							}}
 						</div>
 					</div>
 				</div>
@@ -89,21 +94,29 @@ const CATEGORIES = ["data", "identity", "network", "ops", "app"] as const;
 							<span class="pill__dot"></span>
 							{{
 								"pages.nodeMap.pills.ready"
-									| transloco: { ready: readyCount(entries), total: entries.length }
+									| transloco
+										: { ready: readyCount(entries), total: entries.length }
 							}}
 						</span>
 						<span class="pill pill--navy">
-							{{ "pages.nodeMap.pills.tasks" | transloco: { count: totalServices(entries) } }}
+							{{
+								"pages.nodeMap.pills.tasks"
+									| transloco: { count: totalServices(entries) }
+							}}
 						</span>
 					</div>
-					<span class="masthead__caption">{{ "pages.nodeMap.pills.caption" | transloco }}</span>
+					<span class="masthead__caption">{{
+						"pages.nodeMap.pills.caption" | transloco
+					}}</span>
 				</div>
 			</header>
 
 			<!-- ============ LEGEND ============ -->
 			<div class="legend">
 				<div class="legend__group">
-					<span class="legend__label">{{ "pages.nodeMap.legend.roles" | transloco }}</span>
+					<span class="legend__label">{{
+						"pages.nodeMap.legend.roles" | transloco
+					}}</span>
 					<span class="legend__item">
 						<span class="role-badge" style="color:var(--role-manager)">S</span>
 						{{ "pages.nodeMap.legend.manager" | transloco }}
@@ -115,7 +128,9 @@ const CATEGORIES = ["data", "identity", "network", "ops", "app"] as const;
 				</div>
 				<span class="legend__divider"></span>
 				<div class="legend__group">
-					<span class="legend__label">{{ "pages.nodeMap.legend.categories" | transloco }}</span>
+					<span class="legend__label">{{
+						"pages.nodeMap.legend.categories" | transloco
+					}}</span>
 					<span class="legend__item" *ngFor="let cat of categories">
 						<span class="legend__swatch" [style.background]="catVar(cat)"></span>
 						{{ "pages.nodeMap.categories." + cat | transloco }}
@@ -123,13 +138,24 @@ const CATEGORIES = ["data", "identity", "network", "ops", "app"] as const;
 				</div>
 				<span class="legend__divider"></span>
 				<div class="legend__group">
-					<span class="legend__label">{{ "pages.nodeMap.legend.status" | transloco }}</span>
+					<span class="legend__label">{{
+						"pages.nodeMap.legend.status" | transloco
+					}}</span>
 					<span class="legend__item">
 						<span class="legend__dot"></span>
 						{{ "pages.nodeMap.legend.running" | transloco }}
 					</span>
 					<span class="legend__item">
-						<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--role-drain)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+						<svg
+							width="13"
+							height="13"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="var(--role-drain)"
+							stroke-width="2.2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						>
 							<path d="M12 3 2 20h20L12 3Z"></path>
 							<path d="M12 10v4M12 17.5v.01"></path>
 						</svg>
@@ -143,7 +169,9 @@ const CATEGORIES = ["data", "identity", "network", "ops", "app"] as const;
 				<div
 					class="row-label"
 					*ngIf="group.entries.length"
-					[style.color]="group.key === 'managers' ? 'var(--role-manager)' : 'var(--role-worker)'"
+					[style.color]="
+						group.key === 'managers' ? 'var(--role-manager)' : 'var(--role-worker)'
+					"
 				>
 					{{ "pages.nodeMap.groups." + group.key | transloco }}
 					<span class="row-label__hosts">· {{ hostList(group.entries) }}</span>
@@ -152,7 +180,9 @@ const CATEGORIES = ["data", "identity", "network", "ops", "app"] as const;
 					<div
 						*ngFor="let entry of group.entries"
 						class="node-card"
-						[style.border-top-color]="isDrained(entry) ? 'var(--role-drain)' : roleVar(entry.node.role)"
+						[style.border-top-color]="
+							isDrained(entry) ? 'var(--role-drain)' : roleVar(entry.node.role)
+						"
 					>
 						<div class="node-card__top">
 							<span class="node-card__id">
@@ -160,29 +190,49 @@ const CATEGORIES = ["data", "identity", "network", "ops", "app"] as const;
 									{{ entry.node.role === "manager" ? "S" : "W" }}
 								</span>
 								<span class="node-card__hostname">{{ entry.node.hostname }}</span>
-								<span class="node-pill node-pill--orange" *ngIf="entry.node.hostname === peakHostname(entries)">PEAK</span>
-								<span class="node-pill node-pill--ink" *ngIf="entry.node.tags.includes('LEADER')">
+								<span
+									class="node-pill node-pill--orange"
+									*ngIf="entry.node.hostname === peakHostname(entries)"
+									>PEAK</span
+								>
+								<span
+									class="node-pill node-pill--ink"
+									*ngIf="entry.node.tags.includes('LEADER')"
+								>
 									{{ "dashboard.tags.leader" | transloco }}
 								</span>
-								<span class="node-pill node-pill--burgundy" *ngIf="isDrained(entry)">
+								<span
+									class="node-pill node-pill--burgundy"
+									*ngIf="isDrained(entry)"
+								>
 									{{ "dashboard.tags.drain" | transloco }}
 								</span>
 							</span>
-							<span class="node-card__meta">{{ entry.node.ip }} · {{ entry.node.dockerVersion }}</span>
+							<span class="node-card__meta"
+								>{{ entry.node.ip }} · {{ entry.node.dockerVersion }}</span
+							>
 						</div>
 
 						<div class="node-usage">
 							<div class="node-usage__row">
-								<span>{{ "pages.nodes.labels.memory" | transloco }} {{ entry.node.mem }}%</span>
+								<span
+									>{{ "pages.nodes.labels.memory" | transloco }}
+									{{ entry.node.mem }}%</span
+								>
 								<span>
-									{{ "pages.nodes.labels.cpu" | transloco }} {{ entry.node.cpu }}% ·
-									{{ "pages.nodes.labels.disk" | transloco }} {{ entry.node.disk }}%
+									{{ "pages.nodes.labels.cpu" | transloco }} {{ entry.node.cpu }}%
+									· {{ "pages.nodes.labels.disk" | transloco }}
+									{{ entry.node.disk }}%
 								</span>
 							</div>
 							<div class="node-usage__bar">
 								<div
 									[style.width.%]="entry.node.mem"
-									[style.background]="entry.node.hostname === peakHostname(entries) ? 'var(--nh-orange)' : roleVar(entry.node.role)"
+									[style.background]="
+										entry.node.hostname === peakHostname(entries)
+											? 'var(--nh-orange)'
+											: roleVar(entry.node.role)
+									"
 								></div>
 							</div>
 						</div>
@@ -201,14 +251,22 @@ const CATEGORIES = ["data", "identity", "network", "ops", "app"] as const;
 								<svg
 									*ngIf="svc.status !== 'RUNNING'"
 									class="chip__warn"
-									width="12" height="12" viewBox="0 0 24 24" fill="none"
-									stroke="var(--role-drain)" stroke-width="2.2"
-									stroke-linecap="round" stroke-linejoin="round"
+									width="12"
+									height="12"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="var(--role-drain)"
+									stroke-width="2.2"
+									stroke-linecap="round"
+									stroke-linejoin="round"
 								>
 									<path d="M12 3 2 20h20L12 3Z"></path>
 									<path d="M12 10v4M12 17.5v.01"></path>
 								</svg>
-								<span class="chip__stats" [class.chip__stats--hot]="svc.cpu >= 60 || svc.mem >= 60">
+								<span
+									class="chip__stats"
+									[class.chip__stats--hot]="svc.cpu >= 60 || svc.mem >= 60"
+								>
 									{{ svc.cpu }}% · {{ svc.mem }}%
 								</span>
 							</div>
@@ -229,11 +287,18 @@ const CATEGORIES = ["data", "identity", "network", "ops", "app"] as const;
 							<div class="summary-row summary-row--head">
 								<span>{{ "pages.nodeMap.summary.service" | transloco }}</span>
 								<span>{{ "pages.nodeMap.summary.nodes" | transloco }}</span>
-								<span class="summary-row__num">{{ "pages.nodeMap.summary.cpuAvg" | transloco }}</span>
-								<span class="summary-row__num">{{ "pages.nodeMap.summary.memAvg" | transloco }}</span>
+								<span class="summary-row__num">{{
+									"pages.nodeMap.summary.cpuAvg" | transloco
+								}}</span>
+								<span class="summary-row__num">{{
+									"pages.nodeMap.summary.memAvg" | transloco
+								}}</span>
 							</div>
 							<div class="summary-row" *ngFor="let row of col">
-								<span class="summary-row__name" [style.border-left-color]="catVar(row.category)">
+								<span
+									class="summary-row__name"
+									[style.border-left-color]="catVar(row.category)"
+								>
 									{{ row.serviceName }}
 									<span class="summary-row__count">×{{ row.taskCount }}</span>
 								</span>
@@ -248,41 +313,64 @@ const CATEGORIES = ["data", "identity", "network", "ops", "app"] as const;
 				<div class="lower__side">
 					<div class="panel">
 						<div class="panel__title">
-							<span class="panel__accent" style="background:var(--role-manager)"></span>
+							<span
+								class="panel__accent"
+								style="background:var(--role-manager)"
+							></span>
 							{{ "pages.nodeMap.totals.title" | transloco }}
 						</div>
 						<div class="totals-grid" *ngIf="clusterTotals(entries) as totals">
 							<div class="totals-tile">
-								<div class="totals-tile__value" style="color:var(--role-manager)">{{ totals.nodeCount }}</div>
-								<div class="totals-tile__label">{{ "pages.nodeMap.totals.nodes" | transloco }}</div>
+								<div class="totals-tile__value" style="color:var(--role-manager)">
+									{{ totals.nodeCount }}
+								</div>
+								<div class="totals-tile__label">
+									{{ "pages.nodeMap.totals.nodes" | transloco }}
+								</div>
 							</div>
 							<div class="totals-tile">
-								<div class="totals-tile__value" style="color:var(--nh-orange-deep)">{{ totals.distinctServices }}</div>
-								<div class="totals-tile__label">{{ "pages.nodeMap.totals.services" | transloco }}</div>
+								<div class="totals-tile__value" style="color:var(--nh-orange-deep)">
+									{{ totals.distinctServices }}
+								</div>
+								<div class="totals-tile__label">
+									{{ "pages.nodeMap.totals.services" | transloco }}
+								</div>
 							</div>
 							<div class="totals-tile">
 								<div class="totals-tile__value">{{ totals.taskCount }}</div>
-								<div class="totals-tile__label">{{ "pages.nodeMap.totals.tasks" | transloco }}</div>
+								<div class="totals-tile__label">
+									{{ "pages.nodeMap.totals.tasks" | transloco }}
+								</div>
 							</div>
 							<div class="totals-tile">
 								<div class="totals-tile__value">{{ totals.avgCpu }}%</div>
-								<div class="totals-tile__label">{{ "pages.nodeMap.totals.avgCpu" | transloco }}</div>
+								<div class="totals-tile__label">
+									{{ "pages.nodeMap.totals.avgCpu" | transloco }}
+								</div>
 							</div>
 							<div class="totals-tile">
 								<div class="totals-tile__value">{{ totals.avgMem }}%</div>
-								<div class="totals-tile__label">{{ "pages.nodeMap.totals.avgMem" | transloco }}</div>
+								<div class="totals-tile__label">
+									{{ "pages.nodeMap.totals.avgMem" | transloco }}
+								</div>
 							</div>
 							<div class="totals-tile">
-								<div class="totals-tile__value totals-tile__value--sm" style="color:var(--nh-orange-deep)">
+								<div
+									class="totals-tile__value totals-tile__value--sm"
+									style="color:var(--nh-orange-deep)"
+								>
 									{{ totals.busiestHostname }}
 								</div>
-								<div class="totals-tile__label">{{ "pages.nodeMap.totals.busiest" | transloco }}</div>
+								<div class="totals-tile__label">
+									{{ "pages.nodeMap.totals.busiest" | transloco }}
+								</div>
 							</div>
 						</div>
 						<div class="note" *ngIf="clusterTotals(entries) as totals">
 							{{
 								"pages.nodeMap.totals.note"
-									| transloco: { host: totals.busiestHostname, cpu: totals.busiestCpu }
+									| transloco
+										: { host: totals.busiestHostname, cpu: totals.busiestCpu }
 							}}
 						</div>
 					</div>
@@ -889,10 +977,12 @@ export class NodeMapPageComponent {
 	}
 
 	peakHostname(entries: NodeMapEntry[]): string {
-		return entries.reduce<NodeMapEntry | null>(
-			(max, e) => (!max || e.node.cpu > max.node.cpu ? e : max),
-			null
-		)?.node.hostname ?? "";
+		return (
+			entries.reduce<NodeMapEntry | null>(
+				(max, e) => (!max || e.node.cpu > max.node.cpu ? e : max),
+				null
+			)?.node.hostname ?? ""
+		);
 	}
 
 	hostList(entries: NodeMapEntry[]): string {
@@ -900,7 +990,9 @@ export class NodeMapPageComponent {
 	}
 
 	/** Rack-style grouping: managers (control-plane) row first, workers second. */
-	groupedEntries(entries: NodeMapEntry[]): { key: "managers" | "workers"; entries: NodeMapEntry[] }[] {
+	groupedEntries(
+		entries: NodeMapEntry[]
+	): { key: "managers" | "workers"; entries: NodeMapEntry[] }[] {
 		return [
 			{ key: "managers", entries: entries.filter((e) => e.node.role === "manager") },
 			{ key: "workers", entries: entries.filter((e) => e.node.role !== "manager") },

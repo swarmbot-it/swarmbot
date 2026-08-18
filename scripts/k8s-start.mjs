@@ -32,8 +32,12 @@ ensure("kubectl", "kubectl version --client");
 if (clusterExists()) {
 	console.log(`k3d cluster '${CLUSTER}' already exists.`);
 } else {
-	console.log(`Creating k3d cluster '${CLUSTER}' (Traefik exposed on http://localhost:${HOST_PORT})...`);
-	run(`k3d cluster create ${CLUSTER} --agents ${AGENTS} -p "${HOST_PORT}:80@loadbalancer" --wait`);
+	console.log(
+		`Creating k3d cluster '${CLUSTER}' (Traefik exposed on http://localhost:${HOST_PORT})...`
+	);
+	run(
+		`k3d cluster create ${CLUSTER} --agents ${AGENTS} -p "${HOST_PORT}:80@loadbalancer" --wait`
+	);
 }
 
 // Write the cluster kubeconfig so the deploy/status scripts target ONLY k3d.

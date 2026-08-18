@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Output, computed, inject } from "@angular/core";
+import {
+	ChangeDetectionStrategy,
+	Component,
+	EventEmitter,
+	Output,
+	computed,
+	inject,
+} from "@angular/core";
 import { AsyncPipe, NgIf, NgSwitch, NgSwitchCase, NgSwitchDefault } from "@angular/common";
 import { Apollo } from "apollo-angular";
 import { TranslocoPipe } from "@jsverse/transloco";
@@ -42,12 +49,21 @@ type Stack = {
 						{{ "pages.stacks.countSuffix" | transloco }}
 					</div>
 				</div>
-				<button *ngIf="auth.isEditor()" class="btn btn--primary" (click)="createRequested.emit()">
+				<button
+					*ngIf="auth.isEditor()"
+					class="btn btn--primary"
+					(click)="createRequested.emit()"
+				>
 					<sb-icon name="plus" [size]="16"></sb-icon>
 					{{ "pages.stacks.add" | transloco }}
 				</button>
 			</div>
-			<sb-data-table [columns]="cols()" [rows]="rows" [searchKeys]="['name', 'status']" (rowClick)="open($event.name)">
+			<sb-data-table
+				[columns]="cols()"
+				[rows]="rows"
+				[searchKeys]="['name', 'status']"
+				(rowClick)="open($event.name)"
+			>
 				<ng-template #cell let-row let-key="key">
 					<ng-container [ngSwitch]="key">
 						<span

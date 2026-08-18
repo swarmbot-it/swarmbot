@@ -17,10 +17,8 @@ test.describe("orchestrator badge (kubernetes mock)", () => {
 
 	test("sidebar relabels Stacks to Namespaces", async ({ page }) => {
 		await expect(
-			page.locator(".sidebar__item-text", { hasText: /^Namespaces$/ }),
+			page.locator(".sidebar__item-text", { hasText: /^Namespaces$/ })
 		).toBeVisible();
-		await expect(
-			page.locator(".sidebar__item-text", { hasText: /^Stacks$/ }),
-		).toHaveCount(0);
+		await expect(page.locator(".sidebar__item-text", { hasText: /^Stacks$/ })).toHaveCount(0);
 	});
 });

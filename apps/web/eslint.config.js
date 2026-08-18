@@ -40,8 +40,7 @@ module.exports = defineConfig([
 			// Modernization suggestion (constructor DI -> inject()), not a bug.
 			"@angular-eslint/prefer-inject": "warn",
 		},
-	}
-	,
+	},
 	{
 		files: ["**/*.html"],
 		extends: [angular.configs.templateRecommended, angular.configs.templateAccessibility],

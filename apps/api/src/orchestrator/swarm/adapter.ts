@@ -69,7 +69,10 @@ export class SwarmOrchestrator implements Orchestrator {
 	}
 
 	async listServices(): Promise<ServiceSummary[]> {
-		const [list, tasks] = await Promise.all([this.docker.listServices(), this.docker.listTasks()]);
+		const [list, tasks] = await Promise.all([
+			this.docker.listServices(),
+			this.docker.listTasks(),
+		]);
 		const running = countRunningTasksByService(tasks);
 		return list.map((s) => {
 			const summary = mapServiceSummary(s);
@@ -135,7 +138,9 @@ export class SwarmOrchestrator implements Orchestrator {
 
 	async clusterHealth(): Promise<ClusterHealth> {
 		const nodes = await this.docker.listNodes();
-		return evaluateClusterHealth(nodes as unknown as Parameters<typeof evaluateClusterHealth>[0]);
+		return evaluateClusterHealth(
+			nodes as unknown as Parameters<typeof evaluateClusterHealth>[0]
+		);
 	}
 
 	async serviceLogs(serviceId: string, opts?: { tail?: number }): Promise<string> {
@@ -143,8 +148,7 @@ export class SwarmOrchestrator implements Orchestrator {
 			filters: { service: [serviceId], "desired-state": ["running"] },
 		});
 		const task = tasks[0] as
-			| { Status?: { ContainerStatus?: { ContainerID?: string } } }
-			| undefined;
+			{ Status?: { ContainerStatus?: { ContainerID?: string } } } | undefined;
 		const containerId = task?.Status?.ContainerStatus?.ContainerID;
 		if (!containerId) {
 			throw new NoRunningTaskError(serviceId);

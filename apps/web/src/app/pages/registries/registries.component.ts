@@ -43,7 +43,11 @@ type Registry = {
 						{{ "pages.registries.countSuffix" | transloco }}
 					</div>
 				</div>
-				<button *ngIf="auth.isAdmin()" class="btn btn--primary" (click)="createRequested.emit()">
+				<button
+					*ngIf="auth.isAdmin()"
+					class="btn btn--primary"
+					(click)="createRequested.emit()"
+				>
 					<sb-icon name="plus" [size]="16"></sb-icon>
 					{{ "pages.registries.add" | transloco }}
 				</button>
@@ -99,7 +103,11 @@ type Registry = {
 								[title]="'pages.registries.remove' | transloco"
 								(click)="remove(row)"
 							>
-								<sb-icon name="trash" [size]="14" style="color: var(--danger)"></sb-icon>
+								<sb-icon
+									name="trash"
+									[size]="14"
+									style="color: var(--danger)"
+								></sb-icon>
 							</button>
 						</span>
 						<ng-container *ngSwitchDefault>{{ row[key] }}</ng-container>
@@ -155,21 +163,26 @@ export class RegistriesPageComponent {
 				next: () => {
 					this.toast.push(
 						"success",
-						this.transloco.translate("pages.registries.toastSetDefault", { name: row.name })
+						this.transloco.translate("pages.registries.toastSetDefault", {
+							name: row.name,
+						})
 					);
 					this.query.refetch();
 				},
 				error: (err) => {
 					this.toast.push(
 						"error",
-						err?.message || this.transloco.translate("pages.registries.setDefaultFailed")
+						err?.message ||
+							this.transloco.translate("pages.registries.setDefaultFailed")
 					);
 				},
 			});
 	}
 
 	remove(row: Registry): void {
-		if (!confirm(this.transloco.translate("pages.registries.confirmRemove", { name: row.name })))
+		if (
+			!confirm(this.transloco.translate("pages.registries.confirmRemove", { name: row.name }))
+		)
 			return;
 		this.apollo
 			.mutate<{ removeRegistry: boolean }>({
@@ -180,7 +193,9 @@ export class RegistriesPageComponent {
 				next: () => {
 					this.toast.push(
 						"success",
-						this.transloco.translate("pages.registries.toastRemoved", { name: row.name })
+						this.transloco.translate("pages.registries.toastRemoved", {
+							name: row.name,
+						})
 					);
 					this.query.refetch();
 				},

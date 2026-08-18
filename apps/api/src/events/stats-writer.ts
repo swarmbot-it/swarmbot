@@ -46,7 +46,9 @@ export function startStatsWriter(cfg: SwarmbotConfig): (event: Record<string, un
 		if (event.type !== "stats" || !event.message) return;
 		let msg: StatsPayload;
 		try {
-			msg = (typeof event.message === "string" ? JSON.parse(event.message) : event.message) as StatsPayload;
+			msg = (
+				typeof event.message === "string" ? JSON.parse(event.message) : event.message
+			) as StatsPayload;
 		} catch {
 			return;
 		}

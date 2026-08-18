@@ -41,7 +41,11 @@ type ServiceRow = {
 						{{ "pages.services.countSuffix" | transloco }}
 					</div>
 				</div>
-				<button *ngIf="auth.isEditor()" class="btn btn--primary" (click)="createRequested.emit()">
+				<button
+					*ngIf="auth.isEditor()"
+					class="btn btn--primary"
+					(click)="createRequested.emit()"
+				>
 					<sb-icon name="plus" [size]="16"></sb-icon>
 					{{ "pages.services.add" | transloco }}
 				</button>

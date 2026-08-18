@@ -11,7 +11,10 @@ describe("startStatsWriter", () => {
 		const write = startStatsWriter({ ...loadConfig(), influxdbUrl: undefined });
 		const fetchSpy = vi.fn();
 		vi.stubGlobal("fetch", fetchSpy);
-		write({ type: "stats", message: JSON.stringify({ id: "node1", cpu: { used_percentage: 5 } }) });
+		write({
+			type: "stats",
+			message: JSON.stringify({ id: "node1", cpu: { used_percentage: 5 } }),
+		});
 		expect(fetchSpy).not.toHaveBeenCalled();
 	});
 
@@ -41,7 +44,10 @@ describe("startStatsWriter", () => {
 		vi.stubGlobal("fetch", fetchSpy);
 		const write = startStatsWriter({ ...loadConfig(), influxdbUrl: "http://influx:8086" });
 		expect(() =>
-			write({ type: "stats", message: JSON.stringify({ id: "node1", cpu: { used_percentage: 1 } }) })
+			write({
+				type: "stats",
+				message: JSON.stringify({ id: "node1", cpu: { used_percentage: 1 } }),
+			})
 		).not.toThrow();
 		await vi.waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1));
 	});

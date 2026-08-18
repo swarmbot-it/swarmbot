@@ -26,21 +26,21 @@ describe("createUserInputSchema", () => {
 	});
 
 	it("rejects an invalid email", () => {
-		expect(() => validateInput(createUserInputSchema, { ...valid, email: "not-an-email" }, "en")).toThrow(
-			GraphQLError
-		);
+		expect(() =>
+			validateInput(createUserInputSchema, { ...valid, email: "not-an-email" }, "en")
+		).toThrow(GraphQLError);
 	});
 
 	it("rejects a too-short password", () => {
-		expect(() => validateInput(createUserInputSchema, { ...valid, password: "short" }, "en")).toThrow(
-			GraphQLError
-		);
+		expect(() =>
+			validateInput(createUserInputSchema, { ...valid, password: "short" }, "en")
+		).toThrow(GraphQLError);
 	});
 
 	it("rejects an unknown role", () => {
-		expect(() => validateInput(createUserInputSchema, { ...valid, role: "superuser" }, "en")).toThrow(
-			GraphQLError
-		);
+		expect(() =>
+			validateInput(createUserInputSchema, { ...valid, role: "superuser" }, "en")
+		).toThrow(GraphQLError);
 	});
 
 	it("rejects a username with unsafe characters", () => {
@@ -53,7 +53,11 @@ describe("createUserInputSchema", () => {
 describe("createRegistryInputSchema", () => {
 	it("accepts a valid payload with optional fields omitted", () => {
 		expect(() =>
-			validateInput(createRegistryInputSchema, { name: "Docker Hub", url: "registry-1.docker.io", type: "Docker Hub" }, "en")
+			validateInput(
+				createRegistryInputSchema,
+				{ name: "Docker Hub", url: "registry-1.docker.io", type: "Docker Hub" },
+				"en"
+			)
 		).not.toThrow();
 	});
 
@@ -73,7 +77,11 @@ describe("createNetworkInputSchema", () => {
 
 	it("accepts a valid CIDR subnet and gateway", () => {
 		expect(() =>
-			validateInput(createNetworkInputSchema, { ...valid, subnet: "10.0.0.0/24", gateway: "10.0.0.1" }, "en")
+			validateInput(
+				createNetworkInputSchema,
+				{ ...valid, subnet: "10.0.0.0/24", gateway: "10.0.0.1" },
+				"en"
+			)
 		).not.toThrow();
 	});
 
@@ -84,8 +92,8 @@ describe("createNetworkInputSchema", () => {
 	});
 
 	it("rejects a network name starting with a special character", () => {
-		expect(() => validateInput(createNetworkInputSchema, { ...valid, name: "-bad" }, "en")).toThrow(
-			GraphQLError
-		);
+		expect(() =>
+			validateInput(createNetworkInputSchema, { ...valid, name: "-bad" }, "en")
+		).toThrow(GraphQLError);
 	});
 });

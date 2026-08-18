@@ -8,12 +8,12 @@ Osobna zakładka w panelu (obok istniejącej „Nodes"), pokazująca węzły kla
 
 ## 2. Co już istniało w systemie (stan wyjściowy)
 
-| Dane | Gdzie | Status |
-|---|---|---|
-| Węzeł: hostname, rola, IP, docker version, tagi, CPU/Mem/Disk % + historia | `NodeSummary` — `apps/api/src/graphql/schema.ts:217`, resolver `nodes` | ✅ gotowe, żywe (Influx albo pseudo-load bez Influxa) |
-| Przypisanie usługi do węzła + żywe CPU/Mem % kontenera | `TaskInfo` — `apps/api/src/graphql/schema.ts:200` (pola `node`, `nodeHostname`, `serviceName`, `cpu`, `mem`), resolver `tasks` w `apps/api/src/graphql/resolvers.ts` | ✅ gotowy klucz łączący usługę z węzłem |
-| Placement per orchestrator | Swarm: `TaskSummary.nodeId` (ustawiane w `apps/api/src/docker/engine.ts`, funkcja `mapTaskSummary`), Kubernetes: `orchestrator/kubernetes/adapter.ts` (`mapPodTask`) — oba zmapowane na `TaskSummary.nodeId` | ✅ gotowe w obu adapterach |
-| Bajtowe RAM/storage per usługa (np. „268 Mi — 10 Gi") | — | ❌ nie istnieje — poza zakresem v1 |
+| Dane                                                                       | Gdzie                                                                                                                                                                                                        | Status                                                |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------- |
+| Węzeł: hostname, rola, IP, docker version, tagi, CPU/Mem/Disk % + historia | `NodeSummary` — `apps/api/src/graphql/schema.ts:217`, resolver `nodes`                                                                                                                                       | ✅ gotowe, żywe (Influx albo pseudo-load bez Influxa) |
+| Przypisanie usługi do węzła + żywe CPU/Mem % kontenera                     | `TaskInfo` — `apps/api/src/graphql/schema.ts:200` (pola `node`, `nodeHostname`, `serviceName`, `cpu`, `mem`), resolver `tasks` w `apps/api/src/graphql/resolvers.ts`                                         | ✅ gotowy klucz łączący usługę z węzłem               |
+| Placement per orchestrator                                                 | Swarm: `TaskSummary.nodeId` (ustawiane w `apps/api/src/docker/engine.ts`, funkcja `mapTaskSummary`), Kubernetes: `orchestrator/kubernetes/adapter.ts` (`mapPodTask`) — oba zmapowane na `TaskSummary.nodeId` | ✅ gotowe w obu adapterach                            |
+| Bajtowe RAM/storage per usługa (np. „268 Mi — 10 Gi")                      | —                                                                                                                                                                                                            | ❌ nie istnieje — poza zakresem v1                    |
 
 ## 3. Zaimplementowana architektura
 
@@ -23,20 +23,20 @@ GraphQL (`apps/api/src/graphql/schema.ts`):
 
 ```graphql
 type NodeMapService {
-  taskId: ID!
-  serviceName: String!
-  image: String!
-  category: String!   # heurystyka: data / identity / network / ops / app
-  cpu: Int!
-  mem: Int!
-  status: String!
+    taskId: ID!
+    serviceName: String!
+    image: String!
+    category: String! # heurystyka: data / identity / network / ops / app
+    cpu: Int!
+    mem: Int!
+    status: String!
 }
 type NodeMapEntry {
-  node: NodeSummary!
-  services: [NodeMapService!]!
+    node: NodeSummary!
+    services: [NodeMapService!]!
 }
 extend type Query {
-  nodeMap: [NodeMapEntry!]!
+    nodeMap: [NodeMapEntry!]!
 }
 ```
 
@@ -49,13 +49,13 @@ Zero zmian w orchestrator adapterach — `nodeId`/`nodeHostname` były już tam 
 - Zakładka w sidebarze, grupa `infra`, obok `nodes` (`apps/web/src/app/layout/sidebar.component.ts`).
 - Route `app/node-map` (`apps/web/src/app/app.routes.ts`).
 - `NodeMapPageComponent` (`apps/web/src/app/pages/node-map/node-map.component.ts`): `Apollo.watchQuery` + `pollInterval` (wzorem `nodes.component.ts`), układ i anatomia karty odwzorowane z referencyjnego mockupu „Infrastructure Node Map":
-  - **Pigułka statusu** w nagłówku strony: „X / Y węzłów gotowych" (gotowy = bez tagu `DRAIN`) z pulsującą kropką.
-  - **Legenda** nad siatką: role węzłów (M/W) i kolory kategorii usług.
-  - **Grupowanie wg roli** — wiersze „Managery" i „Workery" z mono-etykietą w kolorze roli i listą hostów obok (pomijane, gdy grupa pusta).
-  - **Karta węzła**: kolorowy `border-top` wg roli, odznaka roli (M/W, solid), mono hostname, tag „Lider" (gdy `tags` zawiera `LEADER`), IP + wersja Dockera po prawej; kompaktowy wiersz zużycia (Pamięć / CPU · Dysk) z cienkim paskiem postępu w kolorze roli (szerokość = % pamięci, jak w mockupie).
-  - **Gęste chipy usług**: mono nazwa + status + `%CPU · %Mem` po prawej, lewy border 3px w kolorze kategorii, tooltip z nazwą obrazu; pusty stan = kreskowana ramka (jak placeholder „1 orderer + 1 peer" w mockupie).
-  - **Kolory i fonty na wspólnych tokenach appki** (nie osobny design system): CSS custom properties komponentu (`--nh-orange`, `--cat-*`, `--role-*`, `--nm-*`) to teraz aliasy na istniejące zmienne z `styles.scss` (`--primary-500/600`, `--success`, `--warning`, `--info`, `--neutral`, `--danger`, `--surface`, `--surface-2`, `--border`, `--text`, `--text-2`, `--muted`, `--shadow-1`, `--font-sans`, `--font-mono`) — jedna deklaracja, bez osobnego bloku `[data-theme="dark"]`, bo cała appka już przełącza te zmienne globalnie przez `ThemeService`. Kategorie: `--success`=dane, `--warning`=tożsamość, `--info`=sieć, `--neutral`=ops, `--primary-500`=aplikacja; role: `--primary-500`=manager, `--muted`=worker, `--danger`=drain.
-  - Dodatkowo per mockup: pigułka „PEAK" na najbardziej obciążonym węźle (liczona z żywych danych), panel „Kluczowe przepływy" (4 realne ścieżki danych swarmbot.it: public/orkiestracja/telemetria/trwałość), notka pod kafelkami totals. Świadomie pominięte: sekcja „Planned" (statyczna roadmapa nie do wyprowadzenia z danych).
+    - **Pigułka statusu** w nagłówku strony: „X / Y węzłów gotowych" (gotowy = bez tagu `DRAIN`) z pulsującą kropką.
+    - **Legenda** nad siatką: role węzłów (M/W) i kolory kategorii usług.
+    - **Grupowanie wg roli** — wiersze „Managery" i „Workery" z mono-etykietą w kolorze roli i listą hostów obok (pomijane, gdy grupa pusta).
+    - **Karta węzła**: kolorowy `border-top` wg roli, odznaka roli (M/W, solid), mono hostname, tag „Lider" (gdy `tags` zawiera `LEADER`), IP + wersja Dockera po prawej; kompaktowy wiersz zużycia (Pamięć / CPU · Dysk) z cienkim paskiem postępu w kolorze roli (szerokość = % pamięci, jak w mockupie).
+    - **Gęste chipy usług**: mono nazwa + status + `%CPU · %Mem` po prawej, lewy border 3px w kolorze kategorii, tooltip z nazwą obrazu; pusty stan = kreskowana ramka (jak placeholder „1 orderer + 1 peer" w mockupie).
+    - **Kolory i fonty na wspólnych tokenach appki** (nie osobny design system): CSS custom properties komponentu (`--nh-orange`, `--cat-*`, `--role-*`, `--nm-*`) to teraz aliasy na istniejące zmienne z `styles.scss` (`--primary-500/600`, `--success`, `--warning`, `--info`, `--neutral`, `--danger`, `--surface`, `--surface-2`, `--border`, `--text`, `--text-2`, `--muted`, `--shadow-1`, `--font-sans`, `--font-mono`) — jedna deklaracja, bez osobnego bloku `[data-theme="dark"]`, bo cała appka już przełącza te zmienne globalnie przez `ThemeService`. Kategorie: `--success`=dane, `--warning`=tożsamość, `--info`=sieć, `--neutral`=ops, `--primary-500`=aplikacja; role: `--primary-500`=manager, `--muted`=worker, `--danger`=drain.
+    - Dodatkowo per mockup: pigułka „PEAK" na najbardziej obciążonym węźle (liczona z żywych danych), panel „Kluczowe przepływy" (4 realne ścieżki danych swarmbot.it: public/orkiestracja/telemetria/trwałość), notka pod kafelkami totals. Świadomie pominięte: sekcja „Planned" (statyczna roadmapa nie do wyprowadzenia z danych).
 - **Podsumowanie zasobów per usługa** — tabela mono agregująca wszystkie węzły po nazwie usługi (węzły, zadania, śr. CPU/Mem), z kolorowym lewym borderem kategorii przy nazwie; liczona po stronie klienta z już pobranych danych `nodeMap` (zero dodatkowych zapytań do API).
 - **Podsumowanie klastra** — kafelki z dużymi mono-liczbami (węzły/usługi/zadania, śr. CPU/Mem, najbardziej obciążony węzeł), również liczone po stronie klienta.
 - Toggle grid/list w toolbarze (`NodeMapViewService`, `apps/web/src/app/core/node-map-view.service.ts`) — wzorem `ThemeService`, zapis wyboru w `localStorage` (`swarmbot.nodeMapView`).

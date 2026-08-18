@@ -65,4 +65,6 @@ if (images.includes("swarmagent:local")) {
 }
 
 console.log(`\nDeployed. Open http://swarmbot.localhost:${HOST_PORT}  (login: admin / swarmbot)`);
-console.log("Status: npm run k8s:status   |   Remove: npm run k8s:undeploy   |   Delete cluster: npm run k8s:stop");
+console.log(
+	"Status: npm run k8s:status   |   Remove: npm run k8s:undeploy   |   Delete cluster: npm run k8s:stop"
+);

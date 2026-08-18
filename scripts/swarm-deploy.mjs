@@ -37,7 +37,9 @@ function run(cmd, opts = {}) {
 
 function containerRunning(name) {
 	try {
-		return run(`docker inspect -f "{{.State.Status}}" ${name}`, { capture: true }) === "running";
+		return (
+			run(`docker inspect -f "{{.State.Status}}" ${name}`, { capture: true }) === "running"
+		);
 	} catch {
 		return false;
 	}
@@ -137,7 +139,9 @@ if (hasAgent) {
 	console.log("\n>>> Building swarmagent:local");
 	run(`docker build -t swarmagent:local "${AGENT_DIR}"`);
 } else {
-	console.warn(`\nWarning: swarmagent not found at ${AGENT_DIR} — agent service will be skipped.`);
+	console.warn(
+		`\nWarning: swarmagent not found at ${AGENT_DIR} — agent service will be skipped.`
+	);
 }
 
 // ── Load images into DinD nodes ───────────────────────────────────────────────

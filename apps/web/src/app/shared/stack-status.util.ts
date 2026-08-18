@@ -9,7 +9,11 @@ export function deriveStackStatus(tasks: TaskLike[]): string {
 	const active = tasks.filter((t) => (t.desiredState ?? "RUNNING") === "RUNNING");
 	if (active.length === 0) return "STOPPED";
 	if (active.some((t) => ["FAILED", "REJECTED"].includes(t.status))) return "FAILED";
-	if (active.some((t) => ["PENDING", "ASSIGNED", "PREPARING", "STARTING", "NEW", "READY"].includes(t.status)))
+	if (
+		active.some((t) =>
+			["PENDING", "ASSIGNED", "PREPARING", "STARTING", "NEW", "READY"].includes(t.status)
+		)
+	)
 		return "UPDATING";
 	if (active.every((t) => t.status === "RUNNING")) return "RUNNING";
 	return "STOPPED";

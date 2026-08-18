@@ -79,7 +79,11 @@ function toView(row: {
 }
 
 export async function listUsers(db: Kysely<Database>): Promise<StoredUser[]> {
-	const rows = await db.selectFrom("users").select(USER_COLUMNS).orderBy("createdAt", "asc").execute();
+	const rows = await db
+		.selectFrom("users")
+		.select(USER_COLUMNS)
+		.orderBy("createdAt", "asc")
+		.execute();
 	return rows.map(toView);
 }
 
@@ -187,7 +191,13 @@ export async function upsertOidcUser(
 	if (byName) {
 		await db
 			.updateTable("users")
-			.set({ oidcProvider: id.provider, oidcSub: id.sub, role: id.role, lastLoginAt: nowIso, ...emailPatch })
+			.set({
+				oidcProvider: id.provider,
+				oidcSub: id.sub,
+				role: id.role,
+				lastLoginAt: nowIso,
+				...emailPatch,
+			})
 			.where("username", "=", id.username)
 			.execute();
 		return { username: id.username, email: id.email, role: id.role };
@@ -226,7 +236,11 @@ export async function upgradePasswordHash(
 	username: string,
 	newHash: string
 ): Promise<void> {
-	await db.updateTable("users").set({ password: newHash }).where("username", "=", username).execute();
+	await db
+		.updateTable("users")
+		.set({ password: newHash })
+		.where("username", "=", username)
+		.execute();
 }
 
 export async function setApiToken(
@@ -360,7 +374,10 @@ export async function seedDemoUsers(db: Kysely<Database>): Promise<void> {
 				role: s.role,
 				password: derivePassword("demo-password"),
 				createdAt: new Date(Date.now() - Math.random() * 1e10).toISOString(),
-				lastLoginAt: Math.random() > 0.2 ? new Date(Date.now() - Math.random() * 1e9).toISOString() : null,
+				lastLoginAt:
+					Math.random() > 0.2
+						? new Date(Date.now() - Math.random() * 1e9).toISOString()
+						: null,
 			})
 			.execute();
 	}

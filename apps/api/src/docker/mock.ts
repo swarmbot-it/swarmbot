@@ -256,7 +256,9 @@ const NETWORKS: MockNetwork[] = [
 	net("net_mon", "monitoring_net", "overlay", "swarm", "10.0.6.0/24", "10.0.6.1", {
 		stack: "monitoring",
 	}),
-	net("net_log", "logging_net", "overlay", "swarm", "10.0.7.0/24", "10.0.7.1", { stack: "logging" }),
+	net("net_log", "logging_net", "overlay", "swarm", "10.0.7.0/24", "10.0.7.1", {
+		stack: "logging",
+	}),
 	net("net_msg", "messaging_bus", "overlay", "swarm", "10.0.8.0/24", "10.0.8.1", {
 		stack: "messaging",
 	}),
@@ -319,7 +321,13 @@ function vol(name: string, driver: string, size: number, stack?: string): MockVo
 }
 
 const SECRETS: Stamped[] = [
-	stamped("sec_pg_pwd", "postgres_password", "2025-09-12T10:00:00Z", "2025-11-04T08:32:00Z", "databases"),
+	stamped(
+		"sec_pg_pwd",
+		"postgres_password",
+		"2025-09-12T10:00:00Z",
+		"2025-11-04T08:32:00Z",
+		"databases"
+	),
 	stamped(
 		"sec_pg_repl",
 		"postgres_replication_token",
@@ -328,7 +336,13 @@ const SECRETS: Stamped[] = [
 		"databases"
 	),
 	stamped("sec_jwt", "jwt_signing_key", "2025-04-22T09:12:00Z", "2026-02-18T16:04:00Z", "auth"),
-	stamped("sec_stripe", "stripe_secret_key", "2025-07-30T11:24:00Z", "2026-01-15T13:42:00Z", "billing"),
+	stamped(
+		"sec_stripe",
+		"stripe_secret_key",
+		"2025-07-30T11:24:00Z",
+		"2026-01-15T13:42:00Z",
+		"billing"
+	),
 	stamped("sec_smtp", "smtp_password", "2025-06-11T15:00:00Z", "2025-12-02T09:15:00Z"),
 	stamped("sec_gh", "github_deploy_token", "2025-10-08T08:08:00Z", "2026-03-22T11:11:00Z"),
 	stamped(
@@ -338,15 +352,51 @@ const SECRETS: Stamped[] = [
 		"2025-04-22T09:12:00Z",
 		"monitoring"
 	),
-	stamped("sec_redis_acl", "redis_acl_users", "2025-11-29T17:00:00Z", "2026-02-04T13:00:00Z", "databases"),
-	stamped("sec_rmq_def", "rabbitmq_definitions", "2025-08-15T07:30:00Z", "2026-04-10T18:00:00Z", "messaging"),
-	stamped("sec_tls_crt", "tls_wildcard_cert", "2025-10-01T00:00:00Z", "2026-04-01T00:00:00Z", "api-gateway"),
-	stamped("sec_tls_key", "tls_wildcard_key", "2025-10-01T00:00:00Z", "2026-04-01T00:00:00Z", "api-gateway"),
+	stamped(
+		"sec_redis_acl",
+		"redis_acl_users",
+		"2025-11-29T17:00:00Z",
+		"2026-02-04T13:00:00Z",
+		"databases"
+	),
+	stamped(
+		"sec_rmq_def",
+		"rabbitmq_definitions",
+		"2025-08-15T07:30:00Z",
+		"2026-04-10T18:00:00Z",
+		"messaging"
+	),
+	stamped(
+		"sec_tls_crt",
+		"tls_wildcard_cert",
+		"2025-10-01T00:00:00Z",
+		"2026-04-01T00:00:00Z",
+		"api-gateway"
+	),
+	stamped(
+		"sec_tls_key",
+		"tls_wildcard_key",
+		"2025-10-01T00:00:00Z",
+		"2026-04-01T00:00:00Z",
+		"api-gateway"
+	),
 ];
 
 const CONFIGS: Stamped[] = [
-	stamped("cfg_nginx", "nginx_default_conf", "2025-03-04T08:00:00Z", "2026-02-12T16:30:00Z", "frontend"),
-	stamped("cfg_traefik_s", "traefik_static_yaml", "2025-03-04T08:00:00Z", "2026-03-08T13:11:00Z", "api-gateway"),
+	stamped(
+		"cfg_nginx",
+		"nginx_default_conf",
+		"2025-03-04T08:00:00Z",
+		"2026-02-12T16:30:00Z",
+		"frontend"
+	),
+	stamped(
+		"cfg_traefik_s",
+		"traefik_static_yaml",
+		"2025-03-04T08:00:00Z",
+		"2026-03-08T13:11:00Z",
+		"api-gateway"
+	),
 	stamped(
 		"cfg_traefik_d",
 		"traefik_dynamic_yaml",
@@ -354,10 +404,34 @@ const CONFIGS: Stamped[] = [
 		"2026-04-22T10:00:00Z",
 		"api-gateway"
 	),
-	stamped("cfg_prom", "prometheus_yml", "2025-04-22T09:00:00Z", "2026-04-30T18:42:00Z", "monitoring"),
-	stamped("cfg_alert", "alertmanager_yml", "2025-04-22T09:00:00Z", "2026-03-19T11:08:00Z", "monitoring"),
-	stamped("cfg_loki", "loki_config_yml", "2025-05-10T11:30:00Z", "2026-02-28T14:00:00Z", "logging"),
-	stamped("cfg_promtail", "promtail_config_yml", "2025-05-10T11:30:00Z", "2025-12-14T07:00:00Z", "logging"),
+	stamped(
+		"cfg_prom",
+		"prometheus_yml",
+		"2025-04-22T09:00:00Z",
+		"2026-04-30T18:42:00Z",
+		"monitoring"
+	),
+	stamped(
+		"cfg_alert",
+		"alertmanager_yml",
+		"2025-04-22T09:00:00Z",
+		"2026-03-19T11:08:00Z",
+		"monitoring"
+	),
+	stamped(
+		"cfg_loki",
+		"loki_config_yml",
+		"2025-05-10T11:30:00Z",
+		"2026-02-28T14:00:00Z",
+		"logging"
+	),
+	stamped(
+		"cfg_promtail",
+		"promtail_config_yml",
+		"2025-05-10T11:30:00Z",
+		"2025-12-14T07:00:00Z",
+		"logging"
+	),
 	stamped(
 		"cfg_grafana_ds",
 		"grafana_datasources",
@@ -366,10 +440,22 @@ const CONFIGS: Stamped[] = [
 		"monitoring"
 	),
 	stamped("cfg_redis", "redis_conf", "2025-06-01T10:00:00Z", "2025-11-21T14:00:00Z", "databases"),
-	stamped("cfg_pg_hba", "postgres_pg_hba", "2025-09-12T10:00:00Z", "2026-01-04T08:00:00Z", "databases"),
+	stamped(
+		"cfg_pg_hba",
+		"postgres_pg_hba",
+		"2025-09-12T10:00:00Z",
+		"2026-01-04T08:00:00Z",
+		"databases"
+	),
 ];
 
-function stamped(id: string, name: string, created: string, updated: string, stack?: string): Stamped {
+function stamped(
+	id: string,
+	name: string,
+	created: string,
+	updated: string,
+	stack?: string
+): Stamped {
 	return {
 		ID: id,
 		CreatedAt: ISO(created),

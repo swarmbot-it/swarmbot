@@ -16,11 +16,7 @@ const TTL_WARN = 5000;
 const EXIT_MS = 320;
 
 // Internal framework noise that should never surface as user-facing toasts.
-const IGNORED = [
-	/missing translation for/i,
-	/^\[Transloco\]/i,
-	/^\[NG\d/i,
-];
+const IGNORED = [/missing translation for/i, /^\[Transloco\]/i, /^\[NG\d/i];
 
 /**
  * Captures console.error and console.warn calls and exposes them as a

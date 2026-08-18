@@ -91,7 +91,10 @@ export class ShellComponent implements OnInit {
 		// instead of the signed-in user's name.
 		if (!this.auth.profile()) {
 			this.apollo
-				.query<{ me: Profile | null }>({ query: QUERY_PROFILE_ME, fetchPolicy: "network-only" })
+				.query<{ me: Profile | null }>({
+					query: QUERY_PROFILE_ME,
+					fetchPolicy: "network-only",
+				})
 				.pipe(takeUntilDestroyed(this.destroyRef))
 				.subscribe((r) => {
 					if (r.data?.me) this.auth.setProfile(r.data.me);

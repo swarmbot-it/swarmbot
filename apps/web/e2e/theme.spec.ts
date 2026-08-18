@@ -15,7 +15,7 @@ test.describe("theme slider", () => {
 	test("light button is active by default", async ({ page }) => {
 		await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
 		await expect(
-			page.locator('.theme-slider__btn.theme-slider__btn--active sb-icon[name="sun"]'),
+			page.locator('.theme-slider__btn.theme-slider__btn--active sb-icon[name="sun"]')
 		).toBeVisible();
 	});
 
@@ -24,7 +24,7 @@ test.describe("theme slider", () => {
 
 		await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
 		await expect(
-			page.locator('.theme-slider__btn.theme-slider__btn--active sb-icon[name="moon"]'),
+			page.locator('.theme-slider__btn.theme-slider__btn--active sb-icon[name="moon"]')
 		).toBeVisible();
 	});
 
@@ -34,7 +34,7 @@ test.describe("theme slider", () => {
 
 		await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
 		await expect(
-			page.locator('.theme-slider__btn.theme-slider__btn--active sb-icon[name="sun"]'),
+			page.locator('.theme-slider__btn.theme-slider__btn--active sb-icon[name="sun"]')
 		).toBeVisible();
 	});
 

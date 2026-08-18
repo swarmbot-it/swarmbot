@@ -32,7 +32,10 @@ export async function encryptAtRest(db: Kysely<Database>, plain: string): Promis
  * this feature existed are plain text (no `enc:` prefix) — returned as-is
  * for backward compatibility rather than treated as corrupt.
  */
-export async function decryptAtRest(db: Kysely<Database>, stored: string | undefined): Promise<string> {
+export async function decryptAtRest(
+	db: Kysely<Database>,
+	stored: string | undefined
+): Promise<string> {
 	if (!stored) return "";
 	if (!stored.startsWith(PREFIX)) return stored;
 	const [ivB64, tagB64, dataB64] = stored.slice(PREFIX.length).split(":");
@@ -40,7 +43,10 @@ export async function decryptAtRest(db: Kysely<Database>, stored: string | undef
 		const key = await deriveKey(db);
 		const decipher = createDecipheriv("aes-256-gcm", key, Buffer.from(ivB64, "base64"));
 		decipher.setAuthTag(Buffer.from(tagB64, "base64"));
-		const dec = Buffer.concat([decipher.update(Buffer.from(dataB64, "base64")), decipher.final()]);
+		const dec = Buffer.concat([
+			decipher.update(Buffer.from(dataB64, "base64")),
+			decipher.final(),
+		]);
 		return dec.toString("utf8");
 	} catch {
 		return "";
