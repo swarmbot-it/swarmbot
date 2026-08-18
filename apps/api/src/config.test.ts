@@ -20,6 +20,7 @@ const KEYS = [
 	"SWARMBOT_OIDC_SCOPES",
 	"SWARMBOT_OIDC_ADMIN_GROUPS",
 	"SWARMBOT_OIDC_EDITOR_GROUPS",
+	"SWARMBOT_OIDC_PROVIDER_LABEL",
 	"SWARMBOT_CONSOLE_HOSTS",
 ];
 
@@ -68,19 +69,21 @@ describe("loadConfig", () => {
 	});
 
 	it("parses OIDC settings, splitting comma-separated group lists", () => {
-		process.env.SWARMBOT_OIDC_ISSUER = "https://dex.example";
+		process.env.SWARMBOT_OIDC_ISSUER = "https://idp.example";
 		process.env.SWARMBOT_OIDC_CLIENT_ID = "swarmbot";
 		process.env.SWARMBOT_OIDC_CLIENT_SECRET = "s3cret";
 		process.env.SWARMBOT_OIDC_REDIRECT_URI = "https://swarmbot.example/api/auth/oidc/callback";
 		process.env.SWARMBOT_OIDC_ADMIN_GROUPS = "org:admins, org:ops";
 		process.env.SWARMBOT_OIDC_EDITOR_GROUPS = "org:devs";
+		process.env.SWARMBOT_OIDC_PROVIDER_LABEL = "Acme SSO";
 		const cfg = loadConfig();
-		expect(cfg.oidcIssuer).toBe("https://dex.example");
+		expect(cfg.oidcIssuer).toBe("https://idp.example");
 		expect(cfg.oidcClientId).toBe("swarmbot");
 		expect(cfg.oidcClientSecret).toBe("s3cret");
 		expect(cfg.oidcRedirectUri).toBe("https://swarmbot.example/api/auth/oidc/callback");
 		expect(cfg.oidcAdminGroups).toEqual(["org:admins", "org:ops"]);
 		expect(cfg.oidcEditorGroups).toEqual(["org:devs"]);
+		expect(cfg.oidcProviderLabel).toBe("Acme SSO");
 		// Default scope stays when SWARMBOT_OIDC_SCOPES is unset. "groups" is
 		// intentionally absent — see the comment on the default in config.ts.
 		expect(cfg.oidcScopes).toBe("openid profile email");
@@ -90,6 +93,7 @@ describe("loadConfig", () => {
 		const cfg = loadConfig();
 		expect(cfg.oidcIssuer).toBeUndefined();
 		expect(cfg.oidcAdminGroups).toEqual([]);
+		expect(cfg.oidcProviderLabel).toBeUndefined();
 		expect(cfg.consoleHosts).toEqual([]);
 		expect(cfg.allowedOrigins).toBeUndefined();
 	});

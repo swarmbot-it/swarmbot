@@ -5,12 +5,14 @@ import type { Database } from "../db.js";
 import type { SwarmbotConfig } from "../config.js";
 
 /**
- * App-native OIDC login against Dex (the console at swarmbot.infra). The app is
- * a confidential OIDC client: it drives the authorization-code flow with PKCE,
- * verifies the ID token (RS256 against the provider JWKS — using the built-in
- * `crypto` JWK->PEM import + `jsonwebtoken`, no extra dependency), maps the
- * identity to a swarmbot user, then issues its OWN session JWT so guards/WS/
- * blacklist are unchanged. Dex already restricts identities to the GitHub org.
+ * App-native OIDC login against whichever provider SWARMBOT_OIDC_* points at.
+ * The app is a confidential OIDC client: it drives the authorization-code flow
+ * with PKCE, verifies the ID token (RS256 against the provider JWKS — using the
+ * built-in `crypto` JWK->PEM import + `jsonwebtoken`, no extra dependency), maps
+ * the identity to a swarmbot user, then issues its OWN session JWT so guards/WS/
+ * blacklist are unchanged. Restricting who is even allowed to authenticate
+ * (e.g. to one GitHub org, or one company's SSO tenant) is the IdP's job, not
+ * this app's.
  */
 
 export type OidcConfig = {
@@ -158,7 +160,8 @@ function identityFromClaims(p: JwtPayload & Record<string, unknown>): OidcIdenti
 	if (!sub) throw new Error("oidc id token missing sub");
 	const email = typeof p.email === "string" ? p.email : null;
 	const name = typeof p.name === "string" ? p.name : null;
-	// Dex's GitHub connector sets preferred_username to the GitHub login.
+	// Some IdPs (e.g. a GitHub-backed connector) set preferred_username to the
+	// upstream login name.
 	const preferred = typeof p.preferred_username === "string" ? p.preferred_username : undefined;
 	const base = preferred || (email ? email.split("@")[0]! : "") || sub;
 	const username = base.toLowerCase().replace(/[^a-z0-9._-]/g, "-");
@@ -166,7 +169,7 @@ function identityFromClaims(p: JwtPayload & Record<string, unknown>): OidcIdenti
 	return { sub, username, email, name, groups };
 }
 
-/** Map Dex/GitHub groups (e.g. "no-human-tech:admins") to a swarmbot role. */
+/** Map IdP groups (e.g. "org:admins", set via SWARMBOT_OIDC_ADMIN_GROUPS) to a swarmbot role. */
 export function roleForGroups(cfg: OidcConfig, groups: string[]): string {
 	const have = new Set(groups.map((g) => g.toLowerCase()));
 	if (cfg.adminGroups.some((g) => have.has(g.toLowerCase()))) return "admin";

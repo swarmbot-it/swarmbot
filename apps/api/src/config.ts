@@ -38,7 +38,7 @@ export type SwarmbotConfig = {
 	k8sNamespace: string | undefined;
 	/** Which backend mock mode imitates: swarm (default) or kubernetes. */
 	mockOrchestrator: "swarm" | "kubernetes";
-	/** OIDC (Dex) login — active only when issuer+clientId+secret+redirectUri are all set. */
+	/** OIDC login — active only when issuer+clientId+secret+redirectUri are all set. */
 	oidcIssuer: string | undefined;
 	oidcClientId: string | undefined;
 	oidcClientSecret: string | undefined;
@@ -46,6 +46,8 @@ export type SwarmbotConfig = {
 	oidcScopes: string;
 	oidcAdminGroups: string[];
 	oidcEditorGroups: string[];
+	/** Display name for the OIDC "Sign in with ___" button (e.g. "Okta", "Acme SSO"). Falls back to a generic label when unset. */
+	oidcProviderLabel: string | undefined;
 	/** Hosts whose "/" skips the marketing landing and goes straight to OIDC login (e.g. swarmbot.infra). */
 	consoleHosts: string[];
 };
@@ -82,6 +84,7 @@ const defaults: SwarmbotConfig = {
 	oidcScopes: "openid profile email",
 	oidcAdminGroups: [],
 	oidcEditorGroups: [],
+	oidcProviderLabel: undefined,
 	consoleHosts: [],
 };
 
@@ -157,6 +160,7 @@ export function loadConfig(): SwarmbotConfig {
 		oidcScopes: envStr("SWARMBOT_OIDC_SCOPES") ?? defaults.oidcScopes,
 		oidcAdminGroups: envList("SWARMBOT_OIDC_ADMIN_GROUPS"),
 		oidcEditorGroups: envList("SWARMBOT_OIDC_EDITOR_GROUPS"),
+		oidcProviderLabel: envStr("SWARMBOT_OIDC_PROVIDER_LABEL"),
 		consoleHosts: envList("SWARMBOT_CONSOLE_HOSTS"),
 	};
 }

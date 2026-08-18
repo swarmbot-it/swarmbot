@@ -2,16 +2,18 @@
 
 Topologia:
 
-- **k3s-a1.infra.no-human.tech** — aplikacja `swarmbot` (API + UI w jednym
+- **jeden wybrany węzeł** (`CHANGE-ME-node-hostname` w manifestach — podmień na
+  hostname z `kubectl get nodes`) — aplikacja `swarmbot` (API + UI w jednym
   kontenerze) + centralna baza **PostgreSQL 16** + InfluxDB 1.8 (metryki agentów),
   przypięte przez `nodeSelector: kubernetes.io/hostname`.
-- **pozostałe węzły** — `swarmagent` jako DaemonSet z `nodeAffinity NotIn [k3s-a1…]`;
-  agent jest push-only i wysyła staty/eventy na
+- **pozostałe węzły** — `swarmagent` jako DaemonSet z `nodeAffinity NotIn
+  [CHANGE-ME-node-hostname]`; agent jest push-only i wysyła staty/eventy na
   `http://swarmbot.swarmbot.svc.cluster.local:8080/events`.
-- **UI/API** — Ingress (Traefik, wbudowany w k3s) pod `http://swarmbot.infra`,
-  ograniczony middleware'em `ipAllowList` do adresów RFC1918. Węzły mają publiczne
-  IP, więc ten middleware jest obowiązkowy, a rekord DNS `swarmbot.infra` może
-  istnieć wyłącznie w wewnętrznej strefie.
+- **UI/API** — Ingress (Traefik, wbudowany w k3s) pod `http://swarmbot.example`
+  (podmień na własną domenę konsoli), ograniczony middleware'em `ipAllowList`
+  do adresów RFC1918. Jeśli węzły mają publiczne IP, ten middleware jest
+  obowiązkowy, a rekord DNS konsoli powinien istnieć wyłącznie w wewnętrznej
+  strefie DNS.
 
 Obrazy są budowane przez GitHub Actions (`.github/workflows/docker-publish.yml`
 w obu repozytoriach) i publikowane do GHCR:
@@ -47,7 +49,8 @@ wariancie.
 ### Wariant lokalny (wbudowany, domyślny)
 
 - Postgres i InfluxDB jako manifesty w namespace instancji: `10-postgres.yaml`,
-  `20-influxdb.yaml`; dane w PVC przypiętych do `k3s-a1` (`nodeSelector`).
+  `20-influxdb.yaml`; dane w PVC przypiętych do tego samego węzła co aplikacja
+  (`nodeSelector`).
 - `SWARMBOT_DB` → `postgres://…@db:5432/swarmbot`, `SWARMBOT_INFLUXDB` →
   `http://influxdb:8086` (Service'y w namespace).
 - **Kiedy:** pojedyncza instancja, pełna izolacja, najprostszy start; backup
@@ -103,7 +106,7 @@ poza repo i usuń `05-secrets.yaml` z `kustomization.yaml`.
 ```sh
 kubectl apply -k deploy/k3s
 kubectl -n swarmbot get pods -o wide
-# swarmbot/postgres/influxdb na k3s-a1, agenci na pozostałych węzłach
+# swarmbot/postgres/influxdb na CHANGE-ME-node-hostname, agenci na pozostałych węzłach
 ```
 
 Powyższe wdraża **wariant lokalny** (wbudowane bazy). Dla **wariantu centralnego**
@@ -113,18 +116,19 @@ i ustaw `SWARMBOT_DB`/`SWARMBOT_INFLUXDB` na centralne endpointy — patrz sekcj
 
 ## Krok 4 — DNS
 
-W wewnętrznym DNS (strefa, w której rozwiązują się nazwy `*.infra.no-human.tech`)
-dodaj rekord `swarmbot.infra` → wewnętrzne IP węzłów k3s (10.6.6.x; Traefik
-nasłuchuje na 80/443 na każdym węźle przez ServiceLB). Nie publikuj rekordu
-w DNS zewnętrznym.
+W swojej wewnętrznej strefie DNS dodaj rekord dla domeny konsoli (np.
+`swarmbot.example` — podmień w `30-swarmbot.yaml` na docelową domenę) →
+wewnętrzne IP węzłów k3s (Traefik nasłuchuje na 80/443 na każdym węźle przez
+ServiceLB). Jeśli węzły mają też publiczne IP, nie publikuj tego rekordu
+w DNS zewnętrznym — to konsola administracyjna, nie strona publiczna.
 
-Logowanie: `http://swarmbot.infra`, konto z sekretu `swarmbot-bootstrap`.
+Logowanie: `http://swarmbot.example`, konto z sekretu `swarmbot-bootstrap`.
 
 ## Weryfikacja po wdrożeniu
 
 ```sh
-# API żyje:
-curl -s --resolve swarmbot.infra:80:10.6.6.6 http://swarmbot.infra/health
+# API żyje (podmień domenę i IP na własne):
+curl -s --resolve swarmbot.example:80:<wewnętrzne-IP-węzła> http://swarmbot.example/health
 
 # agenci wysyłają staty:
 kubectl -n swarmbot logs ds/swarmagent --tail=20

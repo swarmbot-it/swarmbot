@@ -31,7 +31,8 @@
             "password": "Mot de passe",
             "submit": "Se connecter",
             "submitting": "Connexion…",
-            "failed": "Échec de la connexion."
+            "failed": "Échec de la connexion.",
+            "sso": "Se connecter avec {{provider}}"
         }
     },
     "topbar": {

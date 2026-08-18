@@ -16,7 +16,7 @@ export type UserTable = {
 	apiTokenJti: string | null;
 	apiTokenMask: string | null;
 	apiTokenExpiresAt: Timestamp | null;
-	/** External identity (OIDC/Dex) — insertable-optional so password users omit it. */
+	/** External identity (OIDC) — insertable-optional so password users omit it. */
 	oidcSub: ColumnType<string | null, string | null | undefined, string | null>;
 	oidcProvider: ColumnType<string | null, string | null | undefined, string | null>;
 };

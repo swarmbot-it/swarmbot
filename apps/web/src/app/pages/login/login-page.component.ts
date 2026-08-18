@@ -58,9 +58,9 @@ import { MUTATION_LOGIN, QUERY_PROFILE_ME } from "../../core/graphql.queries";
 					type="button"
 					class="btn"
 					style="margin-top: 12px; width: 100%; height: 42px; justify-content: center;"
-					(click)="loginWithDex()"
+					(click)="loginWithOidc()"
 				>
-					Sign in with GitHub
+					{{ "auth.login.sso" | transloco: { provider: oidcProviderLabel() } }}
 				</button>
 			</div>
 		</div>
@@ -115,11 +115,13 @@ export class LoginPageComponent implements OnInit {
 	readonly error = signal<string | null>(null);
 	/** Hides the form until we know whether to auto-redirect to OIDC (console hosts). */
 	readonly redirecting = signal(true);
-	/** Whether the "Sign in with GitHub" (OIDC) button should be shown. */
+	/** Whether the OIDC sign-in button should be shown. */
 	readonly oidcEnabled = signal(false);
+	/** Display name for the OIDC button, e.g. "Okta" — set via SWARMBOT_OIDC_PROVIDER_LABEL. */
+	readonly oidcProviderLabel = signal("SSO");
 
 	/**
-	 * On a console host with OIDC enabled, go straight to the provider (Dex) —
+	 * On a console host with OIDC enabled, go straight to the configured IdP —
 	 * never show the password form (the user asked for auto-redirect). The
 	 * `?password` query param is an escape hatch to the local password login.
 	 */
@@ -133,8 +135,10 @@ export class LoginPageComponent implements OnInit {
 			const cfg = (await (await fetch("/api/auth/config")).json()) as {
 				oidc?: boolean;
 				autoLogin?: boolean;
+				providerLabel?: string | null;
 			};
 			this.oidcEnabled.set(Boolean(cfg.oidc));
+			if (cfg.providerLabel) this.oidcProviderLabel.set(cfg.providerLabel);
 			if (cfg.autoLogin && !forcePassword) {
 				window.location.href = "/api/auth/oidc/login";
 				return;
@@ -153,8 +157,8 @@ export class LoginPageComponent implements OnInit {
 		minLength(f.password, 4);
 	});
 
-	/** Full-page redirect into the app-native OIDC (Dex) login. */
-	loginWithDex(): void {
+	/** Full-page redirect into the app-native OIDC login. */
+	loginWithOidc(): void {
 		window.location.href = "/api/auth/oidc/login";
 	}
 

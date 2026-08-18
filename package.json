@@ -1,6 +1,8 @@
 {
     "name": "swarmbot",
     "private": true,
+    "license": "MIT",
+    "author": "NO-HUMAN PSA",
     "workspaces": [
         "apps/api",
         "apps/web",

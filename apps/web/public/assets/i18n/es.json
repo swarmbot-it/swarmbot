@@ -31,7 +31,8 @@
             "password": "Contraseña",
             "submit": "Iniciar sesión",
             "submitting": "Iniciando sesión…",
-            "failed": "Error al iniciar sesión."
+            "failed": "Error al iniciar sesión.",
+            "sso": "Iniciar sesión con {{provider}}"
         }
     },
     "topbar": {

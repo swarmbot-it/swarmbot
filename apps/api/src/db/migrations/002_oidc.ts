@@ -1,7 +1,7 @@
 import { type Kysely } from "kysely";
 
 /**
- * OIDC (Dex) login support: external-identity columns on `users` and a
+ * OIDC login support: external-identity columns on `users` and a
  * short-lived table for the authorization-code flow (state/nonce/PKCE),
  * mirroring the `slt` pattern so any API replica can finish a flow another
  * one started. Column names are literal snake_case (CamelCasePlugin maps them).

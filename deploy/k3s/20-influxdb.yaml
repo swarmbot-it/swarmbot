@@ -1,6 +1,7 @@
 # Metrics store for agent stats — the app speaks the InfluxDB 1.x API
 # (InfluxQL, CREATE DATABASE; see apps/api/src/influx.ts), so this deploys
-# InfluxDB 1.8 with HTTP auth enabled. Pinned to k3s-a1 next to the app.
+# InfluxDB 1.8 with HTTP auth enabled. Pinned to the same node as the app
+# (CHANGE-ME-node-hostname below; see deploy/k3s/README.md).
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -33,7 +34,7 @@ spec:
                 app: influxdb
         spec:
             nodeSelector:
-                kubernetes.io/hostname: k3s-a1.infra.no-human.tech
+                kubernetes.io/hostname: CHANGE-ME-node-hostname
             containers:
                 - name: influxdb
                   image: influxdb:1.8
