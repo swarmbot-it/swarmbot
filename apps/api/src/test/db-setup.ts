@@ -7,7 +7,8 @@ import { createDb, initDb, type Database } from "../db.js";
  * SWARMBOT_TEST_DB for CI or a different environment.
  */
 const TEST_DB_URL =
-	process.env.SWARMBOT_TEST_DB ?? "postgres://swarmbot:swarmbot@swarmbot-rc1-pg-1:5432/swarmbot_test";
+	process.env.SWARMBOT_TEST_DB ??
+	"postgres://swarmbot:swarmbot@swarmbot-rc1-pg-1:5432/swarmbot_test";
 
 let migrated = false;
 

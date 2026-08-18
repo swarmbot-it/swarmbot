@@ -1,0 +1,20 @@
+{
+    "chart.daysAgo": "{n} g fa",
+    "chart.hoursAgo": "{n} h fa",
+    "chart.minutesAgo": "{n} min fa",
+    "chart.now": "ora",
+    "errors.forbidden": "Accesso negato",
+    "errors.invalidAuthorization": "Autorizzazione non valida",
+    "errors.invalidCredentials": "Il nome utente o la password non sono corretti.",
+    "errors.invalidSlt": "Token SLT non valido",
+    "errors.missingToken": "Token mancante",
+    "errors.noDataSent": "Nessun dato inviato",
+    "errors.noRunningTask": "Nessuna attività in esecuzione",
+    "errors.notSupportedInOrchestrator": "Questa operazione non è supportata dall'orchestratore corrente.",
+    "errors.serverMisconfigured": "Server configurato male",
+    "errors.tooManyAttempts": "Troppi tentativi di accesso. Attendi un minuto e riprova.",
+    "errors.unauthenticated": "Non autorizzato",
+    "errors.userNotFound": "Utente non trovato",
+    "errors.usernameTaken": "Nome utente già in uso",
+    "errors.validationFailed": "Input non valido"
+}

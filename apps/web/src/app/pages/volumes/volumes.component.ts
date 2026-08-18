@@ -30,7 +30,11 @@ type Volume = { name: string; driver: string; size: string };
 						{{ "pages.volumes.countSuffix" | transloco }}
 					</div>
 				</div>
-				<button *ngIf="auth.isAdmin()" class="btn btn--primary" (click)="createRequested.emit()">
+				<button
+					*ngIf="auth.isAdmin()"
+					class="btn btn--primary"
+					(click)="createRequested.emit()"
+				>
 					<sb-icon name="plus" [size]="16"></sb-icon>
 					{{ "pages.volumes.add" | transloco }}
 				</button>

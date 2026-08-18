@@ -221,7 +221,8 @@ describe("exchangeAndVerify", () => {
 		const rogue = generateKeyPairSync("rsa", { modulusLength: 2048 });
 		const published = generateKeyPairSync("rsa", { modulusLength: 2048 });
 		const jwk = { ...(published.publicKey.export({ format: "jwk" }) as object), kid: "k1" };
-		const idToken = jwt.sign({ iss: issuer, aud: "swarmbot", sub: "x", exp: Math.floor(Date.now() / 1000) + 300 },
+		const idToken = jwt.sign(
+			{ iss: issuer, aud: "swarmbot", sub: "x", exp: Math.floor(Date.now() / 1000) + 300 },
 			rogue.privateKey.export({ type: "pkcs8", format: "pem" }),
 			{ algorithm: "RS256", keyid: "k1" }
 		);
@@ -230,11 +231,17 @@ describe("exchangeAndVerify", () => {
 			vi.fn(async (url: string) => {
 				if (url.endsWith("/.well-known/openid-configuration")) {
 					return new Response(
-						JSON.stringify({ issuer, authorization_endpoint: `${issuer}/auth`, token_endpoint: `${issuer}/token`, jwks_uri: `${issuer}/keys` }),
+						JSON.stringify({
+							issuer,
+							authorization_endpoint: `${issuer}/auth`,
+							token_endpoint: `${issuer}/token`,
+							jwks_uri: `${issuer}/keys`,
+						}),
 						{ status: 200 }
 					);
 				}
-				if (url === `${issuer}/keys`) return new Response(JSON.stringify({ keys: [jwk] }), { status: 200 });
+				if (url === `${issuer}/keys`)
+					return new Response(JSON.stringify({ keys: [jwk] }), { status: 200 });
 				return new Response(JSON.stringify({ id_token: idToken }), { status: 200 });
 			})
 		);

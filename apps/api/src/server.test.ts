@@ -149,6 +149,10 @@ describe.sequential("public config endpoints", () => {
 			oidcProviderLabel: "Acme SSO",
 		});
 		const res = await fetch(`${test.baseUrl}/api/auth/config`);
-		expect(await res.json()).toEqual({ oidc: true, autoLogin: false, providerLabel: "Acme SSO" });
+		expect(await res.json()).toEqual({
+			oidc: true,
+			autoLogin: false,
+			providerLabel: "Acme SSO",
+		});
 	});
 });

@@ -27,7 +27,9 @@ function containerExists(name) {
 
 function containerRunning(name) {
 	try {
-		return run(`docker inspect -f "{{.State.Status}}" ${name}`, { capture: true }) === "running";
+		return (
+			run(`docker inspect -f "{{.State.Status}}" ${name}`, { capture: true }) === "running"
+		);
 	} catch {
 		return false;
 	}

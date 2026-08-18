@@ -25,7 +25,11 @@ function cfg(overrides: Partial<SwarmbotConfig> = {}): SwarmbotConfig {
 describe("createDocker", () => {
 	it("parses a tcp:// endpoint into host/port (the swarm:start DinD cluster)", () => {
 		const docker = createDocker(cfg({ dockerSock: "tcp://172.21.0.2:2375" }));
-		const modem = docker.modem as unknown as { host?: string; port?: number; protocol?: string };
+		const modem = docker.modem as unknown as {
+			host?: string;
+			port?: number;
+			protocol?: string;
+		};
 		expect(modem.host).toBe("172.21.0.2");
 		expect(modem.port).toBe(2375);
 		expect(modem.protocol).toBe("http");

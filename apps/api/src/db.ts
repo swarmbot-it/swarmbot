@@ -27,7 +27,9 @@ export function createDb(cfg: Pick<SwarmbotConfig, "dbUrl" | "mock">): Kysely<Da
 	const dialect = cfg.mock
 		? new SqliteDialect({ database: new SqliteDatabase(":memory:") })
 		: new PostgresDialect({ pool: new Pool({ connectionString: cfg.dbUrl }) });
-	const plugins = cfg.mock ? [new CamelCasePlugin(), new SqliteBooleanPlugin()] : [new CamelCasePlugin()];
+	const plugins = cfg.mock
+		? [new CamelCasePlugin(), new SqliteBooleanPlugin()]
+		: [new CamelCasePlugin()];
 	return new Kysely<Database>({ dialect, plugins });
 }
 
@@ -60,11 +62,17 @@ async function runMigrations(db: Kysely<Database>): Promise<void> {
 				const files = await fsPromises.readdir(migrationFolder);
 				const migrations: Record<string, Migration> = {};
 				for (const file of files.sort()) {
-					if (!/\.(js|mjs|ts)$/.test(file) || file.endsWith(".d.ts") || file.endsWith(".test.ts")) {
+					if (
+						!/\.(js|mjs|ts)$/.test(file) ||
+						file.endsWith(".d.ts") ||
+						file.endsWith(".test.ts")
+					) {
 						continue;
 					}
 					const url = pathToFileURL(path.join(migrationFolder, file)).href;
-					migrations[file.replace(/\.(js|mjs|ts)$/, "")] = (await import(url)) as Migration;
+					migrations[file.replace(/\.(js|mjs|ts)$/, "")] = (await import(
+						url
+					)) as Migration;
 				}
 				return migrations;
 			},

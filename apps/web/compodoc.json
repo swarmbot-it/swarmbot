@@ -1,10 +1,10 @@
 {
-	"$schema": "https://compodoc.app/guides/json-config.html",
-	"name": "swarmbot.it Web UI",
-	"tsconfig": "tsconfig.app.json",
-	"output": "documentation",
-	"theme": "gitbook",
-	"language": "en-US",
-	"disableCoverage": true,
-	"hideGenerator": false
+    "$schema": "https://compodoc.app/guides/json-config.html",
+    "name": "swarmbot.it Web UI",
+    "tsconfig": "tsconfig.app.json",
+    "output": "documentation",
+    "theme": "gitbook",
+    "language": "en-US",
+    "disableCoverage": true,
+    "hideGenerator": false
 }

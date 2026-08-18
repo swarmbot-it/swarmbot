@@ -32,7 +32,9 @@ import { ToastService } from "../../core/toast.service";
 						class="toast__close"
 						[attr.aria-label]="'toast.dismiss' | transloco"
 						(click)="toastSvc.dismiss(t.id)"
-					>×</button>
+					>
+						×
+					</button>
 				</div>
 			}
 		</div>

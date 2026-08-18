@@ -61,7 +61,10 @@ async function fetchKeys(jwksUri: string): Promise<Map<string, string>> {
 		const kid = typeof jwk.kid === "string" ? jwk.kid : undefined;
 		if (!kid || jwk.kty !== "RSA") continue;
 		try {
-			const pem = createPublicKey({ key: jwk, format: "jwk" }).export({ type: "spki", format: "pem" });
+			const pem = createPublicKey({ key: jwk, format: "jwk" }).export({
+				type: "spki",
+				format: "pem",
+			});
 			map.set(kid, typeof pem === "string" ? pem : pem.toString("utf8"));
 		} catch {
 			/* skip unusable key */
@@ -82,7 +85,8 @@ async function discover(issuer: string): Promise<{ doc: Discovery; keys: Map<str
 
 const b64url = (buf: Buffer): string => buf.toString("base64url");
 export const newVerifier = (): string => b64url(randomBytes(32));
-export const challenge = (verifier: string): string => b64url(createHash("sha256").update(verifier).digest());
+export const challenge = (verifier: string): string =>
+	b64url(createHash("sha256").update(verifier).digest());
 export const randomOpaque = (): string => b64url(randomBytes(16));
 
 export async function authorizationUrl(
@@ -202,7 +206,11 @@ export async function consumeFlow(
 	state: string | undefined
 ): Promise<{ nonce: string; codeVerifier: string; redirectTo: string | null } | null> {
 	if (!state) return null;
-	const row = await db.selectFrom("oidcFlow").selectAll().where("state", "=", state).executeTakeFirst();
+	const row = await db
+		.selectFrom("oidcFlow")
+		.selectAll()
+		.where("state", "=", state)
+		.executeTakeFirst();
 	if (!row) return null;
 	await db.deleteFrom("oidcFlow").where("state", "=", state).execute();
 	if (new Date(row.expiresAt).getTime() < Date.now()) return null;

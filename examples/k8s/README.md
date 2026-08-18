@@ -25,13 +25,13 @@ to your hosts file. Override the exposed port with `SWARMBOT_K8S_PORT`.
 
 ## How it differs from `deploy/k3s`
 
-| Production (`deploy/k3s`) | Local dev (`examples/k8s`) |
-| --- | --- |
+| Production (`deploy/k3s`)                           | Local dev (`examples/k8s`)                 |
+| --------------------------------------------------- | ------------------------------------------ |
 | `ghcr.io/swarmbot-it/*:latest` + `imagePullSecrets` | locally built `*:local`, imported into k3d |
-| `nodeSelector`/`nodeAffinity` pin to real nodes | none — schedules on any k3d node |
-| `ipAllowList` (RFC1918) on the ingress | none (localhost only) |
-| host `swarmbot.infra`, internal DNS | host `swarmbot.localhost` |
-| `CHANGE-ME` secrets (set out of band) | committed dev-only secrets |
+| `nodeSelector`/`nodeAffinity` pin to real nodes     | none — schedules on any k3d node           |
+| `ipAllowList` (RFC1918) on the ingress              | none (localhost only)                      |
+| host `swarmbot.infra`, internal DNS                 | host `swarmbot.localhost`                  |
+| `CHANGE-ME` secrets (set out of band)               | committed dev-only secrets                 |
 
 The RBAC (ServiceAccount + ClusterRole) is identical, so the kubernetes
 dashboard behaves the same as in production.

@@ -21,18 +21,14 @@ describe("authGuard", () => {
 
 	it("allows navigation when a session token exists", () => {
 		authService.isAuthed.mockReturnValue(true);
-		const result = TestBed.runInInjectionContext(() =>
-			authGuard(null as never, null as never)
-		);
+		const result = TestBed.runInInjectionContext(() => authGuard(null as never, null as never));
 		expect(result).toBe(true);
 		expect(router.parseUrl).not.toHaveBeenCalled();
 	});
 
 	it("redirects to /login when there is no session", () => {
 		authService.isAuthed.mockReturnValue(false);
-		const result = TestBed.runInInjectionContext(() =>
-			authGuard(null as never, null as never)
-		);
+		const result = TestBed.runInInjectionContext(() => authGuard(null as never, null as never));
 		expect(router.parseUrl).toHaveBeenCalledWith("/login");
 		expect(result).toBe("URL_TREE");
 	});

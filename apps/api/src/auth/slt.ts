@@ -21,7 +21,11 @@ export async function consumeSlt(
 	token: string | undefined
 ): Promise<string | undefined> {
 	if (!token) return undefined;
-	const row = await db.selectFrom("slt").selectAll().where("token", "=", token).executeTakeFirst();
+	const row = await db
+		.selectFrom("slt")
+		.selectAll()
+		.where("token", "=", token)
+		.executeTakeFirst();
 	if (!row) return undefined;
 	await db.deleteFrom("slt").where("token", "=", token).execute();
 	if (new Date(row.expiresAt).getTime() < Date.now()) return undefined;

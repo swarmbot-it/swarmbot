@@ -88,7 +88,9 @@ export const routes: Routes = [
 			{
 				path: "node-map",
 				loadComponent: () =>
-					import("./pages/node-map/node-map.component").then((m) => m.NodeMapPageComponent),
+					import("./pages/node-map/node-map.component").then(
+						(m) => m.NodeMapPageComponent
+					),
 			},
 			{
 				path: "networks",

@@ -13,3 +13,8 @@ apps/web/dist
 design-qa/mockup
 design-qa/tests/__screenshots__
 design-qa/.netcache
+
+# Git submodule with its own repo, toolchain and formatting rules. Reformatting
+# it here would dirty the submodule without being committable from this repo —
+# such changes belong in a PR against swarmbot-it/swarmagent instead.
+swarmagent

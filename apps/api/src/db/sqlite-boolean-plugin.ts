@@ -19,7 +19,9 @@ class BooleanToIntTransformer extends OperationNodeTransformer {
 		return transformed;
 	}
 
-	protected override transformPrimitiveValueList(node: PrimitiveValueListNode): PrimitiveValueListNode {
+	protected override transformPrimitiveValueList(
+		node: PrimitiveValueListNode
+	): PrimitiveValueListNode {
 		const transformed = super.transformPrimitiveValueList(node);
 		return {
 			...transformed,

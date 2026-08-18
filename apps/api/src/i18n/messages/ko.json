@@ -1,0 +1,20 @@
+{
+    "chart.daysAgo": "{n}일 전",
+    "chart.hoursAgo": "{n}시간 전",
+    "chart.minutesAgo": "{n}분 전",
+    "chart.now": "현재",
+    "errors.forbidden": "권한이 없습니다",
+    "errors.invalidAuthorization": "인증 정보가 유효하지 않습니다",
+    "errors.invalidCredentials": "사용자 이름 또는 비밀번호가 올바르지 않습니다.",
+    "errors.invalidSlt": "SLT 토큰이 유효하지 않습니다",
+    "errors.missingToken": "토큰이 없습니다",
+    "errors.noDataSent": "전송된 데이터가 없습니다",
+    "errors.noRunningTask": "실행 중인 작업이 없습니다",
+    "errors.notSupportedInOrchestrator": "현재 오케스트레이터에서는 지원되지 않는 작업입니다.",
+    "errors.serverMisconfigured": "서버 구성이 잘못되었습니다",
+    "errors.tooManyAttempts": "로그인 시도가 너무 많습니다. 1분 후에 다시 시도해 주세요.",
+    "errors.unauthenticated": "인증되지 않았습니다",
+    "errors.userNotFound": "사용자를 찾을 수 없습니다",
+    "errors.usernameTaken": "이미 사용 중인 사용자 이름입니다",
+    "errors.validationFailed": "잘못된 입력입니다"
+}

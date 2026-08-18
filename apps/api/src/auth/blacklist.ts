@@ -17,7 +17,11 @@ export async function revokeJti(db: Kysely<Database>, jti: string | undefined): 
 
 export async function isRevoked(db: Kysely<Database>, jti: string | undefined): Promise<boolean> {
 	if (!jti) return false;
-	const row = await db.selectFrom("revokedJti").select("expiresAt").where("jti", "=", jti).executeTakeFirst();
+	const row = await db
+		.selectFrom("revokedJti")
+		.select("expiresAt")
+		.where("jti", "=", jti)
+		.executeTakeFirst();
 	if (!row) return false;
 	if (new Date(row.expiresAt).getTime() <= Date.now()) {
 		await db.deleteFrom("revokedJti").where("jti", "=", jti).execute();

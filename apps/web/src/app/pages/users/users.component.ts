@@ -67,7 +67,11 @@ const ROLE_I18N_KEY: Record<string, string> = {
 						<strong>{{ rows.length }}</strong> {{ "users.inWorkspace" | transloco }}
 					</div>
 				</div>
-				<button *ngIf="auth.isAdmin()" class="btn btn--primary" (click)="createRequested.emit()">
+				<button
+					*ngIf="auth.isAdmin()"
+					class="btn btn--primary"
+					(click)="createRequested.emit()"
+				>
 					<sb-icon name="plus" [size]="16"></sb-icon> {{ "users.addUser" | transloco }}
 				</button>
 			</div>

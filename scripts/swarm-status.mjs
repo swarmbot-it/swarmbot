@@ -34,7 +34,9 @@ const BOLD = "\x1b[1m";
 const DIM = "\x1b[2m";
 const RESET = "\x1b[0m";
 
-function col(text, color) { return `${color}${text}${RESET}`; }
+function col(text, color) {
+	return `${color}${text}${RESET}`;
+}
 
 console.log(`\n${BOLD}=== swarmbot.it test cluster status ===${RESET}\n`);
 
@@ -88,7 +90,9 @@ if (managerStatus === "running" && swarmReady(MANAGER)) {
 		} else {
 			console.log(`\n${DIM}No services deployed.${RESET}`);
 		}
-	} catch { /* no services */ }
+	} catch {
+		/* no services */
+	}
 
 	// — Stacks —
 	try {
@@ -101,9 +105,13 @@ if (managerStatus === "running" && swarmReady(MANAGER)) {
 				console.log(`  ${prefix}${line}${RESET}`);
 			}
 		}
-	} catch { /* no stacks */ }
+	} catch {
+		/* no stacks */
+	}
 } else {
-	console.log(`\n${col("Manager container is not ready or Swarm daemon is not running.", YELLOW)}`);
+	console.log(
+		`\n${col("Manager container is not ready or Swarm daemon is not running.", YELLOW)}`
+	);
 }
 
 console.log();

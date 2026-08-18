@@ -15,7 +15,9 @@ export async function up(db: Kysely<unknown>): Promise<void> {
 		.addColumn("phone", "text")
 		.addColumn("role", "text")
 		.addColumn("password", "text", (col) => col.notNull())
-		.addColumn("created_at", "timestamptz", (col) => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
+		.addColumn("created_at", "timestamptz", (col) =>
+			col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`)
+		)
 		.addColumn("last_login_at", "timestamptz")
 		.addColumn("api_token_jti", "text")
 		.addColumn("api_token_mask", "text")

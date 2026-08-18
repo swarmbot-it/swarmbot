@@ -263,9 +263,7 @@ export function mapWorkloadDetail(e: WorkloadEntry, services: KubeService[]): Se
 		mode: e.kind === "DaemonSet" ? "global" : "replicated",
 		created: iso(meta.creationTimestamp),
 		updated: iso(meta.creationTimestamp),
-		env: (first?.env ?? [])
-			.filter((v) => v.name)
-			.map((v) => `${v.name}=${v.value ?? ""}`),
+		env: (first?.env ?? []).filter((v) => v.name).map((v) => `${v.name}=${v.value ?? ""}`),
 		labels: Object.entries(meta.labels ?? {}).map(([k, v]) => ({ k, v })),
 		networks: [],
 		mounts,

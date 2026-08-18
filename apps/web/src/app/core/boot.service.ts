@@ -83,10 +83,12 @@ export class BootService {
 				apollo.query({ query: QUERY_STACKS }),
 				apollo.query({ query: QUERY_SERVICES }),
 			]).pipe(tap(() => this.advance())),
-			apollo.query({
-				query: QUERY_METRICS_SERIES,
-				variables: { input: { range: "1h", resolution: "medium" } },
-			}).pipe(tap(() => this.advance()))
+			apollo
+				.query({
+					query: QUERY_METRICS_SERIES,
+					variables: { input: { range: "1h", resolution: "medium" } },
+				})
+				.pipe(tap(() => this.advance()))
 		)
 			.pipe(
 				retry({

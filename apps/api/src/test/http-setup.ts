@@ -80,7 +80,13 @@ export function gqlContext(
 	req: { headers: Record<string, string | undefined>; swarmUser?: GraphQLContext["user"] },
 	test: TestHttp
 ): GraphQLContext {
-	return buildContext(req as Parameters<typeof buildContext>[0], test.cfg, test.db, test.orchestrator, test.docker);
+	return buildContext(
+		req as Parameters<typeof buildContext>[0],
+		test.cfg,
+		test.db,
+		test.orchestrator,
+		test.docker
+	);
 }
 
 export async function gql<T>(

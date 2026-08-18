@@ -68,15 +68,10 @@ export class I18nStateService {
 			/* ignore */
 		}
 		if (typeof navigator !== "undefined") {
-			const nav = navigator.language?.toLowerCase() ?? "";
-			if (nav.startsWith("pl")) return "pl";
-			if (nav.startsWith("de")) return "de";
-			if (nav.startsWith("fr")) return "fr";
-			if (nav.startsWith("es")) return "es";
-			if (nav.startsWith("it")) return "it";
-			if (nav.startsWith("zh")) return "zh";
-			if (nav.startsWith("ja")) return "ja";
-			if (nav.startsWith("ko")) return "ko";
+			// Match the browser's primary subtag against the registry, so adding a
+			// locale to SUPPORTED_LANGUAGES is enough — no branch to remember here.
+			const nav = navigator.language?.slice(0, 2).toLowerCase() ?? "";
+			if (isLangCode(nav)) return nav;
 		}
 		return "en";
 	}

@@ -96,7 +96,12 @@ services:
     api:
         image: node:24-alpine
         working_dir: /app
-        command: ["sh", "-c", "apk add --no-cache docker-cli && npm install --prefer-offline --no-progress --no-audit && npm run dev -w @swarmbot/api"]
+        command:
+            [
+                "sh",
+                "-c",
+                "apk add --no-cache docker-cli && npm install --prefer-offline --no-progress --no-audit && npm run dev -w @swarmbot/api",
+            ]
         environment:
             NODE_ENV: development
             # tsx watch uses chokidar under the hood; native fs events are unreliable over
@@ -140,7 +145,12 @@ services:
     web:
         image: node:24-alpine
         working_dir: /app
-        command: ["sh", "-c", "npm install --prefer-offline --no-progress --no-audit && npm install @rollup/rollup-linux-x64-musl --no-save --no-audit --no-fund && cd apps/web && npx ng serve --host 0.0.0.0 --port 4200 --poll 500 --proxy-config proxy.conf.docker.json"]
+        command:
+            [
+                "sh",
+                "-c",
+                "npm install --prefer-offline --no-progress --no-audit && npm install @rollup/rollup-linux-x64-musl --no-save --no-audit --no-fund && cd apps/web && npx ng serve --host 0.0.0.0 --port 4200 --poll 500 --proxy-config proxy.conf.docker.json",
+            ]
         environment:
             NODE_ENV: development
         volumes:

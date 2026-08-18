@@ -14,7 +14,14 @@ export type StoredRegistry = {
 	default: boolean;
 };
 
-const REGISTRY_COLUMNS = ["id", "name", "url", "registryType", "registryUser", "isDefault"] as const;
+const REGISTRY_COLUMNS = [
+	"id",
+	"name",
+	"url",
+	"registryType",
+	"registryUser",
+	"isDefault",
+] as const;
 
 function toView(row: {
 	id: string;
@@ -76,7 +83,11 @@ export async function createRegistry(
 	const password = await encryptAtRest(db, input.password ?? "");
 	return db.transaction().execute(async (trx) => {
 		if (input.default) {
-			await trx.updateTable("registries").set({ isDefault: false }).where("isDefault", "=", true).execute();
+			await trx
+				.updateTable("registries")
+				.set({ isDefault: false })
+				.where("isDefault", "=", true)
+				.execute();
 		}
 		const row = await trx
 			.insertInto("registries")
@@ -101,7 +112,10 @@ export async function removeRegistry(db: Kysely<Database>, id: string): Promise<
 }
 
 /** Marks the given registry as default and clears the flag on every other registry, atomically. */
-export async function setDefaultRegistry(db: Kysely<Database>, id: string): Promise<StoredRegistry> {
+export async function setDefaultRegistry(
+	db: Kysely<Database>,
+	id: string
+): Promise<StoredRegistry> {
 	return db.transaction().execute(async (trx) => {
 		await trx
 			.updateTable("registries")

@@ -1,82 +1,82 @@
 name: Build and publish image (GHCR)
 
 on:
-  push:
-    branches: [main, "ci/**"]
-    tags: ["v*.*.*"]
-  workflow_dispatch:
+    push:
+        branches: [main, "ci/**"]
+        tags: ["v*.*.*"]
+    workflow_dispatch:
 
 env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository_owner }}/swarmbot
+    REGISTRY: ghcr.io
+    IMAGE_NAME: ${{ github.repository_owner }}/swarmbot
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:16-alpine
+    test:
+        runs-on: ubuntu-latest
+        services:
+            postgres:
+                image: postgres:16-alpine
+                env:
+                    POSTGRES_USER: swarmbot
+                    POSTGRES_PASSWORD: swarmbot
+                    POSTGRES_DB: swarmbot_test
+                ports:
+                    - 5432:5432
+                options: >-
+                    --health-cmd "pg_isready -U swarmbot"
+                    --health-interval 5s
+                    --health-timeout 5s
+                    --health-retries 10
         env:
-          POSTGRES_USER: swarmbot
-          POSTGRES_PASSWORD: swarmbot
-          POSTGRES_DB: swarmbot_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U swarmbot"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
-    env:
-      SWARMBOT_TEST_DB: postgres://swarmbot:swarmbot@localhost:5432/swarmbot_test
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 26
-          cache: npm
-      - run: npm ci
-      - run: npm run lint
-      # API tests run against the Postgres service container. Web unit tests
-      # (ng test) need a browser runner and are covered by the repo's own CI.
-      - run: npm test -w @swarmbot/api
+            SWARMBOT_TEST_DB: postgres://swarmbot:swarmbot@localhost:5432/swarmbot_test
+        steps:
+            - uses: actions/checkout@v7
+            - uses: actions/setup-node@v7
+              with:
+                  node-version: 26
+                  cache: npm
+            - run: npm ci
+            - run: npm run lint
+            # API tests run against the Postgres service container. Web unit tests
+            # (ng test) need a browser runner and are covered by the repo's own CI.
+            - run: npm test -w @swarmbot/api
 
-  build-and-push:
-    needs: test
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - uses: actions/checkout@v7
+    build-and-push:
+        needs: test
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            packages: write
+        steps:
+            - uses: actions/checkout@v7
 
-      - uses: docker/setup-buildx-action@v4
+            - uses: docker/setup-buildx-action@v4
 
-      - name: Log in to GHCR
-        uses: docker/login-action@v4.5.2
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+            - name: Log in to GHCR
+              uses: docker/login-action@v4.5.2
+              with:
+                  registry: ${{ env.REGISTRY }}
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract image metadata
-        id: meta
-        uses: docker/metadata-action@v6
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=ref,event=branch
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=raw,value=latest,enable={{is_default_branch}}
-            type=sha
+            - name: Extract image metadata
+              id: meta
+              uses: docker/metadata-action@v6
+              with:
+                  images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+                  tags: |
+                      type=ref,event=branch
+                      type=semver,pattern={{version}}
+                      type=semver,pattern={{major}}.{{minor}}
+                      type=raw,value=latest,enable={{is_default_branch}}
+                      type=sha
 
-      - name: Build and push
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+            - name: Build and push
+              uses: docker/build-push-action@v7
+              with:
+                  context: .
+                  push: true
+                  tags: ${{ steps.meta.outputs.tags }}
+                  labels: ${{ steps.meta.outputs.labels }}
+                  cache-from: type=gha
+                  cache-to: type=gha,mode=max

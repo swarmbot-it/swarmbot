@@ -58,7 +58,10 @@ export const STACK_LABEL = "com.docker.stack.namespace";
 
 /** Reads the stack-namespace label from either a service spec or a plain resource. */
 function labelsOf(x: unknown): Record<string, string> {
-	const anyx = x as { Spec?: { Labels?: Record<string, string> }; Labels?: Record<string, string> };
+	const anyx = x as {
+		Spec?: { Labels?: Record<string, string> };
+		Labels?: Record<string, string>;
+	};
 	return anyx.Spec?.Labels ?? anyx.Labels ?? {};
 }
 
@@ -246,7 +249,12 @@ type ServiceInspect = {
 			ContainerSpec?: {
 				Image?: string;
 				Env?: string[];
-				Mounts?: Array<{ Type?: string; Source?: string; Target?: string; ReadOnly?: boolean }>;
+				Mounts?: Array<{
+					Type?: string;
+					Source?: string;
+					Target?: string;
+					ReadOnly?: boolean;
+				}>;
 				Secrets?: Array<{ SecretName?: string }>;
 				Configs?: Array<{ ConfigName?: string }>;
 			};
@@ -465,7 +473,15 @@ export function aggregateStacks(
 	const bucket = (name: string): StackAgg => {
 		let entry = byStack.get(name);
 		if (!entry) {
-			entry = { name, services: 0, networks: 0, volumes: 0, configs: 0, secrets: 0, status: "RUNNING" };
+			entry = {
+				name,
+				services: 0,
+				networks: 0,
+				volumes: 0,
+				configs: 0,
+				secrets: 0,
+				status: "RUNNING",
+			};
 			byStack.set(name, entry);
 		}
 		return entry;
@@ -521,7 +537,11 @@ export async function rollbackServiceById(docker: Dockerode, id: string): Promis
 }
 
 /** Set Mode.Replicated.Replicas to a new count (no-op for global-mode services). */
-export async function scaleServiceById(docker: Dockerode, id: string, replicas: number): Promise<void> {
+export async function scaleServiceById(
+	docker: Dockerode,
+	id: string,
+	replicas: number
+): Promise<void> {
 	const svc = docker.getService(id);
 	const inspected = (await svc.inspect()) as {
 		Version?: { Index?: number };

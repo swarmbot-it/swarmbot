@@ -106,7 +106,13 @@ function summarizeDockerEvent(raw: string): string {
 
 /** Measurements/fields this app ever writes (see events/stats-writer.ts) — the only ones `Query.statsSeries` may read. */
 const STATS_MEASUREMENTS = new Set(["cpu", "memory", "disk", "container_stats"]);
-const STATS_FIELDS = new Set(["percent", "total_bytes", "used_bytes", "cpu_percent", "mem_percent"]);
+const STATS_FIELDS = new Set([
+	"percent",
+	"total_bytes",
+	"used_bytes",
+	"cpu_percent",
+	"mem_percent",
+]);
 
 /**
  * Stable per-resource pseudo-load so dashboards look the same between
@@ -160,7 +166,13 @@ async function decorateNodes(ctx: GraphQLContext, base: NodeSummary[]): Promise<
 				const cpu = pseudoLoad(n.id, "cpu");
 				const mem = pseudoLoad(n.id, "mem");
 				const disk = pseudoLoad(n.id, "disk");
-				return { ...n, cpu, mem, disk, ...(await nodeHistoryFields(ctx, n, cpu, mem, disk)) };
+				return {
+					...n,
+					cpu,
+					mem,
+					disk,
+					...(await nodeHistoryFields(ctx, n, cpu, mem, disk)),
+				};
 			})
 		);
 	}
@@ -192,11 +204,23 @@ async function decorateNodes(ctx: GraphQLContext, base: NodeSummary[]): Promise<
 				const cpu = valueOf(c);
 				const mem = valueOf(m);
 				const disk = valueOf(d);
-				return { ...n, cpu, mem, disk, ...(await nodeHistoryFields(ctx, n, cpu, mem, disk)) };
+				return {
+					...n,
+					cpu,
+					mem,
+					disk,
+					...(await nodeHistoryFields(ctx, n, cpu, mem, disk)),
+				};
 			} catch {
 				// Same reasoning as above: a failed Influx query means "no data",
 				// not "here's a plausible number."
-				return { ...n, cpu: 0, mem: 0, disk: 0, ...(await nodeHistoryFields(ctx, n, 0, 0, 0)) };
+				return {
+					...n,
+					cpu: 0,
+					mem: 0,
+					disk: 0,
+					...(await nodeHistoryFields(ctx, n, 0, 0, 0)),
+				};
 			}
 		})
 	);
@@ -233,7 +257,9 @@ async function loadTaskInfos(ctx: GraphQLContext): Promise<ReturnType<typeof map
 	const svcMap = new Map(services.map((s) => [s.id as string | undefined, s]));
 	const hasInflux = Boolean(ctx.cfg.influxdbUrl);
 	const kind = ctx.orchestrator.kind;
-	return tasks.map((t, idx) => mapTaskInfo(t, idx, kind, svcMap, nodeMap, containerStats, hasInflux));
+	return tasks.map((t, idx) =>
+		mapTaskInfo(t, idx, kind, svcMap, nodeMap, containerStats, hasInflux)
+	);
 }
 
 /**
@@ -586,7 +612,7 @@ export const resolvers = {
 						]);
 						if (cpuRows.length > 0) {
 							return {
-								labels: cpuRows.map((v) => relativeLabel(String(v[0]))),
+								labels: cpuRows.map((v) => relativeLabel(String(v[0]), ctx.locale)),
 								cpu: cpuRows.map((v) => v[1] ?? 0),
 								mem: memRows.map((v) => v[1] ?? 0),
 							};
@@ -600,8 +626,9 @@ export const resolvers = {
 
 			if (!ctx.cfg.influxdbUrl && isRunning) {
 				let seed = 0;
-				for (let i = 0; i < args.id.length; i++) seed = (seed * 31 + args.id.charCodeAt(i)) >>> 0;
-				const mock = mockSeries(range, "medium", seed % 5);
+				for (let i = 0; i < args.id.length; i++)
+					seed = (seed * 31 + args.id.charCodeAt(i)) >>> 0;
+				const mock = mockSeries(range, "medium", seed % 5, ctx.locale);
 				return { labels: mock.labels, cpu: mock.cpu, mem: mock.mem };
 			}
 			return empty;
@@ -669,7 +696,13 @@ export const resolvers = {
 			const range = input.range;
 			const resolution = input.resolution ?? "medium";
 			if (input.nodeId) {
-				const nodeInflux = await influxNodeSeries(ctx.cfg, input.nodeId, range, resolution);
+				const nodeInflux = await influxNodeSeries(
+					ctx.cfg,
+					input.nodeId,
+					range,
+					resolution,
+					ctx.locale
+				);
 				if (nodeInflux) return nodeInflux;
 				if (ctx.cfg.mock) {
 					const hist = nodeMockHistory(
@@ -687,9 +720,9 @@ export const resolvers = {
 				}
 				return null;
 			}
-			const influx = await influxClusterSeries(ctx.cfg, range, resolution);
+			const influx = await influxClusterSeries(ctx.cfg, range, resolution, ctx.locale);
 			if (influx) return influx;
-			if (ctx.cfg.mock) return mockSeries(range, resolution);
+			if (ctx.cfg.mock) return mockSeries(range, resolution, 0, ctx.locale);
 			return null;
 		},
 		statsSeries: async (
@@ -704,7 +737,8 @@ export const resolvers = {
 			if (!STATS_MEASUREMENTS.has(args.measurement)) return null;
 			if (!STATS_FIELDS.has(args.field)) return null;
 			// Only a single `tag = 'value'` equality clause is allowed, never a raw WHERE fragment.
-			if (args.tags && !/^[a-zA-Z_][a-zA-Z0-9_]*\s*=\s*'[^'\\]*'$/.test(args.tags)) return null;
+			if (args.tags && !/^[a-zA-Z_][a-zA-Z0-9_]*\s*=\s*'[^'\\]*'$/.test(args.tags))
+				return null;
 			const tagClause = args.tags ? ` WHERE ${args.tags}` : "";
 			const q = `SELECT mean("${args.field}") FROM "${args.measurement}"${tagClause} GROUP BY time(1m) fill(null) ORDER BY time DESC LIMIT 120`;
 			try {
@@ -777,7 +811,7 @@ export const resolvers = {
 						]);
 						if (cpuRows.length > 0) {
 							return {
-								labels: cpuRows.map((v) => relativeLabel(String(v[0]))),
+								labels: cpuRows.map((v) => relativeLabel(String(v[0]), ctx.locale)),
 								cpu: cpuRows.map((v) => v[1] ?? 0),
 								mem: memRows.map((v) => v[1] ?? 0),
 							};
@@ -795,8 +829,9 @@ export const resolvers = {
 			// No telemetry backend configured at all: keep the demo/mock-mode
 			// placeholder so the chart isn't just blank in that specific setup.
 			let seed = 0;
-			for (let i = 0; i < args.name.length; i++) seed = (seed * 31 + args.name.charCodeAt(i)) >>> 0;
-			const mock = mockSeries(range, resolution, seed % 5);
+			for (let i = 0; i < args.name.length; i++)
+				seed = (seed * 31 + args.name.charCodeAt(i)) >>> 0;
+			const mock = mockSeries(range, resolution, seed % 5, ctx.locale);
 			return { labels: mock.labels, cpu: mock.cpu, mem: mock.mem };
 		},
 	},
@@ -809,7 +844,12 @@ export const resolvers = {
 		) => {
 			// Mock mode (demo/e2e) does many per-test logins; lift the low login
 			// limit there so it never trips, while keeping it in production.
-			if (!allowAttempt(`${ctx.ip}:${username.toLowerCase()}`, ctx.cfg.mock ? 1_000_000 : undefined)) {
+			if (
+				!allowAttempt(
+					`${ctx.ip}:${username.toLowerCase()}`,
+					ctx.cfg.mock ? 1_000_000 : undefined
+				)
+			) {
 				throw localizedError(ctx.locale, "errors.tooManyAttempts", "TOO_MANY_ATTEMPTS");
 			}
 			const u = await findAuthUser(ctx.db, username);
@@ -902,7 +942,8 @@ export const resolvers = {
 				} catch (e) {
 					throw new Error(`Invalid compose YAML: ${(e as Error).message}`, { cause: e });
 				}
-				const services = (compose as { services?: Record<string, unknown> } | null)?.services;
+				const services = (compose as { services?: Record<string, unknown> } | null)
+					?.services;
 				if (!services || typeof services !== "object") {
 					throw new Error("Invalid compose YAML: missing services");
 				}
@@ -1126,10 +1167,17 @@ export const resolvers = {
 			};
 			if (input.subnet) {
 				opts.IPAM = {
-					Config: [{ Subnet: input.subnet, ...(input.gateway ? { Gateway: input.gateway } : {}) }],
+					Config: [
+						{
+							Subnet: input.subnet,
+							...(input.gateway ? { Gateway: input.gateway } : {}),
+						},
+					],
 				};
 			}
-			const net = await ctx.docker.createNetwork(opts as unknown as Dockerode.NetworkCreateOptions);
+			const net = await ctx.docker.createNetwork(
+				opts as unknown as Dockerode.NetworkCreateOptions
+			);
 			const inspected = await net.inspect();
 			return mapNetworkSummary(inspected);
 		},
@@ -1142,7 +1190,11 @@ export const resolvers = {
 		},
 		createVolume: async (
 			_: unknown,
-			{ input }: { input: { name: string; driver: string; labels?: Array<{ k: string; v: string }> } },
+			{
+				input,
+			}: {
+				input: { name: string; driver: string; labels?: Array<{ k: string; v: string }> };
+			},
 			ctx: GraphQLContext
 		) => {
 			requireAdmin(ctx);
@@ -1182,7 +1234,13 @@ export const resolvers = {
 			requireSwarm(ctx);
 			if (ctx.cfg.mock) {
 				const now = new Date().toISOString();
-				return { id: `sec_${randomUUID().slice(0, 8)}`, name: input.name, created: now, updated: now, stack: null };
+				return {
+					id: `sec_${randomUUID().slice(0, 8)}`,
+					name: input.name,
+					created: now,
+					updated: now,
+					stack: null,
+				};
 			}
 			const data = Buffer.from(input.content, "utf8").toString("base64");
 			const secret = await ctx.docker.createSecret({ Name: input.name, Data: data });
@@ -1263,11 +1321,14 @@ export const resolvers = {
 			requireAdmin(ctx);
 			requireSwarm(ctx);
 			if (availability !== "active" && availability !== "drain") {
-				throw new Error("availability must be \"active\" or \"drain\"");
+				throw new Error('availability must be "active" or "drain"');
 			}
 			if (ctx.cfg.mock) {
 				const list = await ctx.docker.listNodes();
-				const decorated = await decorateNodes(ctx, list.map((n) => mapNodeSummary(n)));
+				const decorated = await decorateNodes(
+					ctx,
+					list.map((n) => mapNodeSummary(n))
+				);
 				return decorated.find((n) => n.id === id) ?? decorated[0];
 			}
 			await setNodeAvailability(ctx.docker, id, availability);

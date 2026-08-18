@@ -1,0 +1,20 @@
+{
+    "chart.daysAgo": "vor {n} T.",
+    "chart.hoursAgo": "vor {n} Std.",
+    "chart.minutesAgo": "vor {n} Min.",
+    "chart.now": "jetzt",
+    "errors.forbidden": "Keine Berechtigung",
+    "errors.invalidAuthorization": "Ungültige Autorisierung",
+    "errors.invalidCredentials": "Benutzername oder Passwort ist falsch.",
+    "errors.invalidSlt": "Ungültiges SLT-Token",
+    "errors.missingToken": "Token fehlt",
+    "errors.noDataSent": "Keine Daten gesendet",
+    "errors.noRunningTask": "Keine laufende Aufgabe",
+    "errors.notSupportedInOrchestrator": "Diese Operation wird vom aktuellen Orchestrator nicht unterstützt.",
+    "errors.serverMisconfigured": "Server falsch konfiguriert",
+    "errors.tooManyAttempts": "Zu viele Anmeldeversuche. Bitte warte eine Minute und versuche es erneut.",
+    "errors.unauthenticated": "Nicht autorisiert",
+    "errors.userNotFound": "Benutzer nicht gefunden",
+    "errors.usernameTaken": "Benutzername ist bereits vergeben",
+    "errors.validationFailed": "Ungültige Eingabe"
+}

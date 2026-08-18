@@ -17,7 +17,10 @@ export const createUserInputSchema = z.object({
 	phone: z.string().max(40).optional(),
 	role: z
 		.string()
-		.refine((v) => VALID_ROLES.includes(v.toLowerCase()), "role must be one of admin/editor/read-only"),
+		.refine(
+			(v) => VALID_ROLES.includes(v.toLowerCase()),
+			"role must be one of admin/editor/read-only"
+		),
 });
 
 export const createRegistryInputSchema = z.object({
@@ -57,7 +60,10 @@ export function validateInput<T>(schema: z.ZodType<T>, input: unknown, locale: S
 		throw new GraphQLError(t(locale, "errors.validationFailed"), {
 			extensions: {
 				code: "VALIDATION_ERROR",
-				issues: result.error.issues.map((i) => ({ path: i.path.join("."), message: i.message })),
+				issues: result.error.issues.map((i) => ({
+					path: i.path.join("."),
+					message: i.message,
+				})),
 			},
 		});
 	}

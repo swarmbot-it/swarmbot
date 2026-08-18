@@ -49,7 +49,11 @@ interface ActivityItem {
 				<sb-icon name="bell" [size]="18"></sb-icon>
 				<span class="topbar__bell-dot" *ngIf="hasUnread()"></span>
 			</button>
-			<div class="popover" style="width:340px; max-height:400px; overflow-y:auto" *ngIf="open()">
+			<div
+				class="popover"
+				style="width:340px; max-height:400px; overflow-y:auto"
+				*ngIf="open()"
+			>
 				<div
 					class="popover__header"
 					style="display:flex; align-items:center; justify-content:space-between"

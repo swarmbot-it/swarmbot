@@ -1,0 +1,20 @@
+{
+    "chart.daysAgo": "hace {n} d",
+    "chart.hoursAgo": "hace {n} h",
+    "chart.minutesAgo": "hace {n} min",
+    "chart.now": "ahora",
+    "errors.forbidden": "Acceso denegado",
+    "errors.invalidAuthorization": "Autorización no válida",
+    "errors.invalidCredentials": "El nombre de usuario o la contraseña son incorrectos.",
+    "errors.invalidSlt": "Token SLT no válido",
+    "errors.missingToken": "Falta el token",
+    "errors.noDataSent": "No se enviaron datos",
+    "errors.noRunningTask": "No hay ninguna tarea en ejecución",
+    "errors.notSupportedInOrchestrator": "Esta operación no es compatible con el orquestador actual.",
+    "errors.serverMisconfigured": "Servidor mal configurado",
+    "errors.tooManyAttempts": "Demasiados intentos de inicio de sesión. Espera un minuto e inténtalo de nuevo.",
+    "errors.unauthenticated": "No autorizado",
+    "errors.userNotFound": "Usuario no encontrado",
+    "errors.usernameTaken": "El nombre de usuario ya está en uso",
+    "errors.validationFailed": "Entrada no válida"
+}

@@ -11,9 +11,16 @@ function todayKey(): string {
  * Upserts today's resource counts once per day so week-over-week deltas can
  * be computed later. Cheap no-op after the first call each day.
  */
-export async function recordDailySnapshot(db: Kysely<Database>, counts: SnapshotCounts): Promise<void> {
+export async function recordDailySnapshot(
+	db: Kysely<Database>,
+	counts: SnapshotCounts
+): Promise<void> {
 	const day = todayKey();
-	const existing = await db.selectFrom("metricsSnapshots").select("day").where("day", "=", day).executeTakeFirst();
+	const existing = await db
+		.selectFrom("metricsSnapshots")
+		.select("day")
+		.where("day", "=", day)
+		.executeTakeFirst();
 	if (existing) return;
 	await db
 		.insertInto("metricsSnapshots")
