@@ -46,7 +46,7 @@
         "@playwright/test": "^1.61.1",
         "angular-eslint": "22.1.0",
         "eslint": "^10.3.0",
-        "jsdom": "^29.1.1",
+        "jsdom": "^30.0.1",
         "typescript": "~6.0.0",
         "typescript-eslint": "8.59.2"
     }
