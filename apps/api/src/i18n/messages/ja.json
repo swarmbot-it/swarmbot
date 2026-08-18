@@ -1,0 +1,16 @@
+{
+    "errors.forbidden": "権限がありません",
+    "errors.invalidAuthorization": "認可が無効です",
+    "errors.invalidCredentials": "ユーザー名またはパスワードが正しくありません。",
+    "errors.invalidSlt": "SLT トークンが無効です",
+    "errors.missingToken": "トークンがありません",
+    "errors.noDataSent": "データが送信されていません",
+    "errors.noRunningTask": "実行中のタスクがありません",
+    "errors.notSupportedInOrchestrator": "この操作は現在のオーケストレーターではサポートされていません。",
+    "errors.serverMisconfigured": "サーバーの設定に誤りがあります",
+    "errors.tooManyAttempts": "ログイン試行が多すぎます。1 分ほど待ってから再試行してください。",
+    "errors.unauthenticated": "未認証",
+    "errors.userNotFound": "ユーザーが見つかりません",
+    "errors.usernameTaken": "そのユーザー名は既に使用されています",
+    "errors.validationFailed": "入力が無効です"
+}

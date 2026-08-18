@@ -1,0 +1,667 @@
+{
+    "nav": {
+        "dashboard": "Dashboard",
+        "load": "Carga",
+        "stacks": "Pods",
+        "namespaces": "Espaços de nomes",
+        "services": "Serviços",
+        "tasks": "Tarefas",
+        "nodes": "Nós",
+        "nodeMap": "Mapa de nós e recursos",
+        "networks": "Redes",
+        "volumes": "Volumes",
+        "secrets": "Segredos",
+        "configs": "Configurações",
+        "registries": "Registos",
+        "users": "Utilizadores",
+        "groups": {
+            "overview": "Resumo",
+            "workloads": "Recursos",
+            "infra": "Infraestrutura",
+            "store": "Armazenamento e configuração",
+            "admin": "Administração"
+        },
+        "clusterHealthy": "Cluster saudável",
+        "quorum": "Quórum: {{managers}} de {{total}} managers"
+    },
+    "auth": {
+        "login": {
+            "title": "Bem-vindo de volta",
+            "subtitle": "Inicie sessão na consola de administração do swarmbot.it.",
+            "username": "Nome de utilizador",
+            "password": "Palavra-passe",
+            "submit": "Iniciar sessão",
+            "submitting": "A iniciar sessão…",
+            "failed": "Falha no início de sessão.",
+            "sso": "Iniciar sessão com {{provider}}"
+        }
+    },
+    "topbar": {
+        "notifications": "Notificações",
+        "clusterUnknown": "cluster",
+        "orchestratorTitle": "Orquestrador",
+        "orchestrator": {
+            "swarm": "Swarm",
+            "kubernetes": "Kubernetes"
+        },
+        "recentActivity": "Atividade recente",
+        "liveFromDocker": "em direto a partir do Docker",
+        "noActivity": "Ainda sem atividade.",
+        "secondsAgo": "há {{n}}s",
+        "minutesAgo": "há {{n}}m",
+        "hoursAgo": "há {{n}}h",
+        "daysAgo": "há {{n}}d",
+        "switchToLight": "Mudar para modo claro",
+        "switchToDark": "Mudar para modo escuro",
+        "theme": "Tema",
+        "light": "Claro",
+        "dark": "Escuro",
+        "language": "Idioma",
+        "profile": "Perfil",
+        "preferences": "Preferências",
+        "apiTokens": "Tokens de API",
+        "apiTokensSubtitle": "Utilize um token para chamar a API GraphQL sem uma sessão de navegador",
+        "apiTokensYourNew": "O seu novo token",
+        "apiTokensActive": "Token ativo",
+        "apiTokensExpires": "Expira",
+        "apiTokensNoExpiry": "Não expira",
+        "apiTokensNone": "Nenhum token de API ativo. Gere um para autenticar chamadas à API com um cabeçalho Authorization.",
+        "apiTokensGenerate": "Gerar token",
+        "apiTokensRegenerate": "Regenerar",
+        "apiTokensRevoke": "Revogar",
+        "apiTokensCopyHint": "Copie-o agora — não será mostrado novamente.",
+        "apiTokensCopy": "Copiar para a área de transferência",
+        "apiTokensCopied": "Token copiado para a área de transferência",
+        "apiTokensRevoked": "Token de API revogado",
+        "apiTokensGenFailed": "Falha ao gerar o token.",
+        "apiTokensRevokeFailed": "Falha ao revogar o token.",
+        "logout": "Terminar sessão",
+        "administrator": "Administrador"
+    },
+    "table": {
+        "search": "Pesquisar…",
+        "empty": "Sem resultados",
+        "count": "{{filtered}} de {{total}}"
+    },
+    "common": {
+        "cancel": "Cancelar",
+        "close": "Fechar",
+        "create": "Criar",
+        "save": "Guardar",
+        "optional": "Opcional",
+        "required": "Obrigatório",
+        "back": "Voltar",
+        "continue": "Continuar",
+        "default": "PREDEFINIDO",
+        "type": "Tipo",
+        "user": "Utilizador",
+        "loading": "A carregar…"
+    },
+    "dashboard": {
+        "title": "Vista geral do cluster",
+        "subtitle": "Estado em direto de {{cluster}} · {{nodes}} nós · {{services}} serviços · {{tasks}} tarefas",
+        "liveRefreshed": "Em direto · atualizado agora mesmo",
+        "refresh": "Atualizar",
+        "thisWeek": "esta semana",
+        "cpu": "CPU",
+        "memory": "Memória",
+        "disk": "Disco",
+        "cores": "núcleos",
+        "cpuSub": "Agregado nos nós ativos",
+        "memSub": "Inclui cache e buffers",
+        "diskSub": "Armazenamento associado em todo o cluster",
+        "resourceUtilization": "Utilização de recursos",
+        "influxHint": "Séries temporais do InfluxDB · agregação em direto",
+        "loadingMetrics": "A carregar métricas…",
+        "nodesTitle": "Nós",
+        "nodesSubtitle": "{{count}} nós · {{managers}} managers · {{workers}} workers",
+        "managers": "Managers",
+        "workers": "Workers",
+        "tags": {
+            "leader": "LEADER",
+            "drain": "DRAIN"
+        },
+        "resolution": {
+            "low": "Baixa",
+            "medium": "Média",
+            "high": "Alta"
+        }
+    },
+    "load": {
+        "title": "Carga do pod",
+        "subtitle": "Utilização de CPU e memória dos {{count}} pods principais por utilização atual",
+        "loading": "A carregar métricas dos pods…",
+        "empty": "Ainda não há pods implementados. Implemente um com \"docker stack deploy\" para ver os gráficos de carga.",
+        "cpu": "CPU",
+        "memory": "Memória",
+        "peak": "Pico:"
+    },
+    "columns": {
+        "name": "Nome",
+        "driver": "Controlador",
+        "status": "Estado",
+        "created": "Criado",
+        "updated": "Última atualização",
+        "subnet": "Sub-rede",
+        "gateway": "Gateway",
+        "scope": "Âmbito",
+        "size": "Tamanho",
+        "type": "Tipo",
+        "authUser": "Utilizador auth",
+        "registry": "Registo",
+        "stack": "Pod",
+        "service": "Serviço",
+        "task": "Tarefa",
+        "node": "Nó",
+        "replicas": "Réplicas",
+        "ports": "Portas",
+        "actions": "Ações"
+    },
+    "status": {
+        "RUNNING": "Em execução",
+        "HEALTHY": "Saudável",
+        "READY": "Pronto",
+        "STARTING": "A iniciar",
+        "UPDATING": "A atualizar",
+        "PENDING": "Pendente",
+        "PAUSED": "Em pausa",
+        "FAILED": "Falhado",
+        "REJECTED": "Rejeitado",
+        "COMPLETE": "Concluído",
+        "SHUTDOWN": "Desligado",
+        "STOPPED": "Parado",
+        "UNKNOWN": "Desconhecido"
+    },
+    "pages": {
+        "stacks": {
+            "countSuffix": "pods implementados",
+            "add": "Novo pod",
+            "columns": {
+                "stack": "Pod",
+                "namespace": "Espaço de nomes",
+                "services": "Serviços",
+                "networks": "Redes",
+                "volumes": "Volumes",
+                "configs": "Configurações",
+                "secrets": "Segredos"
+            },
+            "detail": {
+                "countsSummary": "{{services}} serviços · {{networks}} redes · {{volumes}} volumes · {{configs}} configurações · {{secrets}} segredos",
+                "working": "A processar…",
+                "edit": "Editar",
+                "editUnsupported": "Ainda não é possível editar um pod diretamente — use Redeploy/Rollback/Deactivate abaixo, ou elimine-o e implemente um novo ficheiro Compose.",
+                "redeploy": "Redeploy",
+                "redeployHint": "rolling",
+                "rollback": "Rollback",
+                "rollbackHint": "spec anterior",
+                "deactivate": "Desativar",
+                "deactivateHint": "escalar para 0",
+                "reactivate": "Reativar",
+                "reactivateHint": "escalar para 1",
+                "delete": "Eliminar",
+                "utilization": "Utilização do pod",
+                "utilizationHint": "CPU e memória de contentores agregadas · do InfluxDB",
+                "noMetrics": "Ainda sem métricas — o agente reporta estatísticas a cada 30s.",
+                "diskHint": "A utilização de disco por contentor não é recolhida pelo agente (apenas CPU e memória)",
+                "diskNotTracked": "Não é monitorizado por pod",
+                "notFound": "Pod não encontrado.",
+                "noServices": "Sem serviços neste pod.",
+                "noNetworks": "Sem redes associadas.",
+                "noVolumes": "Sem volumes associados.",
+                "noConfigs": "Sem configurações montadas.",
+                "noSecrets": "Sem segredos concedidos.",
+                "stopped": "Parado",
+                "stopping": "A parar…",
+                "confirmRemove": "Eliminar o pod \"{{name}}\"? Isto elimina todos os seus serviços, redes e outros recursos.",
+                "toastNothingToRedeploy": "\"{{name}}\" tem 0 réplicas — nada para redeployar. Use primeiro \"Reativar\".",
+                "toastRedeploying": "A redeployar \"{{name}}\"… as tarefas serão reiniciadas em poucos segundos.",
+                "toastRolledBack": "\"{{name}}\" revertido para a sua spec anterior.",
+                "toastDeactivated": "Pod \"{{name}}\" desativado.",
+                "toastReactivated": "Pod \"{{name}}\" reativado (escalado para 1 réplica).",
+                "toastRemoved": "Pod \"{{name}}\" eliminado.",
+                "redeployFailed": "O redeploy falhou.",
+                "rollbackFailed": "O rollback falhou.",
+                "deactivateFailed": "A desativação falhou.",
+                "reactivateFailed": "A reativação falhou.",
+                "removeFailed": "A eliminação falhou."
+            }
+        },
+        "services": {
+            "countSuffix": "serviços em execução",
+            "add": "Novo serviço",
+            "columns": {
+                "service": "Serviço",
+                "replicas": "Réplicas",
+                "ports": "Portas"
+            },
+            "detail": {
+                "back": "Voltar aos serviços",
+                "scale": "Escalar",
+                "scaleSubtitle": "Defina o número desejado de réplicas para {{name}}",
+                "serviceId": "ID do serviço",
+                "mode": "Modo",
+                "env": "Variáveis de ambiente",
+                "noEnv": "Sem variáveis de ambiente definidas.",
+                "labels": "Etiquetas",
+                "noLabels": "Sem etiquetas definidas.",
+                "noSecrets": "Sem segredos associados.",
+                "noConfigs": "Sem configurações associadas.",
+                "noTasks": "Sem tarefas ativas.",
+                "noNetworks": "Sem redes associadas.",
+                "noPorts": "Sem portas publicadas.",
+                "mounts": "Montagens",
+                "noMounts": "Sem montagens.",
+                "mountSource": "Origem",
+                "mountTarget": "Destino",
+                "mountMode": "Modo",
+                "notFound": "Serviço não encontrado.",
+                "editUnsupported": "Ainda não é possível editar um serviço diretamente — use Redeploy/Rollback/Scale abaixo, ou elimine-o e reimplemente-o através do seu pod.",
+                "confirmRemove": "Eliminar o serviço \"{{name}}\"?",
+                "toastNothingToRedeploy": "\"{{name}}\" tem 0 réplicas — nada para redeployar. Use primeiro \"Escalar\" para o repor.",
+                "toastRedeploying": "A redeployar \"{{name}}\"… as tarefas serão reiniciadas em poucos segundos.",
+                "toastRolledBack": "\"{{name}}\" revertido para a sua spec anterior.",
+                "toastScaled": "\"{{name}}\" escalado para {{replicas}} réplicas.",
+                "toastRemoved": "Serviço \"{{name}}\" eliminado.",
+                "redeployFailed": "O redeploy falhou.",
+                "rollbackFailed": "O rollback falhou.",
+                "scaleFailed": "O escalonamento falhou.",
+                "removeFailed": "A eliminação falhou."
+            }
+        },
+        "tasks": {
+            "countSuffix": "tarefas agendadas",
+            "columns": {
+                "task": "Tarefa",
+                "node": "Nó",
+                "cpu": "CPU",
+                "memory": "Memória"
+            },
+            "detail": {
+                "back": "Voltar às tarefas",
+                "on": "em",
+                "desiredState": "Estado desejado",
+                "statusMessage": "Mensagem de estado",
+                "notFound": "Tarefa não encontrada."
+            }
+        },
+        "nodes": {
+            "searchPlaceholder": "Pesquisar hostname ou IP…",
+            "countSummary": "{{total}} nós — {{managers}} managers, {{workers}} workers",
+            "filters": {
+                "all": "Todos",
+                "manager": "Managers",
+                "worker": "Workers"
+            },
+            "labels": {
+                "cpu": "CPU",
+                "memory": "Memória",
+                "disk": "Disco"
+            },
+            "actions": {
+                "title": "Ações",
+                "drain": "Drenar",
+                "activate": "Ativar",
+                "toastDrained": "\"{{name}}\" está a ser drenado — não serão agendadas novas tarefas ali.",
+                "toastActivated": "\"{{name}}\" está novamente ativo e a aceitar tarefas.",
+                "failed": "Não foi possível atualizar a disponibilidade do nó."
+            }
+        },
+        "nodeMap": {
+            "countSummary": "{{total}} nós — {{services}} serviços colocados",
+            "empty": "Sem serviços agendados neste nó.",
+            "pills": {
+                "ready": "{{ready}} / {{total}} nós prontos",
+                "tasks": "{{count}} tarefas em execução",
+                "caption": "CPU/Mem % · atualizado a cada 30 s"
+            },
+            "categories": {
+                "data": "Dados",
+                "identity": "Identidade",
+                "network": "Rede",
+                "ops": "Ops",
+                "app": "App"
+            },
+            "groups": {
+                "managers": "Managers",
+                "workers": "Workers"
+            },
+            "legend": {
+                "roles": "Funções",
+                "categories": "Categoria",
+                "manager": "Manager",
+                "worker": "Worker",
+                "status": "Estado",
+                "running": "em execução",
+                "attention": "requer atenção"
+            },
+            "summary": {
+                "title": "Resumo de recursos por serviço",
+                "service": "Serviço",
+                "nodes": "Nós",
+                "tasks": "Tarefas",
+                "cpuAvg": "CPU média",
+                "memAvg": "Memória média"
+            },
+            "totals": {
+                "title": "Totais do cluster",
+                "nodes": "Nós",
+                "services": "Serviços",
+                "tasks": "Tarefas",
+                "avgCpu": "CPU média",
+                "avgMem": "Memória média",
+                "busiest": "Nó mais ocupado",
+                "note": "Os managers suportam o plano de controlo e os serviços agendados — maior carga em {{host}} ({{cpu}}%)."
+            },
+            "masthead": {
+                "eyebrow": "Mapa de nós e recursos · v2",
+                "title": "mapa de nós e recursos",
+                "subtitle": "{{total}} nós · Docker Swarm · colocação de serviços + CPU/RAM em direto"
+            },
+            "flows": {
+                "title": "Fluxos principais",
+                "f1l": "Público",
+                "f1t": "navegador → Angular UI → proxy → API GraphQL",
+                "f2l": "Orquestração",
+                "f2t": "API → socket do Docker → Swarm / Kubernetes",
+                "f3l": "Telemetria",
+                "f3t": "swarmagent → /events → InfluxDB → gráficos",
+                "f4l": "Persistência",
+                "f4t": "API → PostgreSQL · utilizadores · registos · tokens"
+            },
+            "footer": {
+                "caption": "Mapa de nós e recursos ({{total}} nós, Docker Swarm). Colocação e CPU/Mem atualizados em direto a cada 30 s."
+            }
+        },
+        "networks": {
+            "countSuffix": "redes disponíveis",
+            "add": "Nova rede"
+        },
+        "volumes": {
+            "countSuffix": "volumes aprovisionados",
+            "add": "Novo volume"
+        },
+        "secrets": {
+            "countSuffix": "segredos armazenados",
+            "add": "Novo segredo",
+            "view": "Ver detalhes",
+            "modal": {
+                "subtitle": "Detalhes do segredo",
+                "id": "ID do segredo",
+                "created": "Criado",
+                "updated": "Última atualização",
+                "writeOnlyNotice": "Os segredos do Docker são apenas de escrita — o valor não pode ser recuperado depois de criado, por conceção. Para o rotacionar, elimine e recrie o segredo."
+            }
+        },
+        "configs": {
+            "countSuffix": "configurações armazenadas",
+            "add": "Nova configuração",
+            "view": "Ver conteúdo",
+            "modal": {
+                "subtitle": "Conteúdo do ficheiro de configuração",
+                "loading": "A carregar…",
+                "empty": "(vazio)"
+            }
+        },
+        "registries": {
+            "countSuffix": "registos ligados",
+            "add": "Ligar registo",
+            "columns": {
+                "registry": "Registo",
+                "authUser": "Utilizador auth"
+            },
+            "setDefault": "Definir como predefinido",
+            "remove": "Eliminar",
+            "confirmRemove": "Eliminar o registo \"{{name}}\"?",
+            "toastSetDefault": "\"{{name}}\" é agora o registo predefinido.",
+            "toastRemoved": "Registo \"{{name}}\" eliminado.",
+            "setDefaultFailed": "Não foi possível definir o registo predefinido.",
+            "removeFailed": "A eliminação falhou."
+        }
+    },
+    "users": {
+        "title": "Utilizadores",
+        "inWorkspace": "utilizadores no espaço de trabalho",
+        "addUser": "Adicionar utilizador",
+        "never": "nunca",
+        "columns": {
+            "user": "Utilizador",
+            "phone": "Telefone",
+            "role": "Função",
+            "created": "Criado",
+            "lastLogin": "Último início de sessão"
+        },
+        "roles": {
+            "Administrator": "Administrador",
+            "admin": "Administrador",
+            "Editor": "Editor",
+            "Read-only": "Só leitura",
+            "user": "Utilizador"
+        }
+    },
+    "forms": {
+        "stack": {
+            "title": "Implementar pod",
+            "subtitle": "Cole um ficheiro Compose ou uma definição de pod.",
+            "name": "Nome do pod",
+            "content": "Ficheiro do pod",
+            "contentManifest": "Manifestos do Kubernetes (YAML)"
+        },
+        "service": {
+            "title": "Criar serviço",
+            "name": "Nome do serviço",
+            "replicas": "Réplicas",
+            "image": "Imagem",
+            "ports": "Portas publicadas",
+            "env": "Variáveis de ambiente",
+            "step1": {
+                "title": "Novo serviço — escolher um registo",
+                "subtitle": "Escolha de onde obter a imagem. Necessário para autorizar a transferência."
+            },
+            "step2": {
+                "title": "Novo serviço — detalhes",
+                "subtitle": "A obter de {{registry}}"
+            },
+            "registryMeta": "{{type}} · Utilizador: {{user}}",
+            "imageHint": "Será obtida de {{registry}}.",
+            "portsHint": "Opcional. Pares anfitrião:contentor separados por vírgulas.",
+            "createService": "Criar serviço",
+            "errors": {
+                "selectRegistry": "Selecione um registo.",
+                "serviceRequired": "O nome do serviço e a imagem são obrigatórios."
+            }
+        },
+        "network": {
+            "title": "Criar rede",
+            "name": "Nome da rede",
+            "driver": "Controlador",
+            "subnet": "Sub-rede",
+            "gateway": "Gateway",
+            "labels": "Etiquetas"
+        },
+        "volume": {
+            "title": "Criar volume",
+            "name": "Nome do volume",
+            "driver": "Controlador",
+            "labels": "Etiquetas"
+        },
+        "secret": {
+            "title": "Criar segredo",
+            "name": "Nome do segredo",
+            "content": "Dados do segredo"
+        },
+        "config": {
+            "title": "Criar configuração",
+            "name": "Nome da configuração",
+            "content": "Dados de configuração"
+        },
+        "registry": {
+            "title": "Adicionar registo",
+            "name": "Nome",
+            "url": "URL do registo",
+            "type": "Tipo",
+            "username": "Nome de utilizador",
+            "password": "Palavra-passe"
+        },
+        "user": {
+            "title": "Adicionar novo utilizador",
+            "subtitle": "Crie uma conta e atribua acesso a este espaço de trabalho.",
+            "username": "Nome de utilizador",
+            "password": "Palavra-passe",
+            "passwordHint": "Pelo menos 8 caracteres.",
+            "email": "E-mail",
+            "phone": "Telefone",
+            "role": "Função",
+            "roles": {
+                "readOnly": "Só leitura",
+                "readOnlyDesc": "Ver dashboards, serviços, logs.",
+                "editor": "Editor",
+                "editorDesc": "Implementar e editar pods, serviços.",
+                "administrator": "Administrador",
+                "administratorDesc": "Controlo total, utilizadores, segredos."
+            }
+        },
+        "kv": {
+            "key": "Chave",
+            "value": "Valor",
+            "add": "Adicionar linha",
+            "remove": "Eliminar"
+        }
+    },
+    "optimus": {
+        "startsWith": "Começa por",
+        "contains": "Contém",
+        "notContains": "Não contém",
+        "endsWith": "Termina em",
+        "equals": "Igual a",
+        "notEquals": "Diferente de",
+        "noFilter": "Sem filtro",
+        "lt": "Menor que",
+        "lte": "Menor ou igual a",
+        "gt": "Maior que",
+        "gte": "Maior ou igual a",
+        "is": "É",
+        "isNot": "Não é",
+        "before": "Antes",
+        "after": "Depois",
+        "dateIs": "A data é",
+        "dateIsNot": "A data não é",
+        "dateBefore": "A data é anterior a",
+        "dateAfter": "A data é posterior a",
+        "clear": "Limpar",
+        "apply": "Aplicar",
+        "matchAll": "Corresponder a todas",
+        "matchAny": "Corresponder a qualquer",
+        "addRule": "Adicionar regra",
+        "removeRule": "Eliminar regra",
+        "accept": "Sim",
+        "reject": "Não",
+        "choose": "Escolher",
+        "upload": "Carregar",
+        "cancel": "Cancelar",
+        "dayNames": [
+            "Domingo",
+            "Segunda-feira",
+            "Terça-feira",
+            "Quarta-feira",
+            "Quinta-feira",
+            "Sexta-feira",
+            "Sábado"
+        ],
+        "dayNamesShort": ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"],
+        "dayNamesMin": ["Do", "2ª", "3ª", "4ª", "5ª", "6ª", "Sá"],
+        "monthNames": [
+            "Janeiro",
+            "Fevereiro",
+            "Março",
+            "Abril",
+            "Maio",
+            "Junho",
+            "Julho",
+            "Agosto",
+            "Setembro",
+            "Outubro",
+            "Novembro",
+            "Dezembro"
+        ],
+        "monthNamesShort": [
+            "Jan",
+            "Fev",
+            "Mar",
+            "Abr",
+            "Mai",
+            "Jun",
+            "Jul",
+            "Ago",
+            "Set",
+            "Out",
+            "Nov",
+            "Dez"
+        ],
+        "today": "Hoje",
+        "weekHeader": "Sem",
+        "firstDayOfWeek": 0,
+        "dateFormat": "dd/mm/yy",
+        "weak": "Fraca",
+        "medium": "Média",
+        "strong": "Forte",
+        "passwordPrompt": "Introduza uma palavra-passe",
+        "emptyMessage": "Não foram encontrados resultados",
+        "emptyFilterMessage": "Não foram encontrados resultados"
+    },
+    "boot": {
+        "steps": {
+            "connecting": "A ligar ao manager do swarm…",
+            "nodes": "A obter o inventário de nós…",
+            "stacksServices": "A carregar pods e serviços…",
+            "timeSeries": "A obter séries temporais de carga de trabalho…",
+            "almostThere": "Quase lá…"
+        }
+    },
+    "toast": {
+        "dismiss": "Fechar"
+    },
+    "profile": {
+        "title": "O meu perfil",
+        "subtitle": "Faça a gestão dos detalhes da sua conta e das definições de segurança.",
+        "accountDetails": "Detalhes da conta",
+        "accountDetailsHint": "Atualize as suas informações pessoais.",
+        "username": "Nome de utilizador",
+        "usernameHint": "O nome de utilizador não pode ser alterado.",
+        "password": "Palavra-passe",
+        "changePassword": "Alterar…",
+        "fullName": "Nome completo",
+        "role": "Função",
+        "roleHint": "A função é gerida por um administrador.",
+        "accountCreated": "Conta criada",
+        "lastLogin": "Último início de sessão",
+        "readOnly": "Só leitura",
+        "reset": "Repor",
+        "saveChanges": "Guardar alterações",
+        "saved": "Perfil guardado com sucesso.",
+        "modal": {
+            "title": "Alterar palavra-passe",
+            "subtitle": "Escolha uma palavra-passe forte que ainda não tenha utilizado.",
+            "current": "Palavra-passe atual",
+            "new": "Nova palavra-passe",
+            "newHint": "Pelo menos 8 caracteres.",
+            "confirm": "Confirmar nova palavra-passe",
+            "update": "Atualizar palavra-passe",
+            "updated": "Palavra-passe alterada com sucesso.",
+            "strength": {
+                "veryWeak": "Muito fraca",
+                "weak": "Fraca",
+                "fair": "Razoável",
+                "good": "Boa",
+                "strong": "Forte",
+                "excellent": "Excelente"
+            },
+            "errors": {
+                "current": "A palavra-passe atual está incorreta.",
+                "minLength": "Deve ter pelo menos 8 caracteres.",
+                "mismatch": "As palavras-passe não coincidem.",
+                "required": "Este campo é obrigatório.",
+                "invalidEmail": "Introduza um endereço de email válido."
+            }
+        }
+    }
+}

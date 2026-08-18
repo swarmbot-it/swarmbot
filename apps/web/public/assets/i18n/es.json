@@ -21,7 +21,8 @@
             "admin": "Administración"
         },
         "clusterHealthy": "Clúster saludable",
-        "quorum": "Quórum: {{managers}} de {{total}} managers"
+        "quorum": "Quórum: {{managers}} de {{total}} managers",
+        "load": "Carga"
     },
     "auth": {
         "login": {
@@ -53,7 +54,29 @@
         "preferences": "Preferencias",
         "apiTokens": "Tokens de API",
         "logout": "Cerrar sesión",
-        "administrator": "Administrador"
+        "administrator": "Administrador",
+        "apiTokensActive": "Token activo",
+        "apiTokensCopied": "Token copiado al portapapeles",
+        "apiTokensCopy": "Copiar al portapapeles",
+        "apiTokensCopyHint": "Cópialo ahora — no se mostrará de nuevo.",
+        "apiTokensExpires": "Expira",
+        "apiTokensGenFailed": "No se pudo generar el token.",
+        "apiTokensGenerate": "Generar token",
+        "apiTokensNoExpiry": "No expira",
+        "apiTokensNone": "No hay ningún token de API activo. Genera uno para autenticar las llamadas a la API con una cabecera Authorization.",
+        "apiTokensRegenerate": "Regenerar",
+        "apiTokensRevoke": "Revocar",
+        "apiTokensRevokeFailed": "No se pudo revocar el token.",
+        "apiTokensRevoked": "Token de API revocado",
+        "apiTokensSubtitle": "Usa un token para llamar a la API de GraphQL sin una sesión de navegador",
+        "apiTokensYourNew": "Tu nuevo token",
+        "daysAgo": "hace {{n}}d",
+        "hoursAgo": "hace {{n}}h",
+        "liveFromDocker": "en vivo desde Docker",
+        "minutesAgo": "hace {{n}}m",
+        "noActivity": "Aún no hay actividad.",
+        "recentActivity": "Actividad reciente",
+        "secondsAgo": "hace {{n}}s"
     },
     "table": {
         "search": "Buscar…",
@@ -71,7 +94,8 @@
         "default": "PREDETERMINADO",
         "type": "Tipo",
         "user": "Usuario",
-        "loading": "Cargando…"
+        "loading": "Cargando…",
+        "close": "Cerrar"
     },
     "dashboard": {
         "title": "Resumen del clúster",
@@ -622,5 +646,14 @@
                 "invalidEmail": "Introduce una dirección de correo válida."
             }
         }
+    },
+    "load": {
+        "cpu": "CPU",
+        "empty": "Aún no hay pods desplegados. Despliega uno con \"docker stack deploy\" para ver los gráficos de carga.",
+        "loading": "Cargando métricas de pods…",
+        "memory": "Memoria",
+        "peak": "Pico:",
+        "subtitle": "Uso de CPU y memoria de los {{count}} pods con mayor consumo actual",
+        "title": "Carga de pods"
     }
 }

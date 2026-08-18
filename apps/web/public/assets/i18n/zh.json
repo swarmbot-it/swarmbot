@@ -21,7 +21,8 @@
             "admin": "管理"
         },
         "clusterHealthy": "集群健康",
-        "quorum": "仲裁：{{managers}} / {{total}} 个管理节点"
+        "quorum": "仲裁：{{managers}} / {{total}} 个管理节点",
+        "load": "负载"
     },
     "auth": {
         "login": {
@@ -53,7 +54,29 @@
         "preferences": "偏好设置",
         "apiTokens": "API 令牌",
         "logout": "退出登录",
-        "administrator": "管理员"
+        "administrator": "管理员",
+        "apiTokensActive": "当前令牌",
+        "apiTokensCopied": "令牌已复制到剪贴板",
+        "apiTokensCopy": "复制到剪贴板",
+        "apiTokensCopyHint": "现在复制 — 之后将不再显示。",
+        "apiTokensExpires": "过期时间",
+        "apiTokensGenFailed": "生成令牌失败。",
+        "apiTokensGenerate": "生成令牌",
+        "apiTokensNoExpiry": "永不过期",
+        "apiTokensNone": "暂无有效的 API 令牌。生成一个以便通过 Authorization 头对 API 请求进行身份验证。",
+        "apiTokensRegenerate": "重新生成",
+        "apiTokensRevoke": "撤销",
+        "apiTokensRevokeFailed": "撤销令牌失败。",
+        "apiTokensRevoked": "API 令牌已撤销",
+        "apiTokensSubtitle": "使用令牌在没有浏览器会话的情况下调用 GraphQL API",
+        "apiTokensYourNew": "您的新令牌",
+        "daysAgo": "{{n}}天前",
+        "hoursAgo": "{{n}}小时前",
+        "liveFromDocker": "来自 Docker 的实时数据",
+        "minutesAgo": "{{n}}分钟前",
+        "noActivity": "暂无活动。",
+        "recentActivity": "最近活动",
+        "secondsAgo": "{{n}}秒前"
     },
     "table": {
         "search": "搜索…",
@@ -71,7 +94,8 @@
         "default": "默认",
         "type": "类型",
         "user": "用户",
-        "loading": "加载中…"
+        "loading": "加载中…",
+        "close": "关闭"
     },
     "dashboard": {
         "title": "集群概览",
@@ -622,5 +646,14 @@
                 "invalidEmail": "请输入有效的电子邮件地址。"
             }
         }
+    },
+    "load": {
+        "cpu": "CPU",
+        "empty": "尚未部署任何 Pod。使用 \"docker stack deploy\" 部署一个以查看负载图表。",
+        "loading": "正在加载 Pod 指标…",
+        "memory": "内存",
+        "peak": "峰值:",
+        "subtitle": "按当前用量排名前 {{count}} 个 Pod 的 CPU 与内存使用率",
+        "title": "Pod 负载"
     }
 }

@@ -21,7 +21,8 @@
             "admin": "관리"
         },
         "clusterHealthy": "클러스터 정상",
-        "quorum": "쿼럼: {{managers}} / {{total}} 매니저"
+        "quorum": "쿼럼: {{managers}} / {{total}} 매니저",
+        "load": "부하"
     },
     "auth": {
         "login": {
@@ -53,7 +54,29 @@
         "preferences": "환경 설정",
         "apiTokens": "API 토큰",
         "logout": "로그아웃",
-        "administrator": "관리자"
+        "administrator": "관리자",
+        "apiTokensActive": "활성 토큰",
+        "apiTokensCopied": "토큰이 클립보드에 복사되었습니다",
+        "apiTokensCopy": "클립보드에 복사",
+        "apiTokensCopyHint": "지금 복사하세요 — 다시 표시되지 않습니다.",
+        "apiTokensExpires": "만료",
+        "apiTokensGenFailed": "토큰을 생성하지 못했습니다.",
+        "apiTokensGenerate": "토큰 생성",
+        "apiTokensNoExpiry": "만료 없음",
+        "apiTokensNone": "활성 API 토큰이 없습니다. Authorization 헤더로 API 요청을 인증하려면 토큰을 생성하세요.",
+        "apiTokensRegenerate": "재생성",
+        "apiTokensRevoke": "폐기",
+        "apiTokensRevokeFailed": "토큰을 폐기하지 못했습니다.",
+        "apiTokensRevoked": "API 토큰이 폐기되었습니다",
+        "apiTokensSubtitle": "브라우저 세션 없이 GraphQL API를 호출하려면 토큰을 사용하세요",
+        "apiTokensYourNew": "새 토큰",
+        "daysAgo": "{{n}}일 전",
+        "hoursAgo": "{{n}}시간 전",
+        "liveFromDocker": "Docker에서 실시간 수신",
+        "minutesAgo": "{{n}}분 전",
+        "noActivity": "아직 활동이 없습니다.",
+        "recentActivity": "최근 활동",
+        "secondsAgo": "{{n}}초 전"
     },
     "table": {
         "search": "검색…",
@@ -71,7 +94,8 @@
         "default": "기본값",
         "type": "유형",
         "user": "사용자",
-        "loading": "로드 중…"
+        "loading": "로드 중…",
+        "close": "닫기"
     },
     "dashboard": {
         "title": "클러스터 개요",
@@ -622,5 +646,14 @@
                 "invalidEmail": "유효한 이메일 주소를 입력하세요."
             }
         }
+    },
+    "load": {
+        "cpu": "CPU",
+        "empty": "아직 배포된 파드가 없습니다. \"docker stack deploy\"로 하나를 배포하면 부하 차트가 표시됩니다.",
+        "loading": "파드 메트릭 로드 중…",
+        "memory": "메모리",
+        "peak": "피크:",
+        "subtitle": "현재 사용량 기준 상위 {{count}}개 파드의 CPU 및 메모리 사용률",
+        "title": "파드 부하"
     }
 }

@@ -21,7 +21,8 @@
             "admin": "Amministrazione"
         },
         "clusterHealthy": "Cluster integro",
-        "quorum": "Quorum: {{managers}} su {{total}} manager"
+        "quorum": "Quorum: {{managers}} su {{total}} manager",
+        "load": "Carico"
     },
     "auth": {
         "login": {
@@ -53,7 +54,29 @@
         "preferences": "Preferenze",
         "apiTokens": "Token API",
         "logout": "Esci",
-        "administrator": "Amministratore"
+        "administrator": "Amministratore",
+        "apiTokensActive": "Token attivo",
+        "apiTokensCopied": "Token copiato negli appunti",
+        "apiTokensCopy": "Copia negli appunti",
+        "apiTokensCopyHint": "Copialo ora — non verrà mostrato di nuovo.",
+        "apiTokensExpires": "Scadenza",
+        "apiTokensGenFailed": "Impossibile generare il token.",
+        "apiTokensGenerate": "Genera token",
+        "apiTokensNoExpiry": "Non scade",
+        "apiTokensNone": "Nessun token API attivo. Generane uno per autenticare le chiamate API con un'intestazione Authorization.",
+        "apiTokensRegenerate": "Rigenera",
+        "apiTokensRevoke": "Revoca",
+        "apiTokensRevokeFailed": "Impossibile revocare il token.",
+        "apiTokensRevoked": "Token API revocato",
+        "apiTokensSubtitle": "Usa un token per chiamare l'API GraphQL senza una sessione del browser",
+        "apiTokensYourNew": "Il tuo nuovo token",
+        "daysAgo": "{{n}}g fa",
+        "hoursAgo": "{{n}}h fa",
+        "liveFromDocker": "live da Docker",
+        "minutesAgo": "{{n}}m fa",
+        "noActivity": "Nessuna attività ancora.",
+        "recentActivity": "Attività recente",
+        "secondsAgo": "{{n}}s fa"
     },
     "table": {
         "search": "Cerca…",
@@ -71,7 +94,8 @@
         "default": "PREDEFINITO",
         "type": "Tipo",
         "user": "Utente",
-        "loading": "Caricamento…"
+        "loading": "Caricamento…",
+        "close": "Chiudi"
     },
     "dashboard": {
         "title": "Panoramica cluster",
@@ -622,5 +646,14 @@
                 "invalidEmail": "Inserisci un indirizzo email valido."
             }
         }
+    },
+    "load": {
+        "cpu": "CPU",
+        "empty": "Nessun pod distribuito ancora. Distribuiscine uno con \"docker stack deploy\" per vedere i grafici di carico.",
+        "loading": "Caricamento metriche dei pod…",
+        "memory": "Memoria",
+        "peak": "Picco:",
+        "subtitle": "Utilizzo di CPU e memoria per i {{count}} pod più carichi in base all'uso attuale",
+        "title": "Carico dei pod"
     }
 }

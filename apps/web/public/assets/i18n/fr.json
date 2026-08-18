@@ -21,7 +21,8 @@
             "admin": "Administration"
         },
         "clusterHealthy": "Cluster sain",
-        "quorum": "Quorum : {{managers}} sur {{total}} managers"
+        "quorum": "Quorum : {{managers}} sur {{total}} managers",
+        "load": "Charge"
     },
     "auth": {
         "login": {
@@ -53,7 +54,29 @@
         "preferences": "Préférences",
         "apiTokens": "Jetons API",
         "logout": "Se déconnecter",
-        "administrator": "Administrateur"
+        "administrator": "Administrateur",
+        "apiTokensActive": "Jeton actif",
+        "apiTokensCopied": "Jeton copié dans le presse-papiers",
+        "apiTokensCopy": "Copier dans le presse-papiers",
+        "apiTokensCopyHint": "Copiez-le maintenant — il ne sera plus jamais affiché.",
+        "apiTokensExpires": "Expire",
+        "apiTokensGenFailed": "La génération du jeton a échoué.",
+        "apiTokensGenerate": "Générer un jeton",
+        "apiTokensNoExpiry": "N'expire pas",
+        "apiTokensNone": "Aucun jeton API actif. Générez-en un pour authentifier les appels API avec un en-tête Authorization.",
+        "apiTokensRegenerate": "Régénérer",
+        "apiTokensRevoke": "Révoquer",
+        "apiTokensRevokeFailed": "La révocation du jeton a échoué.",
+        "apiTokensRevoked": "Jeton API révoqué",
+        "apiTokensSubtitle": "Utilisez un jeton pour appeler l'API GraphQL sans session de navigateur",
+        "apiTokensYourNew": "Votre nouveau jeton",
+        "daysAgo": "il y a {{n}} j",
+        "hoursAgo": "il y a {{n}} h",
+        "liveFromDocker": "en direct depuis Docker",
+        "minutesAgo": "il y a {{n}} min",
+        "noActivity": "Pas encore d'activité.",
+        "recentActivity": "Activité récente",
+        "secondsAgo": "il y a {{n}} s"
     },
     "table": {
         "search": "Rechercher…",
@@ -71,7 +94,8 @@
         "default": "DÉFAUT",
         "type": "Type",
         "user": "Utilisateur",
-        "loading": "Chargement…"
+        "loading": "Chargement…",
+        "close": "Fermer"
     },
     "dashboard": {
         "title": "Vue d'ensemble du cluster",
@@ -622,5 +646,14 @@
                 "invalidEmail": "Saisissez une adresse e-mail valide."
             }
         }
+    },
+    "load": {
+        "cpu": "CPU",
+        "empty": "Aucun pod déployé pour le moment. Déployez-en un avec \"docker stack deploy\" pour voir les graphiques de charge.",
+        "loading": "Chargement des métriques des pods…",
+        "memory": "Mémoire",
+        "peak": "Pic :",
+        "subtitle": "Utilisation CPU et mémoire des {{count}} pods les plus chargés",
+        "title": "Charge des pods"
     }
 }

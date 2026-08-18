@@ -1,0 +1,16 @@
+{
+    "errors.forbidden": "Acesso proibido",
+    "errors.invalidAuthorization": "Autorização inválida",
+    "errors.invalidCredentials": "O nome de utilizador ou a palavra-passe estão incorretos.",
+    "errors.invalidSlt": "Token SLT inválido",
+    "errors.missingToken": "Token ausente",
+    "errors.noDataSent": "Não foram enviados dados",
+    "errors.noRunningTask": "Nenhuma tarefa em execução",
+    "errors.notSupportedInOrchestrator": "Esta operação não é suportada pelo orquestrador atual.",
+    "errors.serverMisconfigured": "Servidor mal configurado",
+    "errors.tooManyAttempts": "Demasiadas tentativas de início de sessão. Aguarda um minuto e tenta novamente.",
+    "errors.unauthenticated": "Não autorizado",
+    "errors.userNotFound": "Utilizador não encontrado",
+    "errors.usernameTaken": "O nome de utilizador já está em uso",
+    "errors.validationFailed": "Dados inválidos"
+}

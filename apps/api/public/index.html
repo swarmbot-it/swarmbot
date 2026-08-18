@@ -241,37 +241,97 @@
 			}
 
 			/* Language switcher */
-			.lang-sw {
+			/* Language dropdown — 10 locales, so a list rather than inline buttons.
+			   European languages A→Z, then a divider, then the CJK block. */
+			.lang-dd {
+				position: relative;
+				font-family: "JetBrains Mono", monospace;
+			}
+			.lang-dd__btn {
 				display: flex;
 				align-items: center;
+				gap: 6px;
+				padding: 6px 10px;
 				border-radius: 8px;
 				border: 1px solid rgba(249, 115, 22, 0.15);
 				background: rgba(249, 115, 22, 0.04);
-				overflow: hidden;
-				font-family: "JetBrains Mono", monospace;
+				color: var(--muted-2);
+				font-family: inherit;
 				font-size: 11px;
 				letter-spacing: 0.06em;
 				font-weight: 600;
-			}
-			.lang-btn {
-				padding: 6px 12px;
-				border: none;
 				cursor: pointer;
 				transition: all 0.2s;
-				background: transparent;
-				color: var(--muted-2);
+			}
+			.lang-dd__btn:hover {
+				color: #f97316;
+				border-color: rgba(249, 115, 22, 0.3);
+			}
+			.lang-dd__chev {
+				font-size: 9px;
+				transition: transform 0.15s;
+			}
+			.lang-dd--open .lang-dd__chev {
+				transform: rotate(180deg);
+			}
+			.lang-dd__menu {
+				position: absolute;
+				top: calc(100% + 6px);
+				right: 0;
+				min-width: 158px;
+				padding: 5px;
+				border-radius: 10px;
+				background: var(--bg);
+				border: 1px solid var(--border-strong);
+				box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+				display: none;
+				z-index: 60;
+			}
+			.lang-dd--open .lang-dd__menu {
+				display: block;
+			}
+			.lang-dd__item {
 				display: flex;
 				align-items: center;
-				gap: 5px;
+				gap: 9px;
+				width: 100%;
+				padding: 7px 9px;
+				border: none;
+				background: transparent;
+				border-radius: 7px;
+				cursor: pointer;
+				color: var(--text-2);
+				font-family: inherit;
+				font-size: 11px;
+				text-align: left;
+				transition:
+					background 0.15s,
+					color 0.15s;
 			}
-			.lang-btn.active {
-				background: rgba(249, 115, 22, 0.15);
+			.lang-dd__item:hover {
+				background: var(--surface-tint-hover);
+				color: var(--text);
+			}
+			.lang-dd__item--active {
+				background: rgba(249, 115, 22, 0.1);
 				color: #f97316;
 			}
-			.lang-sep {
-				width: 1px;
-				height: 16px;
-				background: rgba(249, 115, 22, 0.12);
+			.lang-dd__code {
+				min-width: 20px;
+				font-weight: 700;
+				letter-spacing: 0.06em;
+				opacity: 0.7;
+			}
+			.lang-dd__name {
+				flex: 1;
+				font-family: "Plus Jakarta Sans", sans-serif;
+				font-size: 12.5px;
+				font-weight: 500;
+			}
+			.lang-dd__divider {
+				height: 1px;
+				margin: 5px 4px;
+				background: var(--border-strong);
 			}
 
 			/* Theme switcher — same slider used in the swarmbot.it dashboard topbar */
@@ -303,22 +363,6 @@
 				box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 			}
 
-			.btn-login {
-				font-size: 13px;
-				font-weight: 500;
-				color: var(--text-2);
-				cursor: pointer;
-				white-space: nowrap;
-				text-decoration: none;
-				padding: 7px 14px;
-				border-radius: 8px;
-				border: none;
-				background: transparent;
-				transition: color 0.15s;
-			}
-			.btn-login:hover {
-				color: var(--text);
-			}
 			.btn-cta {
 				padding: 8px 18px;
 				background: linear-gradient(135deg, #f97316, #ea580c);
@@ -1193,24 +1237,23 @@
 
 				<div class="nav-right">
 					<!-- PL / EN switcher -->
-					<div class="lang-sw" role="group" aria-label="Language">
+					<div class="lang-dd" id="lang-dd">
 						<button
-							class="lang-btn active"
-							id="lang-pl"
-							onclick="setLang('pl')"
-							aria-pressed="true"
+							class="lang-dd__btn"
+							id="lang-dd-btn"
+							type="button"
+							aria-haspopup="listbox"
+							aria-expanded="false"
+							aria-label="Language"
+							onclick="toggleLangMenu()"
 						>
-							<i class="fa-solid fa-globe" style="font-size: 10px"></i> PL
+							<i class="fa-solid fa-globe" style="font-size: 10px"></i>
+							<span id="lang-dd-code">PL</span>
+							<i class="fa-solid fa-chevron-down lang-dd__chev"></i>
 						</button>
-						<div class="lang-sep"></div>
-						<button
-							class="lang-btn"
-							id="lang-en"
-							onclick="setLang('en')"
-							aria-pressed="false"
-						>
-							EN
-						</button>
+						<!-- Items are rendered from LANGS so the order and the divider
+						     live in one place; see renderLangMenu(). -->
+						<div class="lang-dd__menu" id="lang-dd-menu" role="listbox"></div>
 					</div>
 					<!-- Light / dark switcher — same slider + icons as the swarmbot.it dashboard topbar -->
 					<div class="theme-slider" role="group" aria-label="Theme">
@@ -1256,7 +1299,6 @@
 							</svg>
 						</button>
 					</div>
-					<a href="/app" class="btn-login" id="nav-login" data-i18n="navLogin"></a>
 					<a href="#demo" class="btn-cta" id="nav-cta" data-i18n="navCta"></a>
 				</div>
 			</div>
@@ -1279,8 +1321,8 @@
 					</h1>
 					<p class="hero-desc" data-i18n="heroDesc"></p>
 					<div class="hero-btns">
-						<a href="/app" class="btn-primary">
-							<span data-i18n="heroCtaLogin"></span>
+						<a href="#demo" class="btn-primary">
+							<span data-i18n="heroCtaTry"></span>
 							<i class="fa-solid fa-arrow-right"></i>
 						</a>
 						<a href="#demo" class="btn-secondary">
@@ -1385,7 +1427,7 @@
 				<h2 class="cta-title" data-i18n="ctaTitle"></h2>
 				<p class="cta-desc" data-i18n="ctaDesc"></p>
 				<div class="cta-btns">
-					<a href="/app" class="btn-cta-lg btn-cta-orange" data-i18n="ctaLogin"></a>
+					<a href="#demo" class="btn-cta-lg btn-cta-orange" data-i18n="ctaTry"></a>
 					<a href="/docs" class="btn-cta-lg btn-cta-ghost" data-i18n="ctaDocs"></a>
 				</div>
 			</div>
@@ -1452,200 +1494,984 @@
    i18n
 ════════════════════════════════════════════ */
 			const STRINGS = {
-				navFeatures: { pl: "Możliwości", en: "Features" },
-				navHow: { pl: "Jak to działa", en: "How it works" },
-				navDocs: { pl: "Dokumentacja", en: "Documentation" },
-				navLogin: { pl: "Zaloguj się", en: "Sign in" },
-				navCta: { pl: "Wypróbuj demo", en: "Try demo" },
+				navFeatures: {
+					pl: "Możliwości",
+					en: "Features",
+					de: "Funktionen",
+					es: "Funciones",
+					fr: "Fonctions",
+					it: "Funzioni",
+					pt: "Recursos",
+					zh: "功能",
+					ja: "機能",
+					ko: "기능",
+				},
+				navHow: {
+					pl: "Jak to działa",
+					en: "How it works",
+					de: "Funktionsweise",
+					es: "Cómo funciona",
+					fr: "Fonctionnement",
+					it: "Come funziona",
+					pt: "Como funciona",
+					zh: "原理",
+					ja: "仕組み",
+					ko: "작동 방식",
+				},
+				navDocs: {
+					pl: "Dokumentacja",
+					en: "Documentation",
+					de: "Dokumentation",
+					es: "Documentación",
+					fr: "Documentation",
+					it: "Documentazione",
+					pt: "Documentação",
+					zh: "文档",
+					ja: "ドキュメント",
+					ko: "문서",
+				},
+				navCta: {
+					pl: "Wypróbuj demo",
+					en: "Try demo",
+					de: "Zur Demo",
+					es: "Probar demo",
+					fr: "Essayer",
+					it: "Prova demo",
+					pt: "Testar",
+					zh: "试用演示",
+					ja: "デモを試す",
+					ko: "데모 체험",
+				},
 				heroBadge: {
 					pl: "Inteligentne zarządzanie klastrami",
 					en: "Intelligent cluster management",
+					de: "Intelligentes Cluster-Management",
+					es: "Gestión inteligente de clústeres",
+					fr: "Gestion intelligente de clusters",
+					it: "Gestione intelligente del cluster",
+					pt: "Gestão inteligente de clusters",
+					zh: "智能集群管理",
+					ja: "インテリジェントなクラスタ管理",
+					ko: "지능형 클러스터 관리",
 				},
-				heroLine1: { pl: "Twój klaster.", en: "Your cluster." },
+				heroLine1: {
+					pl: "Twój klaster.",
+					en: "Your cluster.",
+					de: "Dein Cluster.",
+					es: "Tu clúster.",
+					fr: "Votre cluster.",
+					it: "Il tuo cluster.",
+					pt: "O seu cluster.",
+					zh: "你的集群。",
+					ja: "あなたのクラスタ。",
+					ko: "당신의 클러스터.",
+				},
 				heroDesc: {
 					pl: "swarmbot.it to inteligentny agent, który monitoruje Twoje węzły Docker Swarm, automatycznie wykrywa awarie i natychmiast rebalansuje zadania — bez przestojów, bez ingerencji.",
 					en: "swarmbot.it is an intelligent agent that monitors your Docker Swarm nodes, detects failures automatically and instantly rebalances tasks — zero downtime, zero intervention.",
+					de: "swarmbot.it ist ein intelligenter Agent, der deine Docker-Swarm-Knoten überwacht, Ausfälle automatisch erkennt und Aufgaben sofort neu verteilt — null Ausfallzeit, null Eingriffe.",
+					es: "swarmbot.it es un agente inteligente que monitoriza tus nodos de Docker Swarm, detecta fallos automáticamente y rebalancea las tareas al instante — cero tiempo de inactividad, cero intervención.",
+					fr: "swarmbot.it est un agent intelligent qui surveille vos nœuds Docker Swarm, détecte automatiquement les pannes et rebalance instantanément les tâches — zéro interruption, zéro intervention.",
+					it: "swarmbot.it è un agente intelligente che monitora i nodi del tuo Docker Swarm, rileva automaticamente i guasti e ribilancia istantaneamente i task — zero downtime, zero interventi.",
+					pt: "O swarmbot.it é um agente inteligente que monitoriza os nós do seu Docker Swarm, deteta falhas automaticamente e rebalanceia tarefas de forma instantânea — sem tempo de inatividade, sem intervenção.",
+					zh: "swarmbot.it 是一款智能代理，监控您的 Docker Swarm 节点，自动检测故障并即时重新平衡任务——零停机，零干预。",
+					ja: "swarmbot.itは、Docker Swarmのノードを監視し、障害を自動検知してタスクを即座に再分散するインテリジェントエージェントです — ダウンタイムゼロ、人手不要。",
+					ko: "swarmbot.it는 Docker Swarm 노드를 모니터링하고 장애를 자동으로 감지해 즉시 작업을 재분배하는 지능형 에이전트입니다 — 다운타임 없이, 개입 없이.",
 				},
-				heroCtaLogin: { pl: "Zaloguj do panelu", en: "Sign in to panel" },
-				heroCtaDemo: { pl: "Obejrzyj demo", en: "Watch demo" },
-				heroCheck1: { pl: "Bez rejestracji", en: "No sign-up" },
-				heroCheck3: { pl: "Monitoring 24/7", en: "24/7 Monitoring" },
-				featLabel: { pl: "Możliwości", en: "Features" },
-				featTitle: { pl: "Dlaczego swarmbot.it?", en: "Why swarmbot.it?" },
+				heroCtaTry: {
+					pl: "Wypróbuj demo",
+					en: "Try the demo",
+					de: "Demo testen",
+					es: "Probar demo",
+					fr: "Essayer la démo",
+					it: "Prova la demo",
+					pt: "Testar demo",
+					zh: "试用演示",
+					ja: "デモを試す",
+					ko: "데모 체험하기",
+				},
+				heroCtaDemo: {
+					pl: "Obejrzyj demo",
+					en: "Watch demo",
+					de: "Demo ansehen",
+					es: "Ver demo",
+					fr: "Voir la démo",
+					it: "Guarda demo",
+					pt: "Ver demo",
+					zh: "观看演示",
+					ja: "デモを見る",
+					ko: "데모 보기",
+				},
+				heroCheck1: {
+					pl: "Bez rejestracji",
+					en: "No sign-up",
+					de: "Keine Registrierung",
+					es: "Sin registro",
+					fr: "Sans inscription",
+					it: "Senza registrazione",
+					pt: "Sem registo",
+					zh: "无需注册",
+					ja: "登録不要",
+					ko: "가입 불필요",
+				},
+				heroCheck3: {
+					pl: "Monitoring 24/7",
+					en: "24/7 Monitoring",
+					de: "24/7-Monitoring",
+					es: "Monitorización 24/7",
+					fr: "Surveillance 24/7",
+					it: "Monitoraggio 24/7",
+					pt: "Monitorização 24/7",
+					zh: "24/7 全天监控",
+					ja: "24時間365日監視",
+					ko: "24/7 모니터링",
+				},
+				featLabel: {
+					pl: "Możliwości",
+					en: "Features",
+					de: "Funktionen",
+					es: "Funciones",
+					fr: "Fonctionnalités",
+					it: "Funzionalità",
+					pt: "Funcionalidades",
+					zh: "功能",
+					ja: "機能",
+					ko: "기능",
+				},
+				featTitle: {
+					pl: "Dlaczego swarmbot.it?",
+					en: "Why swarmbot.it?",
+					de: "Warum swarmbot.it?",
+					es: "¿Por qué swarmbot.it?",
+					fr: "Pourquoi swarmbot.it ?",
+					it: "Perché swarmbot.it?",
+					pt: "Porquê o swarmbot.it?",
+					zh: "为什么选择 swarmbot.it？",
+					ja: "なぜswarmbot.itなのか？",
+					ko: "왜 swarmbot.it인가?",
+				},
 				featDesc: {
 					pl: "Inteligentna automatyzacja, która pilnuje Twojej infrastruktury — nawet gdy śpisz.",
 					en: "Intelligent automation that watches your infrastructure — even while you sleep.",
+					de: "Intelligente Automatisierung, die deine Infrastruktur überwacht — auch während du schläfst.",
+					es: "Automatización inteligente que vigila tu infraestructura — incluso mientras duermes.",
+					fr: "Une automatisation intelligente qui surveille votre infrastructure — même quand vous dormez.",
+					it: "Automazione intelligente che sorveglia la tua infrastruttura — anche mentre dormi.",
+					pt: "Automação inteligente que vigia a sua infraestrutura — mesmo enquanto dorme.",
+					zh: "智能自动化，守护您的基础设施——即使在您休息时也不停歇。",
+					ja: "眠っている間も、インフラを見守るインテリジェントな自動化。",
+					ko: "당신이 잠든 사이에도 인프라를 감시하는 지능형 자동화.",
 				},
-				howLabel: { pl: "Jak to działa", en: "How it works" },
+				howLabel: {
+					pl: "Jak to działa",
+					en: "How it works",
+					de: "Funktionsweise",
+					es: "Cómo funciona",
+					fr: "Comment ça marche",
+					it: "Come funziona",
+					pt: "Como funciona",
+					zh: "工作原理",
+					ja: "仕組み",
+					ko: "작동 방식",
+				},
 				howTitle: {
 					pl: "Dwa komponenty. Jeden niezawodny klaster.",
 					en: "Two components. One reliable cluster.",
+					de: "Zwei Komponenten. Ein zuverlässiger Cluster.",
+					es: "Dos componentes. Un clúster fiable.",
+					fr: "Deux composants. Un cluster fiable.",
+					it: "Due componenti. Un cluster affidabile.",
+					pt: "Dois componentes. Um cluster fiável.",
+					zh: "两个组件。一个可靠的集群。",
+					ja: "2つのコンポーネント。信頼できる1つのクラスタ。",
+					ko: "두 가지 구성 요소. 하나의 신뢰할 수 있는 클러스터.",
 				},
 				howDesc: {
 					pl: "Swarmagent działa na każdym węźle. Swarmbot API przetwarza zdarzenia. Ty oglądasz to na dashboardzie.",
 					en: "Swarmagent runs on every node. Swarmbot API processes events. You watch it on the dashboard.",
+					de: "Swarmagent läuft auf jedem Knoten. Die Swarmbot API verarbeitet Ereignisse. Du siehst alles im Dashboard.",
+					es: "Swarmagent se ejecuta en cada nodo. Swarmbot API procesa los eventos. Tú lo ves en el panel.",
+					fr: "Swarmagent s'exécute sur chaque nœud. L'API Swarmbot traite les événements. Vous suivez tout depuis le tableau de bord.",
+					it: "Swarmagent è in esecuzione su ogni nodo. Swarmbot API elabora gli eventi. Tu lo osservi sulla dashboard.",
+					pt: "O Swarmagent é executado em cada nó. A API do Swarmbot processa os eventos. Você acompanha tudo no dashboard.",
+					zh: "Swarmagent 运行在每个节点上，Swarmbot API 处理事件，您在仪表盘上实时查看。",
+					ja: "Swarmagentが各ノードで動作し、Swarmbot APIがイベントを処理します。あなたはダッシュボードでそれを見るだけです。",
+					ko: "Swarmagent는 모든 노드에서 실행됩니다. Swarmbot API가 이벤트를 처리합니다. 대시보드에서 지켜보기만 하면 됩니다.",
 				},
-				docsLabel: { pl: "Dokumentacja", en: "Documentation" },
-				docsTitle: { pl: "Zacznij w 3 minuty", en: "Get started in 3 minutes" },
+				docsLabel: {
+					pl: "Dokumentacja",
+					en: "Documentation",
+					de: "Dokumentation",
+					es: "Documentación",
+					fr: "Documentation",
+					it: "Documentazione",
+					pt: "Documentação",
+					zh: "文档",
+					ja: "ドキュメント",
+					ko: "문서",
+				},
+				docsTitle: {
+					pl: "Zacznij w 3 minuty",
+					en: "Get started in 3 minutes",
+					de: "In 3 Minuten startklar",
+					es: "Empieza en 3 minutos",
+					fr: "Démarrez en 3 minutes",
+					it: "Inizia in 3 minuti",
+					pt: "Comece em 3 minutos",
+					zh: "3 分钟快速上手",
+					ja: "3分で始める",
+					ko: "3분 만에 시작하기",
+				},
 				docsDesc: {
 					pl: "Wszystko czego potrzebujesz, żeby uruchomić swarmbot.it w swoim środowisku.",
 					en: "Everything you need to run swarmbot.it in your environment.",
+					de: "Alles, was du brauchst, um swarmbot.it in deiner Umgebung zu betreiben.",
+					es: "Todo lo que necesitas para ejecutar swarmbot.it en tu entorno.",
+					fr: "Tout ce qu'il vous faut pour exécuter swarmbot.it dans votre environnement.",
+					it: "Tutto ciò che serve per eseguire swarmbot.it nel tuo ambiente.",
+					pt: "Tudo o que precisa para executar o swarmbot.it no seu ambiente.",
+					zh: "在您的环境中运行 swarmbot.it 所需的一切。",
+					ja: "swarmbot.itを自分の環境で動かすために必要なすべて。",
+					ko: "swarmbot.it를 환경에서 실행하는 데 필요한 모든 것.",
 				},
 				docsMore: {
 					pl: "Pełna dokumentacja — instalacja, konfiguracja, API i rozwiązywanie problemów.",
 					en: "Full documentation — installation, configuration, API and troubleshooting.",
+					de: "Vollständige Dokumentation — Installation, Konfiguration, API und Fehlerbehebung.",
+					es: "Documentación completa — instalación, configuración, API y resolución de problemas.",
+					fr: "Documentation complète — installation, configuration, API et résolution des problèmes.",
+					it: "Documentazione completa — installazione, configurazione, API e risoluzione dei problemi.",
+					pt: "Documentação completa — instalação, configuração, API e resolução de problemas.",
+					zh: "完整文档——安装、配置、API 与故障排查。",
+					ja: "完全なドキュメント — インストール、設定、API、トラブルシューティング。",
+					ko: "전체 문서 — 설치, 구성, API 및 문제 해결.",
 				},
-				docsCta: { pl: "Otwórz pełną dokumentację", en: "Open full documentation" },
-				demoLabel: { pl: "Interaktywne demo", en: "Interactive demo" },
+				docsCta: {
+					pl: "Otwórz pełną dokumentację",
+					en: "Open full documentation",
+					de: "Vollständige Dokumentation öffnen",
+					es: "Abrir documentación completa",
+					fr: "Ouvrir la documentation complète",
+					it: "Apri la documentazione completa",
+					pt: "Abrir documentação completa",
+					zh: "查看完整文档",
+					ja: "完全なドキュメントを開く",
+					ko: "전체 문서 보기",
+				},
+				demoLabel: {
+					pl: "Interaktywne demo",
+					en: "Interactive demo",
+					de: "Interaktive Demo",
+					es: "Demo interactivo",
+					fr: "Démo interactive",
+					it: "Demo interattiva",
+					pt: "Demo interativa",
+					zh: "互动演示",
+					ja: "インタラクティブデモ",
+					ko: "인터랙티브 데모",
+				},
 				demoTitle: {
 					pl: "Zabij węzeł. Patrz jak się regeneruje.",
 					en: "Kill a node. Watch it recover.",
+					de: "Kille einen Knoten. Sieh, wie er sich erholt.",
+					es: "Elimina un nodo. Observa cómo se recupera.",
+					fr: "Tuez un nœud. Regardez-le se rétablir.",
+					it: "Uccidi un nodo. Guardalo riprendersi.",
+					pt: "Elimine um nó. Veja-o recuperar.",
+					zh: "终止一个节点，见证它自动恢复。",
+					ja: "ノードをキルして、復旧を見る。",
+					ko: "노드를 종료해 보세요. 복구되는 과정을 지켜보세요.",
 				},
 				demoDesc: {
 					pl: "Kliknij Kill pod dowolnym węzłem — swarmbot.it natychmiast przerzuca zadania na pozostałe węzły.",
 					en: "Click Kill on any node — swarmbot.it instantly redistributes tasks to the remaining nodes.",
+					de: "Klicke bei einem beliebigen Knoten auf Kill — swarmbot.it verteilt die Aufgaben sofort auf die verbleibenden Knoten neu.",
+					es: "Haz clic en Matar en cualquier nodo — swarmbot.it redistribuye las tareas al instante entre los nodos restantes.",
+					fr: "Cliquez sur Tuer sous n'importe quel nœud — swarmbot.it redistribue instantanément les tâches vers les nœuds restants.",
+					it: "Clicca su Uccidi su un nodo qualsiasi — swarmbot.it ridistribuisce istantaneamente i task sui nodi rimanenti.",
+					pt: "Clique em Matar em qualquer nó — o swarmbot.it redistribui instantaneamente as tarefas para os nós restantes.",
+					zh: "点击任意节点的“终止”按钮——swarmbot.it 会立即将任务重新分配到其余节点。",
+					ja: "任意のノードで「キル」をクリック — swarmbot.itが即座にタスクを残りのノードに再配分します。",
+					ko: "원하는 노드에서 종료 버튼을 클릭하세요 — swarmbot.it가 즉시 나머지 노드로 작업을 재분배합니다.",
 				},
-				ctaTitle: { pl: "Gotowy na Zero Downtime?", en: "Ready for Zero Downtime?" },
+				ctaTitle: {
+					pl: "Gotowy na Zero Downtime?",
+					en: "Ready for Zero Downtime?",
+					de: "Bereit für Zero Downtime?",
+					es: "¿Preparado para Zero Downtime?",
+					fr: "Prêt pour zéro interruption ?",
+					it: "Pronto per il Zero Downtime?",
+					pt: "Pronto para Zero Downtime?",
+					zh: "准备好实现零停机了吗？",
+					ja: "ゼロダウンタイムの準備はできましたか？",
+					ko: "Zero Downtime을 위한 준비가 되셨나요?",
+				},
 				ctaDesc: {
 					pl: "Zainstaluj swarmbot.it i zapomnij o nocnych alertach. Twój klaster zasługuje na inteligentną opiekę.",
 					en: "Install swarmbot.it and forget about late-night alerts. Your cluster deserves intelligent care.",
+					de: "Installiere swarmbot.it und vergiss nächtliche Alarme. Dein Cluster verdient intelligente Betreuung.",
+					es: "Instala swarmbot.it y olvídate de las alertas nocturnas. Tu clúster merece un cuidado inteligente.",
+					fr: "Installez swarmbot.it et oubliez les alertes nocturnes. Votre cluster mérite une prise en charge intelligente.",
+					it: "Installa swarmbot.it e dimentica gli allarmi notturni. Il tuo cluster merita una gestione intelligente.",
+					pt: "Instale o swarmbot.it e esqueça os alertas a meio da noite. O seu cluster merece cuidados inteligentes.",
+					zh: "安装 swarmbot.it，告别深夜告警。您的集群值得智能化的呵护。",
+					ja: "swarmbot.itを導入して、深夜のアラートから解放されましょう。あなたのクラスタには、インテリジェントなケアがふさわしい。",
+					ko: "swarmbot.it를 설치하고 심야 알림 걱정을 잊으세요. 당신의 클러스터는 지능적인 관리를 받을 자격이 있습니다.",
 				},
-				ctaLogin: { pl: "Zaloguj się", en: "Sign in" },
-				ctaDocs: { pl: "Czytaj dokumentację", en: "Read documentation" },
+				ctaTry: {
+					pl: "Wypróbuj demo",
+					en: "Try the demo",
+					de: "Demo testen",
+					es: "Probar demo",
+					fr: "Essayer la démo",
+					it: "Prova la demo",
+					pt: "Testar demo",
+					zh: "试用演示",
+					ja: "デモを試す",
+					ko: "데모 체험하기",
+				},
+				ctaDocs: {
+					pl: "Czytaj dokumentację",
+					en: "Read documentation",
+					de: "Dokumentation lesen",
+					es: "Leer documentación",
+					fr: "Lire la documentation",
+					it: "Leggi la documentazione",
+					pt: "Ler documentação",
+					zh: "阅读文档",
+					ja: "ドキュメントを読む",
+					ko: "문서 읽기",
+				},
 				footerCopy: {
 					pl: "Projektem opiekuje się NO-HUMAN PSA · MIT License",
 					en: "Maintained by NO-HUMAN PSA · MIT License",
+					de: "Betreut von NO-HUMAN PSA · MIT License",
+					es: "Mantenido por NO-HUMAN PSA · MIT License",
+					fr: "Maintenu par NO-HUMAN PSA · MIT License",
+					it: "Gestito da NO-HUMAN PSA · MIT License",
+					pt: "Mantido por NO-HUMAN PSA · MIT License",
+					zh: "由 NO-HUMAN PSA 维护 · MIT License",
+					ja: "NO-HUMAN PSAが管理 · MIT License",
+					ko: "NO-HUMAN PSA가 관리 · MIT License",
 				},
-
-				// features
-				feat0title: { pl: "Zero Downtime", en: "Zero Downtime" },
+				feat0title: {
+					pl: "Zero Downtime",
+					en: "Zero Downtime",
+					de: "Zero Downtime",
+					es: "Zero Downtime",
+					fr: "Zéro interruption",
+					it: "Zero Downtime",
+					pt: "Zero Downtime",
+					zh: "零停机",
+					ja: "ゼロダウンタイム",
+					ko: "Zero Downtime",
+				},
 				feat0desc: {
 					pl: "Docker Swarm automatycznie przenosi zadania z martwego węzła — Twoi użytkownicy tego nie odczuwają.",
 					en: "Docker Swarm automatically reschedules tasks off a dead node — your users don't feel a thing.",
+					de: "Docker Swarm verteilt Aufgaben eines ausgefallenen Knotens automatisch neu — deine Nutzer merken nichts davon.",
+					es: "Docker Swarm reprograma automáticamente las tareas de un nodo caído — tus usuarios no notan nada.",
+					fr: "Docker Swarm replanifie automatiquement les tâches d'un nœud mort — vos utilisateurs ne s'en aperçoivent même pas.",
+					it: "Docker Swarm ripianifica automaticamente i task di un nodo morto — i tuoi utenti non se ne accorgono nemmeno.",
+					pt: "O Docker Swarm reagenda automaticamente as tarefas de um nó morto — os seus utilizadores não sentem nada.",
+					zh: "Docker Swarm 会自动将任务从故障节点迁移出去——用户毫无察觉。",
+					ja: "Docker Swarmが停止したノードからタスクを自動的に再スケジュールします — ユーザーは何も気づきません。",
+					ko: "Docker Swarm은 다운된 노드의 작업을 자동으로 재스케줄링합니다 — 사용자는 아무런 영향을 느끼지 못합니다.",
 				},
-				feat1title: { pl: "Metryki live", en: "Live Metrics" },
+				feat1title: {
+					pl: "Metryki live",
+					en: "Live Metrics",
+					de: "Live-Metriken",
+					es: "Métricas en vivo",
+					fr: "Métriques en direct",
+					it: "Metriche live",
+					pt: "Métricas em Tempo Real",
+					zh: "实时指标",
+					ja: "ライブメトリクス",
+					ko: "실시간 메트릭",
+				},
 				feat1desc: {
 					pl: "CPU, RAM i dysk każdego węzła i kontenera, odświeżane na żywo z InfluxDB.",
 					en: "CPU, memory, and disk for every node and container, refreshed live from InfluxDB.",
+					de: "CPU, RAM und Festplatte für jeden Knoten und Container, live aktualisiert aus InfluxDB.",
+					es: "CPU, memoria y disco de cada nodo y contenedor, actualizados en vivo desde InfluxDB.",
+					fr: "CPU, mémoire et disque pour chaque nœud et conteneur, actualisés en direct depuis InfluxDB.",
+					it: "CPU, RAM e disco per ogni nodo e container, aggiornati in tempo reale da InfluxDB.",
+					pt: "CPU, memória e disco de cada nó e contentor, atualizados em tempo real a partir do InfluxDB.",
+					zh: "每个节点和容器的 CPU、内存与磁盘数据，实时从 InfluxDB 刷新。",
+					ja: "すべてのノードとコンテナのCPU、メモリ、ディスクを、InfluxDBからライブで更新して表示。",
+					ko: "모든 노드와 컨테이너의 CPU, 메모리, 디스크를 InfluxDB에서 실시간으로 갱신합니다.",
 				},
-				feat2title: { pl: "Docker Swarm + Kubernetes", en: "Docker Swarm + Kubernetes" },
+				feat2title: {
+					pl: "Docker Swarm + Kubernetes",
+					en: "Docker Swarm + Kubernetes",
+					de: "Docker Swarm + Kubernetes",
+					es: "Docker Swarm + Kubernetes",
+					fr: "Docker Swarm + Kubernetes",
+					it: "Docker Swarm + Kubernetes",
+					pt: "Docker Swarm + Kubernetes",
+					zh: "Docker Swarm + Kubernetes",
+					ja: "Docker Swarm + Kubernetes",
+					ko: "Docker Swarm + Kubernetes",
+				},
 				feat2desc: {
 					pl: "Ten sam dashboard działa na Docker Swarm i na klastrach Kubernetes/k3s.",
 					en: "The same dashboard works on Docker Swarm and on Kubernetes/k3s clusters.",
+					de: "Dasselbe Dashboard funktioniert auf Docker Swarm und auf Kubernetes/k3s-Clustern.",
+					es: "El mismo panel funciona en Docker Swarm y en clústeres de Kubernetes/k3s.",
+					fr: "Le même tableau de bord fonctionne sur Docker Swarm et sur les clusters Kubernetes/k3s.",
+					it: "La stessa dashboard funziona su Docker Swarm e su cluster Kubernetes/k3s.",
+					pt: "O mesmo dashboard funciona em Docker Swarm e em clusters Kubernetes/k3s.",
+					zh: "同一个仪表盘同时适用于 Docker Swarm 和 Kubernetes/k3s 集群。",
+					ja: "同じダッシュボードがDocker SwarmとKubernetes/k3sクラスタの両方で動作します。",
+					ko: "동일한 대시보드가 Docker Swarm과 Kubernetes/k3s 클러스터 모두에서 작동합니다.",
 				},
-				feat3title: { pl: "Bezpieczeństwo", en: "Security" },
+				feat3title: {
+					pl: "Bezpieczeństwo",
+					en: "Security",
+					de: "Sicherheit",
+					es: "Seguridad",
+					fr: "Sécurité",
+					it: "Sicurezza",
+					pt: "Segurança",
+					zh: "安全性",
+					ja: "セキュリティ",
+					ko: "보안",
+				},
 				feat3desc: {
 					pl: "Role użytkowników (Admin/Editor/Read-only), tokeny API i hasła rejestrów szyfrowane AES-256-GCM.",
 					en: "Role-based access (Admin/Editor/Read-only), API tokens, and registry passwords encrypted with AES-256-GCM.",
+					de: "Rollenbasierter Zugriff (Admin/Editor/Nur-Lesen), API-Tokens und mit AES-256-GCM verschlüsselte Registry-Passwörter.",
+					es: "Acceso basado en roles (Admin/Editor/Solo lectura), tokens de API y contraseñas de registro cifradas con AES-256-GCM.",
+					fr: "Accès basé sur les rôles (Admin/Éditeur/Lecture seule), jetons API et mots de passe de registre chiffrés avec AES-256-GCM.",
+					it: "Accesso basato su ruoli (Admin/Editor/Read-only), token API e password dei registry cifrate con AES-256-GCM.",
+					pt: "Acesso baseado em funções (Admin/Editor/Só leitura), tokens de API e palavras-passe de registos encriptadas com AES-256-GCM.",
+					zh: "基于角色的访问控制（管理员/编辑者/只读）、API 令牌，以及使用 AES-256-GCM 加密的镜像仓库密码。",
+					ja: "ロールベースのアクセス制御（Admin/Editor/Read-only）、APIトークン、そしてAES-256-GCMで暗号化されたレジストリのパスワード。",
+					ko: "역할 기반 접근 제어(Admin/Editor/Read-only), API 토큰, 그리고 AES-256-GCM으로 암호화된 레지스트리 비밀번호.",
 				},
-				feat4title: { pl: "Dashboard", en: "Dashboard" },
+				feat4title: {
+					pl: "Dashboard",
+					en: "Dashboard",
+					de: "Dashboard",
+					es: "Dashboard",
+					fr: "Tableau de bord",
+					it: "Dashboard",
+					pt: "Dashboard",
+					zh: "仪表盘",
+					ja: "ダッシュボード",
+					ko: "대시보드",
+				},
 				feat4desc: {
 					pl: "Wizualizacja stanu całego klastra w czasie rzeczywistym.",
 					en: "Real-time visualization of your entire cluster.",
+					de: "Echtzeit-Visualisierung deines gesamten Clusters.",
+					es: "Visualización en tiempo real de todo tu clúster.",
+					fr: "Visualisation en temps réel de l'ensemble de votre cluster.",
+					it: "Visualizzazione in tempo reale dell'intero cluster.",
+					pt: "Visualização em tempo real de todo o seu cluster.",
+					zh: "整个集群的实时可视化。",
+					ja: "クラスタ全体をリアルタイムで可視化。",
+					ko: "전체 클러스터를 실시간으로 시각화합니다.",
 				},
-				feat5title: { pl: "GraphQL API", en: "GraphQL API" },
+				feat5title: {
+					pl: "GraphQL API",
+					en: "GraphQL API",
+					de: "GraphQL API",
+					es: "GraphQL API",
+					fr: "API GraphQL",
+					it: "GraphQL API",
+					pt: "GraphQL API",
+					zh: "GraphQL API",
+					ja: "GraphQL API",
+					ko: "GraphQL API",
+				},
 				feat5desc: {
 					pl: "Pełne GraphQL API do zarządzania stackami, serwisami, węzłami i rejestrami.",
 					en: "A full GraphQL API for managing stacks, services, nodes, and registries.",
+					de: "Eine vollständige GraphQL API zur Verwaltung von Stacks, Services, Knoten und Registries.",
+					es: "Una API GraphQL completa para gestionar stacks, servicios, nodos y registros.",
+					fr: "Une API GraphQL complète pour gérer les stacks, services, nœuds et registres.",
+					it: "Un'API GraphQL completa per gestire stack, servizi, nodi e registry.",
+					pt: "Uma API GraphQL completa para gerir stacks, serviços, nós e registos.",
+					zh: "完整的 GraphQL API，用于管理堆栈、服务、节点和镜像仓库。",
+					ja: "スタック、サービス、ノード、レジストリを管理するための完全なGraphQL API。",
+					ko: "스택, 서비스, 노드, 레지스트리를 관리하기 위한 완전한 GraphQL API.",
 				},
-
-				// how steps
-				how0num: { pl: "01 — OBSERWUJ", en: "01 — OBSERVE" },
-				how0title: { pl: "Swarmagent monitoruje", en: "Swarmagent monitors" },
+				how0num: {
+					pl: "01 — OBSERWUJ",
+					en: "01 — OBSERVE",
+					de: "01 — BEOBACHTEN",
+					es: "01 — OBSERVAR",
+					fr: "01 — OBSERVER",
+					it: "01 — OSSERVA",
+					pt: "01 — OBSERVAR",
+					zh: "01 — 观测",
+					ja: "01 — 監視",
+					ko: "01 — 관찰",
+				},
+				how0title: {
+					pl: "Swarmagent monitoruje",
+					en: "Swarmagent monitors",
+					de: "Swarmagent überwacht",
+					es: "Swarmagent monitoriza",
+					fr: "Swarmagent surveille",
+					it: "Swarmagent monitora",
+					pt: "O Swarmagent monitoriza",
+					zh: "Swarmagent 监控",
+					ja: "Swarmagentが監視",
+					ko: "Swarmagent가 모니터링합니다",
+				},
 				how0desc: {
 					pl: "Napisany w Rust agent działa na każdym węźle Docker, odczytując API Dockera — zdarzenia kontenerów i metryki hosta (CPU, RAM, dysk) w regularnych, konfigurowalnych odstępach.",
 					en: "The Rust-based agent runs on each Docker node, reading the Docker API for container events and host metrics (CPU, RAM, disk) on a regular, configurable interval.",
+					de: "Der in Rust geschriebene Agent läuft auf jedem Docker-Knoten und liest über die Docker API Container-Ereignisse und Host-Metriken (CPU, RAM, Festplatte) in regelmäßigen, konfigurierbaren Abständen aus.",
+					es: "El agente basado en Rust se ejecuta en cada nodo Docker, leyendo la API de Docker para obtener eventos de contenedores y métricas del host (CPU, RAM, disco) a intervalos regulares y configurables.",
+					fr: "L'agent basé sur Rust s'exécute sur chaque nœud Docker et interroge l'API Docker pour les événements des conteneurs et les métriques de l'hôte (CPU, RAM, disque) à intervalles réguliers et configurables.",
+					it: "L'agente scritto in Rust è in esecuzione su ogni nodo Docker, leggendo le API di Docker per gli eventi dei container e le metriche host (CPU, RAM, disco) a intervalli regolari e configurabili.",
+					pt: "O agente, escrito em Rust, é executado em cada nó Docker, lendo a API do Docker para obter eventos de contentores e métricas do anfitrião (CPU, RAM, disco) a intervalos regulares e configuráveis.",
+					zh: "这款基于 Rust 的代理运行在每个 Docker 节点上，按照固定且可配置的间隔读取 Docker API，获取容器事件与主机指标（CPU、内存、磁盘）。",
+					ja: "Rust製のエージェントが各Dockerノードで動作し、Docker APIを読み取ってコンテナイベントとホストのメトリクス（CPU、RAM、ディスク）を、一定の設定可能な間隔で取得します。",
+					ko: "Rust로 작성된 에이전트가 각 Docker 노드에서 실행되며, 설정 가능한 일정한 간격으로 Docker API를 통해 컨테이너 이벤트와 호스트 메트릭(CPU, RAM, 디스크)을 읽어옵니다.",
 				},
-				how1num: { pl: "02 — WYKRYJ", en: "02 — DETECT" },
-				how1title: { pl: "Swarmbot wykrywa awarię", en: "Swarmbot detects failure" },
+				how1num: {
+					pl: "02 — WYKRYJ",
+					en: "02 — DETECT",
+					de: "02 — ERKENNEN",
+					es: "02 — DETECTAR",
+					fr: "02 — DÉTECTER",
+					it: "02 — RILEVA",
+					pt: "02 — DETETAR",
+					zh: "02 — 检测",
+					ja: "02 — 検知",
+					ko: "02 — 감지",
+				},
+				how1title: {
+					pl: "Swarmbot wykrywa awarię",
+					en: "Swarmbot detects failure",
+					de: "Swarmbot erkennt Ausfälle",
+					es: "Swarmbot detecta el fallo",
+					fr: "Swarmbot détecte la panne",
+					it: "Swarmbot rileva il guasto",
+					pt: "O Swarmbot deteta a falha",
+					zh: "Swarmbot 检测故障",
+					ja: "Swarmbotが障害を検知",
+					ko: "Swarmbot이 장애를 감지합니다",
+				},
 				how1desc: {
 					pl: "Gdy węzeł znika z klastra, sam Docker Swarm przenosi jego zadania na pozostałe węzły — bez ingerencji człowieka.",
 					en: "When a node drops out of the cluster, Docker Swarm itself reschedules its tasks onto the remaining nodes — no human intervention required.",
+					de: "Fällt ein Knoten aus dem Cluster, verteilt Docker Swarm selbst dessen Aufgaben auf die verbleibenden Knoten neu — ganz ohne menschliches Eingreifen.",
+					es: "Cuando un nodo abandona el clúster, el propio Docker Swarm reprograma sus tareas en los nodos restantes — sin intervención humana.",
+					fr: "Lorsqu'un nœud quitte le cluster, Docker Swarm replanifie lui-même ses tâches sur les nœuds restants — aucune intervention humaine requise.",
+					it: "Quando un nodo esce dal cluster, è Docker Swarm stesso a ripianificare i suoi task sui nodi rimanenti — senza alcun intervento umano.",
+					pt: "Quando um nó sai do cluster, o próprio Docker Swarm reagenda as suas tarefas para os nós restantes — sem necessidade de intervenção humana.",
+					zh: "当某个节点脱离集群时，Docker Swarm 会自行将其任务重新调度到其余节点上——无需人工干预。",
+					ja: "ノードがクラスタから外れると、Docker Swarm自身がそのタスクを残りのノードに再スケジュールします — 人手による介入は不要です。",
+					ko: "노드가 클러스터에서 이탈하면 Docker Swarm이 직접 해당 작업을 나머지 노드로 재스케줄링합니다 — 사람의 개입이 필요하지 않습니다.",
 				},
-				how2num: { pl: "03 — ODBUDUJ", en: "03 — RECOVER" },
+				how2num: {
+					pl: "03 — ODBUDUJ",
+					en: "03 — RECOVER",
+					de: "03 — WIEDERHERSTELLEN",
+					es: "03 — RECUPERAR",
+					fr: "03 — RÉCUPÉRER",
+					it: "03 — RIPRISTINA",
+					pt: "03 — RECUPERAR",
+					zh: "03 — 恢复",
+					ja: "03 — 復旧",
+					ko: "03 — 복구",
+				},
 				how2title: {
 					pl: "Zadania rebalansują automatycznie",
 					en: "Tasks rebalance automatically",
+					de: "Aufgaben werden automatisch neu verteilt",
+					es: "Las tareas se rebalancean automáticamente",
+					fr: "Les tâches se rééquilibrent automatiquement",
+					it: "I task si ribilanciano automaticamente",
+					pt: "As tarefas rebalanceiam automaticamente",
+					zh: "任务自动重新平衡",
+					ja: "タスクが自動的に再分散",
+					ko: "작업이 자동으로 재분배됩니다",
 				},
 				how2desc: {
 					pl: "Docker Swarm ponownie planuje zadania na ocalałych węzłach. Swarmbot odczytuje nowe rozmieszczenie live przez GraphQL i aktualizuje dashboard w czasie rzeczywistym.",
 					en: "Docker Swarm reschedules tasks on surviving nodes. Swarmbot reads the new placement live via GraphQL and updates the dashboard in real time.",
+					de: "Docker Swarm plant die Aufgaben auf den verbleibenden Knoten neu ein. Swarmbot liest die neue Verteilung live über GraphQL aus und aktualisiert das Dashboard in Echtzeit.",
+					es: "Docker Swarm reprograma las tareas en los nodos supervivientes. Swarmbot lee la nueva distribución en vivo vía GraphQL y actualiza el panel en tiempo real.",
+					fr: "Docker Swarm replanifie les tâches sur les nœuds survivants. Swarmbot lit le nouveau placement en direct via GraphQL et met à jour le tableau de bord en temps réel.",
+					it: "Docker Swarm ripianifica i task sui nodi superstiti. Swarmbot legge il nuovo posizionamento in tempo reale via GraphQL e aggiorna la dashboard istantaneamente.",
+					pt: "O Docker Swarm reagenda as tarefas nos nós sobreviventes. O Swarmbot lê o novo posicionamento em tempo real via GraphQL e atualiza o dashboard instantaneamente.",
+					zh: "Docker Swarm 将任务重新调度到存活的节点上，Swarmbot 通过 GraphQL 实时读取新的部署情况，并同步更新仪表盘。",
+					ja: "Docker Swarmが生存ノード上でタスクを再スケジュールします。Swarmbotは新しい配置をGraphQLでライブに読み取り、ダッシュボードをリアルタイムで更新します。",
+					ko: "Docker Swarm은 살아남은 노드에 작업을 재스케줄링합니다. Swarmbot은 GraphQL을 통해 새로운 배치를 실시간으로 읽어와 대시보드를 실시간으로 업데이트합니다.",
 				},
-
-				// docs tabs
-				docTab0: { pl: "Jak to działa?", en: "How it works" },
-				docTab1: { pl: "Jak obsługiwać?", en: "How to use" },
-				docTab2: { pl: "Jak zainstalować?", en: "How to install" },
-				// doc content
-				docH0: { pl: "Architektura agenta", en: "Agent architecture" },
+				docTab0: {
+					pl: "Jak to działa?",
+					en: "How it works",
+					de: "So funktioniert es",
+					es: "Cómo funciona",
+					fr: "Comment ça marche",
+					it: "Come funziona",
+					pt: "Como funciona",
+					zh: "工作原理",
+					ja: "仕組み",
+					ko: "작동 방식",
+				},
+				docTab1: {
+					pl: "Jak obsługiwać?",
+					en: "How to use",
+					de: "So wird es genutzt",
+					es: "Cómo usarlo",
+					fr: "Comment l'utiliser",
+					it: "Come usarlo",
+					pt: "Como utilizar",
+					zh: "使用方法",
+					ja: "使い方",
+					ko: "사용 방법",
+				},
+				docTab2: {
+					pl: "Jak zainstalować?",
+					en: "How to install",
+					de: "So wird es installiert",
+					es: "Cómo instalarlo",
+					fr: "Comment l'installer",
+					it: "Come installare",
+					pt: "Como instalar",
+					zh: "安装方法",
+					ja: "インストール方法",
+					ko: "설치 방법",
+				},
+				docH0: {
+					pl: "Architektura agenta",
+					en: "Agent architecture",
+					de: "Architektur des Agents",
+					es: "Arquitectura del agente",
+					fr: "Architecture de l'agent",
+					it: "Architettura dell'agente",
+					pt: "Arquitetura do agente",
+					zh: "代理架构",
+					ja: "エージェントのアーキテクチャ",
+					ko: "에이전트 아키텍처",
+				},
 				docP0a: {
 					pl: "swarmbot.it działa jako lekki agent (Rust) obok Twojego Docker Swarm managera. Agent zbiera metryki i zdarzenia Dockera co kilkadziesiąt sekund (konfigurowalne) i wysyła je do centralnego API.",
 					en: "swarmbot.it runs as a lightweight Rust agent alongside your Docker Swarm manager. The agent collects Docker metrics and events on a configurable interval and pushes them to the central API.",
+					de: "swarmbot.it läuft als schlanker Rust-Agent neben deinem Docker-Swarm-Manager. Der Agent sammelt Docker-Metriken und -Ereignisse in konfigurierbaren Abständen und sendet sie an die zentrale API.",
+					es: "swarmbot.it se ejecuta como un agente ligero en Rust junto a tu manager de Docker Swarm. El agente recopila métricas y eventos de Docker a intervalos configurables y los envía a la API central.",
+					fr: "swarmbot.it s'exécute comme un agent Rust léger aux côtés de votre manager Docker Swarm. L'agent collecte les métriques et événements Docker à intervalles configurables et les transmet à l'API centrale.",
+					it: "swarmbot.it funziona come un agente Rust leggero accanto al tuo manager Docker Swarm. L'agente raccoglie metriche ed eventi Docker a un intervallo configurabile e li invia all'API centrale.",
+					pt: "O swarmbot.it é executado como um agente leve em Rust, a par do seu gestor Docker Swarm. O agente recolhe métricas e eventos do Docker a intervalos configuráveis e envia-os para a API central.",
+					zh: "swarmbot.it 作为轻量级 Rust 代理与您的 Docker Swarm 管理节点并行运行。该代理按可配置的间隔收集 Docker 指标与事件，并将其推送至中央 API。",
+					ja: "swarmbot.itは、Docker Swarmマネージャーと並行して動作する軽量なRustエージェントです。エージェントは設定可能な間隔でDockerのメトリクスとイベントを収集し、中央APIへ送信します。",
+					ko: "swarmbot.it는 Docker Swarm 매니저와 함께 동작하는 경량 Rust 에이전트로 실행됩니다. 에이전트는 설정 가능한 간격으로 Docker 메트릭과 이벤트를 수집해 중앙 API로 전송합니다.",
 				},
 				docP0b: {
 					pl: "Gdy węzeł znika z klastra, Docker Swarm samodzielnie przenosi jego zadania na pozostałe węzły — Swarmbot to wykrywa i pokazuje w panelu oraz w kanale aktywności.",
 					en: "When a node drops out of the cluster, Docker Swarm itself reschedules its tasks onto the remaining nodes — Swarmbot detects this and surfaces it on the dashboard and activity feed.",
+					de: "Fällt ein Knoten aus dem Cluster, verteilt Docker Swarm selbst dessen Aufgaben auf die verbleibenden Knoten neu — Swarmbot erkennt das und zeigt es im Dashboard und im Aktivitätsfeed an.",
+					es: "Cuando un nodo abandona el clúster, el propio Docker Swarm reprograma sus tareas en los nodos restantes — Swarmbot detecta esto y lo muestra en el panel y en el feed de actividad.",
+					fr: "Lorsqu'un nœud quitte le cluster, Docker Swarm replanifie lui-même ses tâches sur les nœuds restants — Swarmbot détecte cet événement et l'affiche sur le tableau de bord et le flux d'activité.",
+					it: "Quando un nodo esce dal cluster, è Docker Swarm stesso a ripianificare i suoi task sui nodi rimanenti — Swarmbot lo rileva e lo mostra sulla dashboard e nel feed delle attività.",
+					pt: "Quando um nó sai do cluster, o próprio Docker Swarm reagenda as suas tarefas para os nós restantes — o Swarmbot deteta isto e mostra-o no dashboard e no feed de atividade.",
+					zh: "当某个节点脱离集群时，Docker Swarm 会自行将其任务重新调度到其余节点上——Swarmbot 会检测到这一变化，并在仪表盘和活动动态中呈现出来。",
+					ja: "ノードがクラスタから外れると、Docker Swarm自身がそのタスクを残りのノードに再スケジュールします — Swarmbotはこれを検知し、ダッシュボードとアクティビティフィードに表示します。",
+					ko: "노드가 클러스터에서 이탈하면 Docker Swarm이 직접 해당 작업을 나머지 노드로 재스케줄링합니다 — Swarmbot은 이를 감지해 대시보드와 활동 피드에 표시합니다.",
 				},
-				docH1: { pl: "Konfiguracja i obsługa", en: "Configuration & usage" },
+				docH1: {
+					pl: "Konfiguracja i obsługa",
+					en: "Configuration & usage",
+					de: "Konfiguration & Nutzung",
+					es: "Configuración y uso",
+					fr: "Configuration et utilisation",
+					it: "Configurazione e utilizzo",
+					pt: "Configuração e utilização",
+					zh: "配置与使用",
+					ja: "設定と使い方",
+					ko: "구성 및 사용법",
+				},
 				docP1a: {
 					pl: "Po instalacji swarmbot.it automatycznie wykrywa konfigurację Docker Swarm i zaczyna monitoring. Domyślna konfiguracja jest optymalna dla większości środowisk.",
 					en: "After installation swarmbot.it auto-detects your Docker Swarm config and starts monitoring. The default config is optimal for most environments.",
+					de: "Nach der Installation erkennt swarmbot.it deine Docker-Swarm-Konfiguration automatisch und startet das Monitoring. Die Standardkonfiguration ist für die meisten Umgebungen optimal.",
+					es: "Tras la instalación, swarmbot.it detecta automáticamente tu configuración de Docker Swarm y empieza a monitorizar. La configuración predeterminada es óptima para la mayoría de los entornos.",
+					fr: "Après l'installation, swarmbot.it détecte automatiquement votre configuration Docker Swarm et démarre la surveillance. La configuration par défaut est optimale pour la plupart des environnements.",
+					it: "Dopo l'installazione, swarmbot.it rileva automaticamente la configurazione del tuo Docker Swarm e avvia il monitoraggio. La configurazione predefinita è ottimale per la maggior parte degli ambienti.",
+					pt: "Após a instalação, o swarmbot.it deteta automaticamente a configuração do seu Docker Swarm e inicia a monitorização. A configuração predefinida é ideal para a maioria dos ambientes.",
+					zh: "安装完成后，swarmbot.it 会自动检测您的 Docker Swarm 配置并开始监控。默认配置已针对大多数环境进行了优化。",
+					ja: "インストール後、swarmbot.itはDocker Swarmの構成を自動検出し、監視を開始します。デフォルト設定はほとんどの環境で最適です。",
+					ko: "설치 후 swarmbot.it는 Docker Swarm 구성을 자동으로 감지해 모니터링을 시작합니다. 기본 구성은 대부분의 환경에 최적화되어 있습니다.",
 				},
 				docP1b: {
 					pl: "Panel webowy dostępny jest pod /app. Możesz zarządzać stackami, serwisami i węzłami, przeglądać metryki na żywo i kontrolować dostęp przez role użytkowników.",
 					en: "The web panel is available at /app. Manage stacks, services, and nodes, review live metrics, and control access through user roles.",
+					de: "Das Web-Panel ist unter /app verfügbar. Verwalte Stacks, Services und Knoten, sieh dir Live-Metriken an und steuere den Zugriff über Benutzerrollen.",
+					es: "El panel web está disponible en /app. Gestiona stacks, servicios y nodos, revisa métricas en vivo y controla el acceso mediante roles de usuario.",
+					fr: "Le panneau web est accessible à /app. Gérez les stacks, services et nœuds, consultez les métriques en direct et contrôlez les accès via les rôles utilisateurs.",
+					it: "Il pannello web è disponibile su /app. Gestisci stack, servizi e nodi, controlla le metriche live e regola l'accesso tramite i ruoli utente.",
+					pt: "O painel web está disponível em /app. Gira stacks, serviços e nós, consulte métricas em tempo real e controle o acesso através de funções de utilizador.",
+					zh: "Web 面板可通过 /app 访问。您可以管理堆栈、服务和节点，查看实时指标，并通过用户角色控制访问权限。",
+					ja: "Webパネルは/appでアクセスできます。スタック、サービス、ノードを管理し、ライブメトリクスを確認し、ユーザーロールでアクセスを制御できます。",
+					ko: "웹 패널은 /app에서 이용할 수 있습니다. 스택, 서비스, 노드를 관리하고 실시간 메트릭을 확인하며 사용자 역할을 통해 접근을 제어하세요.",
 				},
-				docH2: { pl: "Instalacja w 60 sekund", en: "Install in 60 seconds" },
+				docH2: {
+					pl: "Instalacja w 60 sekund",
+					en: "Install in 60 seconds",
+					de: "Installation in 60 Sekunden",
+					es: "Instala en 60 segundos",
+					fr: "Installation en 60 secondes",
+					it: "Installa in 60 secondi",
+					pt: "Instale em 60 segundos",
+					zh: "60 秒完成安装",
+					ja: "60秒でインストール",
+					ko: "60초 만에 설치",
+				},
 				docP2a: {
 					pl: "swarmbot.it wymaga Docker Engine 20.10+ i aktywnego Docker Swarm. Instalacja jest jednokomendowa i nie wymaga restartu istniejących usług.",
 					en: "swarmbot.it requires Docker Engine 20.10+ and an active Docker Swarm. Installation is a single command and requires no restart of existing services.",
+					de: "swarmbot.it benötigt Docker Engine 20.10+ und einen aktiven Docker Swarm. Die Installation erfolgt mit einem einzigen Befehl und erfordert keinen Neustart bestehender Dienste.",
+					es: "swarmbot.it requiere Docker Engine 20.10+ y un Docker Swarm activo. La instalación es un solo comando y no requiere reiniciar los servicios existentes.",
+					fr: "swarmbot.it nécessite Docker Engine 20.10+ et un Docker Swarm actif. L'installation se fait en une seule commande et ne nécessite aucun redémarrage des services existants.",
+					it: "swarmbot.it richiede Docker Engine 20.10+ e un Docker Swarm attivo. L'installazione è un unico comando e non richiede il riavvio dei servizi esistenti.",
+					pt: "O swarmbot.it requer o Docker Engine 20.10+ e um Docker Swarm ativo. A instalação é feita com um único comando e não exige reinício dos serviços existentes.",
+					zh: "swarmbot.it 需要 Docker Engine 20.10+ 以及处于活动状态的 Docker Swarm。安装只需一条命令，且无需重启现有服务。",
+					ja: "swarmbot.itには、Docker Engine 20.10以降と稼働中のDocker Swarmが必要です。インストールはコマンド1つで完了し、既存サービスの再起動は不要です。",
+					ko: "swarmbot.it는 Docker Engine 20.10 이상과 활성화된 Docker Swarm이 필요합니다. 설치는 단일 명령으로 이루어지며 기존 서비스의 재시작이 필요하지 않습니다.",
 				},
 				docP2b: {
 					pl: "Po instalacji agent automatycznie dołącza do klastra i rozpoczyna monitoring.",
 					en: "After installation the agent automatically joins the cluster and begins monitoring.",
+					de: "Nach der Installation tritt der Agent automatisch dem Cluster bei und beginnt mit dem Monitoring.",
+					es: "Tras la instalación, el agente se une automáticamente al clúster y comienza a monitorizar.",
+					fr: "Après l'installation, l'agent rejoint automatiquement le cluster et commence la surveillance.",
+					it: "Dopo l'installazione, l'agente si unisce automaticamente al cluster e inizia il monitoraggio.",
+					pt: "Após a instalação, o agente junta-se automaticamente ao cluster e inicia a monitorização.",
+					zh: "安装完成后，代理会自动加入集群并开始监控。",
+					ja: "インストール後、エージェントは自動的にクラスタに参加し、監視を開始します。",
+					ko: "설치가 완료되면 에이전트가 자동으로 클러스터에 합류해 모니터링을 시작합니다.",
 				},
-				// terminal copy
-				copyBtn: { pl: "Kopiuj", en: "Copy" },
-				copiedBtn: { pl: "Skopiowano", en: "Copied" },
-				// demo terminal
+				copyBtn: {
+					pl: "Kopiuj",
+					en: "Copy",
+					de: "Kopieren",
+					es: "Copiar",
+					fr: "Copier",
+					it: "Copia",
+					pt: "Copiar",
+					zh: "复制",
+					ja: "コピー",
+					ko: "복사",
+				},
+				copiedBtn: {
+					pl: "Skopiowano",
+					en: "Copied",
+					de: "Kopiert",
+					es: "Copiado",
+					fr: "Copié",
+					it: "Copiato",
+					pt: "Copiado",
+					zh: "已复制",
+					ja: "コピー済み",
+					ko: "복사됨",
+				},
 				demoLog0: {
-					pl: "[INFO] swarmbot.it v2.4.1 zainicjalizowany",
-					en: "[INFO] swarmbot.it v2.4.1 initialized",
+					pl: "[INFO] swarmbot.it v1.0.3 zainicjalizowany",
+					en: "[INFO] swarmbot.it v1.0.3 initialized",
+					de: "[INFO] swarmbot.it v1.0.3 initialisiert",
+					es: "[INFO] swarmbot.it v1.0.3 inicializado",
+					fr: "[INFO] swarmbot.it v1.0.3 initialisé",
+					it: "[INFO] swarmbot.it v1.0.3 inizializzato",
+					pt: "[INFO] swarmbot.it v1.0.3 inicializado",
+					zh: "[INFO] swarmbot.it v1.0.3 已初始化",
+					ja: "[INFO] swarmbot.it v1.0.3 初期化完了",
+					ko: "[INFO] swarmbot.it v1.0.3 초기화됨",
 				},
 				demoLog1: {
 					pl: "[OK] Wszystkie 3 węzły zdrowe — klaster stabilny",
 					en: "[OK] All 3 nodes healthy — cluster stable",
+					de: "[OK] Alle 3 Knoten gesund — Cluster stabil",
+					es: "[OK] Los 3 nodos están sanos — clúster estable",
+					fr: "[OK] Les 3 nœuds sont en bonne santé — cluster stable",
+					it: "[OK] Tutti e 3 i nodi sono sani — cluster stabile",
+					pt: "[OK] Os 3 nós estão saudáveis — cluster estável",
+					zh: "[OK] 全部 3 个节点健康——集群稳定",
+					ja: "[OK] 3ノードすべて正常 — クラスタは安定",
+					ko: "[OK] 노드 3개 모두 정상 — 클러스터 안정",
 				},
 				demoLog2: {
 					pl: "[INFO] Metryki na żywo z InfluxDB",
 					en: "[INFO] Live metrics streaming from InfluxDB",
+					de: "[INFO] Live-Metriken werden von InfluxDB gestreamt",
+					es: "[INFO] Métricas en vivo transmitidas desde InfluxDB",
+					fr: "[INFO] Métriques en direct depuis InfluxDB",
+					it: "[INFO] Metriche live in streaming da InfluxDB",
+					pt: "[INFO] Métricas em tempo real a partir do InfluxDB",
+					zh: "[INFO] 实时指标正在从 InfluxDB 流式传输",
+					ja: "[INFO] InfluxDBからライブメトリクスをストリーミング中",
+					ko: "[INFO] InfluxDB에서 실시간 메트릭 스트리밍 중",
 				},
 				demoWarn: {
 					pl: "[WARN] Węzeł {n} — utracono połączenie",
 					en: "[WARN] Node {n} — connection lost",
+					de: "[WARN] Knoten {n} — Verbindung verloren",
+					es: "[WARN] Nodo {n} — conexión perdida",
+					fr: "[WARN] Nœud {n} — connexion perdue",
+					it: "[WARN] Nodo {n} — connessione persa",
+					pt: "[WARN] Nó {n} — ligação perdida",
+					zh: "[WARN] 节点 {n} — 连接中断",
+					ja: "[WARN] ノード{n} — 接続が失われました",
+					ko: "[WARN] 노드 {n} — 연결 끊김",
 				},
 				demoCrit: {
 					pl: "[CRIT] Węzeł {n} offline — failover zainicjowany",
 					en: "[CRIT] Node {n} offline — failover initiated",
+					de: "[CRIT] Knoten {n} offline — Failover eingeleitet",
+					es: "[CRIT] Nodo {n} offline — failover iniciado",
+					fr: "[CRIT] Nœud {n} hors ligne — basculement initié",
+					it: "[CRIT] Nodo {n} offline — failover avviato",
+					pt: "[CRIT] Nó {n} offline — failover iniciado",
+					zh: "[CRIT] 节点 {n} 离线 — 故障转移已启动",
+					ja: "[CRIT] ノード{n}がオフライン — フェイルオーバーを開始",
+					ko: "[CRIT] 노드 {n} 오프라인 — 페일오버 시작됨",
 				},
 				demoReb: {
 					pl: "[INFO] Rebalansowanie zadań z Węzła {n}…",
 					en: "[INFO] Rebalancing tasks from Node {n}…",
+					de: "[INFO] Aufgaben von Knoten {n} werden neu verteilt…",
+					es: "[INFO] Rebalanceando tareas del Nodo {n}…",
+					fr: "[INFO] Rééquilibrage des tâches du nœud {n}…",
+					it: "[INFO] Ribilanciamento dei task dal Nodo {n}…",
+					pt: "[INFO] A rebalancear tarefas do Nó {n}…",
+					zh: "[INFO] 正在从节点 {n} 重新平衡任务…",
+					ja: "[INFO] ノード{n}からタスクを再分散中…",
+					ko: "[INFO] 노드 {n}의 작업 재분배 중…",
 				},
 				demoOk: {
 					pl: "[OK] Zadania przeniesione na Węzeł {t} — klaster stabilny",
 					en: "[OK] Tasks migrated to Node {t} — cluster stable",
+					de: "[OK] Aufgaben auf Knoten {t} verschoben — Cluster stabil",
+					es: "[OK] Tareas migradas al Nodo {t} — clúster estable",
+					fr: "[OK] Tâches migrées vers le nœud {t} — cluster stable",
+					it: "[OK] Task migrati al Nodo {t} — cluster stabile",
+					pt: "[OK] Tarefas migradas para o Nó {t} — cluster estável",
+					zh: "[OK] 任务已迁移至节点 {t} — 集群稳定",
+					ja: "[OK] タスクをノード{t}へ移行完了 — クラスタは安定",
+					ko: "[OK] 작업이 노드 {t}로 이전됨 — 클러스터 안정",
 				},
-				demoReset: { pl: "[INFO] Resetowanie klastra…", en: "[INFO] Resetting cluster…" },
-				healthy: { pl: "ZDROWY", en: "HEALTHY" },
-				degraded: { pl: "ZDEGRADOWANY", en: "DEGRADED" },
-				offline: { pl: "OFFLINE", en: "OFFLINE" },
-				rebalanced: { pl: "PRZEBALANSOWANY", en: "REBALANCED" },
-				killLabel: { pl: "Zabij {n}", en: "Kill {n}" },
-				resetLabel: { pl: "Reset", en: "Reset" },
+				demoReset: {
+					pl: "[INFO] Resetowanie klastra…",
+					en: "[INFO] Resetting cluster…",
+					de: "[INFO] Cluster wird zurückgesetzt…",
+					es: "[INFO] Reiniciando clúster…",
+					fr: "[INFO] Réinitialisation du cluster…",
+					it: "[INFO] Reset del cluster in corso…",
+					pt: "[INFO] A repor o cluster…",
+					zh: "[INFO] 正在重置集群…",
+					ja: "[INFO] クラスタをリセット中…",
+					ko: "[INFO] 클러스터 초기화 중…",
+				},
+				healthy: {
+					pl: "ZDROWY",
+					en: "HEALTHY",
+					de: "GESUND",
+					es: "SANO",
+					fr: "SAIN",
+					it: "SANO",
+					pt: "SAUDÁVEL",
+					zh: "健康",
+					ja: "正常",
+					ko: "정상",
+				},
+				degraded: {
+					pl: "ZDEGRADOWANY",
+					en: "DEGRADED",
+					de: "BEEINTRÄCHTIGT",
+					es: "DEGRADADO",
+					fr: "DÉGRADÉ",
+					it: "DEGRADATO",
+					pt: "DEGRADADO",
+					zh: "降级",
+					ja: "劣化",
+					ko: "저하됨",
+				},
+				offline: {
+					pl: "OFFLINE",
+					en: "OFFLINE",
+					de: "OFFLINE",
+					es: "OFFLINE",
+					fr: "HORS LIGNE",
+					it: "OFFLINE",
+					pt: "OFFLINE",
+					zh: "离线",
+					ja: "オフライン",
+					ko: "오프라인",
+				},
+				rebalanced: {
+					pl: "PRZEBALANSOWANY",
+					en: "REBALANCED",
+					de: "NEU VERTEILT",
+					es: "REBALANCEADO",
+					fr: "RÉÉQUILIBRÉ",
+					it: "RIBILANCIATO",
+					pt: "REBALANCEADO",
+					zh: "已平衡",
+					ja: "再分散済み",
+					ko: "재분배됨",
+				},
+				killLabel: {
+					pl: "Zabij {n}",
+					en: "Kill {n}",
+					de: "Kill {n}",
+					es: "Matar {n}",
+					fr: "Tuer {n}",
+					it: "Uccidi {n}",
+					pt: "Matar {n}",
+					zh: "终止 {n}",
+					ja: "キル {n}",
+					ko: "{n} 종료",
+				},
+				resetLabel: {
+					pl: "Reset",
+					en: "Reset",
+					de: "Reset",
+					es: "Reset",
+					fr: "Reset",
+					it: "Reset",
+					pt: "Repor",
+					zh: "重置",
+					ja: "リセット",
+					ko: "초기화",
+				},
 			};
 
-			let LANG = "pl";
+			/* Dropdown order: European locales A→Z, then the CJK block after a
+			   divider (`cjk: true` marks where that divider goes). */
+			const LANGS = [
+				{ code: "de", label: "Deutsch" },
+				{ code: "en", label: "English" },
+				{ code: "es", label: "Español" },
+				{ code: "fr", label: "Français" },
+				{ code: "it", label: "Italiano" },
+				{ code: "pl", label: "Polski" },
+				{ code: "pt", label: "Português" },
+				{ code: "zh", label: "中文", cjk: true },
+				{ code: "ja", label: "日本語", cjk: true },
+				{ code: "ko", label: "한국어", cjk: true },
+			];
+
+			// Same localStorage key as the dashboard (I18nStateService), so a language
+			// picked here carries over into the app and back — like the theme above.
+			const LANG_KEY = "swarmbot.lang";
+
+			function initialLang() {
+				const stored = localStorage.getItem(LANG_KEY);
+				if (LANGS.some((l) => l.code === stored)) return stored;
+				const nav = (navigator.language || "").slice(0, 2).toLowerCase();
+				if (LANGS.some((l) => l.code === nav)) return nav;
+				return "pl";
+			}
+
+			let LANG = initialLang();
 
 			function t(key, vars) {
 				const entry = STRINGS[key];
@@ -1658,13 +2484,43 @@
 				return s;
 			}
 
+			function renderLangMenu() {
+				const menu = document.getElementById("lang-dd-menu");
+				menu.innerHTML = LANGS.map((l, i) => {
+					const divider =
+						l.cjk && !LANGS[i - 1].cjk ? '<div class="lang-dd__divider"></div>' : "";
+					return (
+						divider +
+						`<button type="button" role="option" class="lang-dd__item${l.code === LANG ? " lang-dd__item--active" : ""}"` +
+						` aria-selected="${l.code === LANG}" data-lang="${l.code}" onclick="selectLang('${l.code}')">` +
+						`<span class="lang-dd__code">${l.code.toUpperCase()}</span>` +
+						`<span class="lang-dd__name">${l.label}</span>` +
+						(l.code === LANG
+							? '<i class="fa-solid fa-check" style="font-size:10px"></i>'
+							: "") +
+						"</button>"
+					);
+				}).join("");
+				document.getElementById("lang-dd-code").textContent = LANG.toUpperCase();
+			}
+
+			function toggleLangMenu(force) {
+				const dd = document.getElementById("lang-dd");
+				const open = force === undefined ? !dd.classList.contains("lang-dd--open") : force;
+				dd.classList.toggle("lang-dd--open", open);
+				document.getElementById("lang-dd-btn").setAttribute("aria-expanded", String(open));
+			}
+
+			function selectLang(lang) {
+				setLang(lang);
+				toggleLangMenu(false);
+			}
+
 			function setLang(lang) {
 				LANG = lang;
 				document.documentElement.lang = lang;
-				document.getElementById("lang-pl").classList.toggle("active", lang === "pl");
-				document.getElementById("lang-en").classList.toggle("active", lang === "en");
-				document.getElementById("lang-pl").setAttribute("aria-pressed", lang === "pl");
-				document.getElementById("lang-en").setAttribute("aria-pressed", lang === "en");
+				localStorage.setItem(LANG_KEY, lang);
+				renderLangMenu();
 				applyI18n();
 				renderFeatures();
 				renderHowSteps();
@@ -2035,8 +2891,19 @@
 			/* ════════════════════════════════════════════
    INIT
 ════════════════════════════════════════════ */
+			// Dismiss the language menu on outside click / Escape.
+			document.addEventListener("click", (e) => {
+				const dd = document.getElementById("lang-dd");
+				if (dd && !dd.contains(e.target)) toggleLangMenu(false);
+			});
+			document.addEventListener("keydown", (e) => {
+				if (e.key === "Escape") toggleLangMenu(false);
+			});
+
 			document.addEventListener("DOMContentLoaded", () => {
 				syncThemeButtons(document.documentElement.getAttribute("data-theme"));
+				document.documentElement.lang = LANG;
+				renderLangMenu();
 				applyI18n();
 				renderFeatures();
 				renderHowSteps();

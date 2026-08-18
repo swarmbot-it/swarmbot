@@ -21,7 +21,8 @@
             "admin": "Administration"
         },
         "clusterHealthy": "Cluster gesund",
-        "quorum": "Quorum: {{managers}} von {{total}} Managern"
+        "quorum": "Quorum: {{managers}} von {{total}} Managern",
+        "load": "Auslastung"
     },
     "auth": {
         "login": {
@@ -53,7 +54,29 @@
         "preferences": "Einstellungen",
         "apiTokens": "API-Token",
         "logout": "Abmelden",
-        "administrator": "Administrator"
+        "administrator": "Administrator",
+        "apiTokensActive": "Aktiver Token",
+        "apiTokensCopied": "Token in die Zwischenablage kopiert",
+        "apiTokensCopy": "In die Zwischenablage kopieren",
+        "apiTokensCopyHint": "Kopiere ihn jetzt – er wird nicht erneut angezeigt.",
+        "apiTokensExpires": "Läuft ab",
+        "apiTokensGenFailed": "Token konnte nicht generiert werden.",
+        "apiTokensGenerate": "Token generieren",
+        "apiTokensNoExpiry": "Läuft nicht ab",
+        "apiTokensNone": "Kein aktives API-Token. Generiere eines, um API-Aufrufe mit einem Authorization-Header zu authentifizieren.",
+        "apiTokensRegenerate": "Erneuern",
+        "apiTokensRevoke": "Widerrufen",
+        "apiTokensRevokeFailed": "Token konnte nicht widerrufen werden.",
+        "apiTokensRevoked": "API-Token widerrufen",
+        "apiTokensSubtitle": "Verwende einen Token, um die GraphQL-API ohne Browser-Sitzung aufzurufen",
+        "apiTokensYourNew": "Dein neuer Token",
+        "daysAgo": "vor {{n}}d",
+        "hoursAgo": "vor {{n}}h",
+        "liveFromDocker": "live von Docker",
+        "minutesAgo": "vor {{n}}m",
+        "noActivity": "Noch keine Aktivität.",
+        "recentActivity": "Letzte Aktivität",
+        "secondsAgo": "vor {{n}}s"
     },
     "table": {
         "search": "Suchen…",
@@ -71,7 +94,8 @@
         "default": "STANDARD",
         "type": "Typ",
         "user": "Benutzer",
-        "loading": "Wird geladen…"
+        "loading": "Wird geladen…",
+        "close": "Schließen"
     },
     "dashboard": {
         "title": "Cluster-Übersicht",
@@ -630,5 +654,14 @@
                 "invalidEmail": "Geben Sie eine gültige E-Mail-Adresse ein."
             }
         }
+    },
+    "load": {
+        "cpu": "CPU",
+        "empty": "Noch keine Pods bereitgestellt. Stelle einen mit \"docker stack deploy\" bereit, um Auslastungsdiagramme zu sehen.",
+        "loading": "Pod-Metriken werden geladen…",
+        "memory": "Arbeitsspeicher",
+        "peak": "Spitze:",
+        "subtitle": "CPU- und Speicherauslastung der {{count}} am stärksten ausgelasteten Pods nach aktueller Nutzung",
+        "title": "Pod-Auslastung"
     }
 }

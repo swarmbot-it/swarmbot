@@ -1,0 +1,16 @@
+{
+    "errors.forbidden": "Accès refusé",
+    "errors.invalidAuthorization": "Autorisation non valide",
+    "errors.invalidCredentials": "Le nom d'utilisateur ou le mot de passe est incorrect.",
+    "errors.invalidSlt": "Jeton SLT non valide",
+    "errors.missingToken": "Jeton manquant",
+    "errors.noDataSent": "Aucune donnée envoyée",
+    "errors.noRunningTask": "Aucune tâche en cours",
+    "errors.notSupportedInOrchestrator": "Cette opération n'est pas prise en charge par l'orchestrateur actuel.",
+    "errors.serverMisconfigured": "Serveur mal configuré",
+    "errors.tooManyAttempts": "Trop de tentatives de connexion. Patiente une minute puis réessaie.",
+    "errors.unauthenticated": "Non autorisé",
+    "errors.userNotFound": "Utilisateur introuvable",
+    "errors.usernameTaken": "Ce nom d'utilisateur est déjà pris",
+    "errors.validationFailed": "Entrée non valide"
+}

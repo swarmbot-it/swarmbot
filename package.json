@@ -1,5 +1,6 @@
 {
     "name": "swarmbot",
+    "version": "1.0.3",
     "private": true,
     "license": "MIT",
     "author": "NO-HUMAN PSA",

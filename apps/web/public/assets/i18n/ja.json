@@ -21,7 +21,8 @@
             "admin": "管理"
         },
         "clusterHealthy": "クラスタは正常",
-        "quorum": "クォーラム：{{managers}} / {{total}} マネージャー"
+        "quorum": "クォーラム：{{managers}} / {{total}} マネージャー",
+        "load": "負荷"
     },
     "auth": {
         "login": {
@@ -53,7 +54,29 @@
         "preferences": "設定",
         "apiTokens": "API トークン",
         "logout": "ログアウト",
-        "administrator": "管理者"
+        "administrator": "管理者",
+        "apiTokensActive": "アクティブなトークン",
+        "apiTokensCopied": "トークンをクリップボードにコピーしました",
+        "apiTokensCopy": "クリップボードにコピー",
+        "apiTokensCopyHint": "今すぐコピーしてください — 再表示されません。",
+        "apiTokensExpires": "有効期限",
+        "apiTokensGenFailed": "トークンの生成に失敗しました。",
+        "apiTokensGenerate": "トークンを生成",
+        "apiTokensNoExpiry": "有効期限なし",
+        "apiTokensNone": "有効なAPIトークンがありません。Authorizationヘッダーで API 呼び出しを認証するには、トークンを生成してください。",
+        "apiTokensRegenerate": "再生成",
+        "apiTokensRevoke": "取り消し",
+        "apiTokensRevokeFailed": "トークンの取り消しに失敗しました。",
+        "apiTokensRevoked": "APIトークンを取り消しました",
+        "apiTokensSubtitle": "ブラウザセッションなしでGraphQL APIを呼び出すにはトークンを使用します",
+        "apiTokensYourNew": "新しいトークン",
+        "daysAgo": "{{n}}日前",
+        "hoursAgo": "{{n}}時間前",
+        "liveFromDocker": "Dockerからライブ",
+        "minutesAgo": "{{n}}分前",
+        "noActivity": "まだアクティビティはありません。",
+        "recentActivity": "最近のアクティビティ",
+        "secondsAgo": "{{n}}秒前"
     },
     "table": {
         "search": "検索…",
@@ -71,7 +94,8 @@
         "default": "デフォルト",
         "type": "タイプ",
         "user": "ユーザー",
-        "loading": "読み込み中…"
+        "loading": "読み込み中…",
+        "close": "閉じる"
     },
     "dashboard": {
         "title": "クラスタ概要",
@@ -622,5 +646,14 @@
                 "invalidEmail": "有効なメールアドレスを入力してください。"
             }
         }
+    },
+    "load": {
+        "cpu": "CPU",
+        "empty": "まだポッドがデプロイされていません。「docker stack deploy」でデプロイすると、負荷グラフが表示されます。",
+        "loading": "ポッドのメトリクスを読み込み中…",
+        "memory": "メモリ",
+        "peak": "ピーク：",
+        "subtitle": "使用量上位 {{count}} ポッドのCPUとメモリ使用率",
+        "title": "ポッドの負荷"
     }
 }

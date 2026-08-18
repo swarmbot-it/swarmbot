@@ -1,0 +1,16 @@
+{
+    "errors.forbidden": "没有权限",
+    "errors.invalidAuthorization": "授权无效",
+    "errors.invalidCredentials": "用户名或密码不正确。",
+    "errors.invalidSlt": "SLT 令牌无效",
+    "errors.missingToken": "缺少令牌",
+    "errors.noDataSent": "未发送数据",
+    "errors.noRunningTask": "没有正在运行的任务",
+    "errors.notSupportedInOrchestrator": "当前编排器不支持此操作。",
+    "errors.serverMisconfigured": "服务器配置有误",
+    "errors.tooManyAttempts": "登录尝试次数过多。请稍等一分钟后重试。",
+    "errors.unauthenticated": "未授权",
+    "errors.userNotFound": "未找到用户",
+    "errors.usernameTaken": "该用户名已被占用",
+    "errors.validationFailed": "输入无效"
+}

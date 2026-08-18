@@ -16,7 +16,12 @@ import { TranslocoPipe, TranslocoService } from "@jsverse/transloco";
 import { AuthService } from "../core/auth.service";
 import { ThemeService } from "../core/theme.service";
 import { I18nStateService } from "../core/i18n/i18n-state.service";
-import { type LangCode, isLangCode } from "../core/i18n/i18n-languages";
+import {
+	CJK_LANGUAGES,
+	LATIN_LANGUAGES,
+	isLangCode,
+	languageFor,
+} from "../core/i18n/i18n-languages";
 import { OrchestratorStateService } from "../core/orchestrator-state.service";
 import { BUILD_APP_VERSION } from "../core/build-version";
 import { QUERY_VERSION } from "../core/graphql.queries";
@@ -30,20 +35,6 @@ const LOGOUT = gql`
 		logout
 	}
 `;
-
-/** Language rows shown in the collapsible selector — Latin block first, CJK after divider. */
-const LATIN_LANGS: { code: LangCode; label: string }[] = [
-	{ code: "de", label: "Deutsch" },
-	{ code: "en", label: "English" },
-	{ code: "es", label: "Español" },
-	{ code: "it", label: "Italiano" },
-	{ code: "pl", label: "Polski" },
-];
-const CJK_LANGS: { code: LangCode; label: string }[] = [
-	{ code: "zh", label: "中文" },
-	{ code: "ja", label: "日本語" },
-	{ code: "ko", label: "한국어" },
-];
 
 /**
  * Top navigation bar. Holds the brand mark, cluster pill, notifications,
@@ -506,8 +497,8 @@ export class TopbarComponent implements OnInit {
 	readonly theme = inject(ThemeService);
 	readonly i18n = inject(I18nStateService);
 	readonly orch = inject(OrchestratorStateService);
-	readonly latinLangs = LATIN_LANGS;
-	readonly cjkLangs = CJK_LANGS;
+	readonly latinLangs = LATIN_LANGUAGES;
+	readonly cjkLangs = CJK_LANGUAGES;
 	private readonly auth = inject(AuthService);
 	private readonly apollo = inject(Apollo);
 	private readonly router = inject(Router);
@@ -529,10 +520,7 @@ export class TopbarComponent implements OnInit {
 		);
 	});
 
-	readonly currentLang = computed(() => {
-		const code = this.i18n.activeLang();
-		return [...LATIN_LANGS, ...CJK_LANGS].find((l) => l.code === code) ?? LATIN_LANGS[1];
-	});
+	readonly currentLang = computed(() => languageFor(this.i18n.activeLang()));
 
 	ngOnInit(): void {
 		this.apollo
