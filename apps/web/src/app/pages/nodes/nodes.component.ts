@@ -48,7 +48,7 @@ type Node = {
 								: {
 										total: nodes.length,
 										managers: count(nodes, "manager"),
-										workers: count(nodes, "worker")
+										workers: count(nodes, "worker"),
 								  }
 					}}
 				</div>
@@ -65,7 +65,7 @@ type Node = {
 			<sb-segmented
 				[options]="filters()"
 				[value]="filter()"
-				(select)="filter.set($any($event))"
+				(selectionChange)="filter.set($any($event))"
 			>
 			</sb-segmented>
 		</div>
@@ -93,15 +93,43 @@ type Node = {
 							<sb-icon name="settings" [size]="14"></sb-icon>
 						</button>
 						@if (openMenuId() === n.id) {
-							<div class="splitbtn__menu">
-								@if (n.availability === 'drain') {
-									<div class="splitbtn__item" (click)="setAvailability(n)">
-										<sb-icon name="play" [size]="14" style="color:var(--muted)"></sb-icon>
-										<span>{{ "pages.nodes.actions.activate" | transloco }}</span>
+							<div class="splitbtn__menu" role="menu">
+								@if (n.availability === "drain") {
+									<div
+										class="splitbtn__item"
+										role="menuitem"
+										tabindex="0"
+										(click)="setAvailability(n)"
+										(keydown.enter)="setAvailability(n)"
+										(keydown.space)="
+											setAvailability(n); $event.preventDefault()
+										"
+									>
+										<sb-icon
+											name="play"
+											[size]="14"
+											style="color:var(--muted)"
+										></sb-icon>
+										<span>{{
+											"pages.nodes.actions.activate" | transloco
+										}}</span>
 									</div>
 								} @else {
-									<div class="splitbtn__item" (click)="setAvailability(n)">
-										<sb-icon name="pause" [size]="14" style="color:var(--muted)"></sb-icon>
+									<div
+										class="splitbtn__item"
+										role="menuitem"
+										tabindex="0"
+										(click)="setAvailability(n)"
+										(keydown.enter)="setAvailability(n)"
+										(keydown.space)="
+											setAvailability(n); $event.preventDefault()
+										"
+									>
+										<sb-icon
+											name="pause"
+											[size]="14"
+											style="color:var(--muted)"
+										></sb-icon>
 										<span>{{ "pages.nodes.actions.drain" | transloco }}</span>
 									</div>
 								}
@@ -117,7 +145,9 @@ type Node = {
 						<div
 							style="display:flex; justify-content:space-between; align-items:baseline"
 						>
-							<span class="node-mini__label">{{ "pages.nodes.labels.cpu" | transloco }}</span>
+							<span class="node-mini__label">{{
+								"pages.nodes.labels.cpu" | transloco
+							}}</span>
 							<span class="node-mini__value">{{ n.cpu }}%</span>
 						</div>
 						<sb-sparkline
@@ -147,7 +177,9 @@ type Node = {
 						<div
 							style="display:flex; justify-content:space-between; align-items:baseline"
 						>
-							<span class="node-mini__label">{{ "pages.nodes.labels.disk" | transloco }}</span>
+							<span class="node-mini__label">{{
+								"pages.nodes.labels.disk" | transloco
+							}}</span>
 							<span class="node-mini__value">{{ n.disk }}%</span>
 						</div>
 						<sb-sparkline
@@ -337,8 +369,14 @@ export class NodesPageComponent {
 			})
 			.subscribe({
 				next: () => {
-					const key = next === "drain" ? "pages.nodes.actions.toastDrained" : "pages.nodes.actions.toastActivated";
-					this.toast.push("success", this.transloco.translate(key, { name: node.hostname }));
+					const key =
+						next === "drain"
+							? "pages.nodes.actions.toastDrained"
+							: "pages.nodes.actions.toastActivated";
+					this.toast.push(
+						"success",
+						this.transloco.translate(key, { name: node.hostname })
+					);
 					this.nodesQuery.refetch();
 				},
 				error: (err) => {

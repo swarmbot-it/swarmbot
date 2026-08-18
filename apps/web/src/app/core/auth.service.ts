@@ -1,4 +1,4 @@
-﻿import { Injectable, computed, signal } from "@angular/core";
+﻿import { Injectable, computed, inject, signal } from "@angular/core";
 import { Router } from "@angular/router";
 
 const ADMIN_ROLES = new Set(["admin", "administrator"]);
@@ -34,9 +34,11 @@ export class AuthService {
 	readonly isAdmin = computed(() => ADMIN_ROLES.has((this._profile()?.role ?? "").toLowerCase()));
 
 	/** True for Editor and above. Mirrors requireEditor on the API. */
-	readonly isEditor = computed(() => EDITOR_ROLES.has((this._profile()?.role ?? "").toLowerCase()));
+	readonly isEditor = computed(() =>
+		EDITOR_ROLES.has((this._profile()?.role ?? "").toLowerCase())
+	);
 
-	constructor(private readonly router: Router) {}
+	private readonly router = inject(Router);
 
 	/**
 	 * Whether the user is considered signed in.

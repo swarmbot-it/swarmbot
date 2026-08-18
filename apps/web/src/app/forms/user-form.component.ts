@@ -48,36 +48,46 @@ const ROLES: { value: UserRole; nameKey: string; descKey: string }[] = [
 	template: `
 		<sb-modal
 			[open]="open"
-			(close)="onClose()"
+			(closed)="onClose()"
 			[title]="'forms.user.title' | transloco"
 			[subtitle]="'forms.user.subtitle' | transloco"
 		>
 			<div style="display:grid; grid-template-columns: 1fr 1fr; gap: 14px;">
 				<div class="field">
-					<label class="field__label"
+					<label for="user-username" class="field__label"
 						>{{ "forms.user.username" | transloco }}<span class="req">*</span></label
 					>
-					<input class="input" [formField]="userForm.username" />
+					<input id="user-username" class="input" [formField]="userForm.username" />
 				</div>
 				<div class="field">
-					<label class="field__label"
+					<label for="user-password" class="field__label"
 						>{{ "forms.user.password" | transloco }}<span class="req">*</span></label
 					>
-					<input class="input" type="password" [formField]="userForm.password" />
+					<input
+						id="user-password"
+						class="input"
+						type="password"
+						[formField]="userForm.password"
+					/>
 					<div class="field__hint">{{ "forms.user.passwordHint" | transloco }}</div>
 				</div>
 			</div>
 
 			<div class="field">
-				<label class="field__label"
-					>{{ "forms.user.role" | transloco }}<span class="req">*</span></label
-				>
-				<div class="role-grid">
+				<div class="field__label" id="user-role-caption">
+					{{ "forms.user.role" | transloco }}<span class="req">*</span>
+				</div>
+				<div class="role-grid" role="radiogroup" aria-labelledby="user-role-caption">
 					<div
 						*ngFor="let r of roles"
 						class="role-card"
 						[class.role-card--selected]="model().role === r.value"
+						role="radio"
+						[attr.aria-checked]="model().role === r.value"
+						[tabindex]="model().role === r.value ? 0 : -1"
 						(click)="setRole(r.value)"
+						(keydown.enter)="setRole(r.value)"
+						(keydown.space)="setRole(r.value); $event.preventDefault()"
 					>
 						<div class="role-card__name">{{ r.nameKey | transloco }}</div>
 						<div class="role-card__desc">{{ r.descKey | transloco }}</div>
@@ -87,14 +97,21 @@ const ROLES: { value: UserRole; nameKey: string; descKey: string }[] = [
 
 			<div style="display:grid; grid-template-columns: 1fr 1fr; gap: 14px;">
 				<div class="field">
-					<label class="field__label"
+					<label for="user-email" class="field__label"
 						>{{ "forms.user.email" | transloco }}<span class="req">*</span></label
 					>
-					<input class="input" type="email" [formField]="userForm.email" />
+					<input
+						id="user-email"
+						class="input"
+						type="email"
+						[formField]="userForm.email"
+					/>
 				</div>
 				<div class="field">
-					<label class="field__label">{{ "forms.user.phone" | transloco }}</label>
-					<input class="input" [formField]="userForm.phone" />
+					<label for="user-phone" class="field__label">{{
+						"forms.user.phone" | transloco
+					}}</label>
+					<input id="user-phone" class="input" [formField]="userForm.phone" />
 					<div class="field__hint">{{ "common.optional" | transloco }}</div>
 				</div>
 			</div>
@@ -158,7 +175,7 @@ export class UserFormComponent {
 	/** Whether the create-user modal is visible. */
 	@Input() open = false;
 	/** Emitted when the user dismisses the modal without creating. */
-	@Output() close = new EventEmitter<void>();
+	@Output() closed = new EventEmitter<void>();
 	/** Emitted after a successful create with the new user's display name. */
 	@Output() created = new EventEmitter<{ name: string }>();
 
@@ -188,7 +205,7 @@ export class UserFormComponent {
 	onClose(): void {
 		this.model.set({ username: "", password: "", email: "", phone: "", role: "Editor" });
 		this.submitting.set(false);
-		this.close.emit();
+		this.closed.emit();
 	}
 
 	submit(): void {

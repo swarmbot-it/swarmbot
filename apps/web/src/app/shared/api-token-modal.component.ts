@@ -51,11 +51,15 @@ const REMOVE = gql`
 			[open]="open"
 			[title]="'topbar.apiTokens' | transloco"
 			[subtitle]="'topbar.apiTokensSubtitle' | transloco"
-			(close)="onClose()"
+			(closed)="onClose()"
 		>
 			<div class="field" *ngIf="freshToken() as token; else activeOrEmpty">
-				<label class="field__label">{{ "topbar.apiTokensYourNew" | transloco }}</label>
-				<textarea class="textarea mono" rows="3" readonly>{{ token }}</textarea>
+				<label for="api-token-modal-f1" class="field__label">{{
+					"topbar.apiTokensYourNew" | transloco
+				}}</label>
+				<textarea id="api-token-modal-f1" class="textarea mono" rows="3" readonly>{{
+					token
+				}}</textarea>
 				<div class="field__hint" style="color:var(--warning)">
 					{{ "topbar.apiTokensCopyHint" | transloco }}
 				</div>
@@ -66,8 +70,16 @@ const REMOVE = gql`
 			</button>
 			<ng-template #activeOrEmpty>
 				<div class="field" *ngIf="mask() as m; else noToken">
-					<label class="field__label">{{ "topbar.apiTokensActive" | transloco }}</label>
-					<input class="input mono" [value]="'••••••••••' + m" readonly disabled />
+					<label for="api-token-modal-f2" class="field__label">{{
+						"topbar.apiTokensActive" | transloco
+					}}</label>
+					<input
+						id="api-token-modal-f2"
+						class="input mono"
+						[value]="'••••••••••' + m"
+						readonly
+						disabled
+					/>
 					<div class="field__hint" *ngIf="expiresAt() as exp; else noExpiry">
 						{{ "topbar.apiTokensExpires" | transloco }} {{ exp | date: "medium" }}
 					</div>
@@ -113,7 +125,7 @@ const REMOVE = gql`
 })
 export class ApiTokenModalComponent implements OnChanges {
 	@Input() open = false;
-	@Output() close = new EventEmitter<void>();
+	@Output() closed = new EventEmitter<void>();
 
 	private readonly apollo = inject(Apollo);
 	private readonly toast = inject(ToastService);
@@ -135,7 +147,9 @@ export class ApiTokenModalComponent implements OnChanges {
 
 	private load(): void {
 		this.apollo
-			.query<{ me: { apiTokenMask: string | null; apiTokenExpiresAt: string | null } | null }>({
+			.query<{
+				me: { apiTokenMask: string | null; apiTokenExpiresAt: string | null } | null;
+			}>({
 				query: ME_TOKEN_QUERY,
 				fetchPolicy: "network-only",
 			})
@@ -162,7 +176,9 @@ export class ApiTokenModalComponent implements OnChanges {
 				},
 				error: (err) => {
 					this.loading.set(false);
-					this.error.set(err?.message || this.transloco.translate("topbar.apiTokensGenFailed"));
+					this.error.set(
+						err?.message || this.transloco.translate("topbar.apiTokensGenFailed")
+					);
 				},
 			});
 	}
@@ -180,7 +196,9 @@ export class ApiTokenModalComponent implements OnChanges {
 			},
 			error: (err) => {
 				this.loading.set(false);
-				this.error.set(err?.message || this.transloco.translate("topbar.apiTokensRevokeFailed"));
+				this.error.set(
+					err?.message || this.transloco.translate("topbar.apiTokensRevokeFailed")
+				);
 			},
 		});
 	}
@@ -195,6 +213,6 @@ export class ApiTokenModalComponent implements OnChanges {
 
 	onClose(): void {
 		this.freshToken.set(null);
-		this.close.emit();
+		this.closed.emit();
 	}
 }

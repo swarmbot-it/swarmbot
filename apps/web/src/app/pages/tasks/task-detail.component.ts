@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from "@angular/core";
+import {
+	ChangeDetectionStrategy,
+	Component,
+	DestroyRef,
+	OnInit,
+	computed,
+	inject,
+	signal,
+} from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { ActivatedRoute, Router } from "@angular/router";
 import { DecimalPipe, NgIf } from "@angular/common";
@@ -30,24 +38,46 @@ type Range = "15m" | "1h" | "6h" | "24h";
 	selector: "sb-task-detail-page",
 	standalone: true,
 	changeDetection: ChangeDetectionStrategy.OnPush,
-	imports: [NgIf, DecimalPipe, TranslocoPipe, IconComponent, StatusBadgeComponent, SegmentedComponent, LineChartComponent],
+	imports: [
+		NgIf,
+		DecimalPipe,
+		TranslocoPipe,
+		IconComponent,
+		StatusBadgeComponent,
+		SegmentedComponent,
+		LineChartComponent,
+	],
 	template: `
 		@if (loading()) {
 			<div class="t-empty">{{ "common.loading" | transloco }}</div>
 		} @else if (task(); as t) {
 			<div class="page-header" style="align-items:flex-start">
 				<div>
-					<button class="btn btn--ghost btn--sm" (click)="back()" style="margin-bottom:8px">
+					<button
+						class="btn btn--ghost btn--sm"
+						(click)="back()"
+						style="margin-bottom:8px"
+					>
 						<sb-icon name="chevronLeft" [size]="14"></sb-icon>
 						{{ "pages.tasks.detail.back" | transloco }}
 					</button>
-					<h1 class="page-header__title" style="display:flex; align-items:center; gap:12px">
-						<sb-icon name="tasks" [size]="20" style="color:var(--primary-500)"></sb-icon>
+					<h1
+						class="page-header__title"
+						style="display:flex; align-items:center; gap:12px"
+					>
+						<sb-icon
+							name="tasks"
+							[size]="20"
+							style="color:var(--primary-500)"
+						></sb-icon>
 						{{ t.name }}
 						<sb-status [status]="t.status"></sb-status>
 					</h1>
 					<div class="page-header__subtitle mono">
-						{{ t.image }} · {{ "pages.tasks.detail.on" | transloco }} <strong style="color:var(--text-2)">{{ t.nodeHostname || t.node || "—" }}</strong>
+						{{ t.image }} · {{ "pages.tasks.detail.on" | transloco }}
+						<strong style="color:var(--text-2)">{{
+							t.nodeHostname || t.node || "—"
+						}}</strong>
 					</div>
 				</div>
 			</div>
@@ -56,15 +86,21 @@ type Range = "15m" | "1h" | "6h" | "24h";
 				<div class="card__body">
 					<div class="meta-grid">
 						<div class="meta">
-							<div class="meta__label">{{ "pages.services.detail.serviceId" | transloco }}</div>
-							<div class="meta__value mono" style="word-break:break-all">{{ t.id }}</div>
+							<div class="meta__label">
+								{{ "pages.services.detail.serviceId" | transloco }}
+							</div>
+							<div class="meta__value mono" style="word-break:break-all">
+								{{ t.id }}
+							</div>
 						</div>
 						<div class="meta">
 							<div class="meta__label">{{ "columns.service" | transloco }}</div>
 							<div class="meta__value">{{ t.serviceName || "—" }}</div>
 						</div>
 						<div class="meta">
-							<div class="meta__label">{{ "pages.tasks.detail.desiredState" | transloco }}</div>
+							<div class="meta__label">
+								{{ "pages.tasks.detail.desiredState" | transloco }}
+							</div>
 							<div class="meta__value">{{ t.desiredState || "—" }}</div>
 						</div>
 						<div class="meta">
@@ -77,9 +113,13 @@ type Range = "15m" | "1h" | "6h" | "24h";
 
 			<div class="card" style="margin-bottom:16px" *ngIf="t.message">
 				<div class="card__header">
-					<div class="card__title">{{ "pages.tasks.detail.statusMessage" | transloco }}</div>
+					<div class="card__title">
+						{{ "pages.tasks.detail.statusMessage" | transloco }}
+					</div>
 				</div>
-				<div class="card__body mono" style="font-size:12.5px; color:var(--text-2)">{{ t.message }}</div>
+				<div class="card__body mono" style="font-size:12.5px; color:var(--text-2)">
+					{{ t.message }}
+				</div>
 			</div>
 
 			<div class="card" style="margin-bottom:16px">
@@ -87,14 +127,25 @@ type Range = "15m" | "1h" | "6h" | "24h";
 					<div>
 						<div class="card__title">{{ "dashboard.cpu" | transloco }}</div>
 						<div style="font-size:12px; color:var(--muted); margin-top:2px">
-							<strong class="mono" style="color:var(--text-2)">{{ lastCpu() | number: "1.0-1" }}%</strong>
+							<strong class="mono" style="color:var(--text-2)"
+								>{{ lastCpu() | number: "1.0-1" }}%</strong
+							>
 						</div>
 					</div>
-					<sb-segmented [options]="rangeOpts" [value]="range()" (select)="onRangeChange($any($event))"></sb-segmented>
+					<sb-segmented
+						[options]="rangeOpts"
+						[value]="range()"
+						(selectionChange)="onRangeChange($any($event))"
+					></sb-segmented>
 				</div>
 				<div class="card__body" style="padding-top:8px">
 					@if (cpuSeries().length > 1) {
-						<sb-line-chart [width]="1000" [height]="200" [labels]="chartLabels()" [series]="cpuChartSeries()"></sb-line-chart>
+						<sb-line-chart
+							[width]="1000"
+							[height]="200"
+							[labels]="chartLabels()"
+							[series]="cpuChartSeries()"
+						></sb-line-chart>
 					} @else {
 						<div class="t-empty">{{ "pages.stacks.detail.noMetrics" | transloco }}</div>
 					}
@@ -106,13 +157,20 @@ type Range = "15m" | "1h" | "6h" | "24h";
 					<div>
 						<div class="card__title">{{ "dashboard.memory" | transloco }}</div>
 						<div style="font-size:12px; color:var(--muted); margin-top:2px">
-							<strong class="mono" style="color:var(--text-2)">{{ lastMemory() | number: "1.0-1" }}%</strong>
+							<strong class="mono" style="color:var(--text-2)"
+								>{{ lastMemory() | number: "1.0-1" }}%</strong
+							>
 						</div>
 					</div>
 				</div>
 				<div class="card__body" style="padding-top:8px">
 					@if (memorySeries().length > 1) {
-						<sb-line-chart [width]="1000" [height]="200" [labels]="chartLabels()" [series]="memoryChartSeries()"></sb-line-chart>
+						<sb-line-chart
+							[width]="1000"
+							[height]="200"
+							[labels]="chartLabels()"
+							[series]="memoryChartSeries()"
+						></sb-line-chart>
 					} @else {
 						<div class="t-empty">{{ "pages.stacks.detail.noMetrics" | transloco }}</div>
 					}

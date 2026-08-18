@@ -30,7 +30,7 @@ import { IconComponent } from "./icon.component";
 						<div class="sb-modal__title">{{ title }}</div>
 						<div class="sb-modal__subtitle" *ngIf="subtitle">{{ subtitle }}</div>
 					</div>
-					<button class="sb-modal__close" (click)="close.emit()" aria-label="Close">
+					<button class="sb-modal__close" (click)="closed.emit()" aria-label="Close">
 						<sb-icon name="close" [size]="16" [strokeWidth]="2.5"></sb-icon>
 					</button>
 				</div>
@@ -156,16 +156,16 @@ export class ModalComponent {
 	/** Renders the footer slot when true (set false for header-only dialogs). */
 	@Input({ transform: booleanAttribute }) hasFooter = true;
 	/** Emitted on backdrop click, Escape, or the close button. */
-	@Output() close = new EventEmitter<void>();
+	@Output() closed = new EventEmitter<void>();
 
 	onBackdrop(event: MouseEvent): void {
 		if (event.target === event.currentTarget) {
-			this.close.emit();
+			this.closed.emit();
 		}
 	}
 
 	@HostListener("document:keydown.escape")
 	onEscape(): void {
-		if (this.open) this.close.emit();
+		if (this.open) this.closed.emit();
 	}
 }

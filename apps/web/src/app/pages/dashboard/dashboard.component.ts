@@ -1,10 +1,4 @@
-import {
-	ChangeDetectionStrategy,
-	Component,
-	effect,
-	inject,
-	signal,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, effect, inject, signal } from "@angular/core";
 import { AsyncPipe, DecimalPipe, NgFor, NgIf } from "@angular/common";
 import { TranslocoPipe, TranslocoService } from "@jsverse/transloco";
 import { Apollo } from "apollo-angular";
@@ -234,7 +228,7 @@ type MetricsResponse = {
 					<sb-segmented
 						[options]="ranges"
 						[value]="range()"
-						(select)="range.set($any($event))"
+						(selectionChange)="range.set($any($event))"
 					>
 					</sb-segmented>
 				</div>
@@ -246,16 +240,26 @@ type MetricsResponse = {
 						<span class="legend"
 							><i style="background: var(--primary-500)"></i
 							>{{ "dashboard.cpu" | transloco }}
-							<strong>{{ vm.metrics.cpu[vm.metrics.cpu.length - 1] | number: "1.0-1" }}%</strong></span
+							<strong
+								>{{
+									vm.metrics.cpu[vm.metrics.cpu.length - 1] | number: "1.0-1"
+								}}%</strong
+							></span
 						>
 						<span class="legend"
 							><i style="background:#3b82f6"></i>{{ "dashboard.memory" | transloco }}
-							<strong>{{ vm.metrics.mem[vm.metrics.mem.length - 1] | number: "1.0-1" }}%</strong></span
+							<strong
+								>{{
+									vm.metrics.mem[vm.metrics.mem.length - 1] | number: "1.0-1"
+								}}%</strong
+							></span
 						>
 						<span class="legend"
 							><i style="background:#10b981"></i>{{ "dashboard.disk" | transloco }}
 							<strong
-								>{{ vm.metrics.disk[vm.metrics.disk.length - 1] | number: "1.0-1" }}%</strong
+								>{{
+									vm.metrics.disk[vm.metrics.disk.length - 1] | number: "1.0-1"
+								}}%</strong
 							></span
 						>
 					</div>
@@ -299,7 +303,9 @@ type MetricsResponse = {
 							<div class="nodes-bucket__title">
 								<sb-icon name="leader" [size]="14"></sb-icon>
 								{{ "dashboard.managers" | transloco }}
-								<span class="nodes-bucket__count">{{ vm.overview.managersTotal }}</span>
+								<span class="nodes-bucket__count">{{
+									vm.overview.managersTotal
+								}}</span>
 							</div>
 							<div *ngFor="let n of managers(vm.nodes)" class="node-row">
 								<span
@@ -570,7 +576,9 @@ export class DashboardComponent {
 			forkJoin([
 				from(this.overviewRef.refetch()),
 				from(this.nodesRef.refetch()),
-				from(this.metricsRef.refetch({ input: { range: this.range(), resolution: "high" } })),
+				from(
+					this.metricsRef.refetch({ input: { range: this.range(), resolution: "high" } })
+				),
 			]),
 			timer(500),
 		]).subscribe({

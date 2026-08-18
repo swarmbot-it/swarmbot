@@ -23,20 +23,23 @@ import { MUTATION_CREATE_SECRET, QUERY_SECRETS } from "../core/graphql.queries";
 	template: `
 		<sb-modal
 			[open]="open"
-			(close)="onClose()"
+			(closed)="onClose()"
 			wide
 			[title]="'forms.secret.title' | transloco"
 			subtitle=""
 		>
 			<div class="field">
-				<label class="field__label"
+				<label for="secret-name" class="field__label"
 					>{{ "forms.secret.name" | transloco }}<span class="req">*</span></label
 				>
-				<input class="input" [formField]="secretForm.name" />
+				<input id="secret-name" class="input" [formField]="secretForm.name" />
 			</div>
 			<div class="field">
-				<label class="field__label">{{ "forms.secret.content" | transloco }}</label>
+				<label for="secret-content" class="field__label">{{
+					"forms.secret.content" | transloco
+				}}</label>
 				<textarea
+					id="secret-content"
 					class="textarea"
 					rows="8"
 					style="font-family: var(--font-mono)"
@@ -63,7 +66,7 @@ export class SecretFormComponent {
 	/** Whether the create-secret modal is visible. */
 	@Input() open = false;
 	/** Emitted when the user dismisses the modal without creating. */
-	@Output() close = new EventEmitter<void>();
+	@Output() closed = new EventEmitter<void>();
 	/** Emitted after a successful create with the new secret name. */
 	@Output() created = new EventEmitter<{ name: string }>();
 
@@ -75,7 +78,7 @@ export class SecretFormComponent {
 
 	onClose(): void {
 		this.model.set({ name: "", content: "" });
-		this.close.emit();
+		this.closed.emit();
 	}
 
 	submit(): void {

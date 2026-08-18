@@ -102,10 +102,11 @@ interface MeUser {
 					<div class="card__body profile__form-body">
 						<!-- Username (read-only) -->
 						<div class="field">
-							<label class="field__label">{{
+							<label for="profile-f1" class="field__label">{{
 								"profile.username" | transloco
 							}}</label>
 							<input
+								id="profile-f1"
 								class="input input--mono"
 								[value]="meUser()?.username"
 								readonly
@@ -117,11 +118,12 @@ interface MeUser {
 
 						<!-- Password -->
 						<div class="field">
-							<label class="field__label">{{
+							<label for="profile-f2" class="field__label">{{
 								"profile.password" | transloco
 							}}</label>
 							<div class="profile__password-row">
 								<input
+									id="profile-f2"
 									class="input"
 									type="password"
 									value="••••••••"
@@ -129,18 +131,20 @@ interface MeUser {
 									tabindex="-1"
 								/>
 								<button class="btn btn--secondary btn--sm" (click)="openPwModal()">
-									<sb-icon name="keys" [size]="13"></sb-icon>{{ "profile.changePassword" | transloco }}
+									<sb-icon name="keys" [size]="13"></sb-icon
+									>{{ "profile.changePassword" | transloco }}
 								</button>
 							</div>
 						</div>
 
 						<!-- Full name -->
 						<div class="field">
-							<label class="field__label"
+							<label for="profile-f3" class="field__label"
 								>{{ "profile.fullName" | transloco
 								}}<span class="req"> *</span></label
 							>
 							<input
+								id="profile-f3"
 								class="input"
 								[class.input--error]="showNameErr()"
 								[value]="nameVal()"
@@ -155,11 +159,12 @@ interface MeUser {
 						<!-- Email + Phone -->
 						<div class="profile__two-col">
 							<div class="field">
-								<label class="field__label"
+								<label for="profile-f4" class="field__label"
 									>{{ "forms.user.email" | transloco
 									}}<span class="req"> *</span></label
 								>
 								<input
+									id="profile-f4"
 									class="input"
 									[class.input--error]="showEmailErr()"
 									[value]="emailVal()"
@@ -171,10 +176,11 @@ interface MeUser {
 								}}</span>
 							</div>
 							<div class="field">
-								<label class="field__label">{{
+								<label for="profile-f5" class="field__label">{{
 									"forms.user.phone" | transloco
 								}}</label>
 								<input
+									id="profile-f5"
 									class="input"
 									[value]="phoneVal()"
 									(input)="onPhone($event)"
@@ -184,14 +190,9 @@ interface MeUser {
 
 						<!-- Role (read-only) -->
 						<div class="field">
-							<label class="field__label">{{
-								"profile.role" | transloco
-							}}</label>
+							<div class="field__label">{{ "profile.role" | transloco }}</div>
 							<div class="profile__role-row">
-								<div
-									class="tag profile__role-tag"
-									[ngClass]="roleTagClass()"
-								>
+								<div class="tag profile__role-tag" [ngClass]="roleTagClass()">
 									{{ meUser()?.role }}
 								</div>
 								<span class="field__hint">{{
@@ -203,20 +204,22 @@ interface MeUser {
 						<!-- Created + Last login -->
 						<div class="profile__two-col">
 							<div class="field">
-								<label class="field__label">{{
+								<label for="profile-f6" class="field__label">{{
 									"profile.accountCreated" | transloco
 								}}</label>
 								<input
+									id="profile-f6"
 									class="input"
 									[value]="formatDate(meUser()?.created)"
 									readonly
 								/>
 							</div>
 							<div class="field">
-								<label class="field__label">{{
+								<label for="profile-f7" class="field__label">{{
 									"profile.lastLogin" | transloco
 								}}</label>
 								<input
+									id="profile-f7"
 									class="input"
 									[value]="formatRelative(meUser()?.lastLogin)"
 									readonly
@@ -226,11 +229,7 @@ interface MeUser {
 					</div>
 
 					<div class="profile__form-footer">
-						<button
-							class="btn btn--ghost"
-							[disabled]="!dirty()"
-							(click)="resetForm()"
-						>
+						<button class="btn btn--ghost" [disabled]="!dirty()" (click)="resetForm()">
 							{{ "profile.reset" | transloco }}
 						</button>
 						<button
@@ -250,13 +249,14 @@ interface MeUser {
 				[title]="'profile.modal.title' | transloco"
 				[subtitle]="'profile.modal.subtitle' | transloco"
 				[hasFooter]="true"
-				(close)="pwModalOpen.set(false)"
+				(closed)="pwModalOpen.set(false)"
 			>
 				<div class="field">
-					<label class="field__label">{{
+					<label for="profile-f8" class="field__label">{{
 						"profile.modal.current" | transloco
 					}}</label>
 					<input
+						id="profile-f8"
 						class="input"
 						type="password"
 						[class.input--error]="pwErrors().current"
@@ -270,10 +270,11 @@ interface MeUser {
 				</div>
 
 				<div class="field">
-					<label class="field__label">{{
+					<label for="profile-f9" class="field__label">{{
 						"profile.modal.new" | transloco
 					}}</label>
 					<input
+						id="profile-f9"
 						class="input"
 						type="password"
 						[class.input--error]="pwErrors().next"
@@ -281,9 +282,7 @@ interface MeUser {
 						(input)="pwNext.set(asStr($event))"
 						autocomplete="new-password"
 					/>
-					<span class="field__hint">{{
-						"profile.modal.newHint" | transloco
-					}}</span>
+					<span class="field__hint">{{ "profile.modal.newHint" | transloco }}</span>
 					<span class="field__error" *ngIf="pwErrors().next">{{
 						pwErrors().next! | transloco
 					}}</span>
@@ -293,30 +292,25 @@ interface MeUser {
 								*ngFor="let seg of strengthRange"
 								class="pw-strength__seg"
 								[style.background]="
-									seg < pwStrength()
-										? pwStrengthColor()
-										: 'var(--surface-2)'
+									seg < pwStrength() ? pwStrengthColor() : 'var(--surface-2)'
 								"
 								[style.border-color]="
-									seg < pwStrength()
-										? pwStrengthColor()
-										: 'var(--border)'
+									seg < pwStrength() ? pwStrengthColor() : 'var(--border)'
 								"
 							></div>
 						</div>
-						<span
-							class="pw-strength__label"
-							[style.color]="pwStrengthColor()"
-							>{{ pwStrengthKey() | transloco }}</span
-						>
+						<span class="pw-strength__label" [style.color]="pwStrengthColor()">{{
+							pwStrengthKey() | transloco
+						}}</span>
 					</div>
 				</div>
 
 				<div class="field">
-					<label class="field__label">{{
+					<label for="profile-f10" class="field__label">{{
 						"profile.modal.confirm" | transloco
 					}}</label>
 					<input
+						id="profile-f10"
 						class="input"
 						type="password"
 						[class.input--error]="pwErrors().confirm"
@@ -338,9 +332,7 @@ interface MeUser {
 						[disabled]="changingPw()"
 						(click)="changePassword()"
 					>
-						{{
-							changingPw() ? "…" : ("profile.modal.update" | transloco)
-						}}
+						{{ changingPw() ? "…" : ("profile.modal.update" | transloco) }}
 					</button>
 				</ng-container>
 			</sb-modal>
@@ -387,11 +379,7 @@ interface MeUser {
 				width: 88px;
 				height: 88px;
 				border-radius: 50%;
-				background: linear-gradient(
-					135deg,
-					var(--primary-400),
-					var(--primary-600)
-				);
+				background: linear-gradient(135deg, var(--primary-400), var(--primary-600));
 				color: white;
 				font-weight: 700;
 				font-size: 26px;
@@ -584,9 +572,7 @@ export class ProfilePageComponent {
 	readonly dirty = computed(() => {
 		const o = this._orig();
 		return (
-			this.nameVal() !== o.name ||
-			this.emailVal() !== o.email ||
-			this.phoneVal() !== o.phone
+			this.nameVal() !== o.name || this.emailVal() !== o.email || this.phoneVal() !== o.phone
 		);
 	});
 
@@ -601,16 +587,13 @@ export class ProfilePageComponent {
 	});
 
 	readonly showNameErr = computed(() => this.nameTouched() && !!this.nameError());
-	readonly showEmailErr = computed(
-		() => this.emailTouched() && !!this.emailError()
-	);
+	readonly showEmailErr = computed(() => this.emailTouched() && !!this.emailError());
 
 	readonly formValid = computed(() => !this.nameError() && !this.emailError());
 	readonly saving = signal(false);
 
 	readonly initials = computed(() => {
-		const name =
-			this.meUser()?.name ?? this.meUser()?.username ?? "SB";
+		const name = this.meUser()?.name ?? this.meUser()?.username ?? "SB";
 		return (
 			name
 				.split(/\s+/)
@@ -788,10 +771,7 @@ export class ProfilePageComponent {
 						created: u.created ?? undefined,
 						lastLogin: u.lastLogin ?? undefined,
 					});
-					this.toast.push(
-						"success",
-						this.transloco.translate("profile.saved")
-					);
+					this.toast.push("success", this.transloco.translate("profile.saved"));
 					this.saving.set(false);
 				},
 				error: () => this.saving.set(false),
@@ -808,12 +788,9 @@ export class ProfilePageComponent {
 
 	changePassword(): void {
 		const errors: { current?: string; next?: string; confirm?: string } = {};
-		if (!this.pwCurrent().trim())
-			errors.current = "profile.modal.errors.current";
-		if (this.pwNext().length < 8)
-			errors.next = "profile.modal.errors.minLength";
-		if (this.pwNext() !== this.pwConfirm())
-			errors.confirm = "profile.modal.errors.mismatch";
+		if (!this.pwCurrent().trim()) errors.current = "profile.modal.errors.current";
+		if (this.pwNext().length < 8) errors.next = "profile.modal.errors.minLength";
+		if (this.pwNext() !== this.pwConfirm()) errors.confirm = "profile.modal.errors.mismatch";
 		if (Object.keys(errors).length > 0) {
 			this.pwErrors.set(errors);
 			return;
@@ -830,10 +807,7 @@ export class ProfilePageComponent {
 			.pipe(takeUntilDestroyed(this.destroyRef))
 			.subscribe({
 				next: () => {
-					this.toast.push(
-						"success",
-						this.transloco.translate("profile.modal.updated")
-					);
+					this.toast.push("success", this.transloco.translate("profile.modal.updated"));
 					this.pwModalOpen.set(false);
 					this.changingPw.set(false);
 				},

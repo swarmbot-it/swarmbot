@@ -32,7 +32,7 @@ import { UserFormComponent } from "./forms/user-form.component";
 		<sb-stacks-page (createRequested)="open = true"></sb-stacks-page>
 		<sb-stack-form
 			[open]="open"
-			(close)="open = false"
+			(closed)="open = false"
 			(created)="open = false"
 		></sb-stack-form>
 	`,
@@ -51,7 +51,7 @@ export class StacksHostComponent {
 		<sb-services-page (createRequested)="open = true"></sb-services-page>
 		<sb-service-form
 			[open]="open"
-			(close)="open = false"
+			(closed)="open = false"
 			(created)="open = false"
 		></sb-service-form>
 	`,
@@ -70,7 +70,7 @@ export class ServicesHostComponent {
 		<sb-networks-page (createRequested)="open = true"></sb-networks-page>
 		<sb-network-form
 			[open]="open"
-			(close)="open = false"
+			(closed)="open = false"
 			(created)="open = false"
 		></sb-network-form>
 	`,
@@ -89,7 +89,7 @@ export class NetworksHostComponent {
 		<sb-volumes-page (createRequested)="open = true"></sb-volumes-page>
 		<sb-volume-form
 			[open]="open"
-			(close)="open = false"
+			(closed)="open = false"
 			(created)="open = false"
 		></sb-volume-form>
 	`,
@@ -108,7 +108,7 @@ export class VolumesHostComponent {
 		<sb-secrets-page (createRequested)="open = true"></sb-secrets-page>
 		<sb-secret-form
 			[open]="open"
-			(close)="open = false"
+			(closed)="open = false"
 			(created)="open = false"
 		></sb-secret-form>
 	`,
@@ -127,7 +127,7 @@ export class SecretsHostComponent {
 		<sb-configs-page (createRequested)="open = true"></sb-configs-page>
 		<sb-config-form
 			[open]="open"
-			(close)="open = false"
+			(closed)="open = false"
 			(created)="open = false"
 		></sb-config-form>
 	`,
@@ -146,7 +146,7 @@ export class ConfigsHostComponent {
 		<sb-registries-page (createRequested)="open = true"></sb-registries-page>
 		<sb-registry-form
 			[open]="open"
-			(close)="open = false"
+			(closed)="open = false"
 			(created)="open = false"
 		></sb-registry-form>
 	`,
@@ -163,7 +163,7 @@ export class RegistriesHostComponent {
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	template: `
 		<sb-users-page (createRequested)="open = true"></sb-users-page>
-		<sb-user-form [open]="open" (close)="open = false" (created)="open = false"></sb-user-form>
+		<sb-user-form [open]="open" (closed)="open = false" (created)="open = false"></sb-user-form>
 	`,
 	imports: [UsersPageComponent, UserFormComponent],
 })

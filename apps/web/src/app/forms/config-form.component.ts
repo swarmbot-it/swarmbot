@@ -23,20 +23,27 @@ import { MUTATION_CREATE_CONFIG, QUERY_CONFIGS } from "../core/graphql.queries";
 	template: `
 		<sb-modal
 			[open]="open"
-			(close)="onClose()"
+			(closed)="onClose()"
 			wide
 			[title]="'forms.config.title' | transloco"
 			subtitle=""
 		>
 			<div class="field">
-				<label class="field__label"
+				<label for="config-name" class="field__label"
 					>{{ "forms.config.name" | transloco }}<span class="req">*</span></label
 				>
-				<input class="input" [formField]="configForm.name" />
+				<input id="config-name" class="input" [formField]="configForm.name" />
 			</div>
 			<div class="field">
-				<label class="field__label">{{ "forms.config.content" | transloco }}</label>
-				<textarea class="textarea" rows="12" [formField]="configForm.content"></textarea>
+				<label for="config-content" class="field__label">{{
+					"forms.config.content" | transloco
+				}}</label>
+				<textarea
+					id="config-content"
+					class="textarea"
+					rows="12"
+					[formField]="configForm.content"
+				></textarea>
 			</div>
 			<ng-container modal-footer>
 				<button class="btn btn--secondary" (click)="onClose()">
@@ -58,7 +65,7 @@ export class ConfigFormComponent {
 	/** Whether the create-config modal is visible. */
 	@Input() open = false;
 	/** Emitted when the user dismisses the modal without creating. */
-	@Output() close = new EventEmitter<void>();
+	@Output() closed = new EventEmitter<void>();
 	/** Emitted after a successful create with the new config name. */
 	@Output() created = new EventEmitter<{ name: string }>();
 
@@ -70,7 +77,7 @@ export class ConfigFormComponent {
 
 	onClose(): void {
 		this.model.set({ name: "", content: "" });
-		this.close.emit();
+		this.closed.emit();
 	}
 
 	submit(): void {

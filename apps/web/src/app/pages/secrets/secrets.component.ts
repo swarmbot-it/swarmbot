@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Output, inject, signal } from "@angular/core";
+import {
+	ChangeDetectionStrategy,
+	Component,
+	EventEmitter,
+	Output,
+	inject,
+	signal,
+} from "@angular/core";
 import {
 	AsyncPipe,
 	DatePipe,
@@ -38,7 +45,11 @@ type Secret = { id: string; name: string; created: string; updated: string };
 						{{ "pages.secrets.countSuffix" | transloco }}
 					</div>
 				</div>
-				<button *ngIf="auth.isAdmin()" class="btn btn--primary" (click)="createRequested.emit()">
+				<button
+					*ngIf="auth.isAdmin()"
+					class="btn btn--primary"
+					(click)="createRequested.emit()"
+				>
 					<sb-icon name="plus" [size]="16"></sb-icon>
 					{{ "pages.secrets.add" | transloco }}
 				</button>
@@ -59,13 +70,20 @@ type Secret = { id: string; name: string; created: string; updated: string };
 						<span *ngSwitchCase="'updated'" class="mono">{{
 							row.updated | date: "yyyy-MM-dd"
 						}}</span>
-						<span *ngSwitchCase="'actions'" style="display:flex; justify-content:flex-end;">
+						<span
+							*ngSwitchCase="'actions'"
+							style="display:flex; justify-content:flex-end;"
+						>
 							<button
 								class="btn btn--ghost btn--icon btn--sm"
 								[title]="'pages.secrets.view' | transloco"
 								(click)="view(row)"
 							>
-								<sb-icon name="eye" [size]="15" style="color: var(--muted)"></sb-icon>
+								<sb-icon
+									name="eye"
+									[size]="15"
+									style="color: var(--muted)"
+								></sb-icon>
 							</button>
 						</span>
 						<ng-container *ngSwitchDefault>{{ row[key] }}</ng-container>
@@ -78,17 +96,29 @@ type Secret = { id: string; name: string; created: string; updated: string };
 			[open]="viewing() !== null"
 			[title]="viewing()?.name || ''"
 			[subtitle]="'pages.secrets.modal.subtitle' | transloco"
-			(close)="viewing.set(null)"
+			(closed)="viewing.set(null)"
 		>
 			<ng-container *ngIf="viewing() as s">
 				<div class="field">
-					<label class="field__label">{{ "pages.secrets.modal.id" | transloco }}</label>
-					<input class="input mono" [value]="s.id" readonly disabled style="color: var(--muted)" />
+					<label for="secrets-f1" class="field__label">{{
+						"pages.secrets.modal.id" | transloco
+					}}</label>
+					<input
+						id="secrets-f1"
+						class="input mono"
+						[value]="s.id"
+						readonly
+						disabled
+						style="color: var(--muted)"
+					/>
 				</div>
 				<div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
 					<div class="field">
-						<label class="field__label">{{ "pages.secrets.modal.created" | transloco }}</label>
+						<label for="secrets-f2" class="field__label">{{
+							"pages.secrets.modal.created" | transloco
+						}}</label>
 						<input
+							id="secrets-f2"
 							class="input mono"
 							[value]="s.created | date: 'medium'"
 							readonly
@@ -97,8 +127,11 @@ type Secret = { id: string; name: string; created: string; updated: string };
 						/>
 					</div>
 					<div class="field">
-						<label class="field__label">{{ "pages.secrets.modal.updated" | transloco }}</label>
+						<label for="secrets-f3" class="field__label">{{
+							"pages.secrets.modal.updated" | transloco
+						}}</label>
 						<input
+							id="secrets-f3"
 							class="input mono"
 							[value]="s.updated | date: 'medium'"
 							readonly

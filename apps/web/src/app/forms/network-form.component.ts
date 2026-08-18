@@ -24,23 +24,27 @@ import { MUTATION_CREATE_NETWORK, QUERY_NETWORKS } from "../core/graphql.queries
 	template: `
 		<sb-modal
 			[open]="open"
-			(close)="onClose()"
+			(closed)="onClose()"
 			wide
 			[title]="'forms.network.title' | transloco"
 			subtitle=""
 		>
 			<div style="display:grid; grid-template-columns: 2fr 1fr; gap: 14px;">
 				<div class="field">
-					<label class="field__label"
+					<label for="network-name" class="field__label"
 						>{{ "forms.network.name" | transloco }}<span class="req">*</span></label
 					>
-					<input class="input" [formField]="networkForm.name" />
+					<input id="network-name" class="input" [formField]="networkForm.name" />
 				</div>
 				<div class="field">
-					<label class="field__label"
+					<label for="network-driver" class="field__label"
 						>{{ "forms.network.driver" | transloco }}<span class="req">*</span></label
 					>
-					<select class="input select" [formField]="networkForm.driver">
+					<select
+						id="network-driver"
+						class="input select"
+						[formField]="networkForm.driver"
+					>
 						<option value="overlay">overlay</option>
 						<option value="bridge">bridge</option>
 						<option value="macvlan">macvlan</option>
@@ -50,17 +54,33 @@ import { MUTATION_CREATE_NETWORK, QUERY_NETWORKS } from "../core/graphql.queries
 			</div>
 			<div style="display:grid; grid-template-columns: 1fr 1fr; gap: 14px;">
 				<div class="field">
-					<label class="field__label">{{ "forms.network.subnet" | transloco }}</label>
-					<input class="input mono" [formField]="networkForm.subnet" />
+					<label for="network-subnet" class="field__label">{{
+						"forms.network.subnet" | transloco
+					}}</label>
+					<input
+						id="network-subnet"
+						class="input mono"
+						[formField]="networkForm.subnet"
+					/>
 				</div>
 				<div class="field">
-					<label class="field__label">{{ "forms.network.gateway" | transloco }}</label>
-					<input class="input mono" [formField]="networkForm.gateway" />
+					<label for="network-gateway" class="field__label">{{
+						"forms.network.gateway" | transloco
+					}}</label>
+					<input
+						id="network-gateway"
+						class="input mono"
+						[formField]="networkForm.gateway"
+					/>
 				</div>
 			</div>
 			<div class="field">
-				<label class="field__label">{{ "forms.network.labels" | transloco }}</label>
+				<div class="field__label" id="network-labels-caption">
+					{{ "forms.network.labels" | transloco }}
+				</div>
 				<sb-kv-editor
+					role="group"
+					aria-labelledby="network-labels-caption"
 					[items]="model().labels"
 					(itemsChange)="setLabels($event)"
 				></sb-kv-editor>
@@ -94,7 +114,7 @@ export class NetworkFormComponent {
 	/** Whether the create-network modal is visible. */
 	@Input() open = false;
 	/** Emitted when the user dismisses the modal without creating. */
-	@Output() close = new EventEmitter<void>();
+	@Output() closed = new EventEmitter<void>();
 	/** Emitted after a successful create with the new network name. */
 	@Output() created = new EventEmitter<{ name: string }>();
 
@@ -129,7 +149,7 @@ export class NetworkFormComponent {
 			ingress: false,
 			labels: [],
 		});
-		this.close.emit();
+		this.closed.emit();
 	}
 
 	submit(): void {
