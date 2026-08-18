@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from "@angular/core";
+import {
+	ChangeDetectionStrategy,
+	Component,
+	DestroyRef,
+	OnInit,
+	computed,
+	inject,
+	signal,
+} from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { ActivatedRoute, Router } from "@angular/router";
 import { DatePipe, DecimalPipe, NgFor, NgIf, NgSwitch, NgSwitchCase } from "@angular/common";
@@ -82,21 +90,40 @@ type Task = {
 		} @else if (detail(); as d) {
 			<div class="page-header" style="align-items:flex-start">
 				<div>
-					<button class="btn btn--ghost btn--sm" (click)="back()" style="margin-bottom:8px">
+					<button
+						class="btn btn--ghost btn--sm"
+						(click)="back()"
+						style="margin-bottom:8px"
+					>
 						<sb-icon name="chevronLeft" [size]="14"></sb-icon>
 						{{ "pages.services.detail.back" | transloco }}
 					</button>
-					<h1 class="page-header__title" style="display:flex; align-items:center; gap:12px">
-						<sb-icon name="services" [size]="20" style="color:var(--primary-500)"></sb-icon>
+					<h1
+						class="page-header__title"
+						style="display:flex; align-items:center; gap:12px"
+					>
+						<sb-icon
+							name="services"
+							[size]="20"
+							style="color:var(--primary-500)"
+						></sb-icon>
 						{{ d.name }}
 						<sb-status [status]="d.status"></sb-status>
 					</h1>
 					<div class="page-header__subtitle mono">{{ d.image }}</div>
 				</div>
 				<div class="splitbtn" *ngIf="auth.isEditor()">
-					<button class="btn btn--primary splitbtn__main" [disabled]="busy()" (click)="edit()">
+					<button
+						class="btn btn--primary splitbtn__main"
+						[disabled]="busy()"
+						(click)="edit()"
+					>
 						<sb-icon name="settings" [size]="14"></sb-icon>
-						{{ busy() ? ("pages.stacks.detail.working" | transloco) : ("pages.stacks.detail.edit" | transloco) }}
+						{{
+							busy()
+								? ("pages.stacks.detail.working" | transloco)
+								: ("pages.stacks.detail.edit" | transloco)
+						}}
 					</button>
 					<button
 						class="btn btn--primary splitbtn__caret"
@@ -106,21 +133,61 @@ type Task = {
 						<sb-icon name="chevronDown" [size]="14"></sb-icon>
 					</button>
 					@if (menuOpen()) {
-						<div class="splitbtn__menu">
-							<div class="splitbtn__item" (click)="redeploy()">
-								<sb-icon name="refresh" [size]="14" style="color:var(--muted)"></sb-icon>
+						<div class="splitbtn__menu" role="menu">
+							<div
+								class="splitbtn__item"
+								role="menuitem"
+								tabindex="0"
+								(click)="redeploy()"
+								(keydown.enter)="redeploy()"
+								(keydown.space)="redeploy(); $event.preventDefault()"
+							>
+								<sb-icon
+									name="refresh"
+									[size]="14"
+									style="color:var(--muted)"
+								></sb-icon>
 								<span>{{ "pages.stacks.detail.redeploy" | transloco }}</span>
 							</div>
-							<div class="splitbtn__item" (click)="rollback()">
-								<sb-icon name="chevronLeft" [size]="14" style="color:var(--muted)"></sb-icon>
+							<div
+								class="splitbtn__item"
+								role="menuitem"
+								tabindex="0"
+								(click)="rollback()"
+								(keydown.enter)="rollback()"
+								(keydown.space)="rollback(); $event.preventDefault()"
+							>
+								<sb-icon
+									name="chevronLeft"
+									[size]="14"
+									style="color:var(--muted)"
+								></sb-icon>
 								<span>{{ "pages.stacks.detail.rollback" | transloco }}</span>
 							</div>
-							<div class="splitbtn__item" (click)="openScale()">
-								<sb-icon name="services" [size]="14" style="color:var(--muted)"></sb-icon>
+							<div
+								class="splitbtn__item"
+								role="menuitem"
+								tabindex="0"
+								(click)="openScale()"
+								(keydown.enter)="openScale()"
+								(keydown.space)="openScale(); $event.preventDefault()"
+							>
+								<sb-icon
+									name="services"
+									[size]="14"
+									style="color:var(--muted)"
+								></sb-icon>
 								<span>{{ "pages.services.detail.scale" | transloco }}</span>
 							</div>
 							<div class="splitbtn__sep"></div>
-							<div class="splitbtn__item splitbtn__item--danger" (click)="remove()">
+							<div
+								class="splitbtn__item splitbtn__item--danger"
+								role="menuitem"
+								tabindex="0"
+								(click)="remove()"
+								(keydown.enter)="remove()"
+								(keydown.space)="remove(); $event.preventDefault()"
+							>
 								<sb-icon name="trash" [size]="14"></sb-icon>
 								<span>{{ "pages.stacks.detail.delete" | transloco }}</span>
 							</div>
@@ -133,16 +200,31 @@ type Task = {
 				[open]="scaleOpen()"
 				[title]="'pages.services.detail.scale' | transloco"
 				[subtitle]="'pages.services.detail.scaleSubtitle' | transloco: { name: d.name }"
-				(close)="scaleOpen.set(false)"
+				(closed)="scaleOpen.set(false)"
 			>
 				<div class="field">
-					<label class="field__label">{{ "pages.services.columns.replicas" | transloco }}</label>
-					<input class="input" type="number" min="0" [ngModel]="scaleReplicas()" (ngModelChange)="scaleReplicas.set($event)" />
+					<label for="service-detail-f1" class="field__label">{{
+						"pages.services.columns.replicas" | transloco
+					}}</label>
+					<input
+						id="service-detail-f1"
+						class="input"
+						type="number"
+						min="0"
+						[ngModel]="scaleReplicas()"
+						(ngModelChange)="scaleReplicas.set($event)"
+					/>
 				</div>
 				<ng-container modal-footer>
-					<button class="btn btn--secondary" (click)="scaleOpen.set(false)">{{ "common.cancel" | transloco }}</button>
+					<button class="btn btn--secondary" (click)="scaleOpen.set(false)">
+						{{ "common.cancel" | transloco }}
+					</button>
 					<button class="btn btn--primary" [disabled]="busy()" (click)="scale()">
-						{{ busy() ? ("pages.stacks.detail.working" | transloco) : ("pages.services.detail.scale" | transloco) }}
+						{{
+							busy()
+								? ("pages.stacks.detail.working" | transloco)
+								: ("pages.services.detail.scale" | transloco)
+						}}
 					</button>
 				</ng-container>
 			</sb-modal>
@@ -151,7 +233,9 @@ type Task = {
 				<div class="card__body">
 					<div class="meta-grid">
 						<div class="meta">
-							<div class="meta__label">{{ "pages.services.detail.serviceId" | transloco }}</div>
+							<div class="meta__label">
+								{{ "pages.services.detail.serviceId" | transloco }}
+							</div>
 							<div class="meta__value mono">{{ d.id.slice(0, 16) }}</div>
 						</div>
 						<div class="meta">
@@ -159,20 +243,30 @@ type Task = {
 							<div class="meta__value">{{ d.stack || "—" }}</div>
 						</div>
 						<div class="meta">
-							<div class="meta__label">{{ "pages.services.detail.mode" | transloco }}</div>
+							<div class="meta__label">
+								{{ "pages.services.detail.mode" | transloco }}
+							</div>
 							<div class="meta__value">{{ d.mode || "—" }}</div>
 						</div>
 						<div class="meta">
-							<div class="meta__label">{{ "pages.services.columns.replicas" | transloco }}</div>
-							<div class="meta__value">{{ d.replicasRunning }} / {{ d.replicasTotal }}</div>
+							<div class="meta__label">
+								{{ "pages.services.columns.replicas" | transloco }}
+							</div>
+							<div class="meta__value">
+								{{ d.replicasRunning }} / {{ d.replicasTotal }}
+							</div>
 						</div>
 						<div class="meta">
 							<div class="meta__label">{{ "columns.created" | transloco }}</div>
-							<div class="meta__value">{{ d.created ? (d.created | date: "medium") : "—" }}</div>
+							<div class="meta__value">
+								{{ d.created ? (d.created | date: "medium") : "—" }}
+							</div>
 						</div>
 						<div class="meta">
 							<div class="meta__label">{{ "columns.updated" | transloco }}</div>
-							<div class="meta__value">{{ d.updated ? (d.updated | date: "medium") : "—" }}</div>
+							<div class="meta__value">
+								{{ d.updated ? (d.updated | date: "medium") : "—" }}
+							</div>
 						</div>
 					</div>
 				</div>
@@ -182,25 +276,39 @@ type Task = {
 				<aside class="svc-tiles">
 					<div class="card svc-tile">
 						<div class="svc-tile__head">
-							<sb-icon name="settings" [size]="14" style="color:var(--primary-500)"></sb-icon>
+							<sb-icon
+								name="settings"
+								[size]="14"
+								style="color:var(--primary-500)"
+							></sb-icon>
 							<span>{{ "pages.services.detail.env" | transloco }}</span>
 							<span class="svc-tile__count">{{ d.env.length }}</span>
 						</div>
 						<div class="svc-tile__body">
-							<div *ngIf="d.env.length === 0" class="svc-tile__empty">{{ "pages.services.detail.noEnv" | transloco }}</div>
+							<div *ngIf="d.env.length === 0" class="svc-tile__empty">
+								{{ "pages.services.detail.noEnv" | transloco }}
+							</div>
 							<ul class="svc-tile__list" *ngIf="d.env.length > 0">
-								<li *ngFor="let e of d.env"><span class="mono">{{ e }}</span></li>
+								<li *ngFor="let e of d.env">
+									<span class="mono">{{ e }}</span>
+								</li>
 							</ul>
 						</div>
 					</div>
 					<div class="card svc-tile">
 						<div class="svc-tile__head">
-							<sb-icon name="configs" [size]="14" style="color:var(--primary-500)"></sb-icon>
+							<sb-icon
+								name="configs"
+								[size]="14"
+								style="color:var(--primary-500)"
+							></sb-icon>
 							<span>{{ "pages.services.detail.labels" | transloco }}</span>
 							<span class="svc-tile__count">{{ d.labels.length }}</span>
 						</div>
 						<div class="svc-tile__body">
-							<div *ngIf="d.labels.length === 0" class="svc-tile__empty">{{ "pages.services.detail.noLabels" | transloco }}</div>
+							<div *ngIf="d.labels.length === 0" class="svc-tile__empty">
+								{{ "pages.services.detail.noLabels" | transloco }}
+							</div>
 							<dl class="kv-grid" *ngIf="d.labels.length > 0">
 								<ng-container *ngFor="let l of d.labels">
 									<dt>{{ l.k }}</dt>
@@ -211,27 +319,43 @@ type Task = {
 					</div>
 					<div class="card svc-tile">
 						<div class="svc-tile__head">
-							<sb-icon name="secrets" [size]="14" style="color:var(--primary-500)"></sb-icon>
+							<sb-icon
+								name="secrets"
+								[size]="14"
+								style="color:var(--primary-500)"
+							></sb-icon>
 							<span>{{ "nav.secrets" | transloco }}</span>
 							<span class="svc-tile__count">{{ d.secrets.length }}</span>
 						</div>
 						<div class="svc-tile__body">
-							<div *ngIf="d.secrets.length === 0" class="svc-tile__empty">{{ "pages.services.detail.noSecrets" | transloco }}</div>
+							<div *ngIf="d.secrets.length === 0" class="svc-tile__empty">
+								{{ "pages.services.detail.noSecrets" | transloco }}
+							</div>
 							<ul class="svc-tile__list" *ngIf="d.secrets.length > 0">
-								<li *ngFor="let s of d.secrets"><span class="mono">{{ s }}</span></li>
+								<li *ngFor="let s of d.secrets">
+									<span class="mono">{{ s }}</span>
+								</li>
 							</ul>
 						</div>
 					</div>
 					<div class="card svc-tile">
 						<div class="svc-tile__head">
-							<sb-icon name="configs" [size]="14" style="color:var(--primary-500)"></sb-icon>
+							<sb-icon
+								name="configs"
+								[size]="14"
+								style="color:var(--primary-500)"
+							></sb-icon>
 							<span>{{ "nav.configs" | transloco }}</span>
 							<span class="svc-tile__count">{{ d.configs.length }}</span>
 						</div>
 						<div class="svc-tile__body">
-							<div *ngIf="d.configs.length === 0" class="svc-tile__empty">{{ "pages.services.detail.noConfigs" | transloco }}</div>
+							<div *ngIf="d.configs.length === 0" class="svc-tile__empty">
+								{{ "pages.services.detail.noConfigs" | transloco }}
+							</div>
 							<ul class="svc-tile__list" *ngIf="d.configs.length > 0">
-								<li *ngFor="let c of d.configs"><span class="mono">{{ c }}</span></li>
+								<li *ngFor="let c of d.configs">
+									<span class="mono">{{ c }}</span>
+								</li>
 							</ul>
 						</div>
 					</div>
@@ -241,23 +365,48 @@ type Task = {
 					<div class="detail-section">
 						<div class="detail-section__head">
 							<div class="detail-section__title">
-								<sb-icon name="tasks" [size]="14" style="color:var(--primary-500)"></sb-icon>
+								<sb-icon
+									name="tasks"
+									[size]="14"
+									style="color:var(--primary-500)"
+								></sb-icon>
 								{{ "nav.tasks" | transloco }}
-								<span class="detail-section__count">{{ tasksForService().length }}</span>
+								<span class="detail-section__count">{{
+									tasksForService().length
+								}}</span>
 							</div>
 						</div>
 						<div class="detail-section__body">
 							@if (tasksForService().length === 0) {
-								<div class="t-empty">{{ "pages.services.detail.noTasks" | transloco }}</div>
+								<div class="t-empty">
+									{{ "pages.services.detail.noTasks" | transloco }}
+								</div>
 							} @else {
-								<sb-data-table [columns]="taskCols()" [rows]="tasksForService()" [searchKeys]="['name']" [pageSize]="5" (rowClick)="openTask($event.id)">
+								<sb-data-table
+									[columns]="taskCols()"
+									[rows]="tasksForService()"
+									[searchKeys]="['name']"
+									[pageSize]="5"
+									(rowClick)="openTask($event.id)"
+								>
 									<ng-template #cell let-row let-key="key">
 										<ng-container [ngSwitch]="key">
-											<strong *ngSwitchCase="'task'" class="mono">{{ row.name }}</strong>
-											<span *ngSwitchCase="'node'" class="mono">{{ row.node || "—" }}</span>
-											<span *ngSwitchCase="'cpu'" class="mono">{{ row.cpu | number: "1.0-1" }}%</span>
-											<span *ngSwitchCase="'mem'" class="mono">{{ row.mem | number: "1.0-1" }}%</span>
-											<sb-status *ngSwitchCase="'status'" [status]="row.status"></sb-status>
+											<strong *ngSwitchCase="'task'" class="mono">{{
+												row.name
+											}}</strong>
+											<span *ngSwitchCase="'node'" class="mono">{{
+												row.node || "—"
+											}}</span>
+											<span *ngSwitchCase="'cpu'" class="mono"
+												>{{ row.cpu | number: "1.0-1" }}%</span
+											>
+											<span *ngSwitchCase="'mem'" class="mono"
+												>{{ row.mem | number: "1.0-1" }}%</span
+											>
+											<sb-status
+												*ngSwitchCase="'status'"
+												[status]="row.status"
+											></sb-status>
 										</ng-container>
 									</ng-template>
 								</sb-data-table>
@@ -269,13 +418,21 @@ type Task = {
 						<div class="detail-section">
 							<div class="detail-section__head">
 								<div class="detail-section__title">
-									<sb-icon name="networks" [size]="14" style="color:var(--primary-500)"></sb-icon>
+									<sb-icon
+										name="networks"
+										[size]="14"
+										style="color:var(--primary-500)"
+									></sb-icon>
 									{{ "nav.networks" | transloco }}
-									<span class="detail-section__count">{{ d.networks.length }}</span>
+									<span class="detail-section__count">{{
+										d.networks.length
+									}}</span>
 								</div>
 							</div>
 							<div class="detail-section__body">
-								<div *ngIf="d.networks.length === 0" class="t-empty">{{ "pages.services.detail.noNetworks" | transloco }}</div>
+								<div *ngIf="d.networks.length === 0" class="t-empty">
+									{{ "pages.services.detail.noNetworks" | transloco }}
+								</div>
 								<ul class="resource-list" *ngIf="d.networks.length > 0">
 									<li *ngFor="let nid of d.networks">
 										<sb-icon name="networks" [size]="14"></sb-icon>
@@ -287,15 +444,29 @@ type Task = {
 						<div class="detail-section">
 							<div class="detail-section__head">
 								<div class="detail-section__title">
-									<sb-icon name="services" [size]="14" style="color:var(--primary-500)"></sb-icon>
+									<sb-icon
+										name="services"
+										[size]="14"
+										style="color:var(--primary-500)"
+									></sb-icon>
 									{{ "pages.services.columns.ports" | transloco }}
 									<span class="detail-section__count">{{ d.ports.length }}</span>
 								</div>
 							</div>
 							<div class="detail-section__body">
-								<div *ngIf="d.ports.length === 0" class="t-empty">{{ "pages.services.detail.noPorts" | transloco }}</div>
-								<div *ngIf="d.ports.length > 0" style="display:flex; flex-wrap:wrap; gap:6px">
-									<span class="tag" style="background:var(--surface-2); color:var(--text-2); text-transform:none" *ngFor="let p of d.ports">{{ p }}</span>
+								<div *ngIf="d.ports.length === 0" class="t-empty">
+									{{ "pages.services.detail.noPorts" | transloco }}
+								</div>
+								<div
+									*ngIf="d.ports.length > 0"
+									style="display:flex; flex-wrap:wrap; gap:6px"
+								>
+									<span
+										class="tag"
+										style="background:var(--surface-2); color:var(--text-2); text-transform:none"
+										*ngFor="let p of d.ports"
+										>{{ p }}</span
+									>
 								</div>
 							</div>
 						</div>
@@ -304,22 +475,50 @@ type Task = {
 					<div class="detail-section">
 						<div class="detail-section__head">
 							<div class="detail-section__title">
-								<sb-icon name="volumes" [size]="14" style="color:var(--primary-500)"></sb-icon>
+								<sb-icon
+									name="volumes"
+									[size]="14"
+									style="color:var(--primary-500)"
+								></sb-icon>
 								{{ "pages.services.detail.mounts" | transloco }}
 								<span class="detail-section__count">{{ d.mounts.length }}</span>
 							</div>
 						</div>
 						<div class="detail-section__body">
 							@if (d.mounts.length === 0) {
-								<div class="t-empty">{{ "pages.services.detail.noMounts" | transloco }}</div>
+								<div class="t-empty">
+									{{ "pages.services.detail.noMounts" | transloco }}
+								</div>
 							} @else {
-								<sb-data-table [columns]="mountCols()" [rows]="d.mounts" [searchable]="false" [pageSize]="5">
+								<sb-data-table
+									[columns]="mountCols()"
+									[rows]="d.mounts"
+									[searchable]="false"
+									[pageSize]="5"
+								>
 									<ng-template #cell let-row let-key="key">
 										<ng-container [ngSwitch]="key">
-											<span *ngSwitchCase="'source'" class="mono" style="color:var(--muted)">{{ row.source || "—" }}</span>
-											<span *ngSwitchCase="'target'" class="mono">{{ row.target }}</span>
-											<span *ngSwitchCase="'type'" class="badge badge--neutral">{{ row.type }}</span>
-											<span *ngSwitchCase="'readOnly'" class="tag" [class.tag--warning]="row.readOnly" [class.tag--success]="!row.readOnly">{{ row.readOnly ? "RO" : "RW" }}</span>
+											<span
+												*ngSwitchCase="'source'"
+												class="mono"
+												style="color:var(--muted)"
+												>{{ row.source || "—" }}</span
+											>
+											<span *ngSwitchCase="'target'" class="mono">{{
+												row.target
+											}}</span>
+											<span
+												*ngSwitchCase="'type'"
+												class="badge badge--neutral"
+												>{{ row.type }}</span
+											>
+											<span
+												*ngSwitchCase="'readOnly'"
+												class="tag"
+												[class.tag--warning]="row.readOnly"
+												[class.tag--success]="!row.readOnly"
+												>{{ row.readOnly ? "RO" : "RW" }}</span
+											>
 										</ng-container>
 									</ng-template>
 								</sb-data-table>
@@ -564,22 +763,26 @@ export class ServiceDetailPageComponent implements OnInit {
 		{ key: "status", labelKey: "columns.status" },
 	]);
 
-	readonly mountCols = translatedColumns<{ type: string; source: string | null; target: string; readOnly: boolean }>(
-		this.transloco,
-		this.i18n.activeLang,
-		[
-			{ key: "source", labelKey: "pages.services.detail.mountSource" },
-			{ key: "target", labelKey: "pages.services.detail.mountTarget" },
-			{ key: "type", labelKey: "columns.type" },
-			{ key: "readOnly", labelKey: "pages.services.detail.mountMode", align: "right" },
-		]
-	);
+	readonly mountCols = translatedColumns<{
+		type: string;
+		source: string | null;
+		target: string;
+		readOnly: boolean;
+	}>(this.transloco, this.i18n.activeLang, [
+		{ key: "source", labelKey: "pages.services.detail.mountSource" },
+		{ key: "target", labelKey: "pages.services.detail.mountTarget" },
+		{ key: "type", labelKey: "columns.type" },
+		{ key: "readOnly", labelKey: "pages.services.detail.mountMode", align: "right" },
+	]);
 
 	ngOnInit(): void {
 		this.loadDetail();
 		this.loadTasks();
 		this.apollo
-			.query<{ networks: { id: string; name: string }[] }>({ query: QUERY_NETWORKS, fetchPolicy: "network-only" })
+			.query<{ networks: { id: string; name: string }[] }>({
+				query: QUERY_NETWORKS,
+				fetchPolicy: "network-only",
+			})
 			.pipe(takeUntilDestroyed(this.destroyRef))
 			.subscribe((r) => {
 				const map = new Map<string, string>();
@@ -642,21 +845,38 @@ export class ServiceDetailPageComponent implements OnInit {
 		const d = this.detail();
 		if (!d) return;
 		if (d.replicasTotal === 0) {
-			this.toast.push("warn", this.transloco.translate("pages.services.detail.toastNothingToRedeploy", { name: d.name }));
+			this.toast.push(
+				"warn",
+				this.transloco.translate("pages.services.detail.toastNothingToRedeploy", {
+					name: d.name,
+				})
+			);
 			return;
 		}
 		this.busy.set(true);
 		this.apollo
-			.mutate<{ redeployService: boolean }>({ mutation: MUTATION_REDEPLOY_SERVICE, variables: { id: this.id } })
+			.mutate<{ redeployService: boolean }>({
+				mutation: MUTATION_REDEPLOY_SERVICE,
+				variables: { id: this.id },
+			})
 			.subscribe({
 				next: () => {
 					this.busy.set(false);
-					this.toast.push("success", this.transloco.translate("pages.services.detail.toastRedeploying", { name: d.name }));
+					this.toast.push(
+						"success",
+						this.transloco.translate("pages.services.detail.toastRedeploying", {
+							name: d.name,
+						})
+					);
 					this.reloadAfterAction();
 				},
 				error: (err) => {
 					this.busy.set(false);
-					this.toast.push("error", err?.message || this.transloco.translate("pages.services.detail.redeployFailed"));
+					this.toast.push(
+						"error",
+						err?.message ||
+							this.transloco.translate("pages.services.detail.redeployFailed")
+					);
 				},
 			});
 	}
@@ -666,16 +886,28 @@ export class ServiceDetailPageComponent implements OnInit {
 		const d = this.detail();
 		this.busy.set(true);
 		this.apollo
-			.mutate<{ rollbackService: boolean }>({ mutation: MUTATION_ROLLBACK_SERVICE, variables: { id: this.id } })
+			.mutate<{ rollbackService: boolean }>({
+				mutation: MUTATION_ROLLBACK_SERVICE,
+				variables: { id: this.id },
+			})
 			.subscribe({
 				next: () => {
 					this.busy.set(false);
-					this.toast.push("success", this.transloco.translate("pages.services.detail.toastRolledBack", { name: d?.name ?? "" }));
+					this.toast.push(
+						"success",
+						this.transloco.translate("pages.services.detail.toastRolledBack", {
+							name: d?.name ?? "",
+						})
+					);
 					this.reloadAfterAction();
 				},
 				error: (err) => {
 					this.busy.set(false);
-					this.toast.push("error", err?.message || this.transloco.translate("pages.services.detail.rollbackFailed"));
+					this.toast.push(
+						"error",
+						err?.message ||
+							this.transloco.translate("pages.services.detail.rollbackFailed")
+					);
 				},
 			});
 	}
@@ -700,13 +932,20 @@ export class ServiceDetailPageComponent implements OnInit {
 					this.scaleOpen.set(false);
 					this.toast.push(
 						"success",
-						this.transloco.translate("pages.services.detail.toastScaled", { name: d?.name ?? "", replicas: this.scaleReplicas() })
+						this.transloco.translate("pages.services.detail.toastScaled", {
+							name: d?.name ?? "",
+							replicas: this.scaleReplicas(),
+						})
 					);
 					this.reloadAfterAction();
 				},
 				error: (err) => {
 					this.busy.set(false);
-					this.toast.push("error", err?.message || this.transloco.translate("pages.services.detail.scaleFailed"));
+					this.toast.push(
+						"error",
+						err?.message ||
+							this.transloco.translate("pages.services.detail.scaleFailed")
+					);
 				},
 			});
 	}
@@ -715,19 +954,36 @@ export class ServiceDetailPageComponent implements OnInit {
 		this.menuOpen.set(false);
 		const d = this.detail();
 		if (!d) return;
-		if (!confirm(this.transloco.translate("pages.services.detail.confirmRemove", { name: d.name }))) return;
+		if (
+			!confirm(
+				this.transloco.translate("pages.services.detail.confirmRemove", { name: d.name })
+			)
+		)
+			return;
 		this.busy.set(true);
 		this.apollo
-			.mutate<{ removeService: boolean }>({ mutation: MUTATION_REMOVE_SERVICE, variables: { id: this.id } })
+			.mutate<{ removeService: boolean }>({
+				mutation: MUTATION_REMOVE_SERVICE,
+				variables: { id: this.id },
+			})
 			.subscribe({
 				next: () => {
 					this.busy.set(false);
-					this.toast.push("success", this.transloco.translate("pages.services.detail.toastRemoved", { name: d.name }));
+					this.toast.push(
+						"success",
+						this.transloco.translate("pages.services.detail.toastRemoved", {
+							name: d.name,
+						})
+					);
 					this.back();
 				},
 				error: (err) => {
 					this.busy.set(false);
-					this.toast.push("error", err?.message || this.transloco.translate("pages.services.detail.removeFailed"));
+					this.toast.push(
+						"error",
+						err?.message ||
+							this.transloco.translate("pages.services.detail.removeFailed")
+					);
 				},
 			});
 	}

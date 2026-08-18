@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Output, inject, signal } from "@angular/core";
+import {
+	ChangeDetectionStrategy,
+	Component,
+	EventEmitter,
+	Output,
+	inject,
+	signal,
+} from "@angular/core";
 import {
 	AsyncPipe,
 	DatePipe,
@@ -38,7 +45,11 @@ type Cfg = { id: string; name: string; created: string; updated: string };
 						{{ "pages.configs.countSuffix" | transloco }}
 					</div>
 				</div>
-				<button *ngIf="auth.isAdmin()" class="btn btn--primary" (click)="createRequested.emit()">
+				<button
+					*ngIf="auth.isAdmin()"
+					class="btn btn--primary"
+					(click)="createRequested.emit()"
+				>
 					<sb-icon name="plus" [size]="16"></sb-icon>
 					{{ "pages.configs.add" | transloco }}
 				</button>
@@ -59,13 +70,20 @@ type Cfg = { id: string; name: string; created: string; updated: string };
 						<span *ngSwitchCase="'updated'" class="mono">{{
 							row.updated | date: "yyyy-MM-dd"
 						}}</span>
-						<span *ngSwitchCase="'actions'" style="display:flex; justify-content:flex-end;">
+						<span
+							*ngSwitchCase="'actions'"
+							style="display:flex; justify-content:flex-end;"
+						>
 							<button
 								class="btn btn--ghost btn--icon btn--sm"
 								[title]="'pages.configs.view' | transloco"
 								(click)="view(row)"
 							>
-								<sb-icon name="eye" [size]="15" style="color: var(--muted)"></sb-icon>
+								<sb-icon
+									name="eye"
+									[size]="15"
+									style="color: var(--muted)"
+								></sb-icon>
 							</button>
 						</span>
 						<ng-container *ngSwitchDefault>{{ row[key] }}</ng-container>
@@ -78,7 +96,7 @@ type Cfg = { id: string; name: string; created: string; updated: string };
 			[open]="viewing() !== null"
 			[title]="viewing()?.name || ''"
 			[subtitle]="'pages.configs.modal.subtitle' | transloco"
-			(close)="viewing.set(null)"
+			(closed)="viewing.set(null)"
 		>
 			<ng-container *ngIf="viewing()">
 				<div *ngIf="loadingContent(); else loaded" class="t-empty">
@@ -88,8 +106,7 @@ type Cfg = { id: string; name: string; created: string; updated: string };
 					<pre
 						class="mono"
 						style="background:var(--surface-2); border-radius:var(--r-md); padding:14px; font-size:12.5px; white-space:pre-wrap; word-break:break-word; max-height:400px; overflow:auto; margin:0;"
-						>{{ content() || ("pages.configs.modal.empty" | transloco) }}</pre
-					>
+						>{{ content() || ("pages.configs.modal.empty" | transloco) }}</pre>
 				</ng-template>
 			</ng-container>
 			<div modal-footer>

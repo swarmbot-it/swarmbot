@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from "@angular/core";
+import {
+	ChangeDetectionStrategy,
+	Component,
+	DestroyRef,
+	OnInit,
+	computed,
+	inject,
+	signal,
+} from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { ActivatedRoute, Router } from "@angular/router";
 import { DecimalPipe, NgFor, NgIf, NgSwitch, NgSwitchCase } from "@angular/common";
@@ -86,11 +94,22 @@ type Range = "15m" | "1h" | "6h" | "24h";
 			<div class="page-header" style="align-items:center">
 				<div>
 					<div class="crumb">
-						<span class="crumb__link" (click)="back()">
+						<span
+							class="crumb__link"
+							role="button"
+							tabindex="0"
+							(click)="back()"
+							(keydown.enter)="back()"
+							(keydown.space)="back(); $event.preventDefault()"
+						>
 							<sb-icon name="stacks" [size]="14"></sb-icon>
 							{{ "nav.stacks" | transloco }}
 						</span>
-						<sb-icon name="chevronRight" [size]="12" style="color:var(--muted-2)"></sb-icon>
+						<sb-icon
+							name="chevronRight"
+							[size]="12"
+							style="color:var(--muted-2)"
+						></sb-icon>
 						<span>{{ stackName }}</span>
 					</div>
 					<div style="display:flex; align-items:center; gap:14px; margin-top:8px">
@@ -117,9 +136,17 @@ type Range = "15m" | "1h" | "6h" | "24h";
 						{{ "common.back" | transloco }}
 					</button>
 					<div class="splitbtn" *ngIf="auth.isEditor()">
-						<button class="btn btn--primary splitbtn__main" [disabled]="busy()" (click)="edit()">
+						<button
+							class="btn btn--primary splitbtn__main"
+							[disabled]="busy()"
+							(click)="edit()"
+						>
 							<sb-icon name="settings" [size]="14"></sb-icon>
-							{{ busy() ? ("pages.stacks.detail.working" | transloco) : ("pages.stacks.detail.edit" | transloco) }}
+							{{
+								busy()
+									? ("pages.stacks.detail.working" | transloco)
+									: ("pages.stacks.detail.edit" | transloco)
+							}}
 						</button>
 						<button
 							class="btn btn--primary splitbtn__caret"
@@ -129,32 +156,95 @@ type Range = "15m" | "1h" | "6h" | "24h";
 							<sb-icon name="chevronDown" [size]="14"></sb-icon>
 						</button>
 						@if (menuOpen()) {
-							<div class="splitbtn__menu">
-								<div class="splitbtn__item" (click)="redeploy()">
-									<sb-icon name="refresh" [size]="14" style="color:var(--muted)"></sb-icon>
+							<div class="splitbtn__menu" role="menu">
+								<div
+									class="splitbtn__item"
+									role="menuitem"
+									tabindex="0"
+									(click)="redeploy()"
+									(keydown.enter)="redeploy()"
+									(keydown.space)="redeploy(); $event.preventDefault()"
+								>
+									<sb-icon
+										name="refresh"
+										[size]="14"
+										style="color:var(--muted)"
+									></sb-icon>
 									<span>{{ "pages.stacks.detail.redeploy" | transloco }}</span>
-									<span class="splitbtn__hint">{{ "pages.stacks.detail.redeployHint" | transloco }}</span>
+									<span class="splitbtn__hint">{{
+										"pages.stacks.detail.redeployHint" | transloco
+									}}</span>
 								</div>
-								<div class="splitbtn__item" (click)="rollback()">
-									<sb-icon name="chevronLeft" [size]="14" style="color:var(--muted)"></sb-icon>
+								<div
+									class="splitbtn__item"
+									role="menuitem"
+									tabindex="0"
+									(click)="rollback()"
+									(keydown.enter)="rollback()"
+									(keydown.space)="rollback(); $event.preventDefault()"
+								>
+									<sb-icon
+										name="chevronLeft"
+										[size]="14"
+										style="color:var(--muted)"
+									></sb-icon>
 									<span>{{ "pages.stacks.detail.rollback" | transloco }}</span>
-									<span class="splitbtn__hint">{{ "pages.stacks.detail.rollbackHint" | transloco }}</span>
+									<span class="splitbtn__hint">{{
+										"pages.stacks.detail.rollbackHint" | transloco
+									}}</span>
 								</div>
 								@if (isDeactivated()) {
-									<div class="splitbtn__item" (click)="reactivate()">
-										<sb-icon name="play" [size]="14" style="color:var(--muted)"></sb-icon>
-										<span>{{ "pages.stacks.detail.reactivate" | transloco }}</span>
-										<span class="splitbtn__hint">{{ "pages.stacks.detail.reactivateHint" | transloco }}</span>
+									<div
+										class="splitbtn__item"
+										role="menuitem"
+										tabindex="0"
+										(click)="reactivate()"
+										(keydown.enter)="reactivate()"
+										(keydown.space)="reactivate(); $event.preventDefault()"
+									>
+										<sb-icon
+											name="play"
+											[size]="14"
+											style="color:var(--muted)"
+										></sb-icon>
+										<span>{{
+											"pages.stacks.detail.reactivate" | transloco
+										}}</span>
+										<span class="splitbtn__hint">{{
+											"pages.stacks.detail.reactivateHint" | transloco
+										}}</span>
 									</div>
 								} @else {
-									<div class="splitbtn__item" (click)="deactivate()">
-										<sb-icon name="pause" [size]="14" style="color:var(--muted)"></sb-icon>
-										<span>{{ "pages.stacks.detail.deactivate" | transloco }}</span>
-										<span class="splitbtn__hint">{{ "pages.stacks.detail.deactivateHint" | transloco }}</span>
+									<div
+										class="splitbtn__item"
+										role="menuitem"
+										tabindex="0"
+										(click)="deactivate()"
+										(keydown.enter)="deactivate()"
+										(keydown.space)="deactivate(); $event.preventDefault()"
+									>
+										<sb-icon
+											name="pause"
+											[size]="14"
+											style="color:var(--muted)"
+										></sb-icon>
+										<span>{{
+											"pages.stacks.detail.deactivate" | transloco
+										}}</span>
+										<span class="splitbtn__hint">{{
+											"pages.stacks.detail.deactivateHint" | transloco
+										}}</span>
 									</div>
 								}
 								<div class="splitbtn__sep"></div>
-								<div class="splitbtn__item splitbtn__item--danger" (click)="remove()">
+								<div
+									class="splitbtn__item splitbtn__item--danger"
+									role="menuitem"
+									tabindex="0"
+									(click)="remove()"
+									(keydown.enter)="remove()"
+									(keydown.space)="remove(); $event.preventDefault()"
+								>
 									<sb-icon name="trash" [size]="14"></sb-icon>
 									<span>{{ "pages.stacks.detail.delete" | transloco }}</span>
 								</div>
@@ -166,27 +256,63 @@ type Range = "15m" | "1h" | "6h" | "24h";
 
 			<div class="dash-grid">
 				<div class="dash-tile">
-					<sb-donut [value]="lastCpu()" [size]="84" [stroke]="12" color="var(--primary-500)" [label]="'dashboard.cpu' | transloco"></sb-donut>
+					<sb-donut
+						[value]="lastCpu()"
+						[size]="84"
+						[stroke]="12"
+						color="var(--primary-500)"
+						[label]="'dashboard.cpu' | transloco"
+					></sb-donut>
 					<div style="min-width:0">
 						<div class="dash-tile__label">{{ "dashboard.cpu" | transloco }}</div>
-						<div class="dash-tile__value">{{ lastCpu() | number: "1.0-1" }}<span>%</span></div>
-						<sb-sparkline [data]="cpuSeries()" [width]="220" [height]="28" color="var(--primary-500)"></sb-sparkline>
+						<div class="dash-tile__value">
+							{{ lastCpu() | number: "1.0-1" }}<span>%</span>
+						</div>
+						<sb-sparkline
+							[data]="cpuSeries()"
+							[width]="220"
+							[height]="28"
+							color="var(--primary-500)"
+						></sb-sparkline>
 					</div>
 				</div>
 				<div class="dash-tile">
-					<sb-donut [value]="lastMemory()" [size]="84" [stroke]="12" color="#3b82f6" [label]="'dashboard.memory' | transloco"></sb-donut>
+					<sb-donut
+						[value]="lastMemory()"
+						[size]="84"
+						[stroke]="12"
+						color="#3b82f6"
+						[label]="'dashboard.memory' | transloco"
+					></sb-donut>
 					<div style="min-width:0">
 						<div class="dash-tile__label">{{ "dashboard.memory" | transloco }}</div>
-						<div class="dash-tile__value">{{ lastMemory() | number: "1.0-1" }}<span>%</span></div>
-						<sb-sparkline [data]="memorySeries()" [width]="220" [height]="28" color="#3b82f6"></sb-sparkline>
+						<div class="dash-tile__value">
+							{{ lastMemory() | number: "1.0-1" }}<span>%</span>
+						</div>
+						<sb-sparkline
+							[data]="memorySeries()"
+							[width]="220"
+							[height]="28"
+							color="#3b82f6"
+						></sb-sparkline>
 					</div>
 				</div>
 				<div class="dash-tile" [title]="'pages.stacks.detail.diskHint' | transloco">
-					<sb-donut [value]="0" [size]="84" [stroke]="12" color="var(--muted-2)" label="N/A"></sb-donut>
+					<sb-donut
+						[value]="0"
+						[size]="84"
+						[stroke]="12"
+						color="var(--muted-2)"
+						label="N/A"
+					></sb-donut>
 					<div style="min-width:0">
 						<div class="dash-tile__label">{{ "dashboard.disk" | transloco }}</div>
-						<div class="dash-tile__value" style="color:var(--muted); font-size:20px">N/A</div>
-						<div class="dash-tile__sub">{{ "pages.stacks.detail.diskNotTracked" | transloco }}</div>
+						<div class="dash-tile__value" style="color:var(--muted); font-size:20px">
+							N/A
+						</div>
+						<div class="dash-tile__sub">
+							{{ "pages.stacks.detail.diskNotTracked" | transloco }}
+						</div>
 					</div>
 				</div>
 			</div>
@@ -194,17 +320,24 @@ type Range = "15m" | "1h" | "6h" | "24h";
 			<div class="card" style="margin-bottom:16px">
 				<div class="card__header">
 					<div>
-						<div class="card__title">{{ "pages.stacks.detail.utilization" | transloco }}</div>
+						<div class="card__title">
+							{{ "pages.stacks.detail.utilization" | transloco }}
+						</div>
 						<div style="font-size:12px; color:var(--muted); margin-top:2px">
 							{{ "pages.stacks.detail.utilizationHint" | transloco }}
 						</div>
 					</div>
-					<sb-segmented [options]="rangeOpts" [value]="range()" (select)="onRangeChange($any($event))"></sb-segmented>
+					<sb-segmented
+						[options]="rangeOpts"
+						[value]="range()"
+						(selectionChange)="onRangeChange($any($event))"
+					></sb-segmented>
 				</div>
 				<div class="card__body" style="padding-top:8px">
 					<div style="display:flex; gap:18px; margin-bottom:6px; font-size:12px">
 						<span class="legend"
-							><i style="background:var(--primary-500)"></i>{{ "dashboard.cpu" | transloco }}
+							><i style="background:var(--primary-500)"></i
+							>{{ "dashboard.cpu" | transloco }}
 							<strong>{{ lastCpu() | number: "1.0-1" }}%</strong></span
 						>
 						<span class="legend"
@@ -213,7 +346,12 @@ type Range = "15m" | "1h" | "6h" | "24h";
 						>
 					</div>
 					@if (cpuSeries().length > 1) {
-						<sb-line-chart [width]="1000" [height]="220" [labels]="chartLabels()" [series]="chartSeries()"></sb-line-chart>
+						<sb-line-chart
+							[width]="1000"
+							[height]="220"
+							[labels]="chartLabels()"
+							[series]="chartSeries()"
+						></sb-line-chart>
 					} @else {
 						<div class="t-empty">{{ "pages.stacks.detail.noMetrics" | transloco }}</div>
 					}
@@ -223,43 +361,95 @@ type Range = "15m" | "1h" | "6h" | "24h";
 			<div class="detail-section">
 				<div class="detail-section__head">
 					<div class="detail-section__title">
-						<sb-icon name="services" [size]="14" style="color:var(--primary-500)"></sb-icon>
+						<sb-icon
+							name="services"
+							[size]="14"
+							style="color:var(--primary-500)"
+						></sb-icon>
 						{{ "nav.services" | transloco }}
 						<span class="detail-section__count">{{ servicesTotal().length }}</span>
 					</div>
 				</div>
 				<div class="detail-section__body">
 					@if (servicesTotal().length === 0) {
-						<div class="t-empty">{{ "pages.stacks.detail.noServices" | transloco }}</div>
+						<div class="t-empty">
+							{{ "pages.stacks.detail.noServices" | transloco }}
+						</div>
 					} @else {
-						<sb-data-table [columns]="serviceCols()" [rows]="servicesTotal()" [searchKeys]="['name']">
+						<sb-data-table
+							[columns]="serviceCols()"
+							[rows]="servicesTotal()"
+							[searchKeys]="['name']"
+						>
 							<ng-template #cell let-row let-key="key">
 								<ng-container [ngSwitch]="key">
-									<span *ngSwitchCase="'service'" style="display:flex; flex-direction:column; cursor:pointer" (click)="openService(row.id)">
+									<span
+										*ngSwitchCase="'service'"
+										style="display:flex; flex-direction:column; cursor:pointer"
+										role="button"
+										tabindex="0"
+										(click)="openService(row.id)"
+										(keydown.enter)="openService(row.id)"
+										(keydown.space)="
+											openService(row.id); $event.preventDefault()
+										"
+									>
 										<strong>{{ row.name }}</strong>
-										<span class="mono" style="font-size:11.5px; color:var(--muted); margin-top:2px">{{ row.image }}</span>
+										<span
+											class="mono"
+											style="font-size:11.5px; color:var(--muted); margin-top:2px"
+											>{{ row.image }}</span
+										>
 									</span>
 									<ng-container *ngSwitchCase="'replicas'">
-										<span *ngIf="row.replicasTotal === 0 && row.replicasRunning === 0" class="tag">{{
-											"pages.stacks.detail.stopped" | transloco
-										}}</span>
-										<span *ngIf="row.replicasTotal === 0 && row.replicasRunning > 0" class="tag tag--warning">{{
-											"pages.stacks.detail.stopping" | transloco
-										}} ({{ row.replicasRunning }})</span>
+										<span
+											*ngIf="
+												row.replicasTotal === 0 && row.replicasRunning === 0
+											"
+											class="tag"
+											>{{ "pages.stacks.detail.stopped" | transloco }}</span
+										>
+										<span
+											*ngIf="
+												row.replicasTotal === 0 && row.replicasRunning > 0
+											"
+											class="tag tag--warning"
+											>{{ "pages.stacks.detail.stopping" | transloco }} ({{
+												row.replicasRunning
+											}})</span
+										>
 										<div class="replica" *ngIf="row.replicasTotal > 0">
 											<div class="replica__bar">
 												<div
 													class="replica__bar-fill"
-													[style.width.%]="(row.replicasRunning / row.replicasTotal) * 100"
-													[style.background]="row.replicasRunning < row.replicasTotal ? 'var(--warning)' : 'var(--success)'"
+													[style.width.%]="
+														(row.replicasRunning / row.replicasTotal) *
+														100
+													"
+													[style.background]="
+														row.replicasRunning < row.replicasTotal
+															? 'var(--warning)'
+															: 'var(--success)'
+													"
 												></div>
 											</div>
-											<span class="replica__text">{{ row.replicasRunning }}/{{ row.replicasTotal }}</span>
+											<span class="replica__text"
+												>{{ row.replicasRunning }}/{{
+													row.replicasTotal
+												}}</span
+											>
 										</div>
 									</ng-container>
 									<ng-container *ngSwitchCase="'ports'">
-										<span *ngIf="row.ports.length === 0" style="color:var(--muted)">&mdash;</span>
-										<div *ngIf="row.ports.length > 0" style="display:flex; flex-wrap:wrap; gap:4px">
+										<span
+											*ngIf="row.ports.length === 0"
+											style="color:var(--muted)"
+											>&mdash;</span
+										>
+										<div
+											*ngIf="row.ports.length > 0"
+											style="display:flex; flex-wrap:wrap; gap:4px"
+										>
 											<span
 												class="tag"
 												style="background:var(--surface-2); color:var(--text-2); text-transform:none"
@@ -268,7 +458,10 @@ type Range = "15m" | "1h" | "6h" | "24h";
 											>
 										</div>
 									</ng-container>
-									<sb-status *ngSwitchCase="'status'" [status]="statusFor(row.name)"></sb-status>
+									<sb-status
+										*ngSwitchCase="'status'"
+										[status]="statusFor(row.name)"
+									></sb-status>
 								</ng-container>
 							</ng-template>
 						</sb-data-table>
@@ -280,21 +473,38 @@ type Range = "15m" | "1h" | "6h" | "24h";
 				<div class="detail-section">
 					<div class="detail-section__head">
 						<div class="detail-section__title">
-							<sb-icon name="networks" [size]="14" style="color:var(--primary-500)"></sb-icon>
+							<sb-icon
+								name="networks"
+								[size]="14"
+								style="color:var(--primary-500)"
+							></sb-icon>
 							{{ "nav.networks" | transloco }}
 							<span class="detail-section__count">{{ networksTotal().length }}</span>
 						</div>
 					</div>
 					<div class="detail-section__body">
 						@if (networksTotal().length === 0) {
-							<div class="t-empty">{{ "pages.stacks.detail.noNetworks" | transloco }}</div>
+							<div class="t-empty">
+								{{ "pages.stacks.detail.noNetworks" | transloco }}
+							</div>
 						} @else {
-							<sb-data-table [columns]="networkCols()" [rows]="networksTotal()" [searchKeys]="['name']" [pageSize]="5">
+							<sb-data-table
+								[columns]="networkCols()"
+								[rows]="networksTotal()"
+								[searchKeys]="['name']"
+								[pageSize]="5"
+							>
 								<ng-template #cell let-row let-key="key">
 									<ng-container [ngSwitch]="key">
 										<strong *ngSwitchCase="'name'">{{ row.name }}</strong>
-										<span *ngSwitchCase="'driver'" class="badge badge--neutral">{{ row.driver }}</span>
-										<span *ngSwitchCase="'subnet'" class="mono">{{ row.subnet || "—" }}</span>
+										<span
+											*ngSwitchCase="'driver'"
+											class="badge badge--neutral"
+											>{{ row.driver }}</span
+										>
+										<span *ngSwitchCase="'subnet'" class="mono">{{
+											row.subnet || "—"
+										}}</span>
 									</ng-container>
 								</ng-template>
 							</sb-data-table>
@@ -304,20 +514,35 @@ type Range = "15m" | "1h" | "6h" | "24h";
 				<div class="detail-section">
 					<div class="detail-section__head">
 						<div class="detail-section__title">
-							<sb-icon name="volumes" [size]="14" style="color:var(--primary-500)"></sb-icon>
+							<sb-icon
+								name="volumes"
+								[size]="14"
+								style="color:var(--primary-500)"
+							></sb-icon>
 							{{ "nav.volumes" | transloco }}
 							<span class="detail-section__count">{{ volumesTotal().length }}</span>
 						</div>
 					</div>
 					<div class="detail-section__body">
 						@if (volumesTotal().length === 0) {
-							<div class="t-empty">{{ "pages.stacks.detail.noVolumes" | transloco }}</div>
+							<div class="t-empty">
+								{{ "pages.stacks.detail.noVolumes" | transloco }}
+							</div>
 						} @else {
-							<sb-data-table [columns]="volumeCols()" [rows]="volumesTotal()" [searchKeys]="['name']" [pageSize]="5">
+							<sb-data-table
+								[columns]="volumeCols()"
+								[rows]="volumesTotal()"
+								[searchKeys]="['name']"
+								[pageSize]="5"
+							>
 								<ng-template #cell let-row let-key="key">
 									<ng-container [ngSwitch]="key">
 										<strong *ngSwitchCase="'name'">{{ row.name }}</strong>
-										<span *ngSwitchCase="'driver'" class="badge badge--neutral">{{ row.driver }}</span>
+										<span
+											*ngSwitchCase="'driver'"
+											class="badge badge--neutral"
+											>{{ row.driver }}</span
+										>
 									</ng-container>
 								</ng-template>
 							</sb-data-table>
@@ -330,32 +555,54 @@ type Range = "15m" | "1h" | "6h" | "24h";
 				<div class="detail-section">
 					<div class="detail-section__head">
 						<div class="detail-section__title">
-							<sb-icon name="configs" [size]="14" style="color:var(--primary-500)"></sb-icon>
+							<sb-icon
+								name="configs"
+								[size]="14"
+								style="color:var(--primary-500)"
+							></sb-icon>
 							{{ "nav.configs" | transloco }}
 							<span class="detail-section__count">{{ configsTotal().length }}</span>
 						</div>
 					</div>
 					<div class="detail-section__body">
 						@if (configsTotal().length === 0) {
-							<div class="t-empty">{{ "pages.stacks.detail.noConfigs" | transloco }}</div>
+							<div class="t-empty">
+								{{ "pages.stacks.detail.noConfigs" | transloco }}
+							</div>
 						} @else {
-							<sb-data-table [columns]="namedCols()" [rows]="configsTotal()" [searchKeys]="['name']" [pageSize]="5"></sb-data-table>
+							<sb-data-table
+								[columns]="namedCols()"
+								[rows]="configsTotal()"
+								[searchKeys]="['name']"
+								[pageSize]="5"
+							></sb-data-table>
 						}
 					</div>
 				</div>
 				<div class="detail-section">
 					<div class="detail-section__head">
 						<div class="detail-section__title">
-							<sb-icon name="secrets" [size]="14" style="color:var(--primary-500)"></sb-icon>
+							<sb-icon
+								name="secrets"
+								[size]="14"
+								style="color:var(--primary-500)"
+							></sb-icon>
 							{{ "nav.secrets" | transloco }}
 							<span class="detail-section__count">{{ secretsTotal().length }}</span>
 						</div>
 					</div>
 					<div class="detail-section__body">
 						@if (secretsTotal().length === 0) {
-							<div class="t-empty">{{ "pages.stacks.detail.noSecrets" | transloco }}</div>
+							<div class="t-empty">
+								{{ "pages.stacks.detail.noSecrets" | transloco }}
+							</div>
 						} @else {
-							<sb-data-table [columns]="namedCols()" [rows]="secretsTotal()" [searchKeys]="['name']" [pageSize]="5"></sb-data-table>
+							<sb-data-table
+								[columns]="namedCols()"
+								[rows]="secretsTotal()"
+								[searchKeys]="['name']"
+								[pageSize]="5"
+							></sb-data-table>
 						}
 					</div>
 				</div>
@@ -601,11 +848,21 @@ export class StackDetailPageComponent implements OnInit {
 	private readonly allConfigs = signal<NamedRes[]>([]);
 	private readonly allTasks = signal<Task[]>([]);
 
-	readonly servicesTotal = computed(() => this.allServices().filter((s) => s.stack === this.stackName));
-	readonly networksTotal = computed(() => this.allNetworks().filter((n) => n.stack === this.stackName));
-	readonly volumesTotal = computed(() => this.allVolumes().filter((v) => v.stack === this.stackName));
-	readonly secretsTotal = computed(() => this.allSecrets().filter((s) => s.stack === this.stackName));
-	readonly configsTotal = computed(() => this.allConfigs().filter((c) => c.stack === this.stackName));
+	readonly servicesTotal = computed(() =>
+		this.allServices().filter((s) => s.stack === this.stackName)
+	);
+	readonly networksTotal = computed(() =>
+		this.allNetworks().filter((n) => n.stack === this.stackName)
+	);
+	readonly volumesTotal = computed(() =>
+		this.allVolumes().filter((v) => v.stack === this.stackName)
+	);
+	readonly secretsTotal = computed(() =>
+		this.allSecrets().filter((s) => s.stack === this.stackName)
+	);
+	readonly configsTotal = computed(() =>
+		this.allConfigs().filter((c) => c.stack === this.stackName)
+	);
 
 	readonly found = computed(
 		() =>
@@ -622,7 +879,9 @@ export class StackDetailPageComponent implements OnInit {
 	});
 	readonly status = computed(() => deriveStackStatus(this.stackTasks()));
 	readonly isDeactivated = computed(
-		() => this.servicesTotal().length > 0 && this.servicesTotal().every((s) => s.replicasTotal === 0)
+		() =>
+			this.servicesTotal().length > 0 &&
+			this.servicesTotal().every((s) => s.replicasTotal === 0)
 	);
 
 	readonly serviceCols = translatedColumns<Service>(this.transloco, this.i18n.activeLang, [
@@ -724,22 +983,36 @@ export class StackDetailPageComponent implements OnInit {
 		if (this.isDeactivated()) {
 			this.toast.push(
 				"warn",
-				this.transloco.translate("pages.stacks.detail.toastNothingToRedeploy", { name: this.stackName })
+				this.transloco.translate("pages.stacks.detail.toastNothingToRedeploy", {
+					name: this.stackName,
+				})
 			);
 			return;
 		}
 		this.busy.set(true);
 		this.apollo
-			.mutate<{ redeployStack: boolean }>({ mutation: MUTATION_REDEPLOY_STACK, variables: { name: this.stackName } })
+			.mutate<{ redeployStack: boolean }>({
+				mutation: MUTATION_REDEPLOY_STACK,
+				variables: { name: this.stackName },
+			})
 			.subscribe({
 				next: () => {
 					this.busy.set(false);
-					this.toast.push("success", this.transloco.translate("pages.stacks.detail.toastRedeploying", { name: this.stackName }));
+					this.toast.push(
+						"success",
+						this.transloco.translate("pages.stacks.detail.toastRedeploying", {
+							name: this.stackName,
+						})
+					);
 					this.reloadAfterAction();
 				},
 				error: (err) => {
 					this.busy.set(false);
-					this.toast.push("error", err?.message || this.transloco.translate("pages.stacks.detail.redeployFailed"));
+					this.toast.push(
+						"error",
+						err?.message ||
+							this.transloco.translate("pages.stacks.detail.redeployFailed")
+					);
 				},
 			});
 	}
@@ -748,16 +1021,28 @@ export class StackDetailPageComponent implements OnInit {
 		this.menuOpen.set(false);
 		this.busy.set(true);
 		this.apollo
-			.mutate<{ rollbackStack: boolean }>({ mutation: MUTATION_ROLLBACK_STACK, variables: { name: this.stackName } })
+			.mutate<{ rollbackStack: boolean }>({
+				mutation: MUTATION_ROLLBACK_STACK,
+				variables: { name: this.stackName },
+			})
 			.subscribe({
 				next: () => {
 					this.busy.set(false);
-					this.toast.push("success", this.transloco.translate("pages.stacks.detail.toastRolledBack", { name: this.stackName }));
+					this.toast.push(
+						"success",
+						this.transloco.translate("pages.stacks.detail.toastRolledBack", {
+							name: this.stackName,
+						})
+					);
 					this.reloadAfterAction();
 				},
 				error: (err) => {
 					this.busy.set(false);
-					this.toast.push("error", err?.message || this.transloco.translate("pages.stacks.detail.rollbackFailed"));
+					this.toast.push(
+						"error",
+						err?.message ||
+							this.transloco.translate("pages.stacks.detail.rollbackFailed")
+					);
 				},
 			});
 	}
@@ -766,16 +1051,28 @@ export class StackDetailPageComponent implements OnInit {
 		this.menuOpen.set(false);
 		this.busy.set(true);
 		this.apollo
-			.mutate<{ deactivateStack: boolean }>({ mutation: MUTATION_DEACTIVATE_STACK, variables: { name: this.stackName } })
+			.mutate<{ deactivateStack: boolean }>({
+				mutation: MUTATION_DEACTIVATE_STACK,
+				variables: { name: this.stackName },
+			})
 			.subscribe({
 				next: () => {
 					this.busy.set(false);
-					this.toast.push("success", this.transloco.translate("pages.stacks.detail.toastDeactivated", { name: this.stackName }));
+					this.toast.push(
+						"success",
+						this.transloco.translate("pages.stacks.detail.toastDeactivated", {
+							name: this.stackName,
+						})
+					);
 					this.reloadAfterAction();
 				},
 				error: (err) => {
 					this.busy.set(false);
-					this.toast.push("error", err?.message || this.transloco.translate("pages.stacks.detail.deactivateFailed"));
+					this.toast.push(
+						"error",
+						err?.message ||
+							this.transloco.translate("pages.stacks.detail.deactivateFailed")
+					);
 				},
 			});
 	}
@@ -784,35 +1081,65 @@ export class StackDetailPageComponent implements OnInit {
 		this.menuOpen.set(false);
 		this.busy.set(true);
 		this.apollo
-			.mutate<{ reactivateStack: boolean }>({ mutation: MUTATION_REACTIVATE_STACK, variables: { name: this.stackName } })
+			.mutate<{ reactivateStack: boolean }>({
+				mutation: MUTATION_REACTIVATE_STACK,
+				variables: { name: this.stackName },
+			})
 			.subscribe({
 				next: () => {
 					this.busy.set(false);
-					this.toast.push("success", this.transloco.translate("pages.stacks.detail.toastReactivated", { name: this.stackName }));
+					this.toast.push(
+						"success",
+						this.transloco.translate("pages.stacks.detail.toastReactivated", {
+							name: this.stackName,
+						})
+					);
 					this.reloadAfterAction();
 				},
 				error: (err) => {
 					this.busy.set(false);
-					this.toast.push("error", err?.message || this.transloco.translate("pages.stacks.detail.reactivateFailed"));
+					this.toast.push(
+						"error",
+						err?.message ||
+							this.transloco.translate("pages.stacks.detail.reactivateFailed")
+					);
 				},
 			});
 	}
 
 	remove(): void {
 		this.menuOpen.set(false);
-		if (!confirm(this.transloco.translate("pages.stacks.detail.confirmRemove", { name: this.stackName }))) return;
+		if (
+			!confirm(
+				this.transloco.translate("pages.stacks.detail.confirmRemove", {
+					name: this.stackName,
+				})
+			)
+		)
+			return;
 		this.busy.set(true);
 		this.apollo
-			.mutate<{ removeStack: boolean }>({ mutation: MUTATION_REMOVE_STACK, variables: { name: this.stackName } })
+			.mutate<{ removeStack: boolean }>({
+				mutation: MUTATION_REMOVE_STACK,
+				variables: { name: this.stackName },
+			})
 			.subscribe({
 				next: () => {
 					this.busy.set(false);
-					this.toast.push("success", this.transloco.translate("pages.stacks.detail.toastRemoved", { name: this.stackName }));
+					this.toast.push(
+						"success",
+						this.transloco.translate("pages.stacks.detail.toastRemoved", {
+							name: this.stackName,
+						})
+					);
 					this.back();
 				},
 				error: (err) => {
 					this.busy.set(false);
-					this.toast.push("error", err?.message || this.transloco.translate("pages.stacks.detail.removeFailed"));
+					this.toast.push(
+						"error",
+						err?.message || this.transloco.translate("pages.stacks.detail.removeFailed")
+					);
 				},
 			});
 	}

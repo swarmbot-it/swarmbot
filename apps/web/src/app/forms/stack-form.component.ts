@@ -61,21 +61,24 @@ spec:
 	template: `
 		<sb-modal
 			[open]="open"
-			(close)="onClose()"
+			(closed)="onClose()"
 			wide
 			[title]="'forms.stack.title' | transloco"
 			[subtitle]="'forms.stack.subtitle' | transloco"
 		>
 			<div class="field">
-				<label class="field__label"
+				<label for="stack-name" class="field__label"
 					>{{ "forms.stack.name" | transloco }}<span class="req">*</span></label
 				>
-				<input class="input" [formField]="stackForm.name" />
+				<input id="stack-name" class="input" [formField]="stackForm.name" />
 				<div class="field__error" *ngIf="error()">{{ error() }}</div>
 			</div>
 			<div class="field">
-				<label class="field__label">{{ contentLabelKey | transloco }}</label>
+				<label for="stack-content" class="field__label">{{
+					contentLabelKey | transloco
+				}}</label>
 				<textarea
+					id="stack-content"
 					class="textarea"
 					rows="14"
 					[placeholder]="placeholder"
@@ -102,7 +105,7 @@ export class StackFormComponent {
 	/** Whether the deploy-stack modal is visible. */
 	@Input() open = false;
 	/** Emitted when the user dismisses the modal without deploying. */
-	@Output() close = new EventEmitter<void>();
+	@Output() closed = new EventEmitter<void>();
 	/** Emitted after a successful deploy with the new stack name. */
 	@Output() created = new EventEmitter<{ name: string }>();
 
@@ -127,7 +130,7 @@ export class StackFormComponent {
 	onClose(): void {
 		this.model.set({ name: "", content: "" });
 		this.error.set("");
-		this.close.emit();
+		this.closed.emit();
 	}
 
 	submit(): void {

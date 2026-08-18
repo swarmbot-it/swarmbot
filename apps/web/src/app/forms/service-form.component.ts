@@ -36,7 +36,7 @@ type Registry = {
 	template: `
 		<sb-modal
 			[open]="open"
-			(close)="onClose()"
+			(closed)="onClose()"
 			wide
 			[title]="
 				(step() === 1 ? 'forms.service.step1.title' : 'forms.service.step2.title')
@@ -51,12 +51,20 @@ type Registry = {
 		>
 			<ng-container *ngIf="step() === 1">
 				<div *ngIf="error" class="field__error">{{ error }}</div>
-				<div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+				<div
+					style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;"
+					role="radiogroup"
+				>
 					<div
 						*ngFor="let r of registries"
 						class="reg-card"
 						[class.reg-card--selected]="registry() === r.name"
+						role="radio"
+						[attr.aria-checked]="registry() === r.name"
+						[tabindex]="registry() === r.name ? 0 : -1"
 						(click)="registry.set(r.name)"
+						(keydown.enter)="registry.set(r.name)"
+						(keydown.space)="registry.set(r.name); $event.preventDefault()"
 					>
 						<div style="display:flex; align-items:center; gap:10px;">
 							<sb-icon name="registries" [size]="18"></sb-icon>
@@ -93,31 +101,42 @@ type Registry = {
 				<div *ngIf="error" class="field__error">{{ error }}</div>
 				<div style="display:grid; grid-template-columns: 1fr 1fr; gap: 14px;">
 					<div class="field">
-						<label class="field__label"
+						<label for="service-name" class="field__label"
 							>{{ "forms.service.name" | transloco }}<span class="req">*</span></label
 						>
-						<input class="input" [formField]="serviceForm.name" />
+						<input id="service-name" class="input" [formField]="serviceForm.name" />
 					</div>
 					<div class="field">
-						<label class="field__label"
+						<label for="service-replicas" class="field__label"
 							>{{ "forms.service.replicas" | transloco
 							}}<span class="req">*</span></label
 						>
-						<input class="input" type="number" [formField]="serviceForm.replicas" />
+						<input
+							id="service-replicas"
+							class="input"
+							type="number"
+							[formField]="serviceForm.replicas"
+						/>
 					</div>
 				</div>
 				<div class="field">
-					<label class="field__label"
+					<label for="service-image" class="field__label"
 						>{{ "forms.service.image" | transloco }}<span class="req">*</span></label
 					>
-					<input class="input mono" [formField]="serviceForm.image" />
+					<input id="service-image" class="input mono" [formField]="serviceForm.image" />
 					<div class="field__hint">
 						{{ "forms.service.imageHint" | transloco: { registry: registry() } }}
 					</div>
 				</div>
 				<div class="field">
-					<label class="field__label">{{ "forms.service.ports" | transloco }}</label>
-					<input class="input mono" [formField]="serviceForm.portsCsv" />
+					<label for="service-ports-csv" class="field__label">{{
+						"forms.service.ports" | transloco
+					}}</label>
+					<input
+						id="service-ports-csv"
+						class="input mono"
+						[formField]="serviceForm.portsCsv"
+					/>
 					<div class="field__hint">{{ "forms.service.portsHint" | transloco }}</div>
 				</div>
 			</ng-container>
@@ -162,7 +181,7 @@ export class ServiceFormComponent implements OnInit {
 	/** Whether the create-service modal is visible. */
 	@Input() open = false;
 	/** Emitted when the user dismisses the modal without creating. */
-	@Output() close = new EventEmitter<void>();
+	@Output() closed = new EventEmitter<void>();
 	/** Emitted after a successful create with the new service name. */
 	@Output() created = new EventEmitter<{ name: string }>();
 
@@ -203,7 +222,7 @@ export class ServiceFormComponent implements OnInit {
 		this.step.set(1);
 		this.serviceModel.set({ name: "", image: "", replicas: 1, portsCsv: "" });
 		this.error = "";
-		this.close.emit();
+		this.closed.emit();
 	}
 
 	next(): void {

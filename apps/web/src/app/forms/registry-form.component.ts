@@ -23,28 +23,28 @@ import { MUTATION_CREATE_REGISTRY, QUERY_REGISTRIES } from "../core/graphql.quer
 	template: `
 		<sb-modal
 			[open]="open"
-			(close)="onClose()"
+			(closed)="onClose()"
 			[title]="'forms.registry.title' | transloco"
 			subtitle=""
 		>
 			<div class="field">
-				<label class="field__label"
+				<label for="registry-name" class="field__label"
 					>{{ "forms.registry.name" | transloco }}<span class="req">*</span></label
 				>
-				<input class="input" [formField]="registryForm.name" />
+				<input id="registry-name" class="input" [formField]="registryForm.name" />
 			</div>
 			<div style="display:grid; grid-template-columns: 2fr 1fr; gap: 14px;">
 				<div class="field">
-					<label class="field__label"
+					<label for="registry-url" class="field__label"
 						>{{ "forms.registry.url" | transloco }}<span class="req">*</span></label
 					>
-					<input class="input mono" [formField]="registryForm.url" />
+					<input id="registry-url" class="input mono" [formField]="registryForm.url" />
 				</div>
 				<div class="field">
-					<label class="field__label"
+					<label for="registry-type" class="field__label"
 						>{{ "forms.registry.type" | transloco }}<span class="req">*</span></label
 					>
-					<select class="input select" [formField]="registryForm.type">
+					<select id="registry-type" class="input select" [formField]="registryForm.type">
 						<option>Docker Hub</option>
 						<option>GHCR</option>
 						<option>ECR</option>
@@ -56,12 +56,21 @@ import { MUTATION_CREATE_REGISTRY, QUERY_REGISTRIES } from "../core/graphql.quer
 			</div>
 			<div style="display:grid; grid-template-columns: 1fr 1fr; gap: 14px;">
 				<div class="field">
-					<label class="field__label">{{ "forms.registry.username" | transloco }}</label>
-					<input class="input" [formField]="registryForm.user" />
+					<label for="registry-user" class="field__label">{{
+						"forms.registry.username" | transloco
+					}}</label>
+					<input id="registry-user" class="input" [formField]="registryForm.user" />
 				</div>
 				<div class="field">
-					<label class="field__label">{{ "forms.registry.password" | transloco }}</label>
-					<input class="input" type="password" [formField]="registryForm.password" />
+					<label for="registry-password" class="field__label">{{
+						"forms.registry.password" | transloco
+					}}</label>
+					<input
+						id="registry-password"
+						class="input"
+						type="password"
+						[formField]="registryForm.password"
+					/>
 				</div>
 			</div>
 			<ng-container modal-footer>
@@ -84,7 +93,7 @@ export class RegistryFormComponent {
 	/** Whether the connect-registry modal is visible. */
 	@Input() open = false;
 	/** Emitted when the user dismisses the modal without creating. */
-	@Output() close = new EventEmitter<void>();
+	@Output() closed = new EventEmitter<void>();
 	/** Emitted after a successful create with the new registry name. */
 	@Output() created = new EventEmitter<{ name: string }>();
 
@@ -112,7 +121,7 @@ export class RegistryFormComponent {
 			password: "",
 			default: false,
 		});
-		this.close.emit();
+		this.closed.emit();
 	}
 
 	submit(): void {

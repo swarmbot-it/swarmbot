@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, Input } from "@angular/core";
 import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 
 /**
@@ -55,7 +55,8 @@ const ICONS: Record<string, string> = {
 	play: '<path d="M6 4l14 8-14 8z"/>',
 	activity: '<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
 	trending: '<path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/>',
-	download: '<path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>',
+	download:
+		'<path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>',
 };
 
 @Component({
@@ -86,7 +87,7 @@ export class IconComponent {
 	/** Stroke width for outline icons. */
 	@Input() strokeWidth = 2;
 
-	constructor(private readonly sanitizer: DomSanitizer) {}
+	private readonly sanitizer = inject(DomSanitizer);
 
 	get svg(): SafeHtml {
 		return this.sanitizer.bypassSecurityTrustHtml(ICONS[this.name] ?? "");

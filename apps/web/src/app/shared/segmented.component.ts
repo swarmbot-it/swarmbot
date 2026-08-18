@@ -12,7 +12,11 @@ import { NgFor } from "@angular/common";
 				*ngFor="let opt of options"
 				class="segmented__item"
 				[class.segmented__item--active]="opt.value === value"
-				(click)="select.emit(opt.value)"
+				role="button"
+				tabindex="0"
+				(click)="choose(opt.value)"
+				(keydown.enter)="choose(opt.value)"
+				(keydown.space)="choose(opt.value); $event.preventDefault()"
 			>
 				{{ opt.label }}
 			</div>
@@ -26,5 +30,9 @@ export class SegmentedComponent {
 	/** Currently selected segment value. */
 	@Input() value = "";
 	/** Emitted when the user picks a different segment. */
-	@Output() select = new EventEmitter<string>();
+	@Output() selectionChange = new EventEmitter<string>();
+
+	choose(value: string): void {
+		this.selectionChange.emit(value);
+	}
 }

@@ -24,22 +24,22 @@ import { MUTATION_CREATE_VOLUME, QUERY_VOLUMES } from "../core/graphql.queries";
 	template: `
 		<sb-modal
 			[open]="open"
-			(close)="onClose()"
+			(closed)="onClose()"
 			[title]="'forms.volume.title' | transloco"
 			subtitle=""
 		>
 			<div style="display:grid; grid-template-columns: 2fr 1fr; gap: 14px;">
 				<div class="field">
-					<label class="field__label"
+					<label for="volume-name" class="field__label"
 						>{{ "forms.volume.name" | transloco }}<span class="req">*</span></label
 					>
-					<input class="input" [formField]="volumeForm.name" />
+					<input id="volume-name" class="input" [formField]="volumeForm.name" />
 				</div>
 				<div class="field">
-					<label class="field__label"
+					<label for="volume-driver" class="field__label"
 						>{{ "forms.volume.driver" | transloco }}<span class="req">*</span></label
 					>
-					<select class="input select" [formField]="volumeForm.driver">
+					<select id="volume-driver" class="input select" [formField]="volumeForm.driver">
 						<option value="local">local</option>
 						<option value="nfs">nfs</option>
 						<option value="s3">s3</option>
@@ -49,8 +49,12 @@ import { MUTATION_CREATE_VOLUME, QUERY_VOLUMES } from "../core/graphql.queries";
 				</div>
 			</div>
 			<div class="field">
-				<label class="field__label">{{ "forms.volume.labels" | transloco }}</label>
+				<div class="field__label" id="volume-labels-caption">
+					{{ "forms.volume.labels" | transloco }}
+				</div>
 				<sb-kv-editor
+					role="group"
+					aria-labelledby="volume-labels-caption"
 					[items]="model().labels"
 					(itemsChange)="setLabels($event)"
 				></sb-kv-editor>
@@ -75,7 +79,7 @@ export class VolumeFormComponent {
 	/** Whether the create-volume modal is visible. */
 	@Input() open = false;
 	/** Emitted when the user dismisses the modal without creating. */
-	@Output() close = new EventEmitter<void>();
+	@Output() closed = new EventEmitter<void>();
 	/** Emitted after a successful create with the new volume name. */
 	@Output() created = new EventEmitter<{ name: string }>();
 
@@ -92,7 +96,7 @@ export class VolumeFormComponent {
 
 	onClose(): void {
 		this.model.set({ name: "", driver: "local", labels: [] });
-		this.close.emit();
+		this.closed.emit();
 	}
 
 	submit(): void {

@@ -37,7 +37,11 @@ const PALETTE = ["#f97316", "#3b82f6", "#10b981", "#a855f7", "#f59e0b", "#ec4899
 					{{ "load.subtitle" | transloco: { count: top().length } }}
 				</div>
 			</div>
-			<sb-segmented [options]="ranges" [value]="range()" (select)="onRangeChange($any($event))">
+			<sb-segmented
+				[options]="ranges"
+				[value]="range()"
+				(selectionChange)="onRangeChange($any($event))"
+			>
 			</sb-segmented>
 		</div>
 
@@ -67,7 +71,9 @@ const PALETTE = ["#f97316", "#3b82f6", "#10b981", "#a855f7", "#f59e0b", "#ec4899
 						<div class="card__title">{{ "load.cpu" | transloco }}</div>
 						<div style="font-size:12px; color:var(--muted); margin-top:2px">
 							{{ "load.peak" | transloco }}
-							<strong class="mono" style="color:var(--text-2)">{{ peak("cpu") }}%</strong>
+							<strong class="mono" style="color:var(--text-2)"
+								>{{ peak("cpu") }}%</strong
+							>
 						</div>
 					</div>
 				</div>
@@ -87,7 +93,9 @@ const PALETTE = ["#f97316", "#3b82f6", "#10b981", "#a855f7", "#f59e0b", "#ec4899
 						<div class="card__title">{{ "load.memory" | transloco }}</div>
 						<div style="font-size:12px; color:var(--muted); margin-top:2px">
 							{{ "load.peak" | transloco }}
-							<strong class="mono" style="color:var(--text-2)">{{ peak("mem") }}%</strong>
+							<strong class="mono" style="color:var(--text-2)"
+								>{{ peak("mem") }}%</strong
+							>
 						</div>
 					</div>
 				</div>
@@ -186,9 +194,13 @@ export class LoadPageComponent implements OnInit {
 						})
 						.filter((s) => s.cpu.length > 0);
 
-					all.sort((a, b) => (b.cpu[b.cpu.length - 1] || 0) - (a.cpu[a.cpu.length - 1] || 0));
+					all.sort(
+						(a, b) => (b.cpu[b.cpu.length - 1] || 0) - (a.cpu[a.cpu.length - 1] || 0)
+					);
 					this.top.set(
-						all.slice(0, 7).map((s, i) => ({ ...s, color: PALETTE[i % PALETTE.length] }))
+						all
+							.slice(0, 7)
+							.map((s, i) => ({ ...s, color: PALETTE[i % PALETTE.length] }))
 					);
 					this.loading.set(false);
 				});

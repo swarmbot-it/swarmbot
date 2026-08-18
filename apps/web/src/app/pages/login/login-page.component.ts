@@ -25,16 +25,22 @@ import { MUTATION_LOGIN, QUERY_PROFILE_ME } from "../../core/graphql.queries";
 				<p class="login-card__subtitle">{{ "auth.login.subtitle" | transloco }}</p>
 				<form (submit)="onSubmit($event)" *ngIf="!redirecting()">
 					<div class="field">
-						<label class="field__label">{{ "auth.login.username" | transloco }}</label>
+						<label for="login-username" class="field__label">{{
+							"auth.login.username" | transloco
+						}}</label>
 						<input
+							id="login-username"
 							class="input"
 							autocomplete="username"
 							[formField]="loginForm.username"
 						/>
 					</div>
 					<div class="field" style="margin-top: 12px;">
-						<label class="field__label">{{ "auth.login.password" | transloco }}</label>
+						<label for="login-password" class="field__label">{{
+							"auth.login.password" | transloco
+						}}</label>
 						<input
+							id="login-password"
 							class="input"
 							type="password"
 							autocomplete="current-password"
@@ -190,7 +196,10 @@ export class LoginPageComponent implements OnInit {
 					// Fetch the full profile (role included) so role-gated UI is correct from the first
 					// screen — a plain { username } profile would otherwise hide editor/admin actions.
 					this.apollo
-						.query<{ me: Profile | null }>({ query: QUERY_PROFILE_ME, fetchPolicy: "network-only" })
+						.query<{ me: Profile | null }>({
+							query: QUERY_PROFILE_ME,
+							fetchPolicy: "network-only",
+						})
 						.subscribe({
 							next: (profileRes) => {
 								if (profileRes.data?.me) this.auth.setProfile(profileRes.data.me);

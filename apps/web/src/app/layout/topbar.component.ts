@@ -96,7 +96,16 @@ const CJK_LANGS: { code: LangCode; label: string }[] = [
 			<sb-notifications></sb-notifications>
 
 			<div #anchor class="topbar__user-anchor">
-				<div class="topbar__user" (click)="toggle()">
+				<div
+					class="topbar__user"
+					role="button"
+					tabindex="0"
+					aria-haspopup="menu"
+					[attr.aria-expanded]="menuOpen"
+					(click)="toggle()"
+					(keydown.enter)="toggle()"
+					(keydown.space)="toggle(); $event.preventDefault()"
+				>
 					<div class="avatar">{{ initials() }}</div>
 					<div class="topbar__user-meta">
 						<span class="topbar__user-name">{{ user() }}</span>
@@ -105,24 +114,46 @@ const CJK_LANGS: { code: LangCode; label: string }[] = [
 					<sb-icon name="chevronDown" [size]="14"></sb-icon>
 				</div>
 
-				<div class="popover" *ngIf="menuOpen">
+				<div class="popover" role="menu" *ngIf="menuOpen">
 					<div class="popover__header">
 						<div class="popover__name">{{ user() }}</div>
 						<div class="popover__email">{{ email() }}</div>
 					</div>
 
-					<div class="popover__item" (click)="goToProfile()">
+					<div
+						class="popover__item"
+						role="menuitem"
+						tabindex="0"
+						(click)="goToProfile()"
+						(keydown.enter)="goToProfile()"
+						(keydown.space)="goToProfile(); $event.preventDefault()"
+					>
 						<sb-icon name="user" [size]="15"></sb-icon
 						><span>{{ "topbar.profile" | transloco }}</span>
 					</div>
-					<div class="popover__item" (click)="openApiTokens()">
+					<div
+						class="popover__item"
+						role="menuitem"
+						tabindex="0"
+						(click)="openApiTokens()"
+						(keydown.enter)="openApiTokens()"
+						(keydown.space)="openApiTokens(); $event.preventDefault()"
+					>
 						<sb-icon name="keys" [size]="15"></sb-icon
 						><span>{{ "topbar.apiTokens" | transloco }}</span>
 					</div>
 					<div class="popover__divider"></div>
 
 					<div class="popover__sub">{{ "topbar.language" | transloco }}</div>
-					<div class="popover__item lang-trigger" (click)="toggleLang()">
+					<div
+						class="popover__item lang-trigger"
+						role="button"
+						tabindex="0"
+						[attr.aria-expanded]="langOpen"
+						(click)="toggleLang()"
+						(keydown.enter)="toggleLang()"
+						(keydown.space)="toggleLang(); $event.preventDefault()"
+					>
 						<span class="lang-code">{{ currentLang().code.toUpperCase() }}</span>
 						<span class="lang-trigger__name">{{ currentLang().label }}</span>
 						<sb-icon
@@ -139,7 +170,12 @@ const CJK_LANGS: { code: LangCode; label: string }[] = [
 							*ngFor="let lang of latinLangs"
 							class="popover__item lang-item"
 							[class.lang-item--active]="lang.code === i18n.activeLang()"
+							role="menuitemradio"
+							tabindex="0"
+							[attr.aria-checked]="lang.code === i18n.activeLang()"
 							(click)="selectLang(lang.code)"
+							(keydown.enter)="selectLang(lang.code)"
+							(keydown.space)="selectLang(lang.code); $event.preventDefault()"
 						>
 							<span class="lang-code">{{ lang.code.toUpperCase() }}</span>
 							<span class="lang-item__name">{{ lang.label }}</span>
@@ -156,7 +192,12 @@ const CJK_LANGS: { code: LangCode; label: string }[] = [
 							*ngFor="let lang of cjkLangs"
 							class="popover__item lang-item"
 							[class.lang-item--active]="lang.code === i18n.activeLang()"
+							role="menuitemradio"
+							tabindex="0"
+							[attr.aria-checked]="lang.code === i18n.activeLang()"
 							(click)="selectLang(lang.code)"
+							(keydown.enter)="selectLang(lang.code)"
+							(keydown.space)="selectLang(lang.code); $event.preventDefault()"
 						>
 							<span class="lang-code">{{ lang.code.toUpperCase() }}</span>
 							<span class="lang-item__name">{{ lang.label }}</span>
@@ -171,7 +212,14 @@ const CJK_LANGS: { code: LangCode; label: string }[] = [
 					</div>
 
 					<div class="popover__divider"></div>
-					<div class="popover__item popover__item--danger" (click)="onLogout()">
+					<div
+						class="popover__item popover__item--danger"
+						role="menuitem"
+						tabindex="0"
+						(click)="onLogout()"
+						(keydown.enter)="onLogout()"
+						(keydown.space)="onLogout(); $event.preventDefault()"
+					>
 						<sb-icon name="logout" [size]="15"></sb-icon
 						><span>{{ "topbar.logout" | transloco }}</span>
 					</div>
@@ -180,7 +228,7 @@ const CJK_LANGS: { code: LangCode; label: string }[] = [
 
 			<sb-api-token-modal
 				[open]="apiTokenModalOpen()"
-				(close)="closeApiTokens()"
+				(closed)="closeApiTokens()"
 			></sb-api-token-modal>
 		</header>
 	`,
@@ -253,10 +301,14 @@ const CJK_LANGS: { code: LangCode; label: string }[] = [
 			.theme-slider__btn--active {
 				background: var(--surface);
 				color: var(--primary-500);
-				box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 0 1px var(--border);
+				box-shadow:
+					0 1px 3px rgba(0, 0, 0, 0.1),
+					0 0 0 1px var(--border);
 			}
-			:host-context([data-theme='dark']) .theme-slider__btn--active {
-				box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35), 0 0 0 1px var(--border-strong);
+			:host-context([data-theme="dark"]) .theme-slider__btn--active {
+				box-shadow:
+					0 1px 4px rgba(0, 0, 0, 0.35),
+					0 0 0 1px var(--border-strong);
 			}
 			.theme-slider__btn:not(.theme-slider__btn--active):hover {
 				color: var(--muted);
@@ -424,10 +476,10 @@ const CJK_LANGS: { code: LangCode; label: string }[] = [
 				color: var(--primary-600);
 				border-color: transparent;
 			}
-			:host-context([data-theme='dark']) .lang-item--active {
+			:host-context([data-theme="dark"]) .lang-item--active {
 				color: var(--primary-400);
 			}
-			:host-context([data-theme='dark']) .lang-item--active .lang-code {
+			:host-context([data-theme="dark"]) .lang-item--active .lang-code {
 				color: var(--primary-400);
 			}
 			.lang-item__name {
@@ -472,14 +524,14 @@ export class TopbarComponent implements OnInit {
 
 	readonly clusterName = computed(() => {
 		this.i18n.activeLang();
-		return this.clusterInstanceName()?.trim() || this.transloco.translate("topbar.clusterUnknown");
+		return (
+			this.clusterInstanceName()?.trim() || this.transloco.translate("topbar.clusterUnknown")
+		);
 	});
 
 	readonly currentLang = computed(() => {
 		const code = this.i18n.activeLang();
-		return (
-			[...LATIN_LANGS, ...CJK_LANGS].find((l) => l.code === code) ?? LATIN_LANGS[1]
-		);
+		return [...LATIN_LANGS, ...CJK_LANGS].find((l) => l.code === code) ?? LATIN_LANGS[1];
 	});
 
 	ngOnInit(): void {
