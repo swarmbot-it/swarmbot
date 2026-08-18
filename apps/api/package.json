@@ -16,7 +16,7 @@
         "@apollo/server": "^5.5.1",
         "@as-integrations/express5": "^1.1.2",
         "@graphql-tools/schema": "^10.0.16",
-        "@kubernetes/client-node": "^1.4.0",
+        "@kubernetes/client-node": "^2.0.0",
         "better-sqlite3": "^13.0.3",
         "body-parser": "^2.3.0",
         "cors": "^2.8.5",
