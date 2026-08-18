@@ -1,4 +1,7 @@
-import { createHash, createPublicKey, randomBytes, type JsonWebKey } from "crypto";
+// `JsonWebKey` lives in the `webcrypto` namespace — @types/node 26 stopped
+// re-exporting it at the top level of `crypto`, and it is what
+// `createPublicKey({ format: "jwk" })` takes anyway (JsonWebKeyInput.key).
+import { createHash, createPublicKey, randomBytes, type webcrypto } from "crypto";
 import jwt, { type JwtPayload } from "jsonwebtoken";
 import type { Kysely } from "kysely";
 import type { Database } from "../db.js";
@@ -52,10 +55,17 @@ const DISCOVERY_TTL_MS = 60 * 60_000;
 // kid -> SPKI PEM public key.
 let cache: { issuer: string; doc: Discovery; keys: Map<string, string>; at: number } | null = null;
 
+/**
+ * One entry of a JWKS document: what `createPublicKey({ format: "jwk" })`
+ * accepts, plus the `kid` that JWKS documents carry (RFC 7517 §4.5) but
+ * node's Web Crypto type does not model.
+ */
+type JwksKey = webcrypto.JsonWebKey & { kid?: string };
+
 async function fetchKeys(jwksUri: string): Promise<Map<string, string>> {
 	const res = await fetch(jwksUri);
 	if (!res.ok) throw new Error(`oidc jwks fetch failed: ${res.status}`);
-	const body = (await res.json()) as { keys?: JsonWebKey[] };
+	const body = (await res.json()) as { keys?: JwksKey[] };
 	const map = new Map<string, string>();
 	for (const jwk of body.keys ?? []) {
 		const kid = typeof jwk.kid === "string" ? jwk.kid : undefined;
@@ -65,7 +75,9 @@ async function fetchKeys(jwksUri: string): Promise<Map<string, string>> {
 				type: "spki",
 				format: "pem",
 			});
-			map.set(kid, typeof pem === "string" ? pem : pem.toString("utf8"));
+			// `export({ format: "pem" })` yields a string; @types/node <26 typed it
+			// as `string | Buffer`, so normalise without assuming either shape.
+			map.set(kid, pem.toString());
 		} catch {
 			/* skip unusable key */
 		}
