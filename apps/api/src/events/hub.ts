@@ -1,5 +1,4 @@
 import { EventEmitter } from "events";
-import { pubsub, SWARM_TOPIC } from "../graphql/pubsub.js";
 
 export type SwarmEvent = { type?: string; message?: unknown; [k: string]: unknown };
 
@@ -44,10 +43,6 @@ export function publishEvent(event: SwarmEvent): void {
 		ring.push({ time: new Date().toISOString(), message });
 		if (ring.length > RING_SIZE) ring.shift();
 	}
-
-	void pubsub.publish(SWARM_TOPIC, {
-		swarmEvent: { type, message },
-	});
 }
 
 export function recentEvents(limit = 20): { time: string; message: string }[] {

@@ -86,14 +86,6 @@ export const typeDefs = `#graphql
     changePassword(input: ChangePasswordInput!): Boolean!
   }
 
-  type Subscription {
-    swarmEvent: SwarmEventPayload!
-  }
-
-  type SwarmEventPayload {
-    type: String
-    message: String
-  }
 
   type VersionInfo {
     name: String!
