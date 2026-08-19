@@ -223,6 +223,9 @@ describe.sequential("demo read-only mode", () => {
 				query: 'mutation { removeUser(id: "1") }',
 			}),
 		});
+		// 403, not 500: the server is fine, the request is refused. Apollo defaults
+		// plugin-thrown errors to 500, so this pins the explicit http status.
+		expect(res.status).toBe(403);
 		const body = (await res.json()) as {
 			errors?: Array<{ message: string; extensions?: { code?: string } }>;
 		};
