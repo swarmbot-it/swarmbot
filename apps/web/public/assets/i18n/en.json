@@ -33,7 +33,8 @@
             "submit": "Sign in",
             "submitting": "Signing in…",
             "failed": "Login failed.",
-            "sso": "Sign in with {{provider}}"
+            "sso": "Sign in with {{provider}}",
+            "demoHint": "Read-only demo — sign in with the pre-filled credentials to explore. Changes are disabled."
         }
     },
     "topbar": {
@@ -76,7 +77,8 @@
         "apiTokensGenFailed": "Failed to generate token.",
         "apiTokensRevokeFailed": "Failed to revoke token.",
         "logout": "Log out",
-        "administrator": "Administrator"
+        "administrator": "Administrator",
+        "demoBadge": "Demo · read-only"
     },
     "table": {
         "search": "Search…",

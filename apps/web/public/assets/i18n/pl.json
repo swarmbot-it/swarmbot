@@ -33,7 +33,8 @@
             "submit": "Zaloguj się",
             "submitting": "Logowanie…",
             "failed": "Logowanie nie powiodło się.",
-            "sso": "Zaloguj się przez {{provider}}"
+            "sso": "Zaloguj się przez {{provider}}",
+            "demoHint": "Demo tylko do odczytu — zaloguj się wypełnionymi danymi, aby je obejrzeć. Zmiany są wyłączone."
         }
     },
     "topbar": {
@@ -76,7 +77,8 @@
         "apiTokensGenFailed": "Nie udało się wygenerować tokenu.",
         "apiTokensRevokeFailed": "Nie udało się unieważnić tokenu.",
         "logout": "Wyloguj",
-        "administrator": "Administrator"
+        "administrator": "Administrator",
+        "demoBadge": "Demo · tylko do odczytu"
     },
     "table": {
         "search": "Szukaj…",

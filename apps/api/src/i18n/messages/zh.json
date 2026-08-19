@@ -3,6 +3,7 @@
     "chart.hoursAgo": "{n} 小时前",
     "chart.minutesAgo": "{n} 分钟前",
     "chart.now": "现在",
+    "errors.demoReadOnly": "这是只读演示环境，已禁用所有更改。",
     "errors.forbidden": "没有权限",
     "errors.invalidAuthorization": "授权无效",
     "errors.invalidCredentials": "用户名或密码不正确。",

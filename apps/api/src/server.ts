@@ -14,6 +14,7 @@ import { getAppSecret } from "./db.js";
 import { typeDefs } from "./graphql/schema.js";
 import { resolvers } from "./graphql/resolvers.js";
 import { buildContext, localeFromHeader, type GraphQLContext } from "./graphql/context.js";
+import { demoReadOnlyPlugin } from "./graphql/demo-readonly.plugin.js";
 import { localizedMessage } from "./i18n/errors.js";
 import type { AuthedRequest } from "./http/optional-jwt.js";
 import { optionalJwtMiddleware } from "./http/optional-jwt.js";
@@ -66,7 +67,7 @@ export async function createHttpServer(
 
 	const apollo = new ApolloServer<GraphQLContext>({
 		schema,
-		plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+		plugins: [ApolloServerPluginDrainHttpServer({ httpServer }), demoReadOnlyPlugin()],
 	});
 	await apollo.start();
 
@@ -330,6 +331,7 @@ export async function createHttpServer(
 			oidc,
 			autoLogin: oidc && cfg.consoleHosts.includes(host),
 			providerLabel: cfg.oidcProviderLabel ?? null,
+			demo: cfg.demo,
 		});
 	});
 

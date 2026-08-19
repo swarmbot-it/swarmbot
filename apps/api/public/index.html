@@ -530,6 +530,11 @@
 					color 0.2s,
 					background 0.2s;
 			}
+			/* Placeholder until the presentation video is ready: still visible and
+			   styled, but it goes nowhere, so do not offer a pointer cursor. */
+			.btn-secondary--soon {
+				cursor: default;
+			}
 			.btn-secondary:hover {
 				border-color: #f97316;
 				color: var(--text);
@@ -1325,7 +1330,11 @@
 							<span data-i18n="heroCtaTry"></span>
 							<i class="fa-solid fa-arrow-right"></i>
 						</a>
-						<a href="#demo-full" class="btn-secondary">
+						<a
+							class="btn-secondary btn-secondary--soon"
+							aria-disabled="true"
+							data-i18n-title="comingSoon"
+						>
 							<i class="fa-solid fa-play" style="font-size: 14px"></i>
 							<span data-i18n="heroCtaDemo"></span>
 						</a>
@@ -1593,6 +1602,18 @@
 					zh: "试用演示",
 					ja: "デモを試す",
 					ko: "데모 체험하기",
+				},
+				comingSoon: {
+					pl: "Wkrótce…",
+					en: "Coming soon…",
+					de: "Demnächst…",
+					es: "Muy pronto…",
+					fr: "Bientôt disponible…",
+					it: "Prossimamente…",
+					pt: "Brevemente…",
+					zh: "敬请期待…",
+					ja: "近日公開…",
+					ko: "곧 공개…",
 				},
 				heroCtaDemo: {
 					pl: "Obejrzyj prezentację (3 min)",
@@ -2536,6 +2557,10 @@
 			function applyI18n() {
 				document.querySelectorAll("[data-i18n]").forEach((el) => {
 					el.textContent = t(el.getAttribute("data-i18n"));
+				});
+				// Tooltips need the same treatment as text — same keys, different slot.
+				document.querySelectorAll("[data-i18n-title]").forEach((el) => {
+					el.setAttribute("title", t(el.getAttribute("data-i18n-title")));
 				});
 			}
 
