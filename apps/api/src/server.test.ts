@@ -167,6 +167,19 @@ describe.sequential("public config endpoints", () => {
 		});
 	});
 
+	it("sends demo visitors straight to the console instead of the landing page", async () => {
+		test = await startTestHttp({ demo: true });
+		const res = await fetch(`${test.baseUrl}/`, { redirect: "manual" });
+		expect(res.status).toBe(302);
+		expect(res.headers.get("location")).toBe("/app/");
+	});
+
+	it("serves the landing page at / when demo mode is off", async () => {
+		test = await startTestHttp({ demo: false });
+		const res = await fetch(`${test.baseUrl}/`, { redirect: "manual" });
+		expect(res.status).not.toBe(302);
+	});
+
 	it("GET /api/auth/config advertises demo mode so the SPA can badge it", async () => {
 		test = await startTestHttp({ demo: true });
 		const res = await fetch(`${test.baseUrl}/api/auth/config`);
