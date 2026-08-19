@@ -1,6 +1,7 @@
 import type { ApolloServerPlugin } from "@apollo/server";
+import { GraphQLError } from "graphql";
 import type { GraphQLContext } from "./context.js";
-import { localizedError } from "../i18n/errors.js";
+import { t } from "../i18n/translate.js";
 
 /**
  * Mutations a read-only demo still has to allow, or nobody can get in or out.
@@ -36,7 +37,12 @@ export function demoReadOnlyPlugin(): ApolloServerPlugin<GraphQLContext> {
 						.map((s) => (s as { name: { value: string } }).name.value);
 					if (fields.length > 0 && fields.every((f) => ALLOWED.has(f))) return;
 
-					throw localizedError(contextValue.locale, "errors.demoReadOnly", "FORBIDDEN");
+					// `http.status` matters: without it Apollo reports a refusal as 500,
+					// which is both wrong (the server is fine) and noisy — every visitor
+					// clicking a disabled action would log a server error.
+					throw new GraphQLError(t(contextValue.locale, "errors.demoReadOnly"), {
+						extensions: { code: "FORBIDDEN", http: { status: 403 } },
+					});
 				},
 			};
 		},
