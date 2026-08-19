@@ -340,6 +340,13 @@ export async function createHttpServer(
 	// hosts fall through to the static landing below.
 	app.get("/", (req, res, next) => {
 		const host = (req.headers.host ?? "").split(":")[0]!.toLowerCase();
+		// A demo instance exists to show the console. Serving the marketing page
+		// here would bounce visitors straight back to where they clicked "try the
+		// demo" from.
+		if (cfg.demo) {
+			res.redirect("/app/");
+			return;
+		}
 		if (oidcConfig(cfg) && cfg.consoleHosts.includes(host)) {
 			res.redirect("/api/auth/oidc/login");
 			return;
