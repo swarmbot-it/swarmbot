@@ -7,9 +7,6 @@ import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@as-integrations/express5";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
 import { makeExecutableSchema } from "@graphql-tools/schema";
-import { WebSocketServer } from "ws";
-import { useServer } from "graphql-ws/use/ws";
-import { execute, subscribe } from "graphql";
 import type { Kysely } from "kysely";
 import type { SwarmbotConfig } from "./config.js";
 import type { Database } from "./db.js";
@@ -67,63 +64,9 @@ export async function createHttpServer(
 
 	const schema = makeExecutableSchema({ typeDefs, resolvers });
 
-	const wsServer = new WebSocketServer({ server: httpServer, path: "/graphql" });
-
-	const serverCleanup = useServer(
-		{
-			schema,
-			execute,
-			subscribe,
-			context: async (ctx) => {
-				const auth = ctx.connectionParams?.authorization;
-				const langHeader = ctx.connectionParams?.["accept-language"];
-				const locale = localeFromHeader(
-					typeof langHeader === "string" ? langHeader : undefined
-				);
-				const ip = ctx.extra.request.socket.remoteAddress ?? "unknown";
-				const base: GraphQLContext = {
-					cfg,
-					db,
-					orchestrator,
-					docker,
-					user: undefined,
-					locale,
-					ip,
-				};
-				if (!auth || typeof auth !== "string") {
-					return base;
-				}
-				try {
-					const secret = await getAppSecret(db);
-					const claims = verifyJwt(secret, auth);
-					const u = await findAuthUser(db, claims.usr.username);
-					if (u) {
-						return { ...base, user: claims };
-					}
-				} catch {
-					/* anonymous subscription */
-				}
-				return base;
-			},
-		},
-		// ws @types version skew with graphql-ws
-		wsServer as never
-	);
-
 	const apollo = new ApolloServer<GraphQLContext>({
 		schema,
-		plugins: [
-			ApolloServerPluginDrainHttpServer({ httpServer }),
-			{
-				async serverWillStart() {
-					return {
-						async drainServer() {
-							await serverCleanup.dispose();
-						},
-					};
-				},
-			},
-		],
+		plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
 	});
 	await apollo.start();
 

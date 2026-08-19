@@ -33,7 +33,6 @@ import { stackRemove } from "../docker/cli.js";
 import { ManifestValidationError } from "../orchestrator/kubernetes/adapter.js";
 // js-yaml v5 dropped its default export; the named exports are the API now.
 import * as yaml from "js-yaml";
-import { pubsub, SWARM_TOPIC } from "./pubsub.js";
 import type Dockerode from "dockerode";
 import { randomUUID } from "crypto";
 import {
@@ -1375,13 +1374,6 @@ export const resolvers = {
 		) => {
 			requireUser(ctx);
 			return changeUserPassword(ctx.db, ctx.user!.usr.username, input.current, input.next);
-		},
-	},
-
-	Subscription: {
-		swarmEvent: {
-			// graphql-subscriptions v3 renamed asyncIterator -> asyncIterableIterator.
-			subscribe: () => pubsub.asyncIterableIterator([SWARM_TOPIC]),
 		},
 	},
 };
