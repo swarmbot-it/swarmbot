@@ -33,7 +33,8 @@
             "submit": "サインイン",
             "submitting": "サインイン中…",
             "failed": "ログインに失敗しました。",
-            "sso": "{{provider}} でサインイン"
+            "sso": "{{provider}} でサインイン",
+            "demoHint": "読み取り専用のデモです。入力済みの認証情報でサインインしてご覧ください。変更は無効です。"
         }
     },
     "topbar": {
@@ -76,7 +77,8 @@
         "minutesAgo": "{{n}}分前",
         "noActivity": "まだアクティビティはありません。",
         "recentActivity": "最近のアクティビティ",
-        "secondsAgo": "{{n}}秒前"
+        "secondsAgo": "{{n}}秒前",
+        "demoBadge": "デモ · 読み取り専用"
     },
     "table": {
         "search": "検索…",

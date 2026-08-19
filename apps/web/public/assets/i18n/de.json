@@ -33,7 +33,8 @@
             "submit": "Anmelden",
             "submitting": "Anmeldung…",
             "failed": "Anmeldung fehlgeschlagen.",
-            "sso": "Anmelden mit {{provider}}"
+            "sso": "Anmelden mit {{provider}}",
+            "demoHint": "Schreibgeschützte Demo — mit den vorausgefüllten Zugangsdaten anmelden. Änderungen sind deaktiviert."
         }
     },
     "topbar": {
@@ -76,7 +77,8 @@
         "minutesAgo": "vor {{n}}m",
         "noActivity": "Noch keine Aktivität.",
         "recentActivity": "Letzte Aktivität",
-        "secondsAgo": "vor {{n}}s"
+        "secondsAgo": "vor {{n}}s",
+        "demoBadge": "Demo · schreibgeschützt"
     },
     "table": {
         "search": "Suchen…",

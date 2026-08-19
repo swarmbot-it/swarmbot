@@ -62,6 +62,9 @@ const LOGOUT = gql`
 			>
 				{{ "topbar.orchestrator." + orch.orchestrator() | transloco }}
 			</span>
+			<span class="topbar__demo" *ngIf="demo()" data-testid="demo-badge">
+				{{ "topbar.demoBadge" | transloco }}
+			</span>
 
 			<span class="topbar__spacer"></span>
 
@@ -250,6 +253,18 @@ const LOGOUT = gql`
 			.topbar__cluster-name {
 				font-size: 13px;
 				font-weight: 600;
+			}
+			.topbar__demo {
+				font-family: var(--font-mono);
+				font-size: 10.5px;
+				font-weight: 700;
+				letter-spacing: 0.04em;
+				text-transform: uppercase;
+				background: rgba(249, 115, 22, 0.12);
+				color: var(--primary-500);
+				padding: 2px 8px;
+				border-radius: 999px;
+				border: 1px solid rgba(249, 115, 22, 0.3);
 			}
 			.topbar__orch {
 				font-family: var(--font-mono);
@@ -510,6 +525,8 @@ export class TopbarComponent implements OnInit {
 	private readonly clusterInstanceName = signal<string | null>(null);
 
 	readonly apiTokenModalOpen = signal(false);
+	/** Read-only public demo (SWARMBOT_DEMO); drives the DEMO badge. */
+	readonly demo = signal(false);
 
 	readonly logoSubtitle = computed(() => `v${BUILD_APP_VERSION} · ${this.clusterName()}`);
 
@@ -523,6 +540,15 @@ export class TopbarComponent implements OnInit {
 	readonly currentLang = computed(() => languageFor(this.i18n.activeLang()));
 
 	ngOnInit(): void {
+		// Same public endpoint the login page reads; cheap enough to ask again
+		// rather than thread app config through a shared service for one flag.
+		void fetch("/api/auth/config")
+			.then((r) => r.json())
+			.then((cfg: { demo?: boolean }) => this.demo.set(Boolean(cfg.demo)))
+			.catch(() => {
+				/* config unavailable — just don't show the badge */
+			});
+
 		this.apollo
 			.watchQuery<{
 				version: { instanceName: string | null; orchestrator: string | null };

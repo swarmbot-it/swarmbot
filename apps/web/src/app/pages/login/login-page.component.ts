@@ -23,6 +23,9 @@ import { MUTATION_LOGIN, QUERY_PROFILE_ME } from "../../core/graphql.queries";
 				</div>
 				<h1 class="login-card__title">{{ "auth.login.title" | transloco }}</h1>
 				<p class="login-card__subtitle">{{ "auth.login.subtitle" | transloco }}</p>
+				<div class="login-demo" *ngIf="demo() && !redirecting()" data-testid="demo-hint">
+					{{ "auth.login.demoHint" | transloco }}
+				</div>
 				<form (submit)="onSubmit($event)" *ngIf="!redirecting()">
 					<div class="field">
 						<label for="login-username" class="field__label">{{
@@ -102,6 +105,15 @@ import { MUTATION_LOGIN, QUERY_PROFILE_ME } from "../../core/graphql.queries";
 				font-size: 13px;
 				margin-top: 4px;
 			}
+			.login-demo {
+				margin-top: 14px;
+				padding: 10px 12px;
+				border-radius: var(--r-md);
+				background: var(--surface-tint);
+				border: 1px solid var(--border);
+				color: var(--muted);
+				font-size: 12.5px;
+			}
 			.login-error {
 				margin-top: 14px;
 				color: var(--danger);
@@ -125,6 +137,8 @@ export class LoginPageComponent implements OnInit {
 	readonly oidcEnabled = signal(false);
 	/** Display name for the OIDC button, e.g. "Okta" — set via SWARMBOT_OIDC_PROVIDER_LABEL. */
 	readonly oidcProviderLabel = signal("SSO");
+	/** Public read-only demo instance (SWARMBOT_DEMO) — credentials are pre-filled. */
+	readonly demo = signal(false);
 
 	/**
 	 * On a console host with OIDC enabled, go straight to the configured IdP —
@@ -142,9 +156,16 @@ export class LoginPageComponent implements OnInit {
 				oidc?: boolean;
 				autoLogin?: boolean;
 				providerLabel?: string | null;
+				demo?: boolean;
 			};
 			this.oidcEnabled.set(Boolean(cfg.oidc));
 			if (cfg.providerLabel) this.oidcProviderLabel.set(cfg.providerLabel);
+			if (cfg.demo) {
+				// The public demo is read-only, so these credentials are not a secret —
+				// pre-filling them is the difference between "a demo" and "a login wall".
+				this.demo.set(true);
+				this.loginModel.set({ username: "admin", password: "swarmbot" });
+			}
 			if (cfg.autoLogin && !forcePassword) {
 				window.location.href = "/api/auth/oidc/login";
 				return;

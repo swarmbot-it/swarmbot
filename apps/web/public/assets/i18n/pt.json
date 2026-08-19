@@ -33,7 +33,8 @@
             "submit": "Iniciar sessão",
             "submitting": "A iniciar sessão…",
             "failed": "Falha no início de sessão.",
-            "sso": "Iniciar sessão com {{provider}}"
+            "sso": "Iniciar sessão com {{provider}}",
+            "demoHint": "Demonstração só de leitura — inicie sessão com as credenciais preenchidas. As alterações estão desativadas."
         }
     },
     "topbar": {
@@ -76,7 +77,8 @@
         "apiTokensGenFailed": "Falha ao gerar o token.",
         "apiTokensRevokeFailed": "Falha ao revogar o token.",
         "logout": "Terminar sessão",
-        "administrator": "Administrador"
+        "administrator": "Administrador",
+        "demoBadge": "Demo · só leitura"
     },
     "table": {
         "search": "Pesquisar…",

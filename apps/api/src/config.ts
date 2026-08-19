@@ -26,6 +26,8 @@ export type SwarmbotConfig = {
 	apiTokenExpiryDays: number | undefined;
 	port: number;
 	mock: boolean;
+	/** Public read-only demo: every mutation except login/logout is rejected. */
+	demo: boolean;
 	/** Allowed CORS origins. Undefined -> the dev-safe default list in server.ts. */
 	allowedOrigins: string[] | undefined;
 	/** Shared secret required from swarmagent as X-Agent-Token on POST /events. Unset = no auth enforced (opt-in). */
@@ -65,6 +67,7 @@ const defaults: SwarmbotConfig = {
 	apiTokenExpiryDays: undefined,
 	port: 8080,
 	mock: false,
+	demo: false,
 	allowedOrigins: undefined,
 	agentSharedSecret: undefined,
 	orchestrator: "auto",
@@ -141,6 +144,7 @@ export function loadConfig(): SwarmbotConfig {
 		apiTokenExpiryDays: envInt("SWARMBOT_API_TOKEN_EXPIRY_DAYS"),
 		port,
 		mock,
+		demo: envBool("SWARMBOT_DEMO") ?? defaults.demo,
 		allowedOrigins: envStr("SWARMBOT_ALLOWED_ORIGINS")
 			?.split(",")
 			.map((s) => s.trim())

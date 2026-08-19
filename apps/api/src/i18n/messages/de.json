@@ -3,6 +3,7 @@
     "chart.hoursAgo": "vor {n} Std.",
     "chart.minutesAgo": "vor {n} Min.",
     "chart.now": "jetzt",
+    "errors.demoReadOnly": "Dies ist eine schreibgeschützte Demo — Änderungen sind deaktiviert.",
     "errors.forbidden": "Keine Berechtigung",
     "errors.invalidAuthorization": "Ungültige Autorisierung",
     "errors.invalidCredentials": "Benutzername oder Passwort ist falsch.",

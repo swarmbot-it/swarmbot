@@ -123,7 +123,12 @@ describe.sequential("public config endpoints", () => {
 	it("GET /api/auth/config reports OIDC disabled when unconfigured", async () => {
 		test = await startTestHttp();
 		const res = await fetch(`${test.baseUrl}/api/auth/config`);
-		expect(await res.json()).toEqual({ oidc: false, autoLogin: false, providerLabel: null });
+		expect(await res.json()).toEqual({
+			oidc: false,
+			autoLogin: false,
+			providerLabel: null,
+			demo: false,
+		});
 	});
 
 	it("GET /api/auth/config auto-logs-in on a configured console host", async () => {
@@ -137,7 +142,12 @@ describe.sequential("public config endpoints", () => {
 			consoleHosts: ["127.0.0.1"],
 		});
 		const res = await fetch(`${test.baseUrl}/api/auth/config`);
-		expect(await res.json()).toEqual({ oidc: true, autoLogin: true, providerLabel: null });
+		expect(await res.json()).toEqual({
+			oidc: true,
+			autoLogin: true,
+			providerLabel: null,
+			demo: false,
+		});
 	});
 
 	it("GET /api/auth/config reports the configured OIDC provider label", async () => {
@@ -153,6 +163,85 @@ describe.sequential("public config endpoints", () => {
 			oidc: true,
 			autoLogin: false,
 			providerLabel: "Acme SSO",
+			demo: false,
 		});
+	});
+
+	it("GET /api/auth/config advertises demo mode so the SPA can badge it", async () => {
+		test = await startTestHttp({ demo: true });
+		const res = await fetch(`${test.baseUrl}/api/auth/config`);
+		expect(await res.json()).toEqual({
+			oidc: false,
+			autoLogin: false,
+			providerLabel: null,
+			demo: true,
+		});
+	});
+});
+
+describe.sequential("demo read-only mode", () => {
+	let test: Awaited<ReturnType<typeof startTestHttp>> | undefined;
+
+	/** The bootstrap admin, via the same mutation the console uses. */
+	async function login(t: Awaited<ReturnType<typeof startTestHttp>>): Promise<string> {
+		const data = await gql<{ login: { token: string } }>(
+			t,
+			`mutation($username: String!, $password: String!) {
+        login(username: $username, password: $password) { token }
+      }`,
+			{ username: "admin", password: "swarmbot" }
+		);
+		return data.login.token;
+	}
+
+	afterEach(async () => {
+		await test?.cleanup();
+		test = undefined;
+	});
+
+	it("rejects mutations and leaves queries working", async () => {
+		test = await startTestHttp({ demo: true });
+
+		// login must still work, or nobody could reach the demo screens at all
+		const token = await login(test);
+		expect(token).toBeTruthy();
+
+		// a read is unaffected
+		const version = await gql<{ version: { name: string } }>(
+			test,
+			"{ version { name } }",
+			undefined,
+			token
+		);
+		expect(version.version.name).toBeTruthy();
+
+		// a write is refused before any resolver runs
+		const res = await fetch(`${test.baseUrl}/graphql`, {
+			method: "POST",
+			headers: { "content-type": "application/json", authorization: token },
+			body: JSON.stringify({
+				query: 'mutation { removeUser(id: "1") }',
+			}),
+		});
+		const body = (await res.json()) as {
+			errors?: Array<{ message: string; extensions?: { code?: string } }>;
+		};
+		expect(body.errors?.[0]?.extensions?.code).toBe("FORBIDDEN");
+		expect(body.errors?.[0]?.message).toMatch(/read-only demo/i);
+	});
+
+	it("allows every mutation when demo mode is off", async () => {
+		test = await startTestHttp({ demo: false });
+		const token = await login(test);
+		const res = await fetch(`${test.baseUrl}/graphql`, {
+			method: "POST",
+			headers: { "content-type": "application/json", authorization: token },
+			body: JSON.stringify({ query: 'mutation { removeUser(id: "nope") }' }),
+		});
+		const body = (await res.json()) as {
+			errors?: Array<{ extensions?: { code?: string } }>;
+		};
+		// It may still fail for other reasons, but never with the demo guard.
+		expect(body.errors?.[0]?.extensions?.code).not.toBe("FORBIDDEN");
 	});
 });

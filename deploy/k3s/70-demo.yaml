@@ -1,0 +1,130 @@
+# Public read-only demo at https://demo.swarmbot.it.
+#
+# A separate workload from the real console on purpose: it runs the same image
+# with SWARMBOT_MOCK (fabricated cluster data) *and* SWARMBOT_DEMO (every
+# mutation except login/logout is rejected before any resolver runs). Mock mode
+# alone is not enough — it lets writes report success, so a visitor could
+# "delete" a cluster on a public page.
+#
+# It touches nothing real: no ServiceAccount/RBAC (it never queries Kubernetes),
+# no Postgres and no InfluxDB. State lives in an in-memory SQLite database, so
+# every restart resets the demo to a clean slate.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: swarmbot-demo
+    namespace: swarmbot
+    labels:
+        app: swarmbot-demo
+        app.kubernetes.io/name: swarmbot
+        app.kubernetes.io/component: demo
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: swarmbot-demo
+    template:
+        metadata:
+            labels:
+                app: swarmbot-demo
+        spec:
+            containers:
+                - name: swarmbot
+                  image: ghcr.io/swarmbot-it/swarmbot:latest
+                  imagePullPolicy: Always
+                  env:
+                      - name: SWARMBOT_PORT
+                        value: "8080"
+                      # Fabricated cluster data — nothing here reaches a real orchestrator.
+                      - name: SWARMBOT_MOCK
+                        value: "true"
+                      # Read-only: rejects every mutation except login/logout.
+                      - name: SWARMBOT_DEMO
+                        value: "true"
+                      # In-memory, so the demo resets itself on every restart.
+                      - name: SWARMBOT_DB
+                        value: "sqlite::memory:"
+                      - name: SWARMBOT_ALLOWED_ORIGINS
+                        value: "https://demo.swarmbot.it"
+                      # Deliberately published credentials: the login page pre-fills
+                      # them and the instance cannot be changed by anyone.
+                      - name: SWARMBOT_BOOTSTRAP_ADMIN
+                        value: "admin"
+                      - name: SWARMBOT_BOOTSTRAP_PASSWORD
+                        value: "swarmbot"
+                  ports:
+                      - containerPort: 8080
+                  readinessProbe:
+                      httpGet:
+                          path: /health
+                          port: 8080
+                      initialDelaySeconds: 5
+                      periodSeconds: 10
+                  livenessProbe:
+                      httpGet:
+                          path: /health
+                          port: 8080
+                      initialDelaySeconds: 30
+                      periodSeconds: 30
+                  resources:
+                      requests:
+                          cpu: 50m
+                          memory: 128Mi
+                      limits:
+                          memory: 512Mi
+                  securityContext:
+                      allowPrivilegeEscalation: false
+                      readOnlyRootFilesystem: false
+                      capabilities:
+                          drop: ["ALL"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: swarmbot-demo
+    namespace: swarmbot
+spec:
+    type: ClusterIP
+    selector:
+        app: swarmbot-demo
+    ports:
+        - port: 8080
+          targetPort: 8080
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+    name: swarmbot-demo-tls
+    namespace: swarmbot
+    labels:
+        app.kubernetes.io/name: swarmbot
+        app.kubernetes.io/component: demo
+spec:
+    secretName: swarmbot-demo-tls
+    issuerRef:
+        kind: ClusterIssuer
+        name: letsencrypt-ovh-dns01
+    commonName: demo.swarmbot.it
+    dnsNames:
+        - demo.swarmbot.it
+---
+# Unlike the console on swarmbot.infra this is deliberately public: no
+# ipAllowList. The whole surface is read-only and the data is fabricated.
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+    name: swarmbot-demo
+    namespace: swarmbot
+spec:
+    entryPoints:
+        - websecure
+    routes:
+        - kind: Rule
+          match: Host(`demo.swarmbot.it`)
+          middlewares:
+              - name: swarmbot-it-headers
+          services:
+              - name: swarmbot-demo
+                port: 8080
+    tls:
+        secretName: swarmbot-demo-tls
