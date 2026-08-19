@@ -8,6 +8,7 @@ on:
         # Catches newly-disclosed CVEs in already-pinned dependencies even
         # when nothing in the repo changes.
         - cron: "0 6 * * 1"
+    workflow_dispatch:
 
 jobs:
     npm-audit:
@@ -22,3 +23,57 @@ jobs:
             # (build/test tooling that never ships) are tracked by Dependabot
             # instead of failing CI on every transitive bump.
             - run: npm audit --omit=dev --audit-level=high
+
+    # graphql 17 is GA but @apollo/server still pins ^16, so the upgrade cannot
+    # land yet (see scripts/check-graphql17.mjs). That clears on Apollo's
+    # schedule, so watch for it instead of re-checking by hand.
+    #
+    # Scheduled/manual only: it needs the network, has nothing to do with any
+    # diff, and must never gate a PR or a release on an external condition.
+    graphql-17-watch:
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        runs-on: ubuntu-latest
+        permissions:
+            issues: write
+        steps:
+            - uses: actions/checkout@v7
+            - uses: actions/setup-node@v7
+              with:
+                  node-version: 20
+            # No `npm ci` — the script resolves in a throwaway copy of the
+            # manifests and never needs node_modules.
+            - id: check
+              run: |
+                  set +e
+                  node scripts/check-graphql17.mjs | tee report.txt
+                  echo "status=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+            # Exit 2 means the registry was unreachable — a soft warning, so the
+            # job does not cry wolf on a flaky network.
+            - if: steps.check.outputs.status == '2'
+              run: echo "::warning::Could not determine graphql 17 status (registry unreachable)"
+            # A scheduled red X months from now is easy to miss; an issue is not.
+            - if: steps.check.outputs.status == '1'
+              uses: actions/github-script@v7
+              with:
+                  script: |
+                      const fs = require("fs");
+                      const body = fs.readFileSync("report.txt", "utf8");
+                      const title = "graphql 17 is now installable";
+                      const existing = await github.rest.issues.listForRepo({
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          state: "open",
+                          labels: "dependencies",
+                      });
+                      if (existing.data.some((i) => i.title === title)) {
+                          core.info("Tracking issue already open — nothing to do.");
+                          return;
+                      }
+                      await github.rest.issues.create({
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          title,
+                          labels: ["dependencies"],
+                          body:
+                              "The blocker on graphql 17 has cleared.\n\n```\n" + body + "```\n",
+                      });

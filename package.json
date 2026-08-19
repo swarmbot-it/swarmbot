@@ -13,6 +13,7 @@
         "build": "npm run build -w @swarmbot/api && npm run build -w web",
         "dev:api": "npm run dev -w @swarmbot/api",
         "dev:web": "npm run start -w web",
+        "check:graphql17": "node scripts/check-graphql17.mjs",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
         "test": "npm run test -w @swarmbot/api && npm run test -w web",
