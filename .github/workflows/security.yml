@@ -53,7 +53,7 @@ jobs:
               run: echo "::warning::Could not determine graphql 17 status (registry unreachable)"
             # A scheduled red X months from now is easy to miss; an issue is not.
             - if: steps.check.outputs.status == '1'
-              uses: actions/github-script@v7
+              uses: actions/github-script@v9
               with:
                   script: |
                       const fs = require("fs");
